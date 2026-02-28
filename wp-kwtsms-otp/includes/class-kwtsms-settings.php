@@ -50,6 +50,11 @@ class KwtSMS_Settings {
 			'test_mode'            => 1,
 			'test_phone'           => '',
 			'credentials_verified' => 0,
+			'sender_ids'           => array(),    // cached list from last login
+			'balance_available'    => null,       // float|null
+			'balance_purchased'    => null,       // float|null
+			'balance_updated_at'   => 0,          // timestamp of last balance update
+			'coverage'             => array(),    // cached from last login
 		),
 		'templates' => array(
 			'login_otp' => array(
