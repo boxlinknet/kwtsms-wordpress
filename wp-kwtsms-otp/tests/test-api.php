@@ -1,0 +1,204 @@
+<?php
+/**
+ * Tests for KwtSMS_API — phone normalizer, error mapping, request layer.
+ *
+ * @package KwtSMS_OTP
+ */
+
+use Brain\Monkey;
+use Brain\Monkey\Functions;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Class Test_KwtSMS_API
+ */
+class Test_KwtSMS_API extends TestCase {
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	// =========================================================================
+	// normalize_phone
+	// =========================================================================
+
+	public function test_normalize_phone_strips_plus() {
+		$result = KwtSMS_API::normalize_phone( '+96598765432' );
+		$this->assertSame( '96598765432', $result );
+	}
+
+	public function test_normalize_phone_strips_double_zero() {
+		$result = KwtSMS_API::normalize_phone( '0096598765432' );
+		$this->assertSame( '96598765432', $result );
+	}
+
+	public function test_normalize_phone_removes_spaces() {
+		$result = KwtSMS_API::normalize_phone( '965 9922 0322' );
+		$this->assertSame( '96598765432', $result );
+	}
+
+	public function test_normalize_phone_removes_dashes() {
+		$result = KwtSMS_API::normalize_phone( '965-9922-0322' );
+		$this->assertSame( '96598765432', $result );
+	}
+
+	public function test_normalize_phone_converts_arabic_numerals() {
+		// Arabic-Indic numerals: ٩٦٥٩٩٢٢٠٣٢٢
+		$result = KwtSMS_API::normalize_phone( '٩٦٥٩٩٢٢٠٣٢٢' );
+		$this->assertSame( '96598765432', $result );
+	}
+
+	public function test_normalize_phone_converts_eastern_arabic_numerals() {
+		// Extended Arabic-Indic numerals (Persian/Urdu): ۹۶۵۹۹۲۲۰۳۲۲
+		$result = KwtSMS_API::normalize_phone( '۹۶۵۹۹۲۲۰۳۲۲' );
+		$this->assertSame( '96598765432', $result );
+	}
+
+	public function test_normalize_phone_removes_parentheses_and_dots() {
+		$result = KwtSMS_API::normalize_phone( '(965) 9922.0322' );
+		$this->assertSame( '96598765432', $result );
+	}
+
+	public function test_normalize_phone_strips_plus_and_spaces_combined() {
+		$result = KwtSMS_API::normalize_phone( '+965 9922 0322' );
+		$this->assertSame( '96598765432', $result );
+	}
+
+	public function test_normalize_phone_valid_without_changes() {
+		$result = KwtSMS_API::normalize_phone( '96598765432' );
+		$this->assertSame( '96598765432', $result );
+	}
+
+	public function test_normalize_phone_returns_wp_error_for_letters() {
+		Functions\when( '__' )->returnArg( 1 );
+		Functions\when( 'esc_html' )->returnArg( 1 );
+		$result = KwtSMS_API::normalize_phone( 'not-a-phone' );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'invalid_phone', $result->get_error_code() );
+	}
+
+	public function test_normalize_phone_returns_wp_error_for_too_short() {
+		Functions\when( '__' )->returnArg( 1 );
+		Functions\when( 'esc_html' )->returnArg( 1 );
+		$result = KwtSMS_API::normalize_phone( '1234567' ); // 7 digits — too short.
+		$this->assertInstanceOf( WP_Error::class, $result );
+	}
+
+	public function test_normalize_phone_returns_wp_error_for_too_long() {
+		Functions\when( '__' )->returnArg( 1 );
+		Functions\when( 'esc_html' )->returnArg( 1 );
+		$result = KwtSMS_API::normalize_phone( '1234567890123456' ); // 16 digits — too long.
+		$this->assertInstanceOf( WP_Error::class, $result );
+	}
+
+	public function test_normalize_phone_accepts_8_digit_min() {
+		$result = KwtSMS_API::normalize_phone( '12345678' ); // 8 digits — minimum.
+		$this->assertSame( '12345678', $result );
+	}
+
+	public function test_normalize_phone_accepts_15_digit_max() {
+		$result = KwtSMS_API::normalize_phone( '123456789012345' ); // 15 digits — maximum.
+		$this->assertSame( '123456789012345', $result );
+	}
+
+	// =========================================================================
+	// map_error_code
+	// =========================================================================
+
+	public function test_map_error_code_returns_string_for_known_code() {
+		Functions\when( '__' )->returnArg( 1 );
+		$msg = KwtSMS_API::map_error_code( 'ERR003' );
+		$this->assertIsString( $msg );
+		$this->assertNotEmpty( $msg );
+	}
+
+	public function test_map_error_code_returns_fallback_for_unknown_code() {
+		Functions\when( '__' )->returnArg( 1 );
+		Functions\when( 'esc_html' )->returnArg( 1 );
+		Functions\when( 'sprintf' )->alias( 'sprintf' );
+		$msg = KwtSMS_API::map_error_code( 'ERR999' );
+		$this->assertIsString( $msg );
+		$this->assertStringContainsString( 'ERR999', $msg );
+	}
+
+	public function test_map_error_code_covers_all_known_codes() {
+		Functions\when( '__' )->returnArg( 1 );
+		$codes = array(
+			'ERR001', 'ERR002', 'ERR003', 'ERR004', 'ERR005',
+			'ERR006', 'ERR007', 'ERR008', 'ERR009', 'ERR010',
+			'ERR011', 'ERR012', 'ERR013', 'ERR019', 'ERR020',
+			'ERR021', 'ERR022', 'ERR023', 'ERR024', 'ERR025',
+			'ERR026', 'ERR027', 'ERR028', 'ERR029', 'ERR030',
+			'ERR031', 'ERR032', 'ERR033',
+		);
+		foreach ( $codes as $code ) {
+			$msg = KwtSMS_API::map_error_code( $code );
+			$this->assertIsString( $msg, "Expected string for $code" );
+			$this->assertNotEmpty( $msg, "Expected non-empty message for $code" );
+		}
+	}
+
+	// =========================================================================
+	// send_sms — unit test with mocked wp_remote_post
+	// =========================================================================
+
+	public function test_send_sms_returns_error_when_credentials_missing() {
+		Functions\when( '__' )->returnArg( 1 );
+		$api    = new KwtSMS_API( '', '', false );
+		$result = $api->send_sms( '96598765432', 'KWTSMS', 'Test message' );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'kwtsms_no_credentials', $result->get_error_code() );
+	}
+
+	public function test_send_sms_test_mode_writes_to_error_log() {
+		Functions\when( '__' )->returnArg( 1 );
+		Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
+		Functions\when( 'wp_remote_post' )->justReturn(
+			array(
+				'response' => array( 'code' => 200 ),
+				'body'     => '{"result":"SUCCESS","msg-id":"12345","balance-after":"90.00"}',
+			)
+		);
+		Functions\when( 'wp_remote_retrieve_response_code' )->justReturn( 200 );
+		Functions\when( 'wp_remote_retrieve_body' )->justReturn( '{"result":"SUCCESS","msg-id":"12345","balance-after":"90.00"}' );
+		Functions\when( 'is_wp_error' )->alias( function( $v ) { return $v instanceof WP_Error; } );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+
+		if ( ! defined( 'WP_DEBUG_LOG' ) ) {
+			define( 'WP_DEBUG_LOG', true );
+		}
+
+		$api    = new KwtSMS_API( 'testuser', 'testpass', true );
+		$result = $api->send_sms( '96598765432', 'KWTSMS', 'Your code is: 123456' );
+
+		// Test mode + WP_DEBUG_LOG — just verify no exception and result is an array.
+		$this->assertIsArray( $result );
+	}
+}
+
+/**
+ * Minimal WP_Error stub for unit tests.
+ */
+if ( ! class_exists( 'WP_Error' ) ) {
+	class WP_Error {
+		private $code;
+		private $message;
+		private $data;
+
+		public function __construct( $code = '', $message = '', $data = array() ) {
+			$this->code    = $code;
+			$this->message = $message;
+			$this->data    = $data;
+		}
+
+		public function get_error_code() { return $this->code; }
+		public function get_error_message() { return $this->message; }
+		public function get_error_data() { return $this->data; }
+	}
+}

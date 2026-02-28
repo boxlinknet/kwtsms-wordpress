@@ -1,0 +1,49 @@
+/**
+ * kwtsms OTP — Login Page RTL overrides (Arabic)
+ *
+ * Applied when WordPress is configured with an RTL language (e.g. Arabic).
+ *
+ * @package KwtSMS_OTP
+ */
+
+/* Direction */
+body.login {
+	direction: rtl;
+	text-align: right;
+}
+
+.kwtsms-otp-box {
+	direction: rtl;
+	text-align: right;
+}
+
+.kwtsms-otp-desc {
+	direction: rtl;
+}
+
+.kwtsms-code-group input[type="text"] {
+	direction: ltr;    /* OTP codes are always LTR digits */
+	text-align: center;
+}
+
+.kwtsms-resend-wrap {
+	direction: rtl;
+}
+
+.kwtsms-back-link {
+	direction: rtl;
+}
+
+.kwtsms-back-link a {
+	/* Reverse the back arrow for RTL */
+}
+
+/* Fix label alignment */
+label {
+	text-align: right;
+}
+
+input[type="tel"],
+input[type="text"] {
+	direction: ltr; /* Phone numbers are LTR */
+}

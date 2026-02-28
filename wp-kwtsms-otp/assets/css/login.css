@@ -1,0 +1,237 @@
+/**
+ * kwtsms OTP — Login Page Styles
+ *
+ * Used on the OTP entry page (wp-login.php?action=kwtsms_otp) and the
+ * passwordless login page (wp-login.php?action=kwtsms_passwordless).
+ *
+ * Built to match the standard WordPress login page look while applying
+ * kwtsms branding (#FFA200 primary, #79CCF2 accent).
+ */
+
+/* Base reset / body */
+body.login {
+	background: #f0f0f1;
+	font-family: Lato, Helvetica, Arial, sans-serif;
+	color: #434345;
+}
+
+/* Login box */
+#login {
+	width: 360px;
+	max-width: calc(100% - 40px);
+	margin: 40px auto 0;
+}
+
+/* =========================================================================
+   OTP box card
+   ========================================================================= */
+
+.kwtsms-otp-box {
+	background: #fff;
+	border-radius: 4px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.13);
+	padding: 28px 32px;
+	margin-top: 0;
+}
+
+.kwtsms-otp-title {
+	font-family: Montserrat, sans-serif;
+	font-size: 18px;
+	font-weight: 700;
+	color: #434345;
+	margin: 0 0 10px;
+	text-align: center;
+}
+
+.kwtsms-otp-desc {
+	font-size: 14px;
+	color: #666;
+	text-align: center;
+	margin: 0 0 20px;
+	line-height: 1.5;
+}
+
+/* =========================================================================
+   Error / success messages
+   ========================================================================= */
+
+.kwtsms-otp-error {
+	background: #fef0f0;
+	border-left: 4px solid #dc3232;
+	color: #a0201e;
+	padding: 10px 14px;
+	border-radius: 0 3px 3px 0;
+	margin-bottom: 16px;
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.kwtsms-otp-success {
+	background: #edfbee;
+	border-left: 4px solid #46b450;
+	color: #2a7a2f;
+	padding: 10px 14px;
+	border-radius: 0 3px 3px 0;
+	margin-bottom: 16px;
+	font-size: 14px;
+}
+
+/* =========================================================================
+   OTP code input
+   ========================================================================= */
+
+.kwtsms-code-group {
+	margin-bottom: 16px;
+}
+
+.kwtsms-code-input {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	text-align: center;
+	font-size: 28px;
+	font-family: monospace;
+	letter-spacing: 0.2em;
+	padding: 12px;
+	border: 2px solid #ddd;
+	border-radius: 0;
+	background: #fff;
+	color: #434345;
+	transition: border-color 0.15s;
+}
+
+.kwtsms-code-input:focus {
+	border-color: #FFA200;
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(255,162,0,0.18);
+}
+
+/* =========================================================================
+   Submit button
+   ========================================================================= */
+
+.kwtsms-btn {
+	display: block !important;
+	width: 100% !important;
+	background: #FFA200 !important;
+	border-color: #e09200 !important;
+	color: #fff !important;
+	font-size: 15px !important;
+	font-weight: 700 !important;
+	border-radius: 4px !important;
+	padding: 10px !important;
+	cursor: pointer !important;
+	text-align: center !important;
+	transition: background 0.15s !important;
+}
+
+.kwtsms-btn:hover,
+.kwtsms-btn:focus {
+	background: #e09200 !important;
+}
+
+/* =========================================================================
+   Resend button
+   ========================================================================= */
+
+.kwtsms-resend-wrap {
+	text-align: center;
+	margin-top: 18px;
+}
+
+.kwtsms-resend-btn {
+	background: transparent;
+	border: none;
+	color: #79CCF2;
+	cursor: pointer;
+	font-size: 14px;
+	padding: 0;
+	text-decoration: underline;
+	transition: color 0.15s;
+}
+
+.kwtsms-resend-btn:hover:not(:disabled) {
+	color: #4ab0e8;
+}
+
+.kwtsms-resend-btn:disabled {
+	color: #aaa;
+	cursor: default;
+	text-decoration: none;
+}
+
+.kwtsms-resend-msg {
+	display: block;
+	font-size: 13px;
+	color: #46b450;
+	margin-top: 6px;
+	min-height: 18px;
+}
+
+/* =========================================================================
+   Back link
+   ========================================================================= */
+
+.kwtsms-back-link {
+	text-align: center;
+	margin-top: 16px;
+	font-size: 13px;
+}
+
+.kwtsms-back-link a {
+	color: #79CCF2;
+	text-decoration: none;
+}
+
+.kwtsms-back-link a:hover {
+	text-decoration: underline;
+}
+
+/* =========================================================================
+   Phone input (passwordless page)
+   ========================================================================= */
+
+#login .input {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 10px 12px;
+	font-size: 15px;
+	border: 1px solid #ddd;
+	border-radius: 0;
+	background: #fff;
+	color: #434345;
+	margin-bottom: 14px;
+}
+
+#login .input:focus {
+	border-color: #FFA200;
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(255,162,0,0.18);
+}
+
+/* =========================================================================
+   RTL support
+   ========================================================================= */
+
+html[dir="rtl"] .kwtsms-otp-box,
+html[lang^="ar"] .kwtsms-otp-box {
+	direction: rtl;
+	text-align: right;
+}
+
+html[dir="rtl"] .kwtsms-otp-error,
+html[lang^="ar"] .kwtsms-otp-error {
+	border-left: none;
+	border-right: 4px solid #dc3232;
+}
+
+html[dir="rtl"] .kwtsms-back-link a::before,
+html[lang^="ar"] .kwtsms-back-link a::before {
+	content: '→ ';
+}
+
+html[dir="rtl"] .kwtsms-back-link a .kwtsms-back-arrow,
+html[lang^="ar"] .kwtsms-back-link a .kwtsms-back-arrow {
+	display: none;
+}

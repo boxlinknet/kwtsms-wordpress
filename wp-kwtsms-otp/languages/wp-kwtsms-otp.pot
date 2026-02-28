@@ -1,0 +1,718 @@
+# Copyright (C) 2026 kwtsms
+# This file is distributed under the same license as the kwtsms OTP plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: wp-kwtsms-otp 1.0.0\n"
+"Report-Msgid-Bugs-To: https://www.kwtsms.com\n"
+"POT-Creation-Date: 2026-02-28 07:40+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2026-02-28 07:40+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Generator: kwtsms-otp-make-pot\n"
+"X-Domain: wp-kwtsms-otp\n"
+
+#: admin/class-kwtsms-admin.php:65
+#: admin/class-kwtsms-admin.php:66
+msgid "kwtsms OTP"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:76
+msgid "General Settings"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:77
+msgid "General"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:85
+msgid "Gateway Settings"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:86
+msgid "Gateway"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:94
+msgid "SMS Templates"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:95
+msgid "Templates"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:123
+#: admin/views/page-general.php:28
+msgid "OTP Behaviour"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:130
+#: admin/views/page-general.php:114
+msgid "CAPTCHA Protection"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:308
+msgid "Verifying..."
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:309
+msgid "Credentials verified!"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:310
+msgid "Verification failed."
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:311
+msgid "Sending..."
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:312
+msgid "Test SMS sent! Check your phone."
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:313
+#: admin/views/page-templates.php:85
+#: admin/views/page-templates.php:107
+msgid "characters"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:314
+#: admin/views/page-templates.php:86
+#: admin/views/page-templates.php:108
+msgid "SMS page(s)"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:347
+msgid "kwtsms OTP Warning:"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:348
+msgid "Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security."
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:358
+msgid "kwtsms OTP:"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:359
+msgid "API credentials are not configured. The plugin will not be able to send SMS messages."
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:361
+msgid "Configure now →"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:369
+msgid "kwtsms OTP is in Test Mode. SMS messages will be queued but not delivered. OTP codes are written to wp-content/debug.log."
+msgstr ""
+
+#: admin/class-kwtsms-admin.php:383
+#: admin/class-kwtsms-admin.php:393
+#: admin/class-kwtsms-admin.php:403
+msgid "You do not have permission to access this page."
+msgstr ""
+
+#: admin/views/page-gateway.php:23
+msgid "kwtsms OTP — Gateway Settings"
+msgstr ""
+
+#: admin/views/page-gateway.php:28
+msgid "Account Balance"
+msgstr ""
+
+#: admin/views/page-gateway.php:39
+msgid "API Credentials"
+msgstr ""
+
+#: admin/views/page-gateway.php:43
+msgid "API Username"
+msgstr ""
+
+#: admin/views/page-gateway.php:48
+msgid "Your kwtsms account username."
+msgstr ""
+
+#: admin/views/page-gateway.php:53
+msgid "API Password"
+msgstr ""
+
+#: admin/views/page-gateway.php:58
+msgid "Your kwtsms account password. Stored server-side only, never exposed to the browser."
+msgstr ""
+
+#: admin/views/page-gateway.php:63
+msgid "Sender ID"
+msgstr ""
+
+#: admin/views/page-gateway.php:72
+msgid "— Save & Verify to load —"
+msgstr ""
+
+#: admin/views/page-gateway.php:76
+msgid "Reload"
+msgstr ""
+
+#: admin/views/page-gateway.php:79
+msgid "Select the sender ID approved for your kwtsms account."
+msgstr ""
+
+#: admin/views/page-gateway.php:85
+msgid "Test Mode"
+msgstr ""
+
+#: admin/views/page-gateway.php:89
+msgid "Enable Test Mode"
+msgstr ""
+
+#: admin/views/page-gateway.php:94
+msgid "Messages are queued but not delivered. OTP codes are written to wp-content/debug.log."
+msgstr ""
+
+#: admin/views/page-gateway.php:100
+msgid "Test Phone"
+msgstr ""
+
+#: admin/views/page-gateway.php:105
+msgid "Phone number to receive test SMS. Include country code, no spaces."
+msgstr ""
+
+#: admin/views/page-gateway.php:107
+msgid "Send Test SMS Now"
+msgstr ""
+
+#: admin/views/page-gateway.php:116
+#: admin/views/page-general.php:175
+msgid "Save Settings"
+msgstr ""
+
+#: admin/views/page-gateway.php:118
+msgid "Save & Verify Credentials"
+msgstr ""
+
+#: admin/views/page-general.php:21
+msgid "kwtsms OTP — General Settings"
+msgstr ""
+
+#: admin/views/page-general.php:32
+msgid "OTP Mode"
+msgstr ""
+
+#: admin/views/page-general.php:36
+msgid "Two-Factor Authentication (2FA) — password + OTP"
+msgstr ""
+
+#: admin/views/page-general.php:37
+msgid "Passwordless — phone + OTP only"
+msgstr ""
+
+#: admin/views/page-general.php:38
+msgid "Both — users can choose"
+msgstr ""
+
+#: admin/views/page-general.php:53
+msgid "Enable Login OTP"
+msgstr ""
+
+#: admin/views/page-general.php:57
+msgid "Require OTP on login"
+msgstr ""
+
+#: admin/views/page-general.php:63
+msgid "Enable Password Reset OTP"
+msgstr ""
+
+#: admin/views/page-general.php:67
+msgid "Use SMS OTP for password reset (instead of email link)"
+msgstr ""
+
+#: admin/views/page-general.php:73
+msgid "OTP Code Length"
+msgstr ""
+
+#: admin/views/page-general.php:76
+msgid "4 digits"
+msgstr ""
+
+#: admin/views/page-general.php:77
+msgid "6 digits (recommended)"
+msgstr ""
+
+#: admin/views/page-general.php:83
+msgid "Code Expiry"
+msgstr ""
+
+#: admin/views/page-general.php:87
+msgid "minutes"
+msgstr ""
+
+#: admin/views/page-general.php:88
+msgid "Recommended: 3 minutes. Shorter = more secure, longer = more user-friendly."
+msgstr ""
+
+#: admin/views/page-general.php:93
+msgid "Max Verification Attempts"
+msgstr ""
+
+#: admin/views/page-general.php:97
+msgid "Number of wrong OTP attempts before the code is invalidated."
+msgstr ""
+
+#: admin/views/page-general.php:102
+msgid "Resend Cooldown"
+msgstr ""
+
+#: admin/views/page-general.php:106
+msgid "seconds"
+msgstr ""
+
+#: admin/views/page-general.php:107
+msgid "Minimum time between resend requests per user. Recommended: 60 seconds."
+msgstr ""
+
+#: admin/views/page-general.php:118
+msgid "CAPTCHA Provider"
+msgstr ""
+
+#: admin/views/page-general.php:122
+msgid "None"
+msgstr ""
+
+#: admin/views/page-general.php:123
+msgid "Google reCAPTCHA v3 (invisible)"
+msgstr ""
+
+#: admin/views/page-general.php:124
+msgid "Cloudflare Turnstile"
+msgstr ""
+
+#: admin/views/page-general.php:140
+msgid "reCAPTCHA v3 Keys"
+msgstr ""
+
+#: admin/views/page-general.php:144
+#: admin/views/page-general.php:161
+msgid "Site Key"
+msgstr ""
+
+#: admin/views/page-general.php:147
+#: admin/views/page-general.php:164
+msgid "Secret Key"
+msgstr ""
+
+#: admin/views/page-general.php:150
+msgid "Get keys from Google reCAPTCHA Admin Console →"
+msgstr ""
+
+#: admin/views/page-general.php:157
+msgid "Turnstile Keys"
+msgstr ""
+
+#: admin/views/page-general.php:167
+msgid "Get keys from Cloudflare Dashboard →"
+msgstr ""
+
+#: admin/views/page-templates.php:17
+msgid "Login OTP"
+msgstr ""
+
+#: admin/views/page-templates.php:18
+msgid "Password Reset OTP"
+msgstr ""
+
+#: admin/views/page-templates.php:19
+msgid "Welcome SMS"
+msgstr ""
+
+#: admin/views/page-templates.php:23
+msgid "Sent when a user requests a login OTP code."
+msgstr ""
+
+#: admin/views/page-templates.php:24
+msgid "Sent when a user requests a password reset via OTP."
+msgstr ""
+
+#: admin/views/page-templates.php:25
+msgid "Sent after a new user account is created. (Optional)"
+msgstr ""
+
+#: admin/views/page-templates.php:29
+msgid "The generated OTP code"
+msgstr ""
+
+#: admin/views/page-templates.php:30
+msgid "Your WordPress site name"
+msgstr ""
+
+#: admin/views/page-templates.php:31
+msgid "OTP validity period in minutes"
+msgstr ""
+
+#: admin/views/page-templates.php:32
+msgid "User display name (welcome SMS only)"
+msgstr ""
+
+#: admin/views/page-templates.php:38
+msgid "kwtsms OTP — SMS Templates"
+msgstr ""
+
+#: admin/views/page-templates.php:43
+msgid "Available placeholders:"
+msgstr ""
+
+#: admin/views/page-templates.php:63
+msgid "Enabled"
+msgstr ""
+
+#: admin/views/page-templates.php:73
+msgid "English (LTR)"
+msgstr ""
+
+#: admin/views/page-templates.php:95
+msgid "Arabic (RTL)"
+msgstr ""
+
+#: admin/views/page-templates.php:116
+msgid "Save Templates"
+msgstr ""
+
+#: includes/class-kwtsms-api.php:237
+msgid "Please enter a valid phone number with country code (e.g. 96598765432). Got: %s"
+msgstr ""
+
+#: includes/class-kwtsms-api.php:262
+msgid "SMS service is temporarily unavailable. Please try again later."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:263
+msgid "Gateway configuration error. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:264
+msgid "Gateway authentication failed. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:265
+msgid "SMS gateway is not enabled on this account. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:266
+msgid "SMS gateway account is suspended. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:267
+msgid "Phone number is not valid for SMS delivery."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:268
+msgid "Too many recipients. Please try again."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:269
+msgid "The configured sender ID is not allowed. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:270
+msgid "SMS template is empty. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:271
+#: includes/class-kwtsms-api.php:272
+msgid "Insufficient SMS credits. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:273
+msgid "Message is too long. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:274
+msgid "SMS queue is full. Please try again in a few minutes."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:275
+msgid "Delivery report not found."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:276
+msgid "Message not found."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:277
+msgid "Delivery report is not available for this message."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:278
+msgid "Delivery reports are not ready yet. Please check back in 24 hours."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:279
+msgid "Could not retrieve delivery report."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:280
+msgid "Your request was blocked by a security policy. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:281
+msgid "Phone number is not valid. Please enter a valid mobile number with country code."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:282
+msgid "No route available for this number. Please use a number with country code."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:283
+msgid "Message contains unsupported characters. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:284
+msgid "Please wait at least 15 seconds before requesting another code to the same number."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:285
+msgid "Message not found or message ID is incorrect."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:286
+msgid "Message is stuck in queue. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:287
+msgid "Message was rejected due to policy violations. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:288
+msgid "Message was rejected as spam. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:289
+msgid "No SMS coverage configured. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:294
+msgid "An unexpected error occurred (%s). Please try again."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:316
+msgid "kwtsms API credentials are not configured. Please set them in Settings → kwtsms OTP → Gateway."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:348
+msgid "Could not connect to the SMS gateway. Please check your internet connection."
+msgstr ""
+
+#: includes/class-kwtsms-api.php:360
+msgid "Unexpected response from SMS gateway (HTTP %d)."
+msgstr ""
+
+#: includes/class-kwtsms-captcha.php:187
+#: includes/class-kwtsms-captcha.php:218
+msgid "CAPTCHA verification failed. Please try again."
+msgstr ""
+
+#: includes/class-kwtsms-captcha.php:225
+msgid "Your request was flagged as suspicious. Please try again."
+msgstr ""
+
+#: includes/class-kwtsms-captcha.php:243
+msgid "Please complete the security check before continuing."
+msgstr ""
+
+#: includes/class-kwtsms-captcha.php:272
+msgid "Security check failed. Please try again."
+msgstr ""
+
+#: includes/class-kwtsms-login-otp.php:97
+msgid "Too many OTP requests for this number. Please wait a few minutes before trying again."
+msgstr ""
+
+#: includes/class-kwtsms-login-otp.php:207
+msgid "Login with SMS OTP"
+msgstr ""
+
+#: includes/class-kwtsms-login-otp.php:229
+#: includes/class-kwtsms-login-otp.php:339
+#: includes/class-kwtsms-reset-otp.php:201
+msgid "Security check failed. Please go back and try again."
+msgstr ""
+
+#: includes/class-kwtsms-login-otp.php:235
+#: includes/class-kwtsms-login-otp.php:242
+#: includes/class-kwtsms-plugin.php:177
+msgid "Session expired. Please log in again."
+msgstr ""
+
+#: includes/class-kwtsms-login-otp.php:278
+msgid "Your code has expired. Click \"Resend\" to get a new one."
+msgstr ""
+
+#: includes/class-kwtsms-login-otp.php:287
+msgid "Too many incorrect attempts. Please log in again to request a new code."
+msgstr ""
+
+#: includes/class-kwtsms-login-otp.php:292
+#: includes/class-kwtsms-reset-otp.php:282
+msgid "Something went wrong. Please try again."
+msgstr ""
+
+#: includes/class-kwtsms-login-otp.php:361
+#: includes/class-kwtsms-reset-otp.php:110
+msgid "Too many requests. Please wait a few minutes before trying again."
+msgstr ""
+
+#: includes/class-kwtsms-login-otp.php:367
+msgid "If an account is associated with this number, an OTP will be sent shortly."
+msgstr ""
+
+#. translators: %d: number of remaining attempts */
+#: includes/class-kwtsms-login-otp.php:264
+#: includes/class-kwtsms-reset-otp.php:256
+msgid "Incorrect code. %d attempt remaining."
+msgid_plural "Incorrect code. %d attempts remaining."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-kwtsms-plugin.php:128
+#: includes/class-kwtsms-plugin.php:229
+msgid "Insufficient permissions."
+msgstr ""
+
+#: includes/class-kwtsms-plugin.php:135
+msgid "Username and password are required."
+msgstr ""
+
+#: includes/class-kwtsms-plugin.php:171
+msgid "Invalid session."
+msgstr ""
+
+#: includes/class-kwtsms-plugin.php:184
+msgid "No phone number on this account."
+msgstr ""
+
+#: includes/class-kwtsms-plugin.php:191
+msgid "Too many requests. Please wait before trying again."
+msgstr ""
+
+#: includes/class-kwtsms-plugin.php:214
+msgid "A new code has been sent to your phone."
+msgstr ""
+
+#. translators: %s: phone number */
+#: includes/class-kwtsms-plugin.php:258
+msgid "Test SMS sent to %s. Code: %s (check debug.log if in test mode)"
+msgstr ""
+
+#: includes/class-kwtsms-reset-otp.php:167
+msgid "If your account has a phone number registered, an OTP will be sent instead of an email reset link."
+msgstr ""
+
+#: includes/class-kwtsms-reset-otp.php:206
+#: includes/class-kwtsms-reset-otp.php:213
+msgid "Session expired. Please start over."
+msgstr ""
+
+#: includes/class-kwtsms-reset-otp.php:235
+msgid "Could not generate reset link. Please try again."
+msgstr ""
+
+#: includes/class-kwtsms-reset-otp.php:269
+msgid "Your code has expired. Please go back and request a new one."
+msgstr ""
+
+#: includes/class-kwtsms-reset-otp.php:277
+msgid "Too many incorrect attempts. Please start the password reset process again."
+msgstr ""
+
+#: includes/class-kwtsms-user-meta.php:37
+msgid "SMS OTP Authentication"
+msgstr ""
+
+#: includes/class-kwtsms-user-meta.php:41
+msgid "Phone Number (for SMS OTP)"
+msgstr ""
+
+#: includes/class-kwtsms-user-meta.php:51
+msgid "e.g. 96598765432"
+msgstr ""
+
+#: includes/class-kwtsms-user-meta.php:54
+msgid "Enter phone number with country code (e.g. 96598765432 for Kuwait). Arabic/Eastern Arabic numerals are accepted. Used to receive OTP codes for login and password reset."
+msgstr ""
+
+#: includes/class-kwtsms-user-meta.php:58
+msgid "Saved:"
+msgstr ""
+
+#: includes/views/page-otp.php:25
+msgid "Verify Your Identity — Password Reset"
+msgstr ""
+
+#: includes/views/page-otp.php:26
+msgid "Enter Your Verification Code"
+msgstr ""
+
+#: includes/views/page-otp.php:58
+msgid "Password Reset"
+msgstr ""
+
+#: includes/views/page-otp.php:58
+msgid "Two-Step Verification"
+msgstr ""
+
+#. translators: %s: partially masked phone number */
+#: includes/views/page-otp.php:66
+msgid "We sent a %d-digit code to %s"
+msgstr ""
+
+#. translators: %d: number of digits */
+#: includes/views/page-otp.php:77
+msgid "Enter the %d-digit code sent to your phone."
+msgstr ""
+
+#: includes/views/page-otp.php:110
+msgid "Verification code"
+msgstr ""
+
+#: includes/views/page-otp.php:127
+msgid "Verify Code"
+msgstr ""
+
+#. translators: %d: seconds until resend is allowed */
+#: includes/views/page-otp.php:144
+msgid "Resend code (%d)"
+msgstr ""
+
+#: includes/views/page-otp.php:154
+#: includes/views/page-passwordless.php:74
+msgid "Back to login"
+msgstr ""
+
+#: includes/views/page-passwordless.php:28
+msgid "Login with SMS — "
+msgstr ""
+
+#: includes/views/page-passwordless.php:41
+msgid "Login with SMS"
+msgstr ""
+
+#: includes/views/page-passwordless.php:42
+msgid "Enter your registered phone number to receive a one-time login code."
+msgstr ""
+
+#: includes/views/page-passwordless.php:56
+msgid "Phone number"
+msgstr ""
+
+#: includes/views/page-passwordless.php:63
+msgid "Phone number (e.g. 96598765432)"
+msgstr ""
+
+#: includes/views/page-passwordless.php:70
+msgid "Send OTP Code"
+msgstr ""
+
