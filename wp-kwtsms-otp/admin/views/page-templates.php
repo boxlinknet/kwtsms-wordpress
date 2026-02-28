@@ -33,9 +33,12 @@ $placeholders_info = array(
 );
 ?>
 <div class="wrap kwtsms-admin-wrap">
+
+	<?php settings_errors(); ?>
+
 	<div class="kwtsms-admin-header">
-		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtsms" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'kwtsms OTP — SMS Templates', 'wp-kwtsms-otp' ); ?></h1>
+		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
+		<h1><?php esc_html_e( 'kwtSMS OTP — SMS Templates', 'wp-kwtsms-otp' ); ?></h1>
 	</div>
 
 	<!-- Placeholders reference -->
