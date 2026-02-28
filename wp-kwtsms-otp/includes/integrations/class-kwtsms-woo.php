@@ -1,0 +1,430 @@
+<?php
+/**
+ * WooCommerce Integration.
+ *
+ * Provides:
+ * - Order status SMS notifications (processing, shipped, completed, cancelled)
+ * - Phone field on WC registration form + welcome SMS after registration
+ * - Checkout OTP gate: require phone + OTP for guest orders (optional, admin-controlled)
+ *
+ * @package KwtSMS_OTP
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class KwtSMS_Woo
+ *
+ * Hooks into WooCommerce events to send SMS notifications and to gate
+ * guest checkout behind an OTP verification step.
+ */
+class KwtSMS_Woo {
+
+	/**
+	 * Reference to the main plugin instance.
+	 *
+	 * @var KwtSMS_Plugin
+	 */
+	private $plugin;
+
+	/**
+	 * Transient prefix for checkout OTP sessions.
+	 *
+	 * @var string
+	 */
+	const CHECKOUT_OTP_PREFIX = 'kwtsms_checkout_otp_';
+
+	/**
+	 * Constructor.
+	 *
+	 * Registers all WooCommerce hooks. The checkout OTP gate hooks are only
+	 * added when the feature is enabled via the admin settings.
+	 *
+	 * @param KwtSMS_Plugin $plugin The main plugin instance.
+	 */
+	public function __construct( KwtSMS_Plugin $plugin ) {
+		$this->plugin = $plugin;
+
+		// Order status notifications.
+		add_action( 'woocommerce_order_status_changed', array( $this, 'on_order_status_changed' ), 10, 4 );
+
+		// Registration: phone field + welcome SMS.
+		add_action( 'woocommerce_register_form',       array( $this, 'render_wc_phone_field' ) );
+		add_filter( 'woocommerce_registration_errors', array( $this, 'validate_wc_phone_field' ), 10, 3 );
+		add_action( 'woocommerce_created_customer',    array( $this, 'save_wc_phone_and_send_welcome' ) );
+
+		// Checkout OTP gate (only when enabled).
+		if ( $this->is_checkout_otp_enabled() ) {
+			add_action( 'woocommerce_after_order_notes',      array( $this, 'render_checkout_otp_field' ) );
+			add_action( 'woocommerce_checkout_process',       array( $this, 'process_checkout_otp' ) );
+			add_action( 'woocommerce_checkout_order_created', array( $this, 'clear_checkout_otp_session' ) );
+		}
+	}
+
+	// =========================================================================
+	// Order status notifications
+	// =========================================================================
+
+	/**
+	 * Send an SMS notification when an order status changes.
+	 *
+	 * Supported transitions:
+	 *   pending|on-hold → processing  (order confirmed / payment received)
+	 *   processing      → on-hold     (order shipped — labelled "Shipped")
+	 *   *               → completed   (order completed)
+	 *   *               → cancelled   (order cancelled)
+	 *
+	 * Phone resolution priority:
+	 *   1. kwtsms_phone user meta (normalised at save time)
+	 *   2. Billing phone from order (normalised on-the-fly)
+	 *
+	 * @param int           $order_id   WooCommerce order ID.
+	 * @param string        $old_status Previous status slug.
+	 * @param string        $new_status New status slug.
+	 * @param WC_Order|null $order      Order object (passed by WC since 3.0).
+	 */
+	public function on_order_status_changed( $order_id, $old_status, $new_status, $order = null ) {
+		if ( ! $order instanceof WC_Order ) {
+			$order = wc_get_order( $order_id );
+		}
+		if ( ! $order ) {
+			return;
+		}
+
+		// Get customer phone — prefer kwtsms_phone user meta, fall back to billing phone.
+		$user_id = $order->get_customer_id();
+		$phone   = '';
+		if ( $user_id ) {
+			$phone = get_user_meta( $user_id, 'kwtsms_phone', true );
+		}
+		if ( empty( $phone ) ) {
+			$raw = $order->get_billing_phone();
+			if ( ! empty( $raw ) ) {
+				$normalized = KwtSMS_API::normalize_phone( $raw );
+				$phone      = is_wp_error( $normalized ) ? '' : $normalized;
+			}
+		}
+
+		if ( empty( $phone ) ) {
+			return; // No phone — skip.
+		}
+
+		$message = $this->build_order_message( $new_status, $order );
+		if ( empty( $message ) ) {
+			return; // Status not in our notification set.
+		}
+
+		$this->plugin->api->send_sms(
+			$phone,
+			$this->plugin->settings->get( 'gateway.sender_id', '' ),
+			$message,
+			'woo_order'
+		);
+	}
+
+	/**
+	 * Build an SMS message for a given order status transition.
+	 *
+	 * Returns an empty string for statuses that are not in our notification
+	 * set so the caller can short-circuit without sending.
+	 *
+	 * @param string   $status New status slug.
+	 * @param WC_Order $order  The order.
+	 *
+	 * @return string SMS message, or empty string if status not handled.
+	 */
+	private function build_order_message( $status, WC_Order $order ) {
+		$order_id  = $order->get_order_number();
+		$total     = strip_tags( wc_price( $order->get_total() ) );
+		$site_name = get_bloginfo( 'name' );
+
+		switch ( $status ) {
+			case 'processing':
+				return sprintf(
+					/* translators: 1: site name, 2: order ID, 3: order total */
+					__( '%1$s: Your order #%2$s has been confirmed. Total: %3$s. Thank you!', 'wp-kwtsms-otp' ),
+					$site_name,
+					$order_id,
+					$total
+				);
+
+			case 'on-hold':
+				return sprintf(
+					/* translators: 1: site name, 2: order ID */
+					__( '%1$s: Your order #%2$s has been shipped and is on its way!', 'wp-kwtsms-otp' ),
+					$site_name,
+					$order_id
+				);
+
+			case 'completed':
+				return sprintf(
+					/* translators: 1: site name, 2: order ID */
+					__( '%1$s: Your order #%2$s is complete. Thank you for shopping with us!', 'wp-kwtsms-otp' ),
+					$site_name,
+					$order_id
+				);
+
+			case 'cancelled':
+				return sprintf(
+					/* translators: 1: site name, 2: order ID */
+					__( '%1$s: Your order #%2$s has been cancelled. Contact us if this was unexpected.', 'wp-kwtsms-otp' ),
+					$site_name,
+					$order_id
+				);
+
+			default:
+				return '';
+		}
+	}
+
+	// =========================================================================
+	// Registration: phone field + welcome SMS
+	// =========================================================================
+
+	/**
+	 * Render phone field on the WooCommerce registration form (My Account page).
+	 *
+	 * The field is optional — an empty submission is silently skipped.
+	 * Re-populates the field value from $_POST on validation failure.
+	 */
+	public function render_wc_phone_field() {
+		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+		?>
+		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+			<label for="kwtsms_phone_reg">
+				<?php esc_html_e( 'Phone Number (optional)', 'wp-kwtsms-otp' ); ?>
+			</label>
+			<input
+				type="tel"
+				class="woocommerce-Input woocommerce-Input--text input-text"
+				name="kwtsms_phone_reg"
+				id="kwtsms_phone_reg"
+				autocomplete="tel"
+				value="<?php echo esc_attr( $phone ); ?>"
+				placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'wp-kwtsms-otp' ); ?>"
+			/>
+			<span class="description" style="font-size:12px;">
+				<?php esc_html_e( 'Enter with country code. Used for SMS order notifications.', 'wp-kwtsms-otp' ); ?>
+			</span>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Validate the phone field on WC registration.
+	 *
+	 * An empty value is allowed (field is optional). A non-empty value must
+	 * pass KwtSMS_API::normalize_phone() validation.
+	 *
+	 * @param WP_Error $errors   Existing validation errors.
+	 * @param string   $username Submitted username.
+	 * @param string   $email    Submitted email.
+	 *
+	 * @return WP_Error The (potentially augmented) errors object.
+	 */
+	public function validate_wc_phone_field( $errors, $username, $email ) {
+		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+		if ( '' !== $phone ) {
+			$normalized = KwtSMS_API::normalize_phone( $phone );
+			if ( is_wp_error( $normalized ) ) {
+				$errors->add( 'kwtsms_invalid_phone', $normalized->get_error_message() );
+			}
+		}
+		return $errors;
+	}
+
+	/**
+	 * Save phone meta and send welcome SMS after WC account creation.
+	 *
+	 * Only runs when a non-empty phone was submitted. The phone is normalised
+	 * before storage. If normalisation fails the whole step is skipped.
+	 *
+	 * @param int $customer_id New customer user ID.
+	 */
+	public function save_wc_phone_and_send_welcome( $customer_id ) {
+		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+		if ( '' === $phone ) {
+			return;
+		}
+
+		$normalized = KwtSMS_API::normalize_phone( $phone );
+		if ( is_wp_error( $normalized ) ) {
+			return;
+		}
+
+		update_user_meta( $customer_id, 'kwtsms_phone', $normalized );
+
+		// Send welcome SMS if template enabled.
+		$templates = $this->plugin->settings->get_all_templates();
+		if ( ! empty( $templates['welcome_sms']['enabled'] ) ) {
+			$message = $this->plugin->otp->build_message( '', 'welcome_sms' );
+			$this->plugin->api->send_sms(
+				$normalized,
+				$this->plugin->settings->get( 'gateway.sender_id', '' ),
+				$message,
+				'welcome'
+			);
+		}
+	}
+
+	// =========================================================================
+	// Checkout OTP gate
+	// =========================================================================
+
+	/**
+	 * Check if the checkout OTP gate is enabled in settings.
+	 *
+	 * @return bool
+	 */
+	private function is_checkout_otp_enabled() {
+		return (bool) $this->plugin->settings->get( 'general.woo_checkout_otp', 0 );
+	}
+
+	/**
+	 * Render the OTP input field in the checkout form.
+	 *
+	 * If the current session has already been OTP-verified, shows a
+	 * "Phone verified" confirmation and a hidden field instead of the input
+	 * so the process_checkout_otp handler can short-circuit immediately.
+	 *
+	 * @param WC_Checkout $checkout WooCommerce checkout instance.
+	 */
+	public function render_checkout_otp_field( WC_Checkout $checkout ) {
+		// Check if OTP has already been verified for this session.
+		$session_key = $this->get_checkout_session_key();
+		if ( $session_key && get_transient( self::CHECKOUT_OTP_PREFIX . $session_key ) ) {
+			echo '<p style="color:#46b450;font-weight:600;">' . esc_html__( 'Phone verified', 'wp-kwtsms-otp' ) . '</p>';
+			echo '<input type="hidden" name="kwtsms_checkout_verified" value="1" />';
+			return;
+		}
+
+		$token = wp_generate_password( 20, false );
+		$nonce = wp_create_nonce( 'kwtsms_otp_nonce' );
+		?>
+		<div id="kwtsms-checkout-otp" style="margin-bottom:20px;padding:16px;border:1px solid #ddd;border-radius:4px;background:#fff8f0;">
+			<h4 style="margin:0 0 8px;"><?php esc_html_e( 'Phone Verification', 'wp-kwtsms-otp' ); ?></h4>
+			<p style="font-size:14px;margin:0 0 10px;"><?php esc_html_e( 'We will send an OTP to your billing phone to verify your order.', 'wp-kwtsms-otp' ); ?></p>
+			<input type="hidden" name="kwtsms_checkout_token" value="<?php echo esc_attr( $token ); ?>" />
+			<input type="hidden" name="kwtsms_checkout_nonce" value="<?php echo esc_attr( $nonce ); ?>" />
+			<input
+				type="text"
+				name="kwtsms_checkout_otp_code"
+				inputmode="numeric"
+				pattern="[0-9]*"
+				autocomplete="one-time-code"
+				placeholder="<?php esc_attr_e( 'Enter OTP code (leave blank to receive code first)', 'wp-kwtsms-otp' ); ?>"
+				style="width:100%;padding:8px;margin-top:4px;box-sizing:border-box;"
+			/>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Process the checkout OTP field during WooCommerce checkout validation.
+	 *
+	 * Two-step flow:
+	 *   1. First submit (no OTP code supplied): generate + send OTP to billing
+	 *      phone, store pending transient, add a WC notice to prompt the user
+	 *      to enter the code, and block order creation.
+	 *   2. Second submit (OTP code present): verify against the stored transient.
+	 *      On success, mark the session as verified and allow order creation.
+	 *      On failure, add an error notice and block order creation.
+	 */
+	public function process_checkout_otp() {
+		// If already verified for this session, skip.
+		$session_key = $this->get_checkout_session_key();
+		if ( $session_key && get_transient( self::CHECKOUT_OTP_PREFIX . $session_key ) ) {
+			return;
+		}
+
+		// Nonce check.
+		$nonce = sanitize_key( wp_unslash( $_POST['kwtsms_checkout_nonce'] ?? '' ) );
+		if ( ! wp_verify_nonce( $nonce, 'kwtsms_otp_nonce' ) ) {
+			wc_add_notice( __( 'Security check failed. Please refresh and try again.', 'wp-kwtsms-otp' ), 'error' );
+			return;
+		}
+
+		$token    = sanitize_text_field( wp_unslash( $_POST['kwtsms_checkout_token'] ?? '' ) );
+		$otp_code = preg_replace( '/\D/', '', sanitize_text_field( wp_unslash( $_POST['kwtsms_checkout_otp_code'] ?? '' ) ) );
+
+		// Get billing phone.
+		$raw_phone  = sanitize_text_field( wp_unslash( $_POST['billing_phone'] ?? '' ) );
+		$normalized = KwtSMS_API::normalize_phone( $raw_phone );
+		if ( is_wp_error( $normalized ) ) {
+			wc_add_notice( $normalized->get_error_message(), 'error' );
+			return;
+		}
+
+		$transient_key = self::CHECKOUT_OTP_PREFIX . $token;
+
+		if ( '' === $otp_code ) {
+			// First submit — generate and send OTP.
+			$otp    = $this->plugin->otp->generate( 'checkout_' . $token, 'checkout' );
+			$msg    = $this->plugin->otp->build_message( $otp, 'login_otp' );
+			$result = $this->plugin->api->send_sms(
+				$normalized,
+				$this->plugin->settings->get( 'gateway.sender_id', '' ),
+				$msg,
+				'checkout'
+			);
+			if ( is_wp_error( $result ) ) {
+				wc_add_notice( $result->get_error_message(), 'error' );
+				return;
+			}
+			// Store the phone so we can verify the same number on the second submit.
+			set_transient( $transient_key . '_pending', $normalized, 15 * MINUTE_IN_SECONDS );
+			wc_add_notice( __( 'An OTP has been sent to your phone. Enter it above and place the order again.', 'wp-kwtsms-otp' ), 'notice' );
+			return; // Prevent order creation on first submit.
+		}
+
+		// Second submit — verify OTP.
+		$stored_phone = get_transient( $transient_key . '_pending' );
+		if ( ! $stored_phone || $stored_phone !== $normalized ) {
+			wc_add_notice( __( 'Session expired. Please refresh and try again.', 'wp-kwtsms-otp' ), 'error' );
+			return;
+		}
+
+		$result = $this->plugin->otp->verify( 'checkout_' . $token, $otp_code, 'checkout' );
+		if ( 'valid' !== $result ) {
+			wc_add_notice( __( 'Incorrect or expired OTP. Please try again.', 'wp-kwtsms-otp' ), 'error' );
+			return;
+		}
+
+		// Mark session as verified so subsequent page loads do not re-prompt.
+		if ( $session_key ) {
+			set_transient( self::CHECKOUT_OTP_PREFIX . $session_key, 1, HOUR_IN_SECONDS );
+		}
+		delete_transient( $transient_key . '_pending' );
+	}
+
+	/**
+	 * Clear the checkout OTP session transient after an order is successfully created.
+	 *
+	 * Prevents the "verified" state from persisting indefinitely in the transient
+	 * store after the order has been placed.
+	 *
+	 * @param WC_Order $order The newly created order.
+	 */
+	public function clear_checkout_otp_session( WC_Order $order ) {
+		$session_key = $this->get_checkout_session_key();
+		if ( $session_key ) {
+			delete_transient( self::CHECKOUT_OTP_PREFIX . $session_key );
+		}
+	}
+
+	/**
+	 * Get a session-specific key for checkout OTP verification.
+	 *
+	 * Uses the WooCommerce session customer ID when available. Falls back to
+	 * null (meaning per-session verification is skipped) when WC sessions are
+	 * unavailable (e.g. during unit tests or very early in the request).
+	 *
+	 * @return string|null Session key, or null if WC session is unavailable.
+	 */
+	private function get_checkout_session_key() {
+		if ( function_exists( 'WC' ) && WC()->session ) {
+			return WC()->session->get_customer_id() ?: null;
+		}
+		return null;
+	}
+}
