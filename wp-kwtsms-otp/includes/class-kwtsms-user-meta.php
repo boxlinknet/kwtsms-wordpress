@@ -24,6 +24,10 @@ class KwtSMS_User_Meta {
 		add_action( 'edit_user_profile', array( $this, 'render_phone_field' ) );
 		add_action( 'personal_options_update', array( $this, 'save_phone_field' ) );
 		add_action( 'edit_user_profile_update', array( $this, 'save_phone_field' ) );
+
+		add_action( 'register_form',       array( $this, 'render_registration_phone_field' ) );
+		add_filter( 'registration_errors', array( $this, 'validate_registration_phone' ), 10, 3 );
+		add_action( 'user_register',       array( $this, 'save_registration_phone' ) );
 	}
 
 	/**
@@ -191,6 +195,86 @@ class KwtSMS_User_Meta {
 				}
 			);
 			return;
+		}
+
+		update_user_meta( $user_id, 'kwtsms_phone', $normalized );
+	}
+
+	/**
+	 * Render the phone number field on the default WordPress registration form.
+	 *
+	 * The field is optional. If provided, it must be a valid international number.
+	 * Stored as kwtsms_phone user meta after successful registration.
+	 */
+	public function render_registration_phone_field() {
+		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+		?>
+		<p>
+			<label for="kwtsms_phone_reg">
+				<?php esc_html_e( 'Phone Number (optional)', 'wp-kwtsms-otp' ); ?><br />
+				<input
+					type="tel"
+					name="kwtsms_phone_reg"
+					id="kwtsms_phone_reg"
+					class="input"
+					value="<?php echo esc_attr( $phone ); ?>"
+					size="25"
+					autocomplete="tel"
+					placeholder="e.g. 96598765432"
+				/>
+			</label>
+			<span class="description">
+				<?php esc_html_e( 'Enter your phone with country code. Used for SMS verification.', 'wp-kwtsms-otp' ); ?>
+			</span>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Validate the phone field on registration.
+	 *
+	 * Called on the `registration_errors` filter.
+	 * Only validates if a non-empty phone was provided (field is optional).
+	 *
+	 * @param WP_Error $errors               Existing registration errors.
+	 * @param string   $sanitized_user_login Username.
+	 * @param string   $user_email           Email address.
+	 *
+	 * @return WP_Error
+	 */
+	public function validate_registration_phone( $errors, $sanitized_user_login, $user_email ) {
+		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+
+		if ( '' === $phone ) {
+			return $errors; // Optional field — no validation needed.
+		}
+
+		$normalized = KwtSMS_API::normalize_phone( $phone );
+		if ( is_wp_error( $normalized ) ) {
+			$errors->add( 'kwtsms_invalid_phone', $normalized->get_error_message() );
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Save the phone number from the registration form.
+	 *
+	 * Called on the `user_register` action after successful registration.
+	 * Only saves if a valid phone was submitted (it already passed validation).
+	 *
+	 * @param int $user_id Newly created user ID.
+	 */
+	public function save_registration_phone( $user_id ) {
+		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+
+		if ( '' === $phone ) {
+			return;
+		}
+
+		$normalized = KwtSMS_API::normalize_phone( $phone );
+		if ( is_wp_error( $normalized ) ) {
+			return; // Should not happen if validate_registration_phone() ran, but defensive.
 		}
 
 		update_user_meta( $user_id, 'kwtsms_phone', $normalized );
