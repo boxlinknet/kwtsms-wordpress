@@ -49,6 +49,7 @@ class KwtSMS_Admin {
 		add_action( 'wp_dashboard_setup', array( $this, 'register_dashboard_widget' ) );
 		add_action( 'wp_ajax_kwtsms_get_coverage', array( $this, 'ajax_get_coverage' ) );
 		add_action( 'wp_ajax_kwtsms_clear_log', array( $this, 'ajax_clear_log' ) );
+		add_action( 'wp_ajax_kwtsms_logout_gateway', array( $this, 'ajax_logout_gateway' ) );
 	}
 
 	// =========================================================================
@@ -573,6 +574,29 @@ class KwtSMS_Admin {
 		}
 
 		wp_send_json_success( array( 'coverage' => $coverage ) );
+	}
+
+	// =========================================================================
+	// AJAX: Logout (clear credentials_verified flag)
+	// =========================================================================
+
+	/**
+	 * AJAX: Clear credentials_verified flag (Logout).
+	 *
+	 * Security: nonce + manage_options.
+	 */
+	public function ajax_logout_gateway() {
+		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms-otp' ) ), 403 );
+		}
+
+		$gw                         = get_option( 'kwtsms_otp_gateway', array() );
+		$gw['credentials_verified'] = 0;
+		update_option( 'kwtsms_otp_gateway', $gw );
+
+		wp_send_json_success();
 	}
 
 	// =========================================================================

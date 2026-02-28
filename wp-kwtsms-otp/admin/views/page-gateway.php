@@ -17,6 +17,7 @@ $sender_id             = $gateway['sender_id'] ?? '';
 $test_mode             = ! empty( $gateway['test_mode'] );
 $test_phone            = $gateway['test_phone'] ?? '';
 $credentials_verified  = ! empty( $gateway['credentials_verified'] );
+$sender_ids            = $gateway['sender_ids'] ?? array();
 ?>
 <div class="wrap kwtsms-admin-wrap">
 
@@ -28,10 +29,20 @@ $credentials_verified  = ! empty( $gateway['credentials_verified'] );
 	</div>
 
 	<!-- Balance Display -->
+	<?php
+	$bal_available = $gateway['balance_available'] ?? null;
+	$bal_purchased = $gateway['balance_purchased'] ?? null;
+	?>
 	<div class="kwtsms-balance-card" id="kwtsms-balance-card">
 		<div class="kwtsms-balance-label"><?php esc_html_e( 'Account Balance', 'wp-kwtsms-otp' ); ?></div>
-		<div class="kwtsms-balance-value" id="kwtsms-balance">—</div>
-		<div class="kwtsms-balance-sub" id="kwtsms-balance-purchased"></div>
+		<div class="kwtsms-balance-value" id="kwtsms-balance">
+			<?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?>
+		</div>
+		<div class="kwtsms-balance-sub" id="kwtsms-balance-purchased">
+			<?php if ( null !== $bal_purchased && $bal_purchased > 0 ) : ?>
+				<?php printf( esc_html__( 'of %s purchased', 'wp-kwtsms-otp' ), esc_html( number_format( (float) $bal_purchased, 2 ) ) ); ?>
+			<?php endif; ?>
+		</div>
 	</div>
 
 	<!-- API Login Status -->
@@ -53,7 +64,7 @@ $credentials_verified  = ! empty( $gateway['credentials_verified'] );
 
 		<p class="kwtsms-signup-note">
 			<?php esc_html_e( "Don't have a kwtSMS account?", 'wp-kwtsms-otp' ); ?>
-			<a href="https://www.kwtsms.com/register/" target="_blank" rel="noopener">
+			<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener">
 				<?php esc_html_e( 'Sign up for free →', 'wp-kwtsms-otp' ); ?>
 			</a>
 		</p>
@@ -87,13 +98,25 @@ $credentials_verified  = ! empty( $gateway['credentials_verified'] );
 				<th scope="row"></th>
 				<td>
 					<div style="display:flex;align-items:center;gap:12px;">
+						<?php if ( $credentials_verified ) : ?>
+						<button type="button" id="kwtsms-login-btn" class="button button-primary" style="display:none;">
+							<?php esc_html_e( 'Login', 'wp-kwtsms-otp' ); ?>
+						</button>
+						<button type="button" id="kwtsms-logout-btn" class="button">
+							<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
+						</button>
+						<?php else : ?>
 						<button type="button" id="kwtsms-login-btn" class="button button-primary">
 							<?php esc_html_e( 'Login', 'wp-kwtsms-otp' ); ?>
 						</button>
+						<button type="button" id="kwtsms-logout-btn" class="button" style="display:none;">
+							<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
+						</button>
+						<?php endif; ?>
 						<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite">
 							<?php if ( $credentials_verified ) : ?>
 							<span style="color:#46b450;">
-								✓ <?php
+								&#x2713; <?php
 								printf(
 									/* translators: %s: API username */
 									esc_html__( 'Connected as %s', 'wp-kwtsms-otp' ),
@@ -104,7 +127,7 @@ $credentials_verified  = ! empty( $gateway['credentials_verified'] );
 							<?php endif; ?>
 						</span>
 					</div>
-					<p class="description"><?php esc_html_e( 'Verify your credentials against kwtSMS. This loads your account balance and Sender IDs, and is required before using Coverage, Reload Senders, or Send Test SMS.', 'wp-kwtsms-otp' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Verify your credentials against kwtSMS. Loads your Sender IDs, account balance, and SMS coverage.', 'wp-kwtsms-otp' ); ?></p>
 				</td>
 			</tr>
 
@@ -113,7 +136,14 @@ $credentials_verified  = ! empty( $gateway['credentials_verified'] );
 				<td>
 					<div style="display:flex;align-items:center;gap:10px;">
 						<select name="kwtsms_otp_gateway[sender_id]" id="kwtsms_sender_id">
-							<?php if ( ! empty( $sender_id ) ) : ?>
+							<?php if ( ! empty( $sender_ids ) ) : ?>
+								<?php foreach ( $sender_ids as $sid ) : ?>
+								<option value="<?php echo esc_attr( $sid ); ?>"
+									<?php selected( $sender_id, $sid ); ?>>
+									<?php echo esc_html( $sid ); ?>
+								</option>
+								<?php endforeach; ?>
+							<?php elseif ( ! empty( $sender_id ) ) : ?>
 								<option value="<?php echo esc_attr( $sender_id ); ?>" selected>
 									<?php echo esc_html( $sender_id ); ?>
 								</option>
@@ -122,7 +152,7 @@ $credentials_verified  = ! empty( $gateway['credentials_verified'] );
 							<?php endif; ?>
 						</select>
 						<button type="button" id="kwtsms-reload-senders" class="button"<?php echo $credentials_verified ? '' : ' disabled'; ?>>
-							↻ <?php esc_html_e( 'Reload', 'wp-kwtsms-otp' ); ?>
+							&#x21BB; <?php esc_html_e( 'Reload', 'wp-kwtsms-otp' ); ?>
 						</button>
 					</div>
 					<p class="description"><?php esc_html_e( 'Select the sender ID approved for your kwtSMS account.', 'wp-kwtsms-otp' ); ?></p>
@@ -136,23 +166,38 @@ $credentials_verified  = ! empty( $gateway['credentials_verified'] );
 
 		</table>
 
-		<!-- ===== SMS Coverage (tag chips — matches Allowed Countries style) ===== -->
+		<!-- Dependent sections — hidden until credentials are verified -->
+		<div id="kwtsms-verified-sections"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
+
+		<!-- ===== SMS Coverage ===== -->
 		<h2 class="title"><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms-otp' ); ?></h2>
-		<div id="kwtsms-coverage-section" aria-live="polite">
-			<p>
-				<button type="button" id="kwtsms-load-coverage" class="button"<?php echo $credentials_verified ? '' : ' disabled'; ?>>
-					<?php esc_html_e( 'Load Active Coverage', 'wp-kwtsms-otp' ); ?>
+		<div id="kwtsms-coverage-section" class="kwtsms-coverage-row" aria-live="polite">
+			<div class="kwtsms-coverage-col-left">
+				<p style="margin:0 0 8px;">
+					<?php esc_html_e( 'Countries your kwtSMS account is approved to send SMS to.', 'wp-kwtsms-otp' ); ?>
+				</p>
+				<p style="margin:0;">
+					<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener">
+						<?php esc_html_e( 'Add more countries →', 'wp-kwtsms-otp' ); ?>
+					</a>
+				</p>
+			</div>
+			<div class="kwtsms-coverage-col-right">
+				<button type="button" id="kwtsms-load-coverage" class="button">
+					&#x21BB; <?php esc_html_e( 'Refresh Coverage', 'wp-kwtsms-otp' ); ?>
 				</button>
-				<span style="margin-left:8px;color:#757575;font-size:12px;">
-					<?php esc_html_e( 'Shows the countries your kwtSMS account is approved to send SMS to. Requires Login first.', 'wp-kwtsms-otp' ); ?>
-				</span>
-			</p>
-			<div id="kwtsms-coverage-result" style="margin-top:10px;"></div>
-			<p>
-				<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener">
-					<?php esc_html_e( 'Add more countries to your coverage →', 'wp-kwtsms-otp' ); ?>
-				</a>
-			</p>
+				<div id="kwtsms-coverage-result" style="margin-top:10px;" aria-live="polite">
+					<?php
+					$saved_cov = $gateway['coverage'] ?? array();
+					if ( ! empty( $saved_cov ) ) :
+						foreach ( $saved_cov as $c ) :
+							$name = is_array( $c ) ? ( $c['name'] ?? $c['country'] ?? (string) $c ) : (string) $c;
+							echo '<span class="kwtsms-tag-chip">' . esc_html( $name ) . '</span>';
+						endforeach;
+					endif;
+					?>
+				</div>
+			</div>
 		</div>
 
 		<!-- ===== Test Mode ===== -->
@@ -206,6 +251,8 @@ $credentials_verified  = ! empty( $gateway['credentials_verified'] );
 			</tr>
 
 		</table>
+
+		</div><!-- #kwtsms-verified-sections -->
 
 		<div style="display:flex;gap:12px;margin-top:20px;align-items:center;">
 			<?php submit_button( __( 'Save Settings', 'wp-kwtsms-otp' ), 'primary kwtsms-save-btn', 'submit', false ); ?>
