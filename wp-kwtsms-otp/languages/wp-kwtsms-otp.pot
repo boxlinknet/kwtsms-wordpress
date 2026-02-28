@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the kwtsms OTP plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: wp-kwtsms-otp 1.0.0\n"
+"Project-Id-Version: wp-kwtsms-otp 1.1.0\n"
 "Report-Msgid-Bugs-To: https://www.kwtsms.com\n"
 "POT-Creation-Date: 2026-02-28 07:40+0000\n"
 "MIME-Version: 1.0\n"
@@ -716,3 +716,152 @@ msgstr ""
 msgid "Send OTP Code"
 msgstr ""
 
+
+#: includes/views/page-otp.php
+#: includes/views/page-passwordless.php
+msgid "SMS service by kwtSMS.com"
+msgstr ""
+
+#: admin/views/page-gateway.php
+msgid "Don't have a kwtSMS account?"
+msgstr ""
+
+#: admin/views/page-gateway.php
+msgid "Sign up for free →"
+msgstr ""
+
+#: admin/views/page-gateway.php
+msgid "Register or request a Sender ID at kwtSMS →"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php
+msgid "API Username appears to be a phone number. Please enter your kwtSMS API username, not your phone number. Sign up at kwtsms.com to obtain API access."
+msgstr ""
+
+#: admin/class-kwtsms-admin.php
+msgid "This looks like a phone number. Your API Username must be your kwtSMS account username — not a phone number. Sign up at kwtsms.com to obtain API credentials."
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "kwtSMS OTP — Logs"
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "Log cleared."
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "SMS History"
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "OTP Attempts"
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "Export CSV"
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "Clear Log"
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "Are you sure you want to clear this log? This cannot be undone."
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "No SMS history yet."
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "No OTP attempts logged yet."
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "Success"
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "Wrong code"
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "Expired"
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "Locked (max attempts)"
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "Rate limited"
+msgstr ""
+
+#: admin/views/page-logs.php
+msgid "⚠ Brute force"
+msgstr ""
+
+#: admin/views/page-gateway.php
+msgid "SMS Coverage"
+msgstr ""
+
+#: admin/views/page-gateway.php
+msgid "Load Active Coverage"
+msgstr ""
+
+#: admin/views/page-gateway.php
+msgid "Add more countries to your coverage →"
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "Phone & Country Settings"
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "Default Country Code"
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "Pre-selected country on login forms when GeoIP detection fails."
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "Allowed Countries"
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "— Add a country —"
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "Add"
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "Only phone numbers from these countries will be accepted for OTP. GCC countries are the default."
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "Powered-by Footer"
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "Show Referral Link"
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "Display \"SMS service by kwtSMS.com\" footer on login pages"
+msgstr ""
+
+#: admin/views/page-general.php
+msgid "The link text is fixed and cannot be customized."
+msgstr ""
+
+#: admin/class-kwtsms-admin.php
+msgid "kwtSMS Logs"
+msgstr ""
+
+#: admin/class-kwtsms-admin.php
+msgid "Logs"
+msgstr ""

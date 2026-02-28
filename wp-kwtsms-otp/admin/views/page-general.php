@@ -11,14 +11,24 @@
 defined( 'ABSPATH' ) || exit;
 
 /** @var KwtSMS_Plugin $this — plugin manager, injected by KwtSMS_Admin via include */
-$settings        = $this->plugin->settings;
-$general         = $settings->get( 'general' ) + KwtSMS_Settings::DEFAULTS['general'];
+$settings         = $this->plugin->settings;
+$general          = $settings->get( 'general' ) + KwtSMS_Settings::DEFAULTS['general'];
 $captcha_provider = $general['captcha_provider'] ?? 'none';
+$referral_link    = ! empty( $general['referral_link'] );
+$default_cc       = $general['default_country_code'] ?? 'KW';
+$allowed_iso2     = $general['allowed_countries'] ?? array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' );
+
+// Load all countries for dropdowns.
+$all_countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+// Index by ISO2 for quick lookup.
+$cc_by_iso2 = array();
+foreach ( $all_countries as $cc ) {
+	$cc_by_iso2[ $cc['iso2'] ] = $cc;
+}
 ?>
 <div class="wrap kwtsms-admin-wrap">
 	<div class="kwtsms-admin-header">
-		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtsms" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'kwtsms OTP — General Settings', 'wp-kwtsms-otp' ); ?></h1>
+		<h1><?php esc_html_e( 'kwtSMS OTP — General Settings', 'wp-kwtsms-otp' ); ?></h1>
 	</div>
 
 	<form method="post" action="options.php">
@@ -85,7 +95,7 @@ $captcha_provider = $general['captcha_provider'] ?? 'none';
 					<input type="number" name="kwtsms_otp_general[otp_expiry]" id="kwtsms_otp_expiry"
 						value="<?php echo (int) $general['otp_expiry']; ?>" min="1" max="30" class="small-text" />
 					<?php esc_html_e( 'minutes', 'wp-kwtsms-otp' ); ?>
-					<p class="description"><?php esc_html_e( 'Recommended: 3 minutes. Shorter = more secure, longer = more user-friendly.', 'wp-kwtsms-otp' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Recommended: 5 minutes. Shorter = more secure, longer = more user-friendly.', 'wp-kwtsms-otp' ); ?></p>
 				</td>
 			</tr>
 
@@ -102,9 +112,9 @@ $captcha_provider = $general['captcha_provider'] ?? 'none';
 				<th scope="row"><label for="kwtsms_resend_cooldown"><?php esc_html_e( 'Resend Cooldown', 'wp-kwtsms-otp' ); ?></label></th>
 				<td>
 					<input type="number" name="kwtsms_otp_general[resend_cooldown]" id="kwtsms_resend_cooldown"
-						value="<?php echo (int) $general['resend_cooldown']; ?>" min="30" max="300" class="small-text" />
+						value="<?php echo (int) $general['resend_cooldown']; ?>" min="30" max="600" class="small-text" />
 					<?php esc_html_e( 'seconds', 'wp-kwtsms-otp' ); ?>
-					<p class="description"><?php esc_html_e( 'Minimum time between resend requests per user. Recommended: 60 seconds.', 'wp-kwtsms-otp' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Minimum time between resend requests per user. Recommended: 120 seconds.', 'wp-kwtsms-otp' ); ?></p>
 				</td>
 			</tr>
 
@@ -172,6 +182,158 @@ $captcha_provider = $general['captcha_provider'] ?? 'none';
 
 		</table>
 
+		<!-- ===== Phone & Country Settings ===== -->
+		<h2 class="title"><?php esc_html_e( 'Phone &amp; Country Settings', 'wp-kwtsms-otp' ); ?></h2>
+		<table class="form-table" role="presentation">
+
+			<tr>
+				<th scope="row">
+					<label for="kwtsms_default_country_code"><?php esc_html_e( 'Default Country Code', 'wp-kwtsms-otp' ); ?></label>
+				</th>
+				<td>
+					<select name="kwtsms_otp_general[default_country_code]" id="kwtsms_default_country_code">
+						<?php foreach ( $all_countries as $cc ) : ?>
+						<option value="<?php echo esc_attr( $cc['iso2'] ); ?>"
+							<?php selected( $default_cc, $cc['iso2'] ); ?>>
+							<?php echo esc_html( $cc['name'] . ' (+' . $cc['dial'] . ')' ); ?>
+						</option>
+						<?php endforeach; ?>
+					</select>
+					<p class="description"><?php esc_html_e( 'Pre-selected country on login forms when GeoIP detection fails.', 'wp-kwtsms-otp' ); ?></p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Allowed Countries', 'wp-kwtsms-otp' ); ?></th>
+				<td>
+					<div id="kwtsms-allowed-countries-wrap">
+						<div id="kwtsms-allowed-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+							<?php foreach ( $allowed_iso2 as $iso2 ) : ?>
+							<?php $cc_data = $cc_by_iso2[ $iso2 ] ?? null; ?>
+							<?php if ( $cc_data ) : ?>
+							<span class="kwtsms-country-tag" style="display:inline-flex;align-items:center;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:3px 8px;font-size:13px;">
+								<?php echo esc_html( $cc_data['name'] . ' (+' . $cc_data['dial'] . ')' ); ?>
+								<button type="button" class="kwtsms-remove-country" data-iso2="<?php echo esc_attr( $iso2 ); ?>"
+									style="background:none;border:none;cursor:pointer;margin-left:6px;color:#dc3232;font-weight:bold;font-size:14px;line-height:1;" aria-label="<?php esc_attr_e( 'Remove', 'wp-kwtsms-otp' ); ?>">
+									×
+								</button>
+							</span>
+							<?php endif; ?>
+							<?php endforeach; ?>
+						</div>
+
+						<div style="display:flex;gap:8px;align-items:center;">
+							<select id="kwtsms-add-country-select">
+								<option value=""><?php esc_html_e( '— Add a country —', 'wp-kwtsms-otp' ); ?></option>
+								<?php foreach ( $all_countries as $cc ) : ?>
+								<option value="<?php echo esc_attr( $cc['iso2'] ); ?>"
+									data-dial="<?php echo esc_attr( $cc['dial'] ); ?>"
+									data-name="<?php echo esc_attr( $cc['name'] ); ?>">
+									<?php echo esc_html( $cc['name'] . ' (+' . $cc['dial'] . ')' ); ?>
+								</option>
+								<?php endforeach; ?>
+							</select>
+							<button type="button" id="kwtsms-add-country-btn" class="button">
+								<?php esc_html_e( 'Add', 'wp-kwtsms-otp' ); ?>
+							</button>
+						</div>
+
+						<!-- Hidden field stores JSON array of ISO2 codes -->
+						<input type="hidden" name="kwtsms_otp_general[allowed_countries]"
+							id="kwtsms-allowed-countries-input"
+							value="<?php echo esc_attr( wp_json_encode( $allowed_iso2 ) ); ?>" />
+					</div>
+					<p class="description">
+						<?php esc_html_e( 'Only phone numbers from these countries will be accepted for OTP. GCC countries are the default.', 'wp-kwtsms-otp' ); ?>
+					</p>
+				</td>
+			</tr>
+
+		</table>
+
+		<!-- ===== Referral Link ===== -->
+		<h2 class="title"><?php esc_html_e( 'Powered-by Footer', 'wp-kwtsms-otp' ); ?></h2>
+		<table class="form-table" role="presentation">
+
+			<tr>
+				<th scope="row"><label for="kwtsms_referral_link"><?php esc_html_e( 'Show Referral Link', 'wp-kwtsms-otp' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_general[referral_link]" id="kwtsms_referral_link"
+							value="1" <?php checked( $referral_link ); ?> />
+						<?php esc_html_e( 'Display "SMS service by kwtSMS.com" footer on login pages', 'wp-kwtsms-otp' ); ?>
+					</label>
+					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'wp-kwtsms-otp' ); ?></p>
+				</td>
+			</tr>
+
+		</table>
+
 		<?php submit_button( __( 'Save Settings', 'wp-kwtsms-otp' ), 'primary kwtsms-save-btn' ); ?>
 	</form>
 </div>
+
+<script>
+// Allowed countries tag manager
+(function() {
+	'use strict';
+	const tagsDiv   = document.getElementById('kwtsms-allowed-tags');
+	const input     = document.getElementById('kwtsms-allowed-countries-input');
+	const addSelect = document.getElementById('kwtsms-add-country-select');
+	const addBtn    = document.getElementById('kwtsms-add-country-btn');
+
+	function getIso2List() {
+		try { return JSON.parse(input.value) || []; } catch(e) { return []; }
+	}
+
+	function setIso2List(list) {
+		input.value = JSON.stringify(list);
+	}
+
+	function renderTag(iso2, dial, name) {
+		const span = document.createElement('span');
+		span.className = 'kwtsms-country-tag';
+		span.style.cssText = 'display:inline-flex;align-items:center;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:3px 8px;font-size:13px;';
+		span.dataset.iso2  = iso2;
+		span.textContent   = name + ' (+' + dial + ')';
+		const btn = document.createElement('button');
+		btn.type      = 'button';
+		btn.className = 'kwtsms-remove-country';
+		btn.dataset.iso2 = iso2;
+		btn.style.cssText = 'background:none;border:none;cursor:pointer;margin-left:6px;color:#dc3232;font-weight:bold;font-size:14px;line-height:1;';
+		btn.textContent = '×';
+		btn.addEventListener('click', function() {
+			const list = getIso2List().filter(function(c) { return c !== iso2; });
+			setIso2List(list);
+			span.remove();
+		});
+		span.appendChild(btn);
+		return span;
+	}
+
+	// Bind remove buttons on existing tags.
+	tagsDiv.querySelectorAll('.kwtsms-remove-country').forEach(function(btn) {
+		btn.addEventListener('click', function() {
+			const iso2 = btn.dataset.iso2;
+			const list = getIso2List().filter(function(c) { return c !== iso2; });
+			setIso2List(list);
+			btn.closest('.kwtsms-country-tag').remove();
+		});
+	});
+
+	// Add button.
+	addBtn.addEventListener('click', function() {
+		const opt  = addSelect.options[addSelect.selectedIndex];
+		const iso2 = opt.value;
+		const dial = opt.dataset.dial;
+		const name = opt.dataset.name;
+		if (!iso2) return;
+		const list = getIso2List();
+		if (list.indexOf(iso2) !== -1) return; // already added
+		list.push(iso2);
+		setIso2List(list);
+		tagsDiv.appendChild(renderTag(iso2, dial, name));
+		addSelect.selectedIndex = 0;
+	});
+})();
+</script>

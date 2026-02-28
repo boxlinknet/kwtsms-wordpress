@@ -1,12 +1,14 @@
 /**
- * kwtsms OTP — Admin JavaScript
+ * kwtSMS OTP — Admin JavaScript
  *
  * Handles:
  *   - CAPTCHA provider field show/hide
- *   - Save & Verify Credentials AJAX
+ *   - Save & Verify Credentials AJAX (+ coverage section reveal)
  *   - Sender ID reload
  *   - Send Test SMS AJAX
  *   - SMS template character counter + page count
+ *   - API Username phone-number detection warning
+ *   - Coverage AJAX load
  */
 
 /* global kwtSmsAdminData, jQuery */
@@ -18,6 +20,28 @@
 	const ajaxUrl = data.ajaxUrl || '';
 	const nonce   = data.nonce   || '';
 	const s       = data.strings || {};
+
+	// =========================================================================
+	// API Username — warn if it looks like a phone number
+	// =========================================================================
+
+	$( '#kwtsms_api_username' ).on( 'blur', function () {
+		const $field   = $( this );
+		const val      = $field.val().trim();
+		const $warning = $field.closest( 'td' ).find( '.kwtsms-username-warning' );
+
+		if ( /^\+?[\d\s()\-]{8,}$/.test( val ) ) {
+			if ( ! $warning.length ) {
+				$field.after(
+					'<p class="kwtsms-username-warning" style="color:#dc3232;margin-top:4px;">' +
+					( s.usernameIsPhone || 'This looks like a phone number. API Username should be your kwtSMS account username.' ) +
+					'</p>'
+				);
+			}
+		} else {
+			$warning.remove();
+		}
+	} );
 
 	// =========================================================================
 	// CAPTCHA field show/hide
@@ -84,6 +108,12 @@
 				}
 
 				$status.addClass( 'is-success' ).text( s.verified || 'Credentials verified! ✓' ).show();
+
+				// Show coverage section now that credentials are confirmed.
+				const $coverageSection = $( '#kwtsms-coverage-section' );
+				if ( $coverageSection.length ) {
+					$coverageSection.show();
+				}
 			} else {
 				const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Verification failed.' );
 				$status.addClass( 'is-error' ).text( msg ).show();
@@ -164,6 +194,54 @@
 
 	$( document ).on( 'input', '.kwtsms-sms-textarea', function () {
 		updateCharCounter( $( this ) );
+	} );
+
+	// =========================================================================
+	// Coverage load
+	// =========================================================================
+
+	$( '#kwtsms-load-coverage' ).on( 'click', function () {
+		const $btn    = $( this );
+		const $result = $( '#kwtsms-coverage-result' );
+
+		$btn.prop( 'disabled', true ).text( s.loadingCoverage || 'Loading coverage...' );
+		$result.html( '' );
+
+		$.post( ajaxUrl, {
+			action: 'kwtsms_get_coverage',
+			nonce:  nonce,
+		} )
+		.done( function ( resp ) {
+			if ( resp.success && resp.data && resp.data.coverage ) {
+				const coverage = resp.data.coverage;
+				let html = '<table class="widefat striped" style="max-width:600px;"><thead><tr>';
+				html += '<th>' + 'Country' + '</th><th>' + 'Status' + '</th>';
+				html += '</tr></thead><tbody>';
+				if ( Array.isArray( coverage ) ) {
+					coverage.forEach( function ( row ) {
+						const name   = row.country || row.name || JSON.stringify( row );
+						const status = row.status  || row.active || '—';
+						html += '<tr><td>' + $( '<span>' ).text( name ).html() + '</td><td>' + $( '<span>' ).text( String( status ) ).html() + '</td></tr>';
+					} );
+				} else {
+					// Object format: {countryCode: status}
+					Object.keys( coverage ).forEach( function ( key ) {
+						html += '<tr><td>' + $( '<span>' ).text( key ).html() + '</td><td>' + $( '<span>' ).text( String( coverage[ key ] ) ).html() + '</td></tr>';
+					} );
+				}
+				html += '</tbody></table>';
+				$result.html( html );
+			} else {
+				const msg = resp.data && resp.data.message ? resp.data.message : ( s.coverageError || 'Could not load coverage data.' );
+				$result.html( '<p style="color:#dc3232;">' + $( '<span>' ).text( msg ).html() + '</p>' );
+			}
+		} )
+		.fail( function () {
+			$result.html( '<p style="color:#dc3232;">' + ( s.coverageError || 'Network error.' ) + '</p>' );
+		} )
+		.always( function () {
+			$btn.prop( 'disabled', false ).text( 'Load Active Coverage' );
+		} );
 	} );
 
 } )( jQuery );

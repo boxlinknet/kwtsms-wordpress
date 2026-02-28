@@ -47,6 +47,8 @@ class KwtSMS_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_notices', array( $this, 'show_admin_notices' ) );
 		add_action( 'wp_dashboard_setup', array( $this, 'register_dashboard_widget' ) );
+		add_action( 'wp_ajax_kwtsms_get_coverage', array( $this, 'ajax_get_coverage' ) );
+		add_action( 'wp_ajax_kwtsms_clear_log', array( $this, 'ajax_clear_log' ) );
 	}
 
 	// =========================================================================
@@ -63,8 +65,8 @@ class KwtSMS_Admin {
 		);
 
 		$this->page_hooks[] = add_menu_page(
-			__( 'kwtsms OTP', 'wp-kwtsms-otp' ),
-			__( 'kwtsms OTP', 'wp-kwtsms-otp' ),
+			__( 'kwtSMS OTP', 'wp-kwtsms-otp' ),
+			__( 'kwtSMS OTP', 'wp-kwtsms-otp' ),
 			'manage_options',
 			'kwtsms-otp',
 			array( $this, 'render_general_page' ),
@@ -97,6 +99,15 @@ class KwtSMS_Admin {
 			'manage_options',
 			'kwtsms-otp-templates',
 			array( $this, 'render_templates_page' )
+		);
+
+		$this->page_hooks[] = add_submenu_page(
+			'kwtsms-otp',
+			__( 'kwtSMS Logs', 'wp-kwtsms-otp' ),
+			__( 'Logs', 'wp-kwtsms-otp' ),
+			'manage_options',
+			'kwtsms-otp-logs',
+			array( $this, 'render_logs_page' )
 		);
 	}
 
@@ -170,6 +181,31 @@ class KwtSMS_Admin {
 
 		$defaults = KwtSMS_Settings::DEFAULTS['general'];
 
+		// Sanitize allowed_countries: must be an array of valid ISO2 codes (2 uppercase letters).
+		$allowed_raw = $raw['allowed_countries'] ?? $defaults['allowed_countries'];
+		if ( ! is_array( $allowed_raw ) ) {
+			// Accept JSON string from hidden input.
+			$decoded = json_decode( stripslashes( (string) $allowed_raw ), true );
+			$allowed_raw = is_array( $decoded ) ? $decoded : $defaults['allowed_countries'];
+		}
+		$allowed_countries = array_values(
+			array_filter(
+				array_map( 'strtoupper', array_map( 'sanitize_text_field', $allowed_raw ) ),
+				static function( $code ) {
+					return preg_match( '/^[A-Z]{2}$/', $code );
+				}
+			)
+		);
+		if ( empty( $allowed_countries ) ) {
+			$allowed_countries = $defaults['allowed_countries'];
+		}
+
+		// Sanitize default_country_code: must be a 2-letter uppercase ISO2 code.
+		$default_cc = strtoupper( sanitize_text_field( $raw['default_country_code'] ?? $defaults['default_country_code'] ) );
+		if ( ! preg_match( '/^[A-Z]{2}$/', $default_cc ) ) {
+			$default_cc = $defaults['default_country_code'];
+		}
+
 		return array(
 			'otp_mode'             => in_array( $raw['otp_mode'] ?? '', array( '2fa', 'passwordless', 'both' ), true )
 				? $raw['otp_mode']
@@ -177,9 +213,9 @@ class KwtSMS_Admin {
 			'otp_length'           => in_array( (int) ( $raw['otp_length'] ?? 6 ), array( 4, 6 ), true )
 				? (int) $raw['otp_length']
 				: 6,
-			'otp_expiry'           => max( 1, min( 30, absint( $raw['otp_expiry'] ?? 3 ) ) ),
+			'otp_expiry'           => max( 1, min( 30, absint( $raw['otp_expiry'] ?? 5 ) ) ),
 			'max_attempts'         => max( 1, min( 10, absint( $raw['max_attempts'] ?? 3 ) ) ),
-			'resend_cooldown'      => max( 30, min( 300, absint( $raw['resend_cooldown'] ?? 60 ) ) ),
+			'resend_cooldown'      => max( 30, min( 600, absint( $raw['resend_cooldown'] ?? 120 ) ) ),
 			'login_otp'            => ! empty( $raw['login_otp'] ) ? 1 : 0,
 			'reset_otp'            => ! empty( $raw['reset_otp'] ) ? 1 : 0,
 			'captcha_provider'     => in_array( $raw['captcha_provider'] ?? '', array( 'none', 'recaptcha', 'turnstile' ), true )
@@ -189,6 +225,9 @@ class KwtSMS_Admin {
 			'recaptcha_secret_key' => sanitize_text_field( $raw['recaptcha_secret_key'] ?? '' ),
 			'turnstile_site_key'   => sanitize_text_field( $raw['turnstile_site_key'] ?? '' ),
 			'turnstile_secret_key' => sanitize_text_field( $raw['turnstile_secret_key'] ?? '' ),
+			'referral_link'        => ! empty( $raw['referral_link'] ) ? 1 : 0,
+			'default_country_code' => $default_cc,
+			'allowed_countries'    => $allowed_countries,
 		);
 	}
 
@@ -210,8 +249,19 @@ class KwtSMS_Admin {
 			$test_phone = is_wp_error( $normalized ) ? '' : $normalized;
 		}
 
+		// Warn if the API username looks like a phone number.
+		$api_username_raw = sanitize_text_field( $raw['api_username'] ?? '' );
+		if ( ! empty( $api_username_raw ) && preg_match( '/^\+?[\d\s()\-]{8,}$/', $api_username_raw ) ) {
+			add_settings_error(
+				'kwtsms_otp_gateway',
+				'phone_as_username',
+				__( 'API Username appears to be a phone number. Please enter your kwtSMS API username, not your phone number. Sign up at kwtsms.com to obtain API access.', 'wp-kwtsms-otp' ),
+				'warning'
+			);
+		}
+
 		return array(
-			'api_username' => sanitize_text_field( $raw['api_username'] ?? '' ),
+			'api_username' => $api_username_raw,
 			'api_password' => sanitize_text_field( $raw['api_password'] ?? '' ),
 			'sender_id'    => sanitize_text_field( $raw['sender_id'] ?? '' ),
 			'test_mode'    => ! empty( $raw['test_mode'] ) ? 1 : 0,
@@ -315,13 +365,16 @@ class KwtSMS_Admin {
 				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
 				'nonce'       => wp_create_nonce( 'kwtsms_admin_nonce' ),
 				'strings'     => array(
-					'verifying'  => __( 'Verifying...', 'wp-kwtsms-otp' ),
-					'verified'   => __( 'Credentials verified!', 'wp-kwtsms-otp' ),
-					'error'      => __( 'Verification failed.', 'wp-kwtsms-otp' ),
-					'sending'    => __( 'Sending...', 'wp-kwtsms-otp' ),
-					'sent'       => __( 'Test SMS sent! Check your phone.', 'wp-kwtsms-otp' ),
-					'characters' => __( 'characters', 'wp-kwtsms-otp' ),
-					'smsPages'   => __( 'SMS page(s)', 'wp-kwtsms-otp' ),
+					'verifying'      => __( 'Verifying...', 'wp-kwtsms-otp' ),
+					'verified'       => __( 'Credentials verified!', 'wp-kwtsms-otp' ),
+					'error'          => __( 'Verification failed.', 'wp-kwtsms-otp' ),
+					'sending'        => __( 'Sending...', 'wp-kwtsms-otp' ),
+					'sent'           => __( 'Test SMS sent! Check your phone.', 'wp-kwtsms-otp' ),
+					'characters'     => __( 'characters', 'wp-kwtsms-otp' ),
+					'smsPages'       => __( 'SMS page(s)', 'wp-kwtsms-otp' ),
+					'usernameIsPhone' => __( 'This looks like a phone number. Your API Username must be your kwtSMS account username — not a phone number. Sign up at kwtsms.com to obtain API credentials.', 'wp-kwtsms-otp' ),
+					'loadingCoverage' => __( 'Loading coverage...', 'wp-kwtsms-otp' ),
+					'coverageError'   => __( 'Could not load coverage data.', 'wp-kwtsms-otp' ),
 				),
 			)
 		);
@@ -354,7 +407,7 @@ class KwtSMS_Admin {
 		if ( ! is_ssl() ) {
 			printf(
 				'<div class="notice notice-warning"><p><strong>%s</strong> %s</p></div>',
-				esc_html__( 'kwtsms OTP Warning:', 'wp-kwtsms-otp' ),
+				esc_html__( 'kwtSMS OTP Warning:', 'wp-kwtsms-otp' ),
 				esc_html__( 'Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security.', 'wp-kwtsms-otp' )
 			);
 		}
@@ -365,7 +418,7 @@ class KwtSMS_Admin {
 		if ( empty( $username ) || empty( $password ) ) {
 			printf(
 				'<div class="notice notice-error"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
-				esc_html__( 'kwtsms OTP:', 'wp-kwtsms-otp' ),
+				esc_html__( 'kwtSMS OTP:', 'wp-kwtsms-otp' ),
 				esc_html__( 'API credentials are not configured. The plugin will not be able to send SMS messages.', 'wp-kwtsms-otp' ),
 				esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ),
 				esc_html__( 'Configure now →', 'wp-kwtsms-otp' )
@@ -376,7 +429,7 @@ class KwtSMS_Admin {
 		if ( $this->plugin->settings->get( 'gateway.test_mode', 1 ) ) {
 			printf(
 				'<div class="notice notice-info"><p>%s</p></div>',
-				esc_html__( 'kwtsms OTP is in Test Mode. SMS messages will be queued but not delivered. OTP codes are written to wp-content/debug.log.', 'wp-kwtsms-otp' )
+				esc_html__( 'kwtSMS OTP is in Test Mode. SMS messages will be queued but not delivered. OTP codes are written to wp-content/debug.log.', 'wp-kwtsms-otp' )
 			);
 		}
 	}
@@ -415,6 +468,69 @@ class KwtSMS_Admin {
 		include KWTSMS_OTP_DIR . 'admin/views/page-templates.php';
 	}
 
+	/**
+	 * Render the Logs page (SMS History + OTP Attempts).
+	 */
+	public function render_logs_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
+		}
+		include KWTSMS_OTP_DIR . 'admin/views/page-logs.php';
+	}
+
+	// =========================================================================
+	// AJAX: Coverage
+	// =========================================================================
+
+	/**
+	 * AJAX handler — fetch SMS coverage data.
+	 *
+	 * Security: nonce + manage_options capability.
+	 */
+	public function ajax_get_coverage() {
+		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms-otp' ) ), 403 );
+		}
+
+		$coverage = $this->plugin->api->get_coverage();
+
+		if ( is_wp_error( $coverage ) ) {
+			wp_send_json_error( array( 'message' => $coverage->get_error_message() ) );
+		}
+
+		wp_send_json_success( array( 'coverage' => $coverage ) );
+	}
+
+	// =========================================================================
+	// AJAX: Clear log
+	// =========================================================================
+
+	/**
+	 * AJAX handler — clear a named log option.
+	 *
+	 * Accepts 'log' param: 'sms_history' | 'attempt_log'.
+	 * Security: nonce + manage_options capability.
+	 */
+	public function ajax_clear_log() {
+		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms-otp' ) ), 403 );
+		}
+
+		$log_key = sanitize_key( $_POST['log'] ?? '' );
+		$allowed = array( 'sms_history', 'attempt_log' );
+
+		if ( ! in_array( $log_key, $allowed, true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid log key.', 'wp-kwtsms-otp' ) ) );
+		}
+
+		delete_option( 'kwtsms_otp_' . $log_key );
+		wp_send_json_success();
+	}
+
 	// =========================================================================
 	// Dashboard Widget
 	// =========================================================================
@@ -425,7 +541,7 @@ class KwtSMS_Admin {
 	public function register_dashboard_widget() {
 		wp_add_dashboard_widget(
 			'kwtsms_otp_dashboard_widget',
-			__( 'kwtsms OTP', 'wp-kwtsms-otp' ),
+			__( 'kwtSMS OTP', 'wp-kwtsms-otp' ),
 			array( $this, 'render_dashboard_widget' )
 		);
 	}

@@ -29,36 +29,111 @@ class KwtSMS_User_Meta {
 	/**
 	 * Render the phone number field on the user profile page.
 	 *
+	 * Displays a country-code dropdown (from allowed countries) + local number input.
+	 * The combined value (e.g. 96598765432) is stored in kwtsms_phone user meta.
+	 *
 	 * @param WP_User $user The user being edited.
 	 */
 	public function render_phone_field( WP_User $user ) {
 		$phone = get_user_meta( $user->ID, 'kwtsms_phone', true );
+
+		// Load country data.
+		$settings       = new KwtSMS_Settings();
+		$allowed_iso2   = (array) $settings->get( 'general.allowed_countries', array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ) );
+		$default_iso2   = (string) $settings->get( 'general.default_country_code', 'KW' );
+		$all_countries  = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+
+		$cc_by_iso2 = array();
+		foreach ( $all_countries as $cc ) {
+			$cc_by_iso2[ $cc['iso2'] ] = $cc;
+		}
+		$allowed_countries = array();
+		foreach ( $allowed_iso2 as $iso2 ) {
+			if ( isset( $cc_by_iso2[ $iso2 ] ) ) {
+				$allowed_countries[] = $cc_by_iso2[ $iso2 ];
+			}
+		}
+		if ( empty( $allowed_countries ) ) {
+			$allowed_countries = $all_countries;
+		}
+
+		// Determine pre-selected dial code from saved phone.
+		$selected_dial = '';
+		$local_number  = $phone;
+		if ( ! empty( $phone ) ) {
+			// Try to match the saved phone against allowed country dial codes.
+			foreach ( $allowed_countries as $cc ) {
+				if ( 0 === strpos( $phone, $cc['dial'] ) ) {
+					$selected_dial = $cc['dial'];
+					$local_number  = substr( $phone, strlen( $cc['dial'] ) );
+					break;
+				}
+			}
+		}
+
+		// Fallback: use default country dial code.
+		if ( empty( $selected_dial ) && isset( $cc_by_iso2[ $default_iso2 ] ) ) {
+			$selected_dial = $cc_by_iso2[ $default_iso2 ]['dial'];
+		}
 		?>
 		<h3><?php esc_html_e( 'SMS OTP Authentication', 'wp-kwtsms-otp' ); ?></h3>
 		<table class="form-table" role="presentation">
 			<tr>
 				<th>
-					<label for="kwtsms_phone"><?php esc_html_e( 'Phone Number (for SMS OTP)', 'wp-kwtsms-otp' ); ?></label>
+					<label for="kwtsms_local_phone"><?php esc_html_e( 'Phone Number (for SMS OTP)', 'wp-kwtsms-otp' ); ?></label>
 				</th>
 				<td>
 					<?php wp_nonce_field( 'kwtsms_save_phone_' . $user->ID, 'kwtsms_phone_nonce' ); ?>
-					<input
-						type="tel"
-						name="kwtsms_phone"
-						id="kwtsms_phone"
-						value="<?php echo esc_attr( $phone ); ?>"
-						class="regular-text"
-						placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'wp-kwtsms-otp' ); ?>"
-					/>
+
+					<div style="display:flex;gap:0;max-width:400px;">
+						<select name="kwtsms_dial_code" id="kwtsms_dial_code" style="flex:0 0 auto;">
+							<?php foreach ( $allowed_countries as $cc ) : ?>
+							<option value="<?php echo esc_attr( $cc['dial'] ); ?>"
+								<?php selected( $selected_dial, $cc['dial'] ); ?>>
+								<?php echo esc_html( $cc['name'] . ' (+' . $cc['dial'] . ')' ); ?>
+							</option>
+							<?php endforeach; ?>
+						</select>
+						<input
+							type="tel"
+							name="kwtsms_local_phone"
+							id="kwtsms_local_phone"
+							value="<?php echo esc_attr( $local_number ); ?>"
+							class="regular-text"
+							placeholder="<?php esc_attr_e( 'Local number', 'wp-kwtsms-otp' ); ?>"
+							style="flex:1;"
+						/>
+					</div>
+					<!-- Hidden combined field submitted as kwtsms_phone -->
+					<input type="hidden" name="kwtsms_phone" id="kwtsms_phone_combined" value="<?php echo esc_attr( $phone ); ?>" />
+
 					<p class="description">
-						<?php esc_html_e( 'Enter phone number with country code (e.g. 96598765432 for Kuwait). Arabic/Eastern Arabic numerals are accepted. Used to receive OTP codes for login and password reset.', 'wp-kwtsms-otp' ); ?>
+						<?php esc_html_e( 'Enter your phone number with country code. Used to receive OTP codes for login and password reset.', 'wp-kwtsms-otp' ); ?>
 					</p>
 					<?php if ( ! empty( $phone ) ) : ?>
 						<p class="description">
 							<strong><?php esc_html_e( 'Saved:', 'wp-kwtsms-otp' ); ?></strong>
-							<?php echo esc_html( $phone ); ?>
+							<code><?php echo esc_html( $phone ); ?></code>
 						</p>
 					<?php endif; ?>
+
+					<script>
+					(function() {
+						var dialSelect = document.getElementById('kwtsms_dial_code');
+						var localInput = document.getElementById('kwtsms_local_phone');
+						var combined   = document.getElementById('kwtsms_phone_combined');
+						function update() {
+							var dial  = dialSelect.value.replace(/\D/g, '');
+							var local = localInput.value.replace(/^0+/, '').replace(/\D/g, '');
+							combined.value = local ? (dial + local) : '';
+						}
+						if (dialSelect && localInput && combined) {
+							dialSelect.addEventListener('change', update);
+							localInput.addEventListener('input', update);
+							update(); // initial sync
+						}
+					})();
+					</script>
 				</td>
 			</tr>
 		</table>

@@ -19,8 +19,23 @@ defined( 'ABSPATH' ) || exit;
 
 $is_reset   = $is_reset ?? false;
 $site_name  = get_bloginfo( 'name' );
-$logo_url   = 'https://www.kwtsms.com/images/kwtsms_logo_60.png';
 $login_url  = wp_login_url();
+
+// Build site logo or site name for the header.
+$custom_logo_id = get_theme_mod( 'custom_logo' );
+if ( $custom_logo_id ) {
+	$logo_html = wp_get_attachment_image(
+		$custom_logo_id,
+		'medium',
+		false,
+		array( 'style' => 'max-height:80px;width:auto;margin-bottom:12px;' )
+	);
+} else {
+	$logo_html = '<span style="font-size:1.4em;font-weight:700;">' . esc_html( $site_name ) . '</span>';
+}
+
+// Referral link settings.
+$referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 1 ) : true;
 $page_title = $is_reset
 	? __( 'Verify Your Identity — Password Reset', 'wp-kwtsms-otp' )
 	: __( 'Enter Your Verification Code', 'wp-kwtsms-otp' );
@@ -52,7 +67,7 @@ if ( ! empty( $token ) ) {
 
 	<h1>
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( $site_name ); ?>" tabindex="-1">
-			<img src="<?php echo esc_url( $logo_url ); ?>" alt="kwtsms" style="height:60px;margin-bottom:12px;" />
+			<?php echo $logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</a>
 	</h1>
 
@@ -120,7 +135,7 @@ if ( ! empty( $token ) ) {
 					name="kwtsms_code"
 					id="kwtsms_code"
 					class="input kwtsms-code-input"
-					placeholder="<?php echo esc_attr( str_repeat( '•', $otp_length ) ); ?>"
+					placeholder="<?php echo esc_attr( str_repeat( '_', $otp_length ) ); ?>"
 					maxlength="<?php echo (int) $otp_length; ?>"
 					autofocus
 					required
@@ -161,5 +176,15 @@ if ( ! empty( $token ) ) {
 </div>
 
 <script src="<?php echo esc_url( KWTSMS_OTP_URL . 'assets/js/login.js?v=' . KWTSMS_OTP_VERSION ); ?>"></script>
+
+<?php if ( $referral_link_enabled ) :
+	$ref_url = add_query_arg( 'ref', wp_parse_url( home_url(), PHP_URL_HOST ), 'https://www.kwtsms.com/' );
+?>
+<p class="kwtsms-powered-by" style="text-align:center;font-size:11px;color:#888;margin-top:16px;">
+	<a href="<?php echo esc_url( $ref_url ); ?>" target="_blank" rel="noopener">
+		<?php esc_html_e( 'SMS service by kwtSMS.com', 'wp-kwtsms-otp' ); ?>
+	</a>
+</p>
+<?php endif; ?>
 </body>
 </html>
