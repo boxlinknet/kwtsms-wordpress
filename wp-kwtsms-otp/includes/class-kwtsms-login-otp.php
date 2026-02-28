@@ -295,19 +295,27 @@ class KwtSMS_Login_OTP {
 
 			case 'invalid':
 				$remaining = $this->plugin->otp->get_remaining_attempts( $user_id );
-				$this->render_otp_page(
-					sprintf(
-						/* translators: %d: number of remaining attempts */
-						_n(
-							'Incorrect code. %d attempt remaining.',
-							'Incorrect code. %d attempts remaining.',
-							$remaining,
-							'wp-kwtsms-otp'
+				if ( 0 === $remaining ) {
+					// Transient expired between verify() and get_remaining_attempts() — treat as expired.
+					$this->render_otp_page(
+						__( 'Your code has expired. Click "Resend" to get a new one.', 'wp-kwtsms-otp' ),
+						$token
+					);
+				} else {
+					$this->render_otp_page(
+						sprintf(
+							/* translators: %d: number of remaining attempts */
+							_n(
+								'Incorrect code. %d attempt remaining.',
+								'Incorrect code. %d attempts remaining.',
+								$remaining,
+								'wp-kwtsms-otp'
+							),
+							$remaining
 						),
-						$remaining
-					),
-					$token
-				);
+						$token
+					);
+				}
 				exit;
 
 			case 'expired':

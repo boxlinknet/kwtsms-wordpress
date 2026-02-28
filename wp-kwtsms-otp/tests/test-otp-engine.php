@@ -215,6 +215,27 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 		$this->assertSame( 0, $remaining );
 	}
 
+	public function test_get_remaining_attempts_returns_zero_when_transient_missing() {
+		// When transient is missing (expired or deleted), returns 0.
+		// The setUp mocks get_transient to return false for unknown keys.
+		$result = $this->engine->get_remaining_attempts( 99 );
+		$this->assertSame( 0, $result );
+	}
+
+	public function test_get_remaining_attempts_returns_correct_count_after_one_attempt() {
+		// Simulate 1 failed attempt out of 3 max.
+		$identifier = 12;
+		$key = 'kwtsms_otp_' . md5( (string) $identifier );
+		self::$transients[ $key ] = array(
+			'code'     => '123456',
+			'attempts' => 1,
+			'action'   => 'login',
+			'created'  => time(),
+		);
+		$result = $this->engine->get_remaining_attempts( $identifier );
+		$this->assertSame( 2, $result ); // 3 max - 1 attempt = 2 remaining
+	}
+
 	// =========================================================================
 	// Rate limiting
 	// =========================================================================
