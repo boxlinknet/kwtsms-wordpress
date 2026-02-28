@@ -129,5 +129,6 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 	</a>
 </p>
 <?php endif; ?>
+<script src="<?php echo esc_url( KWTSMS_OTP_URL . 'assets/js/login.js?v=' . KWTSMS_OTP_VERSION ); ?>"></script>
 </body>
 </html>
