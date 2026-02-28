@@ -96,9 +96,9 @@ body.login {
 }
 
 .kwtsms-code-input:focus {
-	border-color: #2271b1;
+	border-color: #FFA200 !important;
+	box-shadow: 0 0 0 2px rgba(255,162,0,0.18) !important;
 	outline: none;
-	box-shadow: 0 0 0 2px rgba(34,113,177,0.18);
 }
 
 /* =========================================================================
@@ -114,6 +114,43 @@ body.login {
 }
 
 /* =========================================================================
+   Brand colours — kwtsms orange (#FFA200)
+   Override WP default blue on our custom login pages only.
+   ========================================================================= */
+
+.login .kwtsms-btn.button-primary,
+.login input[type="submit"].kwtsms-btn {
+	background: #FFA200;
+	border-color: #e09200 #c07e00 #c07e00;
+	color: #fff;
+	box-shadow: 0 1px 0 #c07e00;
+	text-shadow: none;
+}
+
+.login .kwtsms-btn.button-primary:hover,
+.login input[type="submit"].kwtsms-btn:hover {
+	background: #e09200;
+	border-color: #b06e00;
+	color: #fff;
+}
+
+.login .kwtsms-btn.button-primary:focus,
+.login input[type="submit"].kwtsms-btn:focus {
+	border-color: #b06e00;
+	box-shadow: 0 0 0 2px rgba(255,162,0,0.25);
+	outline: none;
+}
+
+/* Resend link — brand orange */
+.kwtsms-resend-btn {
+	color: #FFA200;
+}
+
+.kwtsms-resend-btn:hover:not(:disabled) {
+	color: #c07e00;
+}
+
+/* =========================================================================
    Resend button
    ========================================================================= */
 
@@ -125,16 +162,11 @@ body.login {
 .kwtsms-resend-btn {
 	background: transparent;
 	border: none;
-	color: #2271b1;
 	cursor: pointer;
 	font-size: 14px;
 	padding: 0;
 	text-decoration: underline;
 	transition: color 0.15s;
-}
-
-.kwtsms-resend-btn:hover:not(:disabled) {
-	color: #135e96;
 }
 
 .kwtsms-resend-btn:disabled {
