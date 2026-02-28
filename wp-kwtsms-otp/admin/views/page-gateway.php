@@ -2,7 +2,7 @@
 /**
  * Admin View: Gateway Settings Page.
  *
- * API credentials, sender ID selection, SMS coverage (visible after verify),
+ * API credentials, login verification, sender ID selection, SMS coverage,
  * test mode, and gateway test SMS.
  *
  * @package KwtSMS_OTP
@@ -11,13 +11,17 @@
 defined( 'ABSPATH' ) || exit;
 
 /** @var KwtSMS_Admin $this */
-$settings   = $this->plugin->settings;
-$gateway    = $settings->get( 'gateway' ) + KwtSMS_Settings::DEFAULTS['gateway'];
-$sender_id  = $gateway['sender_id'] ?? '';
-$test_mode  = ! empty( $gateway['test_mode'] );
-$test_phone = $gateway['test_phone'] ?? '';
+$settings              = $this->plugin->settings;
+$gateway               = $settings->get( 'gateway' ) + KwtSMS_Settings::DEFAULTS['gateway'];
+$sender_id             = $gateway['sender_id'] ?? '';
+$test_mode             = ! empty( $gateway['test_mode'] );
+$test_phone            = $gateway['test_phone'] ?? '';
+$credentials_verified  = ! empty( $gateway['credentials_verified'] );
 ?>
 <div class="wrap kwtsms-admin-wrap">
+
+	<?php settings_errors(); ?>
+
 	<div class="kwtsms-admin-header">
 		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'kwtSMS OTP — Gateway Settings', 'wp-kwtsms-otp' ); ?></h1>
@@ -30,8 +34,19 @@ $test_phone = $gateway['test_phone'] ?? '';
 		<div class="kwtsms-balance-sub" id="kwtsms-balance-purchased"></div>
 	</div>
 
-	<!-- API Status -->
-	<div id="kwtsms-api-status" class="kwtsms-api-status" style="display:none;" aria-live="polite"></div>
+	<!-- API Login Status -->
+	<div id="kwtsms-api-status" class="kwtsms-api-status<?php echo $credentials_verified ? ' is-success' : ''; ?>"
+		<?php echo $credentials_verified ? '' : 'style="display:none;"'; ?> aria-live="polite">
+		<?php if ( $credentials_verified ) : ?>
+			<?php
+			printf(
+				/* translators: %s: API username */
+				esc_html__( 'Connected as %s', 'wp-kwtsms-otp' ),
+				'<strong>' . esc_html( $gateway['api_username'] ) . '</strong>'
+			);
+			?>
+		<?php endif; ?>
+	</div>
 
 	<form method="post" action="options.php" id="kwtsms-gateway-form">
 		<?php settings_fields( 'kwtsms_otp_gateway_group' ); ?>
@@ -69,6 +84,31 @@ $test_phone = $gateway['test_phone'] ?? '';
 			</tr>
 
 			<tr>
+				<th scope="row"></th>
+				<td>
+					<div style="display:flex;align-items:center;gap:12px;">
+						<button type="button" id="kwtsms-login-btn" class="button button-primary">
+							<?php esc_html_e( 'Login', 'wp-kwtsms-otp' ); ?>
+						</button>
+						<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite">
+							<?php if ( $credentials_verified ) : ?>
+							<span style="color:#46b450;">
+								✓ <?php
+								printf(
+									/* translators: %s: API username */
+									esc_html__( 'Connected as %s', 'wp-kwtsms-otp' ),
+									esc_html( $gateway['api_username'] )
+								);
+								?>
+							</span>
+							<?php endif; ?>
+						</span>
+					</div>
+					<p class="description"><?php esc_html_e( 'Verify your credentials against kwtSMS. This loads your account balance and Sender IDs, and is required before using Coverage, Reload Senders, or Send Test SMS.', 'wp-kwtsms-otp' ); ?></p>
+				</td>
+			</tr>
+
+			<tr>
 				<th scope="row"><label for="kwtsms_sender_id"><?php esc_html_e( 'Sender ID', 'wp-kwtsms-otp' ); ?></label></th>
 				<td>
 					<div style="display:flex;align-items:center;gap:10px;">
@@ -78,10 +118,10 @@ $test_phone = $gateway['test_phone'] ?? '';
 									<?php echo esc_html( $sender_id ); ?>
 								</option>
 							<?php else : ?>
-								<option value=""><?php esc_html_e( '— Save & Verify to load —', 'wp-kwtsms-otp' ); ?></option>
+								<option value=""><?php esc_html_e( '— Login to load —', 'wp-kwtsms-otp' ); ?></option>
 							<?php endif; ?>
 						</select>
-						<button type="button" id="kwtsms-reload-senders" class="button">
+						<button type="button" id="kwtsms-reload-senders" class="button"<?php echo $credentials_verified ? '' : ' disabled'; ?>>
 							↻ <?php esc_html_e( 'Reload', 'wp-kwtsms-otp' ); ?>
 						</button>
 					</div>
@@ -96,15 +136,15 @@ $test_phone = $gateway['test_phone'] ?? '';
 
 		</table>
 
-		<!-- ===== SMS Coverage (always visible — directly below Sender ID) ===== -->
+		<!-- ===== SMS Coverage (tag chips — matches Allowed Countries style) ===== -->
 		<h2 class="title"><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms-otp' ); ?></h2>
 		<div id="kwtsms-coverage-section" aria-live="polite">
 			<p>
-				<button type="button" id="kwtsms-load-coverage" class="button">
+				<button type="button" id="kwtsms-load-coverage" class="button"<?php echo $credentials_verified ? '' : ' disabled'; ?>>
 					<?php esc_html_e( 'Load Active Coverage', 'wp-kwtsms-otp' ); ?>
 				</button>
 				<span style="margin-left:8px;color:#757575;font-size:12px;">
-					<?php esc_html_e( 'Shows the countries your kwtSMS account is approved to send SMS to. Requires valid credentials.', 'wp-kwtsms-otp' ); ?>
+					<?php esc_html_e( 'Shows the countries your kwtSMS account is approved to send SMS to. Requires Login first.', 'wp-kwtsms-otp' ); ?>
 				</span>
 			</p>
 			<div id="kwtsms-coverage-result" style="margin-top:10px;"></div>
@@ -157,7 +197,7 @@ $test_phone = $gateway['test_phone'] ?? '';
 					</p>
 					<?php endif; ?>
 					<div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
-						<button type="button" id="kwtsms-send-test-sms" class="button button-primary">
+						<button type="button" id="kwtsms-send-test-sms" class="button button-primary"<?php echo $credentials_verified ? '' : ' disabled'; ?>>
 							<?php esc_html_e( 'Send Gateway Test SMS', 'wp-kwtsms-otp' ); ?>
 						</button>
 						<span id="kwtsms-test-sms-result" style="font-size:13px;line-height:1.5;" aria-live="polite"></span>

@@ -44,11 +44,12 @@ class KwtSMS_Settings {
 			'debug_logging'        => 0,          // write detailed logs to wp-content/kwtsms-debug.log
 		),
 		'gateway'   => array(
-			'api_username' => '',
-			'api_password' => '',
-			'sender_id'    => '',
-			'test_mode'    => 1,
-			'test_phone'   => '',
+			'api_username'         => '',
+			'api_password'         => '',
+			'sender_id'            => '',
+			'test_mode'            => 1,
+			'test_phone'           => '',
+			'credentials_verified' => 0,
 		),
 		'templates' => array(
 			'login_otp' => array(
