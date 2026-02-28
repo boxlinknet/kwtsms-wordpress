@@ -263,11 +263,27 @@ class KwtSMS_Plugin {
 			wp_send_json_error( array( 'message' => __( 'No phone number on this account.', 'wp-kwtsms-otp' ) ) );
 		}
 
-		// Rate limit check.
+		// Rate limit checks: per-phone, per-IP, per-account.
 		if ( $this->otp->is_rate_limited( $phone ) ) {
 			wp_send_json_error(
 				array(
 					'message'  => __( 'Too many requests. Please wait before trying again.', 'wp-kwtsms-otp' ),
+					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
+				)
+			);
+		}
+		if ( $this->otp->is_ip_rate_limited( $otp_action, $user_id, $phone ) ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'Too many requests from this location. Please wait before trying again.', 'wp-kwtsms-otp' ),
+					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
+				)
+			);
+		}
+		if ( $this->otp->is_user_rate_limited( $user_id, $otp_action, $phone ) ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'Too many requests for this account. Please wait before trying again.', 'wp-kwtsms-otp' ),
 					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 				)
 			);
@@ -288,6 +304,8 @@ class KwtSMS_Plugin {
 		}
 
 		$this->otp->increment_rate( $phone );
+		$this->otp->increment_ip_rate();
+		$this->otp->increment_user_rate( $user_id );
 
 		wp_send_json_success(
 			array(

@@ -9,6 +9,8 @@
  * Transient key schema:
  *   kwtsms_otp_{md5(identifier)}         — the OTP record
  *   kwtsms_otp_rate_{md5(phone)}         — rate-limit counter per phone
+ *   kwtsms_otp_ip_{md5(ip)}             — rate-limit counter per IP address
+ *   kwtsms_otp_acct_{md5(user_id)}      — rate-limit counter per WordPress user ID
  *   kwtsms_otp_lock_{md5(identifier)}    — lockout flag after max attempts
  *
  * @package KwtSMS_OTP
@@ -34,6 +36,34 @@ class KwtSMS_OTP_Engine {
 	 * @var int
 	 */
 	const RATE_LIMIT_WINDOW = 600;
+
+	/**
+	 * Maximum OTP send attempts per IP address per rate-limit window.
+	 *
+	 * @var int
+	 */
+	const IP_RATE_LIMIT_MAX = 10;
+
+	/**
+	 * IP rate-limit window in seconds (10 minutes).
+	 *
+	 * @var int
+	 */
+	const IP_RATE_LIMIT_WINDOW = 600;
+
+	/**
+	 * Maximum OTP send attempts per WordPress user ID per rate-limit window.
+	 *
+	 * @var int
+	 */
+	const USER_RATE_LIMIT_MAX = 5;
+
+	/**
+	 * Per-account rate-limit window in seconds (10 minutes).
+	 *
+	 * @var int
+	 */
+	const USER_RATE_LIMIT_WINDOW = 600;
 
 	/**
 	 * Settings helper.
@@ -204,6 +234,88 @@ class KwtSMS_OTP_Engine {
 			// Extend the window on each increment.
 			set_transient( $key, $count + 1, self::RATE_LIMIT_WINDOW );
 		}
+	}
+
+	/**
+	 * Check whether the current IP has exceeded the OTP send rate limit.
+	 *
+	 * Fails open (returns false) if the IP cannot be determined, so that
+	 * users behind proxies or in unusual network environments are not
+	 * incorrectly blocked.
+	 *
+	 * @param string   $action  Context: 'login'|'passwordless'|'reset'.
+	 * @param int|null $user_id User ID for logging.
+	 * @param string   $phone   Phone for logging.
+	 *
+	 * @return bool True if the IP is rate-limited.
+	 */
+	public function is_ip_rate_limited( $action = 'login', $user_id = null, $phone = '' ) {
+		$ip = $this->get_client_ip();
+		if ( '' === $ip ) {
+			return false; // Cannot determine IP — fail open.
+		}
+		$count = (int) get_transient( 'kwtsms_otp_ip_' . md5( $ip ) );
+		if ( $count >= self::IP_RATE_LIMIT_MAX ) {
+			KwtSMS_API::append_attempt_log( $user_id, $phone, $ip, $action, 'rate_limited' );
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Increment the per-IP OTP send counter.
+	 *
+	 * No-ops silently when the client IP cannot be determined.
+	 */
+	public function increment_ip_rate() {
+		$ip = $this->get_client_ip();
+		if ( '' === $ip ) {
+			return;
+		}
+		$key   = 'kwtsms_otp_ip_' . md5( $ip );
+		$count = (int) get_transient( $key );
+		set_transient( $key, $count + 1, self::IP_RATE_LIMIT_WINDOW );
+	}
+
+	/**
+	 * Check whether a user account has exceeded the OTP send rate limit.
+	 *
+	 * Only applies when $user_id is a positive integer. Guests (user_id = 0
+	 * or null) are not subject to this limit; they are covered by the per-IP
+	 * and per-phone limits instead.
+	 *
+	 * @param int      $user_id WordPress user ID.
+	 * @param string   $action  Context: 'login'|'passwordless'|'reset'.
+	 * @param string   $phone   Phone for logging.
+	 *
+	 * @return bool True if the account is rate-limited.
+	 */
+	public function is_user_rate_limited( $user_id, $action = 'login', $phone = '' ) {
+		if ( ! is_int( $user_id ) || $user_id <= 0 ) {
+			return false;
+		}
+		$count = (int) get_transient( 'kwtsms_otp_acct_' . md5( (string) $user_id ) );
+		if ( $count >= self::USER_RATE_LIMIT_MAX ) {
+			KwtSMS_API::append_attempt_log( $user_id, $phone, $this->get_client_ip(), $action, 'rate_limited' );
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Increment the per-account OTP send counter.
+	 *
+	 * No-ops silently for invalid (non-positive) user IDs.
+	 *
+	 * @param int $user_id WordPress user ID.
+	 */
+	public function increment_user_rate( $user_id ) {
+		if ( ! is_int( $user_id ) || $user_id <= 0 ) {
+			return;
+		}
+		$key   = 'kwtsms_otp_acct_' . md5( (string) $user_id );
+		$count = (int) get_transient( $key );
+		set_transient( $key, $count + 1, self::USER_RATE_LIMIT_WINDOW );
 	}
 
 	// =========================================================================
