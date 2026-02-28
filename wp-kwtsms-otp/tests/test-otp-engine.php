@@ -277,4 +277,84 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 		$msg    = $engine->build_message( '123456', 'login_otp' );
 		$this->assertStringNotContainsString( '<b>', $msg );
 	}
+
+	// =========================================================================
+	// Per-IP rate limiting
+	// =========================================================================
+
+	public function test_is_ip_rate_limited_returns_false_below_limit() {
+		$_SERVER['REMOTE_ADDR'] = '1.2.3.4';
+		// get_transient returns false → cast to int = 0, which is below the limit.
+		$result = $this->engine->is_ip_rate_limited();
+		$this->assertFalse( $result );
+	}
+
+	public function test_is_ip_rate_limited_returns_true_at_limit() {
+		$_SERVER['REMOTE_ADDR'] = '1.2.3.4';
+		// Override get_transient so the IP key returns the limit value.
+		Functions\when( 'get_transient' )->alias( function ( $key ) {
+			if ( strpos( $key, 'kwtsms_otp_ip_' ) === 0 ) {
+				return KwtSMS_OTP_Engine::IP_RATE_LIMIT_MAX;
+			}
+			return self::$transients[ $key ] ?? false;
+		} );
+		$result = $this->engine->is_ip_rate_limited();
+		$this->assertTrue( $result );
+	}
+
+	public function test_increment_ip_rate_stores_transient() {
+		$_SERVER['REMOTE_ADDR'] = '1.2.3.4';
+		$stored = array();
+		Functions\when( 'set_transient' )->alias( function ( $key, $value, $ttl = 0 ) use ( &$stored ) {
+			$stored[ $key ] = $value;
+			return true;
+		} );
+		$this->engine->increment_ip_rate();
+		$ip_key = 'kwtsms_otp_ip_' . md5( '1.2.3.4' );
+		$this->assertArrayHasKey( $ip_key, $stored );
+		$this->assertSame( 1, $stored[ $ip_key ] );
+	}
+
+	public function test_is_ip_rate_limited_returns_false_when_ip_empty() {
+		$_SERVER['REMOTE_ADDR'] = 'not-a-valid-ip';
+		$result = $this->engine->is_ip_rate_limited();
+		$this->assertFalse( $result );
+	}
+
+	// =========================================================================
+	// Per-account rate limiting
+	// =========================================================================
+
+	public function test_is_user_rate_limited_returns_false_below_limit() {
+		$result = $this->engine->is_user_rate_limited( 42 );
+		$this->assertFalse( $result );
+	}
+
+	public function test_is_user_rate_limited_returns_true_at_limit() {
+		Functions\when( 'get_transient' )->alias( function ( $key ) {
+			if ( strpos( $key, 'kwtsms_otp_acct_' ) === 0 ) {
+				return KwtSMS_OTP_Engine::USER_RATE_LIMIT_MAX;
+			}
+			return self::$transients[ $key ] ?? false;
+		} );
+		$result = $this->engine->is_user_rate_limited( 42 );
+		$this->assertTrue( $result );
+	}
+
+	public function test_is_user_rate_limited_returns_false_for_invalid_user_id() {
+		$result = $this->engine->is_user_rate_limited( 0 );
+		$this->assertFalse( $result );
+	}
+
+	public function test_increment_user_rate_stores_transient() {
+		$stored = array();
+		Functions\when( 'set_transient' )->alias( function ( $key, $value, $ttl = 0 ) use ( &$stored ) {
+			$stored[ $key ] = $value;
+			return true;
+		} );
+		$this->engine->increment_user_rate( 42 );
+		$acct_key = 'kwtsms_otp_acct_' . md5( '42' );
+		$this->assertArrayHasKey( $acct_key, $stored );
+		$this->assertSame( 1, $stored[ $acct_key ] );
+	}
 }

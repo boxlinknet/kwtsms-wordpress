@@ -90,11 +90,23 @@ class KwtSMS_Login_OTP {
 			return $user;
 		}
 
-		// Rate-limit check.
+		// Rate-limit checks: per-phone, per-IP, per-account.
 		if ( $this->plugin->otp->is_rate_limited( $phone, 'login', $user->ID ) ) {
 			return new WP_Error(
 				'kwtsms_rate_limited',
 				__( 'Too many OTP requests for this number. Please wait a few minutes before trying again.', 'wp-kwtsms-otp' )
+			);
+		}
+		if ( $this->plugin->otp->is_ip_rate_limited( 'login', $user->ID, $phone ) ) {
+			return new WP_Error(
+				'kwtsms_rate_limited',
+				__( 'Too many OTP requests from this location. Please wait a few minutes before trying again.', 'wp-kwtsms-otp' )
+			);
+		}
+		if ( $this->plugin->otp->is_user_rate_limited( $user->ID, 'login', $phone ) ) {
+			return new WP_Error(
+				'kwtsms_rate_limited',
+				__( 'Too many OTP requests for this account. Please wait a few minutes before trying again.', 'wp-kwtsms-otp' )
 			);
 		}
 
@@ -119,6 +131,8 @@ class KwtSMS_Login_OTP {
 		}
 
 		$this->plugin->otp->increment_rate( $phone );
+		$this->plugin->otp->increment_ip_rate();
+		$this->plugin->otp->increment_user_rate( $user->ID );
 
 		// Create partial auth session.
 		$token = wp_generate_password( 40, false );
@@ -378,10 +392,16 @@ class KwtSMS_Login_OTP {
 			exit;
 		}
 
-		// Rate-limit check.
+		// Rate-limit checks: per-phone and per-IP (no user_id known yet).
 		if ( $this->plugin->otp->is_rate_limited( $normalized, 'passwordless' ) ) {
 			$this->render_passwordless_page(
 				__( 'Too many requests. Please wait a few minutes before trying again.', 'wp-kwtsms-otp' )
+			);
+			exit;
+		}
+		if ( $this->plugin->otp->is_ip_rate_limited( 'passwordless', null, $normalized ) ) {
+			$this->render_passwordless_page(
+				__( 'Too many requests from this location. Please wait a few minutes before trying again.', 'wp-kwtsms-otp' )
 			);
 			exit;
 		}
@@ -406,6 +426,15 @@ class KwtSMS_Login_OTP {
 		}
 
 		$user_id = (int) $users[0];
+
+		// Per-account rate-limit check now that user_id is known.
+		if ( $this->plugin->otp->is_user_rate_limited( $user_id, 'passwordless', $normalized ) ) {
+			$this->render_passwordless_page(
+				__( 'Too many requests. Please wait a few minutes before trying again.', 'wp-kwtsms-otp' )
+			);
+			exit;
+		}
+
 		$otp_code = $this->plugin->otp->generate( $user_id, 'passwordless' );
 		$message  = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
 		$result   = $this->plugin->api->send_sms(
@@ -423,6 +452,8 @@ class KwtSMS_Login_OTP {
 		}
 
 		$this->plugin->otp->increment_rate( $normalized );
+		$this->plugin->otp->increment_ip_rate();
+		$this->plugin->otp->increment_user_rate( $user_id );
 
 		// Create partial auth session.
 		$token = wp_generate_password( 40, false );
