@@ -36,4 +36,12 @@ class Test_View_Templates extends TestCase {
 		$this->assertStringContainsString( 'KWTSMS_OTP_DISABLED', $help );
 		$this->assertStringContainsString( 'kwtsms_phone', $help );
 	}
+
+	public function test_integrations_page_contains_all_four_plugins() {
+		$source = file_get_contents( dirname( __DIR__ ) . '/admin/views/page-integrations.php' );
+		$this->assertStringContainsString( 'WooCommerce', $source );
+		$this->assertStringContainsString( 'Contact Form 7', $source );
+		$this->assertStringContainsString( 'WPForms', $source );
+		$this->assertStringContainsString( 'Elementor', $source );
+	}
 }
