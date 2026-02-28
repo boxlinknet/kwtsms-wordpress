@@ -279,7 +279,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 			</tr>
 		</thead>
 		<tbody>
-			<?php foreach ( array_reverse( $send_log ) as $entry ) : ?>
+			<?php foreach ( $send_log as $entry ) : ?>
 			<tr>
 				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $entry['time'] ?? 0 ) ); ?></td>
 				<td><?php echo esc_html( $entry['phone'] ?? '' ); ?></td>
