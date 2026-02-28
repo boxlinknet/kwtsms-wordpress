@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name:       kwtsms OTP Authentication
+ * Plugin Name:       kwtSMS OTP Authentication
  * Plugin URI:        https://www.kwtsms.com
- * Description:       Secure SMS-based OTP login and password reset for WordPress, powered by the kwtsms gateway. Supports 2FA mode, passwordless login, Google reCAPTCHA v3, and Cloudflare Turnstile. Fully multilingual (English + Arabic / RTL).
- * Version:           1.0.0
+ * Description:       Secure SMS-based OTP login and password reset for WordPress, powered by the kwtSMS gateway. Supports 2FA mode, passwordless login, Google reCAPTCHA v3, and Cloudflare Turnstile. Fully multilingual (English + Arabic / RTL).
+ * Version:           1.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            kwtsms
@@ -19,7 +19,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Plugin constants.
-define( 'KWTSMS_OTP_VERSION', '1.0.0' );
+define( 'KWTSMS_OTP_VERSION', '1.1.0' );
 define( 'KWTSMS_OTP_FILE', __FILE__ );
 define( 'KWTSMS_OTP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KWTSMS_OTP_URL', plugin_dir_url( __FILE__ ) );
@@ -72,14 +72,17 @@ function kwtsms_otp_activate() {
 		update_option(
 			'kwtsms_otp_general',
 			array(
-				'otp_mode'        => '2fa',
-				'otp_length'      => 6,
-				'otp_expiry'      => 3,
-				'max_attempts'    => 3,
-				'resend_cooldown' => 60,
-				'login_otp'       => 1,
-				'reset_otp'       => 1,
-				'captcha_provider' => 'none',
+				'otp_mode'             => '2fa',
+				'otp_length'           => 6,
+				'otp_expiry'           => 5,
+				'max_attempts'         => 3,
+				'resend_cooldown'      => 120,
+				'login_otp'            => 1,
+				'reset_otp'            => 1,
+				'captcha_provider'     => 'none',
+				'referral_link'        => 1,
+				'default_country_code' => 'KW',
+				'allowed_countries'    => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ),
 			)
 		);
 	}

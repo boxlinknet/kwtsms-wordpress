@@ -91,7 +91,7 @@ class KwtSMS_Login_OTP {
 		}
 
 		// Rate-limit check.
-		if ( $this->plugin->otp->is_rate_limited( $phone ) ) {
+		if ( $this->plugin->otp->is_rate_limited( $phone, 'login', $user->ID ) ) {
 			return new WP_Error(
 				'kwtsms_rate_limited',
 				__( 'Too many OTP requests for this number. Please wait a few minutes before trying again.', 'wp-kwtsms-otp' )
@@ -104,7 +104,8 @@ class KwtSMS_Login_OTP {
 		$result   = $this->plugin->api->send_sms(
 			$phone,
 			$this->plugin->settings->get( 'gateway.sender_id', '' ),
-			$message
+			$message,
+			'login'
 		);
 
 		if ( is_wp_error( $result ) ) {
@@ -244,10 +245,12 @@ class KwtSMS_Login_OTP {
 		}
 
 		$user_id   = absint( $partial['user_id'] );
+		$otp_action = sanitize_key( $partial['action'] ?? 'login' );
+		$otp_phone  = sanitize_text_field( $partial['phone'] ?? '' );
 		$submitted = sanitize_text_field( wp_unslash( $_POST['kwtsms_code'] ?? '' ) );
 		$submitted = preg_replace( '/\D/', '', $submitted ); // Digits only.
 
-		$result = $this->plugin->otp->verify( $user_id, $submitted );
+		$result = $this->plugin->otp->verify( $user_id, $submitted, $otp_action, $user_id, $otp_phone );
 
 		switch ( $result ) {
 			case 'valid':
@@ -356,7 +359,7 @@ class KwtSMS_Login_OTP {
 		}
 
 		// Rate-limit check.
-		if ( $this->plugin->otp->is_rate_limited( $normalized ) ) {
+		if ( $this->plugin->otp->is_rate_limited( $normalized, 'passwordless' ) ) {
 			$this->render_passwordless_page(
 				__( 'Too many requests. Please wait a few minutes before trying again.', 'wp-kwtsms-otp' )
 			);
@@ -388,7 +391,8 @@ class KwtSMS_Login_OTP {
 		$result   = $this->plugin->api->send_sms(
 			$normalized,
 			$this->plugin->settings->get( 'gateway.sender_id', '' ),
-			$message
+			$message,
+			'passwordless'
 		);
 
 		if ( is_wp_error( $result ) ) {
@@ -436,12 +440,13 @@ class KwtSMS_Login_OTP {
 	 */
 	private function render_otp_page( $error_message = '', $token = '' ) {
 		nocache_headers();
-		$token        = $token ?: $this->get_partial_auth_token();
-		$otp_length   = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
-		$cooldown     = (int) $this->plugin->settings->get( 'general.resend_cooldown', 60 );
-		$redirect_to  = sanitize_url( wp_unslash( $_GET['redirect_to'] ?? '' ) );
-		$nonce_resend = wp_create_nonce( 'kwtsms_otp_nonce' );
-		$login_url    = wp_login_url();
+		$token           = $token ?: $this->get_partial_auth_token();
+		$otp_length      = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
+		$cooldown        = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
+		$redirect_to     = sanitize_url( wp_unslash( $_GET['redirect_to'] ?? '' ) );
+		$nonce_resend    = wp_create_nonce( 'kwtsms_otp_nonce' );
+		$login_url       = wp_login_url();
+		$plugin_settings = $this->plugin->settings;
 
 		include KWTSMS_OTP_DIR . 'includes/views/page-otp.php';
 	}
@@ -454,7 +459,38 @@ class KwtSMS_Login_OTP {
 	 */
 	private function render_passwordless_page( $error_message = '', $success_message = '' ) {
 		nocache_headers();
-		$plugin_settings = $this->plugin->settings;
+		$plugin_settings  = $this->plugin->settings;
+
+		// Load country data for the dial-code dropdown.
+		$all_countries   = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+		$allowed_iso2    = (array) $plugin_settings->get( 'general.allowed_countries', array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ) );
+		$default_iso2    = (string) $plugin_settings->get( 'general.default_country_code', 'KW' );
+
+		// Filter to only allowed countries, preserving order from allowed_iso2.
+		$cc_by_iso2 = array();
+		foreach ( $all_countries as $cc ) {
+			$cc_by_iso2[ $cc['iso2'] ] = $cc;
+		}
+		$allowed_countries = array();
+		foreach ( $allowed_iso2 as $iso2 ) {
+			if ( isset( $cc_by_iso2[ $iso2 ] ) ) {
+				$allowed_countries[] = $cc_by_iso2[ $iso2 ];
+			}
+		}
+		// Fallback: if no allowed countries match, show all.
+		if ( empty( $allowed_countries ) ) {
+			$allowed_countries = $all_countries;
+		}
+
+		// GeoIP detect — pre-select visitor's country (or fall back to default).
+		$detected_iso2 = KwtSMS_GeoIP::detect_iso2() ?? $default_iso2;
+
+		// If detected country not in allowed list, fall back to default.
+		$allowed_iso2_flat = array_column( $allowed_countries, 'iso2' );
+		if ( ! in_array( $detected_iso2, $allowed_iso2_flat, true ) ) {
+			$detected_iso2 = in_array( $default_iso2, $allowed_iso2_flat, true ) ? $default_iso2 : ( $allowed_iso2_flat[0] ?? '' );
+		}
+
 		include KWTSMS_OTP_DIR . 'includes/views/page-passwordless.php';
 	}
 

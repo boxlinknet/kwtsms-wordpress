@@ -26,6 +26,8 @@ $options = array(
 	'kwtsms_otp_templates',
 	'kwtsms_otp_version',
 	'kwtsms_otp_send_log',
+	'kwtsms_otp_sms_history',
+	'kwtsms_otp_attempt_log',
 );
 
 foreach ( $options as $option ) {

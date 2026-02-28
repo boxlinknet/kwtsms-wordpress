@@ -8,6 +8,28 @@
 ( function () {
 	'use strict';
 
+	// =========================================================================
+	// Passwordless phone form — combine dial code + local number on submit.
+	// =========================================================================
+	const passwordlessForm = document.getElementById( 'kwtsms-passwordless-form' );
+	if ( passwordlessForm ) {
+		passwordlessForm.addEventListener( 'submit', function () {
+			const dialSelect   = document.getElementById( 'kwtsms_dial_code' );
+			const localInput   = document.getElementById( 'kwtsms_local_phone' );
+			const combinedInput = document.getElementById( 'kwtsms_phone_combined' );
+
+			if ( dialSelect && localInput && combinedInput ) {
+				const dial  = dialSelect.value.replace( /\D/g, '' );
+				const local = localInput.value.replace( /^0+/, '' ).replace( /\D/g, '' );
+				combinedInput.value = dial + local;
+			}
+		} );
+	}
+
+	// =========================================================================
+	// OTP page — resend countdown timer and submit handler.
+	// =========================================================================
+
 	const btn     = document.getElementById( 'kwtsms-resend-btn' );
 	const msgSpan = document.getElementById( 'kwtsms-resend-msg' );
 	const form    = document.getElementById( 'kwtsms-otp-form' );

@@ -200,7 +200,8 @@ class KwtSMS_Plugin {
 		$result   = $this->api->send_sms(
 			$phone,
 			$this->settings->get( 'gateway.sender_id', '' ),
-			$message
+			$message,
+			'login'
 		);
 
 		if ( is_wp_error( $result ) ) {
@@ -244,7 +245,8 @@ class KwtSMS_Plugin {
 		$result    = $this->api->send_sms(
 			$normalized,
 			$this->settings->get( 'gateway.sender_id', '' ),
-			$message
+			$message,
+			'test'
 		);
 
 		if ( is_wp_error( $result ) ) {
