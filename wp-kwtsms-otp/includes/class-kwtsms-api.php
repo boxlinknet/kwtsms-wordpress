@@ -490,7 +490,7 @@ class KwtSMS_API {
 			'ERR023' => __( 'Could not retrieve delivery report.', 'wp-kwtsms-otp' ),
 			'ERR024' => __( 'Your request was blocked by a security policy. Please contact the site administrator.', 'wp-kwtsms-otp' ),
 			'ERR025' => __( 'Phone number is not valid. Please enter a valid mobile number with country code.', 'wp-kwtsms-otp' ),
-			'ERR026' => __( 'No route available for this number. Please use a number with country code.', 'wp-kwtsms-otp' ),
+			'ERR026' => __( 'No SMS coverage for this destination. Please contact the site administrator.', 'wp-kwtsms-otp' ),
 			'ERR027' => __( 'Message contains unsupported characters. Please contact the site administrator.', 'wp-kwtsms-otp' ),
 			'ERR028' => __( 'Please wait at least 15 seconds before requesting another code to the same number.', 'wp-kwtsms-otp' ),
 			'ERR029' => __( 'Message not found or message ID is incorrect.', 'wp-kwtsms-otp' ),

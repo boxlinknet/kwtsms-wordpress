@@ -247,7 +247,7 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 				<tr><td>ERR003</td><td><?php esc_html_e( 'Authentication failed', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Wrong username or password. Verify at kwtsms.com.', 'wp-kwtsms-otp' ); ?></td></tr>
 				<tr><td>ERR008</td><td><?php esc_html_e( 'Sender ID not allowed', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Selected Sender ID is not approved. Choose a different one.', 'wp-kwtsms-otp' ); ?></td></tr>
 				<tr><td>ERR010/011</td><td><?php esc_html_e( 'Insufficient credits', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Top up your kwtSMS account balance.', 'wp-kwtsms-otp' ); ?></td></tr>
-				<tr><td>ERR033</td><td><?php esc_html_e( 'No SMS coverage', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Add coverage for the destination country in your kwtSMS account.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR026</td><td><?php esc_html_e( 'No SMS coverage', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Add coverage for the destination country in your kwtSMS account.', 'wp-kwtsms-otp' ); ?></td></tr>
 				<tr><td>ERR006/025</td><td><?php esc_html_e( 'Invalid phone number', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'The phone number format is wrong. Ensure country code is included.', 'wp-kwtsms-otp' ); ?></td></tr>
 			</tbody>
 		</table>
