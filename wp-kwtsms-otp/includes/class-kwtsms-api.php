@@ -616,6 +616,13 @@ class KwtSMS_API {
 	 * @param string $context Short label for the calling function.
 	 * @param string $message Log message (credentials are never logged).
 	 */
+	/**
+	 * Maximum debug log file size in bytes before rotation (1 MiB).
+	 *
+	 * @var int
+	 */
+	const DEBUG_LOG_MAX_BYTES = 1048576;
+
 	private function write_debug_log( $context, $message ) {
 		if ( ! $this->debug_mode ) {
 			return;
@@ -625,8 +632,17 @@ class KwtSMS_API {
 			return;
 		}
 
+		$log_path = WP_CONTENT_DIR . '/kwtsms-debug.log';
+
+		// Rotate when the file reaches the size limit.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_exists
+		if ( file_exists( $log_path ) && filesize( $log_path ) >= self::DEBUG_LOG_MAX_BYTES ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
+			rename( $log_path, $log_path . '.1' );
+		}
+
 		$line = '[' . date( 'Y-m-d H:i:s' ) . '] [kwtsms-otp] [' . $context . '] ' . $message . PHP_EOL; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-		file_put_contents( WP_CONTENT_DIR . '/kwtsms-debug.log', $line, FILE_APPEND );
+		file_put_contents( $log_path, $line, FILE_APPEND );
 	}
 }
