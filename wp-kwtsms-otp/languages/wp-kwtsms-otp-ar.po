@@ -1,0 +1,426 @@
+# Arabic translation for kwtsms OTP
+# Copyright (C) 2026 kwtsms
+# This file is distributed under the same license as the kwtsms OTP plugin.
+# Translators:
+# kwtsms Team <support@kwtsms.com>, 2026
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: wp-kwtsms-otp 1.0.0\n"
+"Report-Msgid-Bugs-To: https://www.kwtsms.com\n"
+"POT-Creation-Date: 2026-02-28 07:40+0000\n"
+"PO-Revision-Date: 2026-02-28 07:40+0000\n"
+"Last-Translator: kwtsms Team <support@kwtsms.com>\n"
+"Language-Team: Arabic <ar@li.org>\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"X-Generator: kwtsms-otp\n"
+"X-Domain: wp-kwtsms-otp\n"
+
+msgid "kwtsms OTP"
+msgstr "كود التحقق - كويت SMS"
+
+msgid "General Settings"
+msgstr "الإعدادات العامة"
+
+msgid "General"
+msgstr "عام"
+
+msgid "Gateway Settings"
+msgstr "إعدادات البوابة"
+
+msgid "Gateway"
+msgstr "البوابة"
+
+msgid "Templates"
+msgstr "القوالب"
+
+msgid "Two-Factor Authentication (2FA) — password + OTP"
+msgstr "المصادقة الثنائية (2FA) — كلمة المرور + رمز التحقق"
+
+msgid "Passwordless — phone + OTP only"
+msgstr "بدون كلمة مرور — رقم الهاتف + رمز التحقق فقط"
+
+msgid "Both — users can choose"
+msgstr "كلاهما — يختار المستخدم"
+
+msgid "Enable Login OTP"
+msgstr "تفعيل رمز التحقق عند تسجيل الدخول"
+
+msgid "Use SMS OTP for password reset (instead of email link)"
+msgstr "استخدام رمز التحقق عبر SMS لإعادة تعيين كلمة المرور (بدلاً من رابط البريد الإلكتروني)"
+
+msgid "OTP Code Length"
+msgstr "طول رمز التحقق"
+
+msgid "4 digits"
+msgstr "4 أرقام"
+
+msgid "6 digits (recommended)"
+msgstr "6 أرقام (موصى به)"
+
+msgid "Code Expiry"
+msgstr "انتهاء صلاحية الرمز"
+
+msgid "Max Verification Attempts"
+msgstr "الحد الأقصى لمحاولات التحقق"
+
+msgid "Resend Cooldown"
+msgstr "فترة الانتظار قبل إعادة الإرسال"
+
+msgid "seconds"
+msgstr "ثانية"
+
+msgid "minutes"
+msgstr "دقيقة"
+
+msgid "CAPTCHA Protection"
+msgstr "حماية CAPTCHA"
+
+msgid "CAPTCHA Provider"
+msgstr "مزود CAPTCHA"
+
+msgid "None"
+msgstr "بدون"
+
+msgid "Google reCAPTCHA v3 (invisible)"
+msgstr "Google reCAPTCHA v3 (غير مرئي)"
+
+msgid "Cloudflare Turnstile"
+msgstr "Cloudflare Turnstile"
+
+msgid "API Credentials"
+msgstr "بيانات الاعتماد"
+
+msgid "API Username"
+msgstr "اسم المستخدم"
+
+msgid "API Password"
+msgstr "كلمة المرور"
+
+msgid "Your kwtsms account username."
+msgstr "اسم المستخدم لحساب kwtsms."
+
+msgid "Your kwtsms account password. Stored server-side only, never exposed to the browser."
+msgstr "كلمة مرور حساب kwtsms. مخزنة من جانب الخادم فقط، لا تُعرض في المتصفح أبداً."
+
+msgid "Sender ID"
+msgstr "معرّف المرسل"
+
+msgid "— Save & Verify to load —"
+msgstr "— احفظ للتحميل —"
+
+msgid "Select the sender ID approved for your kwtsms account."
+msgstr "حدد معرّف المرسل المعتمد لحساب kwtsms الخاص بك."
+
+msgid "Test Mode"
+msgstr "وضع الاختبار"
+
+msgid "Enable Test Mode"
+msgstr "تفعيل وضع الاختبار"
+
+msgid "Test Phone"
+msgstr "رقم هاتف الاختبار"
+
+msgid "Send Test SMS Now"
+msgstr "إرسال رسالة اختبار الآن"
+
+msgid "Account Balance"
+msgstr "رصيد الحساب"
+
+msgid "Credentials verified!"
+msgstr "تم التحقق من بيانات الاعتماد!"
+
+msgid "Verification failed."
+msgstr "فشل التحقق."
+
+msgid "Login OTP"
+msgstr "رمز التحقق لتسجيل الدخول"
+
+msgid "Sent when a user requests a login OTP code."
+msgstr "يُرسل عندما يطلب المستخدم رمز التحقق لتسجيل الدخول."
+
+msgid "Welcome SMS"
+msgstr "رسالة الترحيب"
+
+msgid "Sent after a new user account is created. (Optional)"
+msgstr "يُرسل بعد إنشاء حساب مستخدم جديد. (اختياري)"
+
+msgid "Enabled"
+msgstr "مفعّل"
+
+msgid "English (LTR)"
+msgstr "الإنجليزية (يسار إلى يمين)"
+
+msgid "Arabic (RTL)"
+msgstr "العربية (يمين إلى يسار)"
+
+msgid "Available placeholders:"
+msgstr "العناصر النائبة المتاحة:"
+
+msgid "The generated OTP code"
+msgstr "رمز التحقق المُنشأ"
+
+msgid "Your WordPress site name"
+msgstr "اسم موقع WordPress الخاص بك"
+
+msgid "User display name (welcome SMS only)"
+msgstr "الاسم المعروض للمستخدم (لرسالة الترحيب فقط)"
+
+msgid "characters"
+msgstr "حرف"
+
+msgid "Enter Your Verification Code"
+msgstr "أدخل رمز التحقق الخاص بك"
+
+msgid "Verify Your Identity — Password Reset"
+msgstr "تحقق من هويتك — إعادة تعيين كلمة المرور"
+
+msgid "Two-Step Verification"
+msgstr "التحقق بخطوتين"
+
+msgid "Password Reset"
+msgstr "إعادة تعيين كلمة المرور"
+
+msgid "We sent a %d-digit code to %s"
+msgstr "لقد أرسلنا رمزاً مكوناً من %d أرقام إلى %s"
+
+msgid "Enter the %d-digit code sent to your phone."
+msgstr "أدخل الرمز المكوّن من %d أرقام المُرسل إلى هاتفك."
+
+msgid "Verification code"
+msgstr "رمز التحقق"
+
+msgid "Verify Code"
+msgstr "تحقق من الرمز"
+
+msgid "Verifying..."
+msgstr "جارٍ التحقق..."
+
+msgid "Back to login"
+msgstr "العودة إلى تسجيل الدخول"
+
+msgid "Resend code (%d)"
+msgstr "إعادة إرسال الرمز (%d)"
+
+msgid "Resend code"
+msgstr "إعادة إرسال الرمز"
+
+msgid "Login with SMS"
+msgstr "تسجيل الدخول عبر SMS"
+
+msgid "Login with SMS OTP"
+msgstr "تسجيل الدخول برمز SMS"
+
+msgid "Login with SMS — "
+msgstr "تسجيل الدخول عبر SMS — "
+
+msgid "Enter your registered phone number to receive a one-time login code."
+msgstr "أدخل رقم هاتفك المسجل لتلقي رمز تسجيل الدخول."
+
+msgid "Send OTP Code"
+msgstr "إرسال رمز التحقق"
+
+msgid "If an account is associated with this number, an OTP will be sent shortly."
+msgstr "إذا كان هناك حساب مرتبط بهذا الرقم، سيتم إرسال رمز التحقق قريباً."
+
+msgid "If your account has a phone number registered, an OTP will be sent instead of an email reset link."
+msgstr "إذا كان حسابك يحتوي على رقم هاتف مسجل، سيتم إرسال رمز التحقق بدلاً من رابط إعادة تعيين البريد الإلكتروني."
+
+msgid "A new code has been sent to your phone."
+msgstr "تم إرسال رمز جديد إلى هاتفك."
+
+msgid "Session expired. Please log in again."
+msgstr "انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى."
+
+msgid "Session expired. Please start over."
+msgstr "انتهت الجلسة. يرجى البدء من جديد."
+
+msgid "Your code has expired. Click \"Resend\" to get a new one."
+msgstr "انتهت صلاحية رمزك. انقر على \"إعادة الإرسال\" للحصول على رمز جديد."
+
+msgid "Your code has expired. Please go back and request a new one."
+msgstr "انتهت صلاحية رمزك. يرجى العودة وطلب رمز جديد."
+
+msgid "Incorrect code. %d attempt remaining."
+msgid_plural "Incorrect code. %d attempts remaining."
+msgstr[0] "رمز غير صحيح. لا محاولات متبقية."
+msgstr[1] "رمز غير صحيح. متبقية محاولة %d."
+msgstr[2] "رمز غير صحيح. متبقية محاولتان (%d)."
+msgstr[3] "رمز غير صحيح. متبقية %d محاولات."
+msgstr[4] "رمز غير صحيح. متبقية %d محاولة."
+msgstr[5] "رمز غير صحيح. متبقية %d محاولة."
+
+msgid "Too many incorrect attempts. Please log in again to request a new code."
+msgstr "محاولات خاطئة كثيرة. يرجى تسجيل الدخول مرة أخرى لطلب رمز جديد."
+
+msgid "Too many incorrect attempts. Please start the password reset process again."
+msgstr "محاولات خاطئة كثيرة. يرجى إعادة عملية إعادة تعيين كلمة المرور."
+
+msgid "Too many requests. Please wait a few minutes before trying again."
+msgstr "طلبات كثيرة جداً. يرجى الانتظار بضع دقائق قبل المحاولة مرة أخرى."
+
+msgid "Too many OTP requests for this number. Please wait a few minutes before trying again."
+msgstr "طلبات رمز تحقق كثيرة جداً لهذا الرقم. يرجى الانتظار بضع دقائق قبل المحاولة."
+
+msgid "Could not generate reset link. Please try again."
+msgstr "تعذّر إنشاء رابط إعادة التعيين. يرجى المحاولة مرة أخرى."
+
+msgid "Something went wrong. Please try again."
+msgstr "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+
+msgid "Security check failed. Please go back and try again."
+msgstr "فشل فحص الأمان. يرجى العودة والمحاولة مرة أخرى."
+
+msgid "CAPTCHA verification failed. Please try again."
+msgstr "فشل التحقق من CAPTCHA. يرجى المحاولة مرة أخرى."
+
+msgid "Too many requests. Please wait before trying again."
+msgstr "طلبات كثيرة جداً. يرجى الانتظار قبل المحاولة مرة أخرى."
+
+msgid "e.g. 96599220322"
+msgstr "مثال: 96599220322"
+
+msgid "Phone Number (for SMS OTP)"
+msgstr "رقم الهاتف (لرمز التحقق عبر SMS)"
+
+msgid "Enter phone number with country code (e.g. 96599220322 for Kuwait). Arabic/Eastern Arabic numerals are accepted. Used to receive OTP codes for login and password reset."
+msgstr "أدخل رقم الهاتف مع رمز الدولة (مثال: 96599220322 للكويت). يُقبل الأرقام العربية والأرقام العربية الشرقية. يُستخدم لاستقبال رموز التحقق عند تسجيل الدخول وإعادة تعيين كلمة المرور."
+
+msgid "Phone"
+msgstr "الهاتف"
+
+msgid "You do not have permission to access this page."
+msgstr "ليس لديك صلاحية للوصول إلى هذه الصفحة."
+
+msgid "Insufficient permissions."
+msgstr "صلاحيات غير كافية."
+
+msgid "Invalid session."
+msgstr "جلسة غير صالحة."
+
+msgid "Gateway authentication failed. Please contact the site administrator."
+msgstr "فشل مصادقة البوابة. يرجى التواصل مع مدير الموقع."
+
+msgid "Gateway configuration error. Please contact the site administrator."
+msgstr "خطأ في تهيئة البوابة. يرجى التواصل مع مدير الموقع."
+
+msgid "Could not connect to the SMS gateway. Please check your internet connection."
+msgstr "تعذّر الاتصال ببوابة SMS. يرجى التحقق من اتصالك بالإنترنت."
+
+msgid "Insufficient SMS credits. Please contact the site administrator."
+msgstr "رصيد SMS غير كافٍ. يرجى التواصل مع مدير الموقع."
+
+msgid "The configured sender ID is not allowed. Please contact the site administrator."
+msgstr "معرّف المرسل المهيّأ غير مسموح به. يرجى التواصل مع مدير الموقع."
+
+msgid "Message is too long. Please contact the site administrator."
+msgstr "الرسالة طويلة جداً. يرجى التواصل مع مدير الموقع."
+
+msgid "Message contains unsupported characters. Please contact the site administrator."
+msgstr "الرسالة تحتوي على أحرف غير مدعومة. يرجى التواصل مع مدير الموقع."
+
+msgid "Message was rejected as spam. Please contact the site administrator."
+msgstr "تم رفض الرسالة كرسالة مزعجة. يرجى التواصل مع مدير الموقع."
+
+msgid "Message is stuck in queue. Please contact the site administrator."
+msgstr "الرسالة عالقة في قائمة الانتظار. يرجى التواصل مع مدير الموقع."
+
+msgid "Your request was blocked by a security policy. Please contact the site administrator."
+msgstr "تم حظر طلبك بسبب سياسة أمان. يرجى التواصل مع مدير الموقع."
+
+msgid "Your request was flagged as suspicious. Please try again."
+msgstr "تم وضع علامة على طلبك كمشبوه. يرجى المحاولة مرة أخرى."
+
+msgid "An unexpected error occurred (%s). Please try again."
+msgstr "حدث خطأ غير متوقع (%s). يرجى المحاولة مرة أخرى."
+
+msgid "Unexpected response from SMS gateway (HTTP %d)."
+msgstr "استجابة غير متوقعة من بوابة SMS (HTTP %d)."
+
+msgid "Username and password are required."
+msgstr "اسم المستخدم وكلمة المرور مطلوبان."
+
+msgid "API credentials are not configured. The plugin will not be able to send SMS messages."
+msgstr "لم يتم تهيئة بيانات اعتماد API. لن تتمكن الإضافة من إرسال رسائل SMS."
+
+msgid "kwtsms API credentials are not configured. Please set them in Settings → kwtsms OTP → Gateway."
+msgstr "لم يتم تهيئة بيانات اعتماد kwtsms API. يرجى إدخالها في الإعدادات ← kwtsms OTP ← البوابة."
+
+msgid "Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security."
+msgstr "موقعك لا يعمل عبر HTTPS. قد يتم اعتراض رموز التحقق أثناء النقل. يرجى تفعيل SSL للأمان."
+
+msgid "kwtsms OTP is in Test Mode. SMS messages will be queued but not delivered. OTP codes are written to wp-content/debug.log."
+msgstr "إضافة kwtsms OTP في وضع الاختبار. سيتم وضع رسائل SMS في قائمة الانتظار دون إرسالها. تُكتب رموز التحقق في wp-content/debug.log."
+
+msgid "kwtsms OTP Warning:"
+msgstr "تحذير kwtsms OTP:"
+
+msgid "kwtsms OTP:"
+msgstr "kwtsms OTP:"
+
+msgid "Configure now →"
+msgstr "تهيئة الآن ←"
+
+msgid "Test SMS sent to %s. Code: %s (check debug.log if in test mode)"
+msgstr "تم إرسال SMS اختبار إلى %s. الرمز: %s (تحقق من debug.log إذا كنت في وضع الاختبار)"
+
+msgid "Test SMS sent! Check your phone."
+msgstr "تم إرسال SMS الاختبار! تحقق من هاتفك."
+
+msgid "Sending..."
+msgstr "جارٍ الإرسال..."
+
+msgid "kwtsms OTP — General Settings"
+msgstr "kwtsms OTP — الإعدادات العامة"
+
+msgid "kwtsms OTP — Gateway Settings"
+msgstr "kwtsms OTP — إعدادات البوابة"
+
+msgid "kwtsms OTP — SMS Templates"
+msgstr "kwtsms OTP — قوالب SMS"
+
+msgid "reCAPTCHA v3 Keys"
+msgstr "مفاتيح reCAPTCHA v3"
+
+msgid "Turnstile Keys"
+msgstr "مفاتيح Turnstile"
+
+msgid "Site Key"
+msgstr "مفتاح الموقع"
+
+msgid "Get keys from Google reCAPTCHA Admin Console →"
+msgstr "احصل على المفاتيح من وحدة تحكم Google reCAPTCHA ←"
+
+msgid "Get keys from Cloudflare Dashboard →"
+msgstr "احصل على المفاتيح من لوحة تحكم Cloudflare ←"
+
+msgid "Enable Password Reset OTP"
+msgstr "تفعيل رمز التحقق لإعادة تعيين كلمة المرور"
+
+msgid "Message not found."
+msgstr "الرسالة غير موجودة."
+
+msgid "Message not found or message ID is incorrect."
+msgstr "الرسالة غير موجودة أو معرّف الرسالة غير صحيح."
+
+msgid "Could not retrieve delivery report."
+msgstr "تعذّر استرداد تقرير التسليم."
+
+msgid "Delivery report is not available for this message."
+msgstr "تقرير التسليم غير متاح لهذه الرسالة."
+
+msgid "Delivery report not found."
+msgstr "تقرير التسليم غير موجود."
+
+msgid "Delivery reports are not ready yet. Please check back in 24 hours."
+msgstr "تقارير التسليم غير جاهزة بعد. يرجى التحقق مرة أخرى خلال 24 ساعة."
+
+msgid "Too many recipients. Please try again."
+msgstr "مستلمون كثيرون جداً. يرجى المحاولة مرة أخرى."
+
+msgid "Sent when a user requests a password reset via OTP."
+msgstr "يُرسل عندما يطلب المستخدم إعادة تعيين كلمة المرور عبر رمز التحقق."

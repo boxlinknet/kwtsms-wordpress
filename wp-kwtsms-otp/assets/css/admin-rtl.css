@@ -1,0 +1,57 @@
+/**
+ * kwtsms OTP — Admin Pages RTL overrides (Arabic)
+ *
+ * Applied when WordPress is configured with an RTL language (e.g. Arabic).
+ * Complements WordPress's built-in RTL admin styles.
+ *
+ * @package KwtSMS_OTP
+ */
+
+/* Plugin admin pages direction */
+.kwtsms-settings-wrap {
+	direction: rtl;
+}
+
+.kwtsms-settings-wrap .form-table th {
+	text-align: right;
+}
+
+.kwtsms-settings-wrap .description {
+	text-align: right;
+}
+
+.kwtsms-settings-wrap .notice {
+	direction: rtl;
+	text-align: right;
+}
+
+/* Balance and status badges */
+.kwtsms-balance-value,
+.kwtsms-api-status {
+	direction: ltr; /* Numbers are LTR */
+}
+
+/* Template textareas — LTR (English), RTL already set inline for Arabic */
+.kwtsms-template-en textarea {
+	direction: ltr;
+	text-align: left;
+}
+
+/* Input fields for phone numbers stay LTR */
+input[type="tel"],
+input[name*="phone"],
+input[name*="username"],
+input[name*="password"] {
+	direction: ltr;
+}
+
+/* Button alignment */
+.kwtsms-settings-wrap .submit {
+	text-align: right;
+}
+
+/* OTP log table */
+.kwtsms-otp-log th,
+.kwtsms-otp-log td {
+	text-align: right;
+}
