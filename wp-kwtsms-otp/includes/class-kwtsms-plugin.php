@@ -153,9 +153,14 @@ class KwtSMS_Plugin {
 			);
 		}
 
-		// Persist the verified state so page reload remembers login.
+		// Persist the verified state and the credentials used so that
+		// sanitize_gateway_settings() can compare them on the next form save.
+		// The password is already stored in plain text by the Settings API
+		// when saved via the form, so this is consistent with that behaviour.
 		$gw = get_option( 'kwtsms_otp_gateway', array() );
 		$gw['credentials_verified'] = 1;
+		$gw['api_username']         = $username;
+		$gw['api_password']         = $password;
 		update_option( 'kwtsms_otp_gateway', $gw );
 
 		$balance_data = is_wp_error( $balance ) ? null : $balance;
