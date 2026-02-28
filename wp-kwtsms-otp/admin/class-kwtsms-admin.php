@@ -270,12 +270,22 @@ class KwtSMS_Admin {
 			);
 		}
 
+		// Preserve credentials_verified flag only if the credentials are unchanged.
+		$current_gw          = get_option( 'kwtsms_otp_gateway', array() );
+		$api_password_raw    = sanitize_text_field( $raw['api_password'] ?? '' );
+		$creds_unchanged     = (
+			$api_username_raw === ( $current_gw['api_username'] ?? '' ) &&
+			$api_password_raw === ( $current_gw['api_password'] ?? '' )
+		);
+		$credentials_verified = $creds_unchanged ? (int) ( $current_gw['credentials_verified'] ?? 0 ) : 0;
+
 		return array(
-			'api_username' => $api_username_raw,
-			'api_password' => sanitize_text_field( $raw['api_password'] ?? '' ),
-			'sender_id'    => sanitize_text_field( $raw['sender_id'] ?? '' ),
-			'test_mode'    => ! empty( $raw['test_mode'] ) ? 1 : 0,
-			'test_phone'   => $test_phone,
+			'api_username'         => $api_username_raw,
+			'api_password'         => $api_password_raw,
+			'sender_id'            => sanitize_text_field( $raw['sender_id'] ?? '' ),
+			'test_mode'            => ! empty( $raw['test_mode'] ) ? 1 : 0,
+			'test_phone'           => $test_phone,
+			'credentials_verified' => $credentials_verified,
 		);
 	}
 
@@ -372,9 +382,10 @@ class KwtSMS_Admin {
 			'kwtsms-admin',
 			'kwtSmsAdminData',
 			array(
-				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
-				'nonce'       => wp_create_nonce( 'kwtsms_admin_nonce' ),
-				'strings'     => array(
+				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
+				'nonce'                => wp_create_nonce( 'kwtsms_admin_nonce' ),
+				'credentialsVerified'  => (bool) $this->plugin->settings->get( 'gateway.credentials_verified', false ),
+				'strings'              => array(
 					'verifying'          => __( 'Verifying...', 'wp-kwtsms-otp' ),
 					'verified'           => __( 'Credentials verified!', 'wp-kwtsms-otp' ),
 					'error'              => __( 'Verification failed.', 'wp-kwtsms-otp' ),

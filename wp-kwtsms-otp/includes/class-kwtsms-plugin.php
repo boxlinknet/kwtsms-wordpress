@@ -142,10 +142,21 @@ class KwtSMS_Plugin {
 		$balance    = $api->get_balance();
 
 		if ( is_wp_error( $sender_ids ) ) {
+			// Clear saved verified state so dependent features stay locked.
+			$gw = get_option( 'kwtsms_otp_gateway', array() );
+			if ( ! empty( $gw['credentials_verified'] ) ) {
+				$gw['credentials_verified'] = 0;
+				update_option( 'kwtsms_otp_gateway', $gw );
+			}
 			wp_send_json_error(
 				array( 'message' => $sender_ids->get_error_message() )
 			);
 		}
+
+		// Persist the verified state so page reload remembers login.
+		$gw = get_option( 'kwtsms_otp_gateway', array() );
+		$gw['credentials_verified'] = 1;
+		update_option( 'kwtsms_otp_gateway', $gw );
 
 		$balance_data = is_wp_error( $balance ) ? null : $balance;
 
