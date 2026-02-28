@@ -165,6 +165,15 @@ class KwtSMS_User_Meta {
 
 		$raw_phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone'] ?? '' ) );
 
+		// Server-side fallback for no-JS environments: combine dial code + local number.
+		if ( '' === $raw_phone ) {
+			$dial  = preg_replace( '/\D/', '', sanitize_text_field( wp_unslash( $_POST['kwtsms_dial_code'] ?? '' ) ) );
+			$local = preg_replace( '/^0+/', '', preg_replace( '/\D/', '', sanitize_text_field( wp_unslash( $_POST['kwtsms_local_phone'] ?? '' ) ) ) );
+			if ( '' !== $dial && '' !== $local ) {
+				$raw_phone = $dial . $local;
+			}
+		}
+
 		// Empty value — clear the meta.
 		if ( '' === $raw_phone ) {
 			delete_user_meta( $user_id, 'kwtsms_phone' );
