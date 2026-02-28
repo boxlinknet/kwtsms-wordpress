@@ -41,6 +41,7 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title><?php echo esc_html( __( 'Login with SMS — ', 'wp-kwtsms-otp' ) . $site_name ); ?></title>
+	<link rel="stylesheet" href="<?php echo esc_url( admin_url( '../wp-login.php' ) ); ?>" />
 	<link rel="stylesheet" href="<?php echo esc_url( KWTSMS_OTP_URL . 'assets/css/login.css?v=' . KWTSMS_OTP_VERSION ); ?>" />
 	<?php if ( is_rtl() ) : ?>
 	<link rel="stylesheet" href="<?php echo esc_url( KWTSMS_OTP_URL . 'assets/css/login-rtl.css?v=' . KWTSMS_OTP_VERSION ); ?>" />
