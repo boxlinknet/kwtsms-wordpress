@@ -1,1 +1,9 @@
 .worktrees/
+
+# Local config / secrets — never commit
+CLAUDE.md
+env.txt
+.gitignore
+
+# Planning docs (local only)
+docs/plans/
