@@ -191,6 +191,7 @@
 		const ajaxUrl = btn.dataset.ajax;
 		const nonce   = btn.dataset.nonce;
 		const token   = btn.dataset.token;
+		const context = btn.dataset.context || 'login';
 
 		if ( ! ajaxUrl ) { return; }
 
@@ -198,9 +199,10 @@
 		if ( msgSpan ) { msgSpan.textContent = ''; }
 
 		const body = new URLSearchParams( {
-			action: 'kwtsms_resend_otp',
-			nonce:  nonce,
-			token:  token,
+			action:  'kwtsms_resend_otp',
+			nonce:   nonce,
+			token:   token,
+			context: context,
 		} );
 
 		fetch( ajaxUrl, {

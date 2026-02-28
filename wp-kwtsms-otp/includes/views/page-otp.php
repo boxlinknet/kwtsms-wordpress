@@ -42,7 +42,11 @@ $page_title = $is_reset
 
 $masked_phone = '';
 if ( ! empty( $token ) ) {
-	$partial = get_transient( 'kwtsms_partial_auth_' . $token );
+	// Use the correct transient prefix depending on context (login vs. reset).
+	$transient_key = $is_reset
+		? KwtSMS_Reset_OTP::RESET_TRANSIENT_PREFIX . $token
+		: 'kwtsms_partial_auth_' . $token;
+	$partial = get_transient( $transient_key );
 	if ( $partial && ! empty( $partial['phone'] ) ) {
 		$p            = $partial['phone'];
 		$len          = strlen( $p );
@@ -154,6 +158,7 @@ if ( ! empty( $token ) ) {
 				data-cooldown="<?php echo (int) $cooldown; ?>"
 				data-ajax="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>"
 				data-token="<?php echo esc_attr( $token ?? '' ); ?>"
+				data-context="<?php echo esc_attr( $is_reset ? 'reset' : 'login' ); ?>"
 				disabled
 			>
 				<?php
