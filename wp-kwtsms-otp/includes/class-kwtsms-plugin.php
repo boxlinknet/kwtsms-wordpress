@@ -214,21 +214,46 @@ class KwtSMS_Plugin {
 	 * AJAX: resend OTP to the user's phone.
 	 *
 	 * Called from the OTP entry page when the user clicks "Resend".
+	 * Supports both login 2FA and password-reset flows by reading the
+	 * `context` POST param ('login' or 'reset') and resolving the correct
+	 * transient prefix accordingly.
+	 *
 	 * Rate limiting is enforced inside KwtSMS_OTP_Engine.
 	 */
 	public function ajax_resend_otp() {
 		check_ajax_referer( 'kwtsms_otp_nonce', 'nonce' );
 
 		$session_token = sanitize_text_field( wp_unslash( $_POST['token'] ?? '' ) );
+		$context       = sanitize_key( $_POST['context'] ?? 'login' );
+
+		// Normalise context to either 'reset' or 'login'.
+		if ( 'reset' !== $context ) {
+			$context = 'login';
+		}
 
 		if ( empty( $session_token ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid session.', 'wp-kwtsms-otp' ) ) );
 		}
 
-		// Retrieve partial auth to find the user.
-		$partial = get_transient( 'kwtsms_partial_auth_' . $session_token );
+		// Resolve transient prefix, template ID, and SMS action by context.
+		if ( 'reset' === $context ) {
+			$transient_key = KwtSMS_Reset_OTP::RESET_TRANSIENT_PREFIX . $session_token;
+			$template_id   = 'reset_otp';
+			$sms_action    = 'reset';
+			$otp_action    = 'reset';
+			$expired_msg   = __( 'Session expired. Please start the password reset process again.', 'wp-kwtsms-otp' );
+		} else {
+			$transient_key = 'kwtsms_partial_auth_' . $session_token;
+			$template_id   = 'login_otp';
+			$sms_action    = 'login';
+			$otp_action    = 'login';
+			$expired_msg   = __( 'Session expired. Please log in again.', 'wp-kwtsms-otp' );
+		}
+
+		// Retrieve session to find the user.
+		$partial = get_transient( $transient_key );
 		if ( ! $partial ) {
-			wp_send_json_error( array( 'message' => __( 'Session expired. Please log in again.', 'wp-kwtsms-otp' ) ) );
+			wp_send_json_error( array( 'message' => $expired_msg ) );
 		}
 
 		$user_id = absint( $partial['user_id'] );
@@ -249,13 +274,13 @@ class KwtSMS_Plugin {
 		}
 
 		// Generate and send new OTP.
-		$otp_code = $this->otp->generate( $user_id, 'login' );
-		$message  = $this->otp->build_message( $otp_code, 'login_otp' );
+		$otp_code = $this->otp->generate( $user_id, $otp_action );
+		$message  = $this->otp->build_message( $otp_code, $template_id );
 		$result   = $this->api->send_sms(
 			$phone,
 			$this->settings->get( 'gateway.sender_id', '' ),
 			$message,
-			'login'
+			$sms_action
 		);
 
 		if ( is_wp_error( $result ) ) {
