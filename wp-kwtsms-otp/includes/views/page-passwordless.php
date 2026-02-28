@@ -79,22 +79,55 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 			// Provide safe fallbacks if viewed directly.
 			$allowed_countries = $allowed_countries ?? array();
 			$detected_iso2     = $detected_iso2 ?? 'KW';
+
+			// Generate flag emoji from ISO2 using Unicode Regional Indicator Symbols.
+			$flag_emoji = function ( $iso2 ) {
+				$chars = array();
+				foreach ( str_split( strtoupper( $iso2 ) ) as $c ) {
+					$chars[] = mb_chr( 0x1F1E6 + ( ord( $c ) - ord( 'A' ) ), 'UTF-8' );
+				}
+				return implode( '', $chars );
+			};
+
+			// Resolve pre-selected country's dial code and flag.
+			$default_dial = '965';
+			$default_flag = $flag_emoji( 'KW' );
+			foreach ( $allowed_countries as $c ) {
+				if ( $c['iso2'] === $detected_iso2 ) {
+					$default_dial = $c['dial'];
+					$default_flag = $flag_emoji( $c['iso2'] );
+					break;
+				}
+			}
 			?>
 
-			<div class="kwtsms-phone-group" style="display:flex;gap:0;margin-bottom:10px;">
-				<select
-					name="kwtsms_dial_code"
-					id="kwtsms_dial_code"
-					class="kwtsms-dial-select input"
-					style="width:auto;flex:0 0 auto;border-right:0;border-radius:0;"
-				>
-					<?php foreach ( $allowed_countries as $c ) : ?>
-					<option value="<?php echo esc_attr( $c['dial'] ); ?>"
-						<?php selected( $c['iso2'], $detected_iso2 ); ?>>
-						<?php echo esc_html( $c['name'] . ' (+' . $c['dial'] . ')' ); ?>
-					</option>
-					<?php endforeach; ?>
-				</select>
+			<div class="kwtsms-phone-group">
+				<div class="kwtsms-dial-wrap" id="kwtsms-dial-wrap">
+					<button type="button" id="kwtsms-dial-trigger" class="kwtsms-dial-trigger"
+						aria-haspopup="listbox" aria-expanded="false">
+						<span id="kwtsms-dial-display"><?php echo esc_html( $default_flag . ' +' . $default_dial ); ?></span>
+						<span class="kwtsms-dial-arrow">&#9662;</span>
+					</button>
+					<div id="kwtsms-dial-dropdown" class="kwtsms-dial-dropdown" role="listbox" hidden>
+						<input type="text" id="kwtsms-dial-search" class="kwtsms-dial-search"
+							placeholder="<?php esc_attr_e( 'Search country...', 'wp-kwtsms-otp' ); ?>"
+							autocomplete="off" />
+						<ul id="kwtsms-dial-list">
+							<?php foreach ( $allowed_countries as $c ) : ?>
+							<li role="option"
+								data-dial="<?php echo esc_attr( $c['dial'] ); ?>"
+								data-iso2="<?php echo esc_attr( $c['iso2'] ); ?>"
+								data-name="<?php echo esc_attr( strtolower( $c['name'] ) ); ?>"
+								<?php if ( $c['iso2'] === $detected_iso2 ) : ?>class="is-focused"<?php endif; ?>>
+								<?php echo esc_html( $flag_emoji( $c['iso2'] ) . ' +' . $c['dial'] . ' ' . $c['name'] ); ?>
+							</li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+					<!-- Hidden dial code submitted with the form -->
+					<input type="hidden" name="kwtsms_dial_code" id="kwtsms_dial_code"
+						value="<?php echo esc_attr( $default_dial ); ?>" />
+				</div>
 				<input
 					type="tel"
 					name="kwtsms_local_phone"
@@ -102,7 +135,6 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 					class="input"
 					placeholder="<?php esc_attr_e( 'Local number', 'wp-kwtsms-otp' ); ?>"
 					autocomplete="tel-national"
-					style="flex:1;border-radius:0;"
 					required
 				/>
 				<!-- Hidden combined field: dial + local, submitted as kwtsms_phone -->

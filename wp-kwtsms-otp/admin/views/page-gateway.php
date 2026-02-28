@@ -2,8 +2,8 @@
 /**
  * Admin View: Gateway Settings Page.
  *
- * API credentials, sender ID selection, balance display, test mode.
- * The "Save & Verify" button triggers an AJAX credential check.
+ * API credentials, sender ID selection, SMS coverage (visible after verify),
+ * test mode, and gateway test SMS.
  *
  * @package KwtSMS_OTP
  */
@@ -19,7 +19,7 @@ $test_phone = $gateway['test_phone'] ?? '';
 ?>
 <div class="wrap kwtsms-admin-wrap">
 	<div class="kwtsms-admin-header">
-		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtsms" class="kwtsms-logo" />
+		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'kwtSMS OTP — Gateway Settings', 'wp-kwtsms-otp' ); ?></h1>
 	</div>
 
@@ -43,6 +43,7 @@ $test_phone = $gateway['test_phone'] ?? '';
 			</a>
 		</p>
 
+		<!-- ===== API Credentials ===== -->
 		<h2 class="title"><?php esc_html_e( 'API Credentials', 'wp-kwtsms-otp' ); ?></h2>
 		<table class="form-table" role="presentation">
 
@@ -53,6 +54,7 @@ $test_phone = $gateway['test_phone'] ?? '';
 						value="<?php echo esc_attr( $gateway['api_username'] ); ?>"
 						class="regular-text" autocomplete="off" />
 					<p class="description"><?php esc_html_e( 'Your kwtsms account username.', 'wp-kwtsms-otp' ); ?></p>
+					<p class="description" id="kwtsms-username-warning" style="color:#dc3232;display:none;"></p>
 				</td>
 			</tr>
 
@@ -84,16 +86,33 @@ $test_phone = $gateway['test_phone'] ?? '';
 						</button>
 					</div>
 					<p class="description"><?php esc_html_e( 'Select the sender ID approved for your kwtSMS account.', 'wp-kwtsms-otp' ); ?></p>
-				<p class="description">
-					<a href="https://www.kwtsms.com/sender-id-help.html" target="_blank" rel="noopener">
-						<?php esc_html_e( 'Register or request a Sender ID at kwtSMS →', 'wp-kwtsms-otp' ); ?>
-					</a>
-				</p>
+					<p class="description">
+						<a href="https://www.kwtsms.com/sender-id-help.html" target="_blank" rel="noopener">
+							<?php esc_html_e( 'Register or request a Sender ID at kwtSMS →', 'wp-kwtsms-otp' ); ?>
+						</a>
+					</p>
 				</td>
 			</tr>
 
 		</table>
 
+		<!-- ===== Coverage Section (hidden until credentials verified) ===== -->
+		<div id="kwtsms-coverage-section" style="display:none;" aria-live="polite">
+			<h2><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms-otp' ); ?></h2>
+			<p>
+				<button type="button" id="kwtsms-load-coverage" class="button">
+					<?php esc_html_e( 'Load Active Coverage', 'wp-kwtsms-otp' ); ?>
+				</button>
+			</p>
+			<div id="kwtsms-coverage-result" style="margin-top:10px;"></div>
+			<p>
+				<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Add more countries to your coverage →', 'wp-kwtsms-otp' ); ?>
+				</a>
+			</p>
+		</div>
+
+		<!-- ===== Test Mode ===== -->
 		<h2 class="title"><?php esc_html_e( 'Test Mode', 'wp-kwtsms-otp' ); ?></h2>
 		<table class="form-table" role="presentation">
 
@@ -105,20 +124,41 @@ $test_phone = $gateway['test_phone'] ?? '';
 							value="1" <?php checked( $test_mode ); ?> />
 						<?php esc_html_e( 'Messages are queued but not delivered. OTP codes are written to wp-content/debug.log.', 'wp-kwtsms-otp' ); ?>
 					</label>
+					<?php if ( $test_mode ) : ?>
+					<p class="description" style="color:#d63638;font-weight:600;">
+						<?php esc_html_e( '⚠ Test Mode is ON — no SMS will reach any phone.', 'wp-kwtsms-otp' ); ?>
+					</p>
+					<?php endif; ?>
 				</td>
 			</tr>
 
+		</table>
+
+		<!-- ===== Gateway Test ===== -->
+		<h2 class="title"><?php esc_html_e( 'Gateway Test', 'wp-kwtsms-otp' ); ?></h2>
+		<table class="form-table" role="presentation">
+
 			<tr>
-				<th scope="row"><label for="kwtsms_test_phone"><?php esc_html_e( 'Test Phone', 'wp-kwtsms-otp' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_test_phone"><?php esc_html_e( 'Test Phone Number', 'wp-kwtsms-otp' ); ?></label></th>
 				<td>
 					<input type="tel" name="kwtsms_otp_gateway[test_phone]" id="kwtsms_test_phone"
 						value="<?php echo esc_attr( $test_phone ); ?>"
 						class="regular-text" placeholder="<?php esc_attr_e( 'e.g. 96512345678', 'wp-kwtsms-otp' ); ?>" />
-					<p class="description"><?php esc_html_e( 'Phone number to receive test SMS. Include country code, no spaces.', 'wp-kwtsms-otp' ); ?></p>
-					<button type="button" id="kwtsms-send-test-sms" class="button" style="margin-top:8px;">
-						<?php esc_html_e( 'Send Test SMS Now', 'wp-kwtsms-otp' ); ?>
-					</button>
-					<span id="kwtsms-test-sms-result" style="margin-left:10px;" aria-live="polite"></span>
+					<?php if ( $test_mode ) : ?>
+					<p class="description">
+						<?php esc_html_e( 'Test Mode is currently ON. The SMS will be queued but will NOT be delivered to your phone. The OTP code will appear in wp-content/debug.log.', 'wp-kwtsms-otp' ); ?>
+					</p>
+					<?php else : ?>
+					<p class="description">
+						<?php esc_html_e( 'Test Mode is currently OFF. The SMS will be delivered to the phone number above. SMS credits will be consumed.', 'wp-kwtsms-otp' ); ?>
+					</p>
+					<?php endif; ?>
+					<div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+						<button type="button" id="kwtsms-send-test-sms" class="button button-primary">
+							<?php esc_html_e( 'Send Gateway Test SMS', 'wp-kwtsms-otp' ); ?>
+						</button>
+						<span id="kwtsms-test-sms-result" style="font-size:13px;line-height:1.5;" aria-live="polite"></span>
+					</div>
 				</td>
 			</tr>
 
@@ -131,23 +171,6 @@ $test_phone = $gateway['test_phone'] ?? '';
 			</button>
 		</div>
 	</form>
-
-	<!-- ===== Coverage Section (hidden until credentials verified) ===== -->
-	<div id="kwtsms-coverage-section" style="display:none;" aria-live="polite">
-		<hr style="margin:30px 0;" />
-		<h2><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms-otp' ); ?></h2>
-		<p>
-			<button type="button" id="kwtsms-load-coverage" class="button">
-				<?php esc_html_e( 'Load Active Coverage', 'wp-kwtsms-otp' ); ?>
-			</button>
-		</p>
-		<div id="kwtsms-coverage-result" style="margin-top:10px;"></div>
-		<p>
-			<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener">
-				<?php esc_html_e( 'Add more countries to your coverage →', 'wp-kwtsms-otp' ); ?>
-			</a>
-		</p>
-	</div>
 
 	<?php
 	// OTP Send Log — last 20 entries.
