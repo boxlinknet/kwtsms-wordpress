@@ -95,6 +95,32 @@ class KwtSMS_Plugin {
 
 		// AJAX handlers.
 		$this->register_ajax_handlers();
+
+		// Referral link on standard WP login page.
+		if ( $this->settings->get( 'general.referral_link', 1 ) ) {
+			add_action( 'login_footer', array( $this, 'render_login_referral' ) );
+		}
+	}
+
+	/**
+	 * Output the "SMS service by kwtSMS.com" credit on the standard WP login page footer.
+	 *
+	 * Hooked to `login_footer` when the referral_link setting is enabled.
+	 */
+	public function render_login_referral() {
+		$ref_url = add_query_arg(
+			'ref',
+			wp_parse_url( home_url(), PHP_URL_HOST ),
+			'https://www.kwtsms.com/'
+		);
+		printf(
+			'<p class="kwtsms-powered-by" style="text-align:center;color:#aaa;font-size:12px;margin-top:16px;">' .
+			'<a href="%s" target="_blank" rel="noopener" style="color:#aaa;">' .
+			'%s' .
+			'</a></p>',
+			esc_url( $ref_url ),
+			esc_html__( 'SMS service by kwtSMS.com', 'wp-kwtsms-otp' )
+		);
 	}
 
 	/**
