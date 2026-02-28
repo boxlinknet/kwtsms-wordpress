@@ -55,16 +55,25 @@ class KwtSMS_API {
 	private $test_mode;
 
 	/**
+	 * Whether detailed debug logging to file is enabled.
+	 *
+	 * @var bool
+	 */
+	private $debug_mode;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param string $username  kwtsms API username.
-	 * @param string $password  kwtsms API password.
-	 * @param bool   $test_mode Whether to use test mode.
+	 * @param string $username   kwtsms API username.
+	 * @param string $password   kwtsms API password.
+	 * @param bool   $test_mode  Whether to use test mode.
+	 * @param bool   $debug_mode Whether to write detailed debug logs to file.
 	 */
-	public function __construct( $username, $password, $test_mode = false ) {
-		$this->username  = $username;
-		$this->password  = $password;
-		$this->test_mode = (bool) $test_mode;
+	public function __construct( $username, $password, $test_mode = false, $debug_mode = false ) {
+		$this->username   = $username;
+		$this->password   = $password;
+		$this->test_mode  = (bool) $test_mode;
+		$this->debug_mode = (bool) $debug_mode;
 	}
 
 	// =========================================================================
@@ -134,6 +143,43 @@ class KwtSMS_API {
 	 * @return array{msg_id: string, balance_after: float}|WP_Error
 	 */
 	public function send_sms( $phone, $sender_id, $message, $type = 'login' ) {
+		$this->write_debug_log( 'send_sms()', "type={$type} phone={$phone} sender={$sender_id}" );
+
+		// ── Sanity checks ──────────────────────────────────────────────────────
+		if ( empty( $phone ) ) {
+			$err = new WP_Error(
+				'kwtsms_missing_phone',
+				__( 'Cannot send SMS: phone number is missing. Please check user phone in their profile.', 'wp-kwtsms-otp' )
+			);
+			$this->write_debug_log( 'send_sms()', 'ABORT: phone missing' );
+			self::append_send_log( '?', 'failed' );
+			self::append_sms_history( $phone, $message, 'failed', $type, '' );
+			return $err;
+		}
+
+		if ( empty( $message ) ) {
+			$err = new WP_Error(
+				'kwtsms_missing_message',
+				__( 'Cannot send SMS: message is empty. Please check your SMS templates in Settings → kwtSMS OTP → Templates.', 'wp-kwtsms-otp' )
+			);
+			$this->write_debug_log( 'send_sms()', 'ABORT: message empty' );
+			self::append_send_log( $phone, 'failed' );
+			self::append_sms_history( $phone, $message, 'failed', $type, '' );
+			return $err;
+		}
+
+		// In test mode: sender_id not needed for actual delivery — skip sender check.
+		if ( ! $this->test_mode && empty( $sender_id ) ) {
+			$err = new WP_Error(
+				'kwtsms_missing_sender_id',
+				__( 'Cannot send SMS: no Sender ID configured. Go to Settings → kwtSMS OTP → Gateway, save your credentials, then choose a Sender ID from the dropdown.', 'wp-kwtsms-otp' )
+			);
+			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty (live mode)' );
+			self::append_send_log( $phone, 'failed' );
+			self::append_sms_history( $phone, $message, 'failed', $type, '' );
+			return $err;
+		}
+
 		$payload = array(
 			'sender'  => $sender_id,
 			'mobile'  => $phone,
@@ -157,6 +203,7 @@ class KwtSMS_API {
 				'msg_id'        => $test_msg_id,
 				'balance_after' => 0.0,
 			);
+			$this->write_debug_log( 'send_sms()', "TEST mode — mock sent, msg_id={$test_msg_id}" );
 			self::append_send_log( $phone, 'sent' );
 			self::append_sms_history( $phone, $message, 'sent', $type, $test_msg_id );
 			return $result;
@@ -165,12 +212,14 @@ class KwtSMS_API {
 		$response = $this->request( 'send/', $payload );
 
 		if ( is_wp_error( $response ) ) {
+			$this->write_debug_log( 'send_sms()', 'FAILED: ' . $response->get_error_message() );
 			self::append_send_log( $phone, 'failed' );
 			self::append_sms_history( $phone, $message, 'failed', $type, '' );
 			return $response;
 		}
 
 		$msg_id = sanitize_text_field( $response['msg-id'] ?? '' );
+		$this->write_debug_log( 'send_sms()', "SUCCESS: msg-id={$msg_id}" );
 		self::append_send_log( $phone, 'sent' );
 		self::append_sms_history( $phone, $message, 'sent', $type, $msg_id );
 		return array(
@@ -237,15 +286,11 @@ class KwtSMS_API {
 			$log = array();
 		}
 
-		// Mask the phone: keep first digits, replace last 4 with ****.
-		$len    = strlen( $phone );
-		$masked = substr( $phone, 0, max( 0, $len - 4 ) ) . '****';
-
 		array_unshift(
 			$log,
 			array(
 				'time'   => time(),
-				'phone'  => $masked,
+				'phone'  => sanitize_text_field( $phone ), // full phone — admin-only view
 				'status' => $status,
 			)
 		);
@@ -457,10 +502,12 @@ class KwtSMS_API {
 	 */
 	private function request( $endpoint, array $payload ) {
 		if ( empty( $this->username ) || empty( $this->password ) ) {
-			return new WP_Error(
+			$err = new WP_Error(
 				'kwtsms_no_credentials',
-				__( 'kwtSMS API credentials are not configured. Please set them in Settings → kwtSMS OTP → Gateway.', 'wp-kwtsms-otp' )
+				__( 'kwtSMS API credentials are not configured. Please go to Settings → kwtSMS OTP → Gateway and enter your API username and password.', 'wp-kwtsms-otp' )
 			);
+			$this->write_debug_log( "request({$endpoint})", 'ABORT: credentials missing (username or password empty)' );
+			return $err;
 		}
 
 		// Credentials go in the body, never in the URL.
@@ -473,6 +520,10 @@ class KwtSMS_API {
 		);
 
 		$url = self::BASE_URL . ltrim( $endpoint, '/' );
+
+		// Log request (mask password in log).
+		$log_payload = $payload;
+		$this->write_debug_log( "request({$endpoint})", 'POST ' . $url . ' payload=' . wp_json_encode( $log_payload ) );
 
 		$response = wp_remote_post(
 			$url,
@@ -489,34 +540,73 @@ class KwtSMS_API {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return new WP_Error(
+			$err = new WP_Error(
 				'kwtsms_http_error',
 				__( 'Could not connect to the SMS gateway. Please check your internet connection.', 'wp-kwtsms-otp' )
 			);
+			$this->write_debug_log( "request({$endpoint})", 'HTTP error: ' . $response->get_error_message() );
+			return $err;
 		}
 
 		$http_code = wp_remote_retrieve_response_code( $response );
 		$raw_body  = wp_remote_retrieve_body( $response );
 
+		$this->write_debug_log( "request({$endpoint})", "HTTP {$http_code} response: {$raw_body}" );
+
 		$data = json_decode( $raw_body, true );
 
 		if ( null === $data ) {
-			return new WP_Error(
+			$err = new WP_Error(
 				'kwtsms_invalid_response',
-				/* translators: %d: HTTP status code */ sprintf( __( 'Unexpected response from SMS gateway (HTTP %d).', 'wp-kwtsms-otp' ), (int) $http_code )
+				/* translators: %d: HTTP status code */ sprintf( __( 'Unexpected response from SMS gateway (HTTP %d). This may indicate a server-side issue at kwtsms.com.', 'wp-kwtsms-otp' ), (int) $http_code )
 			);
+			$this->write_debug_log( "request({$endpoint})", "JSON decode failed. Raw: {$raw_body}" );
+			return $err;
 		}
 
 		// API returns {"result":"ERROR","code":"ERRxxx","description":"..."} on failure.
 		if ( isset( $data['result'] ) && 'ERROR' === $data['result'] ) {
 			$error_code = $data['code'] ?? 'UNKNOWN';
+			$description = $data['description'] ?? '';
+			$this->write_debug_log(
+				"request({$endpoint})",
+				"API ERROR: code={$error_code} description={$description} — this usually means wrong credentials, no Sender ID, or no credits."
+			);
 			return new WP_Error(
 				'kwtsms_api_error_' . strtolower( $error_code ),
 				self::map_error_code( $error_code ),
-				array( 'api_code' => $error_code )
+				array( 'api_code' => $error_code, 'description' => $description )
 			);
 		}
 
+		$this->write_debug_log( "request({$endpoint})", 'SUCCESS result=' . wp_json_encode( $data ) );
 		return $data;
+	}
+
+	// =========================================================================
+	// Debug logging
+	// =========================================================================
+
+	/**
+	 * Write a timestamped entry to the kwtsms debug log file.
+	 *
+	 * Only writes if debug_mode is enabled (admin setting: General → Debug Logging).
+	 * Log file: wp-content/kwtsms-debug.log
+	 *
+	 * @param string $context Short label for the calling function.
+	 * @param string $message Log message (credentials are never logged).
+	 */
+	private function write_debug_log( $context, $message ) {
+		if ( ! $this->debug_mode ) {
+			return;
+		}
+
+		if ( ! defined( 'WP_CONTENT_DIR' ) ) {
+			return;
+		}
+
+		$line = '[' . date( 'Y-m-d H:i:s' ) . '] [kwtsms-otp] [' . $context . '] ' . $message . PHP_EOL; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		file_put_contents( WP_CONTENT_DIR . '/kwtsms-debug.log', $line, FILE_APPEND );
 	}
 }

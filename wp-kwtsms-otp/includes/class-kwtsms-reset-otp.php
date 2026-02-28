@@ -215,9 +215,28 @@ class KwtSMS_Reset_OTP {
 			exit;
 		}
 
-		$user_id   = absint( $session['user_id'] );
-		$submitted = preg_replace( '/\D/', '', sanitize_text_field( wp_unslash( $_POST['kwtsms_code'] ?? '' ) ) );
-		$result    = $this->plugin->otp->verify( $user_id, $submitted );
+		$user_id         = absint( $session['user_id'] );
+		$reset_phone     = sanitize_text_field( $session['phone'] ?? '' );
+		$raw_code        = sanitize_text_field( wp_unslash( $_POST['kwtsms_code'] ?? '' ) );
+		$submitted       = preg_replace( '/\D/', '', $raw_code ); // Digits only.
+		$expected_length = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
+		$ip              = filter_var( $_SERVER['REMOTE_ADDR'] ?? '', FILTER_VALIDATE_IP ) ? ( $_SERVER['REMOTE_ADDR'] ?? '' ) : '';
+
+		// Detect and log suspicious input.
+		$is_suspicious = ( strlen( $raw_code ) > 0 && strlen( $raw_code ) !== strlen( $submitted ) )
+			|| ( strlen( $raw_code ) > $expected_length + 4 );
+
+		if ( $is_suspicious ) {
+			KwtSMS_API::append_attempt_log( $user_id, $reset_phone, $ip, 'reset', 'invalid_input' );
+		}
+
+		// Empty code.
+		if ( '' === $submitted ) {
+			$this->render_reset_otp_page( __( 'Please enter your verification code.', 'wp-kwtsms-otp' ) );
+			exit;
+		}
+
+		$result = $this->plugin->otp->verify( $user_id, $submitted, 'reset', $user_id, $reset_phone );
 
 		switch ( $result ) {
 			case 'valid':

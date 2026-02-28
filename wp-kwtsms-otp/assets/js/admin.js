@@ -21,6 +21,10 @@
 	const nonce   = data.nonce   || '';
 	const s       = data.strings || {};
 
+	// Track whether credentials have been verified in this page session.
+	// Set to true after a successful "Save & Verify" response.
+	let credentialsVerified = false;
+
 	// =========================================================================
 	// API Username — warn if it looks like a phone number
 	// =========================================================================
@@ -62,18 +66,26 @@
 
 	$( '#kwtsms-verify-btn, #kwtsms-reload-senders' ).on( 'click', function () {
 		const $btn    = $( this );
+		const isReload = $btn.attr( 'id' ) === 'kwtsms-reload-senders';
 		const $status = $( '#kwtsms-api-status' );
 		const $balance = $( '#kwtsms-balance' );
 		const $balanceSub = $( '#kwtsms-balance-purchased' );
 		const $senderSelect = $( '#kwtsms_sender_id' );
-		const username = $( '#kwtsms_api_username' ).val();
-		const password = $( '#kwtsms_api_password' ).val();
+		const username = $( '#kwtsms_api_username' ).val().trim();
+		const password = $( '#kwtsms_api_password' ).val().trim();
 
 		if ( ! username || ! password ) {
 			$status.removeClass( 'is-success' ).addClass( 'is-error' )
-				.text( 'Please enter your API username and password.' )
+				.text( s.credentialsMissing || 'Please enter your API username and password first, then click Save Settings before reloading.' )
 				.show();
 			return;
+		}
+
+		// Reload Senders requires that credentials were verified in this session
+		// (or are already saved). Warn but still allow if they just want to try.
+		if ( isReload && ! credentialsVerified ) {
+			const savedUser = $btn.closest( 'form' ).find( '#kwtsms_api_username' ).data( 'saved-value' ) || username;
+			// Allow proceed — the AJAX call will fail with a clear error if credentials are wrong.
 		}
 
 		$btn.prop( 'disabled', true ).text( s.verifying || 'Verifying...' );
@@ -107,13 +119,8 @@
 					}
 				}
 
+				credentialsVerified = true;
 				$status.addClass( 'is-success' ).text( s.verified || 'Credentials verified! ✓' ).show();
-
-				// Show coverage section now that credentials are confirmed.
-				const $coverageSection = $( '#kwtsms-coverage-section' );
-				if ( $coverageSection.length ) {
-					$coverageSection.show();
-				}
 			} else {
 				const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Verification failed.' );
 				$status.addClass( 'is-error' ).text( msg ).show();
@@ -137,6 +144,13 @@
 		const $btn    = $( this );
 		const $result = $( '#kwtsms-test-sms-result' );
 		const phone   = $( '#kwtsms_test_phone' ).val();
+		const username = $( '#kwtsms_api_username' ).val().trim();
+		const password = $( '#kwtsms_api_password' ).val().trim();
+
+		if ( ! username || ! password ) {
+			$result.text( s.credentialsMissing || 'Please save your API credentials first (Gateway Settings → Save Settings).' ).css( 'color', '#dc3232' );
+			return;
+		}
 
 		if ( ! phone ) {
 			$result.text( 'Please enter a test phone number first.' ).css( 'color', '#dc3232' );
