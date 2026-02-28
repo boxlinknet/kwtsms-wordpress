@@ -28,4 +28,12 @@ class Test_View_Templates extends TestCase {
 		$css = file_get_contents( KWTSMS_OTP_DIR . 'assets/css/login.css' );
 		$this->assertStringContainsString( '#FFA200', $css );
 	}
+
+	public function test_help_page_contains_lockout_section() {
+		$help = file_get_contents(
+			dirname( __DIR__ ) . '/admin/views/page-help.php'
+		);
+		$this->assertStringContainsString( 'KWTSMS_OTP_DISABLED', $help );
+		$this->assertStringContainsString( 'kwtsms_phone', $help );
+	}
 }

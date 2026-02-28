@@ -200,6 +200,27 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 		<h3><?php esc_html_e( 'Users get "Session expired" error', 'wp-kwtsms-otp' ); ?></h3>
 		<p><?php esc_html_e( 'The OTP session is stored as a 15-minute transient. This can be cleared by object cache flushes or plugin conflicts. Check that no caching plugin is clearing transients too aggressively.', 'wp-kwtsms-otp' ); ?></p>
 
+		<h3 style="color:#dc3232;"><?php esc_html_e( '⚠ Admin Lockout: Cannot Receive OTP', 'wp-kwtsms-otp' ); ?></h3>
+		<div style="background:#fff8e1;border-left:4px solid #FFA200;padding:12px 16px;border-radius:0 4px 4px 0;margin-bottom:16px;font-size:14px;">
+			<p style="margin-top:0;">
+				<?php esc_html_e( 'If your admin account has a phone number set and you cannot receive the OTP (lost phone, changed number, gateway issue), you will be locked out of WordPress. Use one of the emergency bypass methods below.', 'wp-kwtsms-otp' ); ?>
+			</p>
+
+			<p><strong><?php esc_html_e( 'Option 1 — Emergency bypass constant (fastest)', 'wp-kwtsms-otp' ); ?></strong></p>
+			<p><?php esc_html_e( 'Add this line to your wp-config.php (before the "stop editing" comment):', 'wp-kwtsms-otp' ); ?></p>
+			<pre style="background:#fff;border:1px solid #ddd;padding:8px 12px;font-size:13px;overflow-x:auto;">define( 'KWTSMS_OTP_DISABLED', true );</pre>
+			<p><?php esc_html_e( 'This completely disables all OTP logic. Log in normally, fix your phone number or gateway, then remove the line.', 'wp-kwtsms-otp' ); ?></p>
+
+			<p><strong><?php esc_html_e( 'Option 2 — Remove phone via WP-CLI', 'wp-kwtsms-otp' ); ?></strong></p>
+			<pre style="background:#fff;border:1px solid #ddd;padding:8px 12px;font-size:13px;overflow-x:auto;">wp user meta delete &lt;user_id&gt; kwtsms_phone</pre>
+			<p><?php esc_html_e( 'Replace &lt;user_id&gt; with your user ID (usually 1 for the first admin). This removes the phone from your account so OTP is skipped on next login.', 'wp-kwtsms-otp' ); ?></p>
+
+			<p><strong><?php esc_html_e( 'Option 3 — Disable the plugin via SFTP/FTP', 'wp-kwtsms-otp' ); ?></strong></p>
+			<p style="margin-bottom:0;">
+				<?php esc_html_e( 'Connect via SFTP/FTP and rename the plugin folder from wp-kwtsms-otp to _wp-kwtsms-otp. WordPress will deactivate the plugin automatically, allowing normal login. Rename it back to re-enable.', 'wp-kwtsms-otp' ); ?>
+			</p>
+		</div>
+
 		<h3><?php esc_html_e( 'Where is the debug log?', 'wp-kwtsms-otp' ); ?></h3>
 		<p>
 			<?php
