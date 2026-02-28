@@ -96,13 +96,16 @@ $test_phone = $gateway['test_phone'] ?? '';
 
 		</table>
 
-		<!-- ===== Coverage Section (hidden until credentials verified) ===== -->
-		<div id="kwtsms-coverage-section" style="display:none;" aria-live="polite">
-			<h2><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms-otp' ); ?></h2>
+		<!-- ===== SMS Coverage (always visible — directly below Sender ID) ===== -->
+		<h2 class="title"><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms-otp' ); ?></h2>
+		<div id="kwtsms-coverage-section" aria-live="polite">
 			<p>
 				<button type="button" id="kwtsms-load-coverage" class="button">
 					<?php esc_html_e( 'Load Active Coverage', 'wp-kwtsms-otp' ); ?>
 				</button>
+				<span style="margin-left:8px;color:#757575;font-size:12px;">
+					<?php esc_html_e( 'Shows the countries your kwtSMS account is approved to send SMS to. Requires valid credentials.', 'wp-kwtsms-otp' ); ?>
+				</span>
 			</p>
 			<div id="kwtsms-coverage-result" style="margin-top:10px;"></div>
 			<p>
