@@ -104,6 +104,15 @@ class KwtSMS_Admin {
 
 		$this->page_hooks[] = add_submenu_page(
 			'kwtsms-otp',
+			__( 'Integrations', 'wp-kwtsms-otp' ),
+			__( 'Integrations', 'wp-kwtsms-otp' ),
+			'manage_options',
+			'kwtsms-otp-integrations',
+			array( $this, 'render_integrations_page' )
+		);
+
+		$this->page_hooks[] = add_submenu_page(
+			'kwtsms-otp',
 			__( 'kwtSMS Logs', 'wp-kwtsms-otp' ),
 			__( 'Logs', 'wp-kwtsms-otp' ),
 			'manage_options',
@@ -529,6 +538,16 @@ class KwtSMS_Admin {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
 		}
 		include KWTSMS_OTP_DIR . 'admin/views/page-templates.php';
+	}
+
+	/**
+	 * Render the Integrations admin page.
+	 */
+	public function render_integrations_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'wp-kwtsms-otp' ) );
+		}
+		include KWTSMS_OTP_DIR . 'admin/views/page-integrations.php';
 	}
 
 	/**

@@ -38,4 +38,8 @@ class Test_KwtSMS_Bootstrap extends TestCase {
 	public function test_elementor_integration_file_exists() {
 		$this->assertFileExists( dirname( __DIR__ ) . '/includes/integrations/class-kwtsms-elementor.php' );
 	}
+
+	public function test_integrations_admin_view_exists() {
+		$this->assertFileExists( dirname( __DIR__ ) . '/admin/views/page-integrations.php' );
+	}
 }
