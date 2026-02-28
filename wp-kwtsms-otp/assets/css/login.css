@@ -4,15 +4,13 @@
  * Used on the OTP entry page (wp-login.php?action=kwtsms_otp) and the
  * passwordless login page (wp-login.php?action=kwtsms_passwordless).
  *
- * Built to match the standard WordPress login page look while applying
- * kwtsms branding (#FFA200 primary, #79CCF2 accent).
+ * Inherits WordPress core login page colours and typography — no custom
+ * brand overrides.  Only structural/layout rules live here.
  */
 
-/* Base reset / body */
+/* Base reset / body — no font or colour overrides; WP handles these */
 body.login {
 	background: #f0f0f1;
-	font-family: Lato, Helvetica, Arial, sans-serif;
-	color: #434345;
 }
 
 /* Login box */
@@ -35,10 +33,8 @@ body.login {
 }
 
 .kwtsms-otp-title {
-	font-family: Montserrat, sans-serif;
 	font-size: 18px;
 	font-weight: 700;
-	color: #434345;
 	margin: 0 0 10px;
 	text-align: center;
 }
@@ -96,38 +92,25 @@ body.login {
 	border: 2px solid #ddd;
 	border-radius: 0;
 	background: #fff;
-	color: #434345;
 	transition: border-color 0.15s;
 }
 
 .kwtsms-code-input:focus {
-	border-color: #FFA200;
+	border-color: #2271b1;
 	outline: none;
-	box-shadow: 0 0 0 2px rgba(255,162,0,0.18);
+	box-shadow: 0 0 0 2px rgba(34,113,177,0.18);
 }
 
 /* =========================================================================
-   Submit button
+   Submit button — structural only; colours come from WP button-primary
    ========================================================================= */
 
 .kwtsms-btn {
 	display: block !important;
 	width: 100% !important;
-	background: #FFA200 !important;
-	border-color: #e09200 !important;
-	color: #fff !important;
-	font-size: 15px !important;
-	font-weight: 700 !important;
-	border-radius: 4px !important;
 	padding: 10px !important;
 	cursor: pointer !important;
 	text-align: center !important;
-	transition: background 0.15s !important;
-}
-
-.kwtsms-btn:hover,
-.kwtsms-btn:focus {
-	background: #e09200 !important;
 }
 
 /* =========================================================================
@@ -142,7 +125,7 @@ body.login {
 .kwtsms-resend-btn {
 	background: transparent;
 	border: none;
-	color: #79CCF2;
+	color: #2271b1;
 	cursor: pointer;
 	font-size: 14px;
 	padding: 0;
@@ -151,7 +134,7 @@ body.login {
 }
 
 .kwtsms-resend-btn:hover:not(:disabled) {
-	color: #4ab0e8;
+	color: #135e96;
 }
 
 .kwtsms-resend-btn:disabled {
@@ -179,7 +162,7 @@ body.login {
 }
 
 .kwtsms-back-link a {
-	color: #79CCF2;
+	color: #2271b1;
 	text-decoration: none;
 }
 
@@ -200,14 +183,109 @@ body.login {
 	border: 1px solid #ddd;
 	border-radius: 0;
 	background: #fff;
-	color: #434345;
 	margin-bottom: 14px;
 }
 
 #login .input:focus {
-	border-color: #FFA200;
+	border-color: #2271b1;
 	outline: none;
-	box-shadow: 0 0 0 2px rgba(255,162,0,0.18);
+	box-shadow: 0 0 0 2px rgba(34,113,177,0.18);
+}
+
+/* =========================================================================
+   Country dial code — custom searchable dropdown
+   ========================================================================= */
+
+.kwtsms-phone-group {
+	display: flex;
+	gap: 0;
+	margin-bottom: 10px;
+	align-items: stretch;
+}
+
+.kwtsms-dial-wrap {
+	position: relative;
+	flex: 0 0 auto;
+}
+
+.kwtsms-dial-trigger {
+	height: 100%;
+	min-width: 88px;
+	padding: 10px 8px;
+	border: 1px solid #ddd;
+	border-right: 0;
+	border-radius: 0;
+	background: #f9f9f9;
+	cursor: pointer;
+	font-size: 15px;
+	white-space: nowrap;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	box-sizing: border-box;
+	line-height: 1;
+}
+
+.kwtsms-dial-trigger:focus {
+	outline: none;
+	border-color: #2271b1;
+}
+
+.kwtsms-dial-arrow {
+	font-size: 11px;
+	opacity: 0.6;
+	margin-left: 2px;
+}
+
+.kwtsms-dial-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 9999;
+	background: #fff;
+	border: 1px solid #ddd;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+	width: 260px;
+	border-radius: 0 0 4px 4px;
+}
+
+.kwtsms-dial-search {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 8px 10px;
+	border: 0;
+	border-bottom: 1px solid #eee;
+	font-size: 13px;
+	outline: none;
+	background: #fff;
+}
+
+.kwtsms-dial-dropdown ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.kwtsms-dial-dropdown li {
+	padding: 8px 12px;
+	cursor: pointer;
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+.kwtsms-dial-dropdown li:hover,
+.kwtsms-dial-dropdown li.is-focused {
+	background: #f0f6ff;
+}
+
+.kwtsms-phone-group .input {
+	flex: 1;
+	min-width: 0;
+	margin-bottom: 0;
 }
 
 /* =========================================================================

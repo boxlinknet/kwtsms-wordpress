@@ -5,7 +5,7 @@
  * Tab 1 — SMS History: full unredacted send log (phone + message).
  * Tab 2 — OTP Attempts: verification events with IP, action, and result.
  *
- * Both logs support pagination (20 rows/page), manual clearing, and CSV export.
+ * Both logs support pagination (20 rows/page) and CSV export.
  *
  * @package KwtSMS_OTP
  */
@@ -19,20 +19,6 @@ if ( ! current_user_can( 'manage_options' ) ) {
 $active_tab    = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_history';
 $per_page      = 20;
 $current_page  = max( 1, absint( $_GET['paged'] ?? 1 ) );
-
-// -------------------------------------------------------------------------
-// Handle clear log action.
-// -------------------------------------------------------------------------
-if ( isset( $_GET['action'], $_GET['_wpnonce'] ) && 'clear_log' === $_GET['action'] ) {
-	$log_key = sanitize_key( $_GET['log'] ?? '' );
-	if ( in_array( $log_key, array( 'sms_history', 'attempt_log' ), true ) &&
-		wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_clear_log_' . $log_key )
-	) {
-		delete_option( 'kwtsms_otp_' . $log_key );
-		wp_safe_redirect( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=' . $log_key . '&cleared=1' ) );
-		exit;
-	}
-}
 
 // -------------------------------------------------------------------------
 // Handle CSV export.
@@ -67,7 +53,7 @@ if ( isset( $_GET['action'], $_GET['_wpnonce'] ) && 'export_csv' === $_GET['acti
 				) );
 			}
 		} else {
-			fputcsv( $out, array( 'Date/Time', 'User ID', 'Phone (masked)', 'IP Address', 'Action', 'Result' ) );
+			fputcsv( $out, array( 'Date/Time', 'User ID', 'Phone', 'IP Address', 'Action', 'Result' ) );
 			foreach ( $log as $entry ) {
 				$user_id = $entry['user_id'] ?? null;
 				fputcsv( $out, array(
@@ -125,24 +111,19 @@ function kwtsms_attempt_result_label( $result ) {
 
 <div class="wrap kwtsms-admin-wrap">
 	<div class="kwtsms-admin-header">
+		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'kwtSMS OTP — Logs', 'wp-kwtsms-otp' ); ?></h1>
 	</div>
-
-	<?php if ( ! empty( $_GET['cleared'] ) ) : ?>
-	<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Log cleared.', 'wp-kwtsms-otp' ); ?></p></div>
-	<?php endif; ?>
 
 	<!-- Tabs -->
 	<nav class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( kwtsms_logs_tab_url( 'sms_history' ) ); ?>"
 			class="nav-tab <?php echo 'sms_history' === $active_tab ? 'nav-tab-active' : ''; ?>">
 			<?php esc_html_e( 'SMS History', 'wp-kwtsms-otp' ); ?>
-			<span class="kwtsms-badge"><?php echo count( $sms_history ); ?></span>
 		</a>
 		<a href="<?php echo esc_url( kwtsms_logs_tab_url( 'attempt_log' ) ); ?>"
 			class="nav-tab <?php echo 'attempt_log' === $active_tab ? 'nav-tab-active' : ''; ?>">
 			<?php esc_html_e( 'OTP Attempts', 'wp-kwtsms-otp' ); ?>
-			<span class="kwtsms-badge"><?php echo count( $attempt_log ); ?></span>
 		</a>
 	</nav>
 
@@ -155,17 +136,6 @@ function kwtsms_attempt_result_label( $result ) {
 		), admin_url( 'admin.php?page=kwtsms-otp-logs' ) ) ); ?>"
 			class="button">
 			⬇ <?php esc_html_e( 'Export CSV', 'wp-kwtsms-otp' ); ?>
-		</a>
-
-		<!-- Clear log -->
-		<a href="<?php echo esc_url( add_query_arg( array(
-			'action'   => 'clear_log',
-			'log'      => $active_tab,
-			'_wpnonce' => wp_create_nonce( 'kwtsms_clear_log_' . $active_tab ),
-		), admin_url( 'admin.php?page=kwtsms-otp-logs' ) ) ); ?>"
-			class="button button-link-delete"
-			onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to clear this log? This cannot be undone.', 'wp-kwtsms-otp' ); ?>');">
-			✕ <?php esc_html_e( 'Clear Log', 'wp-kwtsms-otp' ); ?>
 		</a>
 
 		<span style="color:#888;font-size:13px;">
@@ -220,7 +190,7 @@ function kwtsms_attempt_result_label( $result ) {
 			<tr>
 				<th><?php esc_html_e( 'Date / Time', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'User', 'wp-kwtsms-otp' ); ?></th>
-				<th><?php esc_html_e( 'Phone (masked)', 'wp-kwtsms-otp' ); ?></th>
+				<th><?php esc_html_e( 'Phone', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'IP Address', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Action', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Result', 'wp-kwtsms-otp' ); ?></th>

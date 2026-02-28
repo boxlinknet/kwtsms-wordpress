@@ -9,6 +9,88 @@
 	'use strict';
 
 	// =========================================================================
+	// Country dial code — custom searchable dropdown (passwordless page).
+	// =========================================================================
+
+	const dialWrap = document.getElementById( 'kwtsms-dial-wrap' );
+	if ( dialWrap ) {
+		const trigger   = dialWrap.querySelector( '#kwtsms-dial-trigger' );
+		const dropdown  = dialWrap.querySelector( '#kwtsms-dial-dropdown' );
+		const search    = dialWrap.querySelector( '#kwtsms-dial-search' );
+		const list      = dialWrap.querySelector( '#kwtsms-dial-list' );
+		const display   = dialWrap.querySelector( '#kwtsms-dial-display' );
+		const dialInput = dialWrap.querySelector( '#kwtsms_dial_code' );
+
+		function openDropdown() {
+			dropdown.removeAttribute( 'hidden' );
+			trigger.setAttribute( 'aria-expanded', 'true' );
+			search.value = '';
+			filterList( '' );
+			search.focus();
+		}
+
+		function closeDropdown() {
+			dropdown.setAttribute( 'hidden', '' );
+			trigger.setAttribute( 'aria-expanded', 'false' );
+		}
+
+		function filterList( q ) {
+			q = q.toLowerCase();
+			var items = list.querySelectorAll( 'li' );
+			items.forEach( function ( li ) {
+				var name = li.dataset.name || '';
+				var dial = li.dataset.dial || '';
+				li.style.display = ( ! q || name.indexOf( q ) >= 0 || dial.indexOf( q ) >= 0 ) ? '' : 'none';
+			} );
+		}
+
+		function selectItem( li ) {
+			var dial  = li.dataset.dial;
+			var text  = li.textContent.trim();
+			// Display: flag + space + +code  (first two whitespace-separated tokens).
+			var parts = text.split( /\s+/ );
+			display.textContent = parts[0] + ' ' + parts[1];
+			dialInput.value = dial;
+			list.querySelectorAll( 'li' ).forEach( function ( el ) {
+				el.classList.remove( 'is-focused' );
+			} );
+			li.classList.add( 'is-focused' );
+			closeDropdown();
+		}
+
+		trigger.addEventListener( 'click', function ( e ) {
+			e.preventDefault();
+			if ( dropdown.hasAttribute( 'hidden' ) ) {
+				openDropdown();
+			} else {
+				closeDropdown();
+			}
+		} );
+
+		search.addEventListener( 'input', function () {
+			filterList( this.value );
+		} );
+
+		list.addEventListener( 'click', function ( e ) {
+			var li = e.target.closest( 'li' );
+			if ( li ) { selectItem( li ); }
+		} );
+
+		document.addEventListener( 'click', function ( e ) {
+			if ( ! dialWrap.contains( e.target ) ) {
+				closeDropdown();
+			}
+		} );
+
+		search.addEventListener( 'keydown', function ( e ) {
+			if ( e.key === 'Escape' ) {
+				closeDropdown();
+				trigger.focus();
+			}
+		} );
+	}
+
+	// =========================================================================
 	// Passwordless phone form — combine dial code + local number on submit.
 	// =========================================================================
 	const passwordlessForm = document.getElementById( 'kwtsms-passwordless-form' );
