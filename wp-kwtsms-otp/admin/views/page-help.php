@@ -84,7 +84,7 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 			<li>
 				<strong><?php esc_html_e( 'Create a kwtSMS account', 'wp-kwtsms-otp' ); ?></strong><br>
 				<?php esc_html_e( 'Go to kwtsms.com and register for a free account. You will receive your API username and password.', 'wp-kwtsms-otp' ); ?>
-				<a href="https://www.kwtsms.com/register/" target="_blank" rel="noopener"><?php esc_html_e( 'Sign up →', 'wp-kwtsms-otp' ); ?></a>
+				<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener"><?php esc_html_e( 'Sign up →', 'wp-kwtsms-otp' ); ?></a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Register a Sender ID', 'wp-kwtsms-otp' ); ?></strong><br>
