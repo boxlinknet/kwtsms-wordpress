@@ -260,3 +260,36 @@
 .kwtsms-admin-wrap a:hover {
 	color: #4ab0e8;
 }
+
+/* =========================================================================
+   Coverage two-column layout
+   ========================================================================= */
+
+.kwtsms-coverage-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px;
+	margin-bottom: 24px;
+	align-items: start;
+}
+
+@media (max-width: 782px) {
+	.kwtsms-coverage-row { grid-template-columns: 1fr; }
+}
+
+.kwtsms-coverage-col-left,
+.kwtsms-coverage-col-right {
+	padding: 0;
+}
+
+/* Coverage tag chips (re-used from Allowed Countries) */
+.kwtsms-tag-chip {
+	display: inline-flex;
+	align-items: center;
+	background: #f0f0f0;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+	padding: 3px 8px;
+	font-size: 13px;
+	margin: 2px 4px 2px 0;
+}

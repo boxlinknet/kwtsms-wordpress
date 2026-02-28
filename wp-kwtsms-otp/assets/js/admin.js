@@ -4,6 +4,7 @@
  * Handles:
  *   - CAPTCHA provider field show/hide
  *   - Login button (verify credentials + persist state)
+ *   - Logout button (clear verified state)
  *   - Save & Verify Credentials AJAX
  *   - Sender ID reload
  *   - Send Test SMS AJAX
@@ -106,6 +107,11 @@
 			credentialsVerified = true;
 			setDependentFeatures( true );
 
+			// Show verified sections and toggle login/logout buttons.
+			$( '#kwtsms-verified-sections' ).show();
+			$( '#kwtsms-login-btn' ).hide();
+			$( '#kwtsms-logout-btn' ).show();
+
 			// Update login status span.
 			const username = $( '#kwtsms_api_username' ).val().trim();
 			const statusMsg = '✓ ' + ( s.connectedAs
@@ -120,6 +126,12 @@
 		} else {
 			credentialsVerified = false;
 			setDependentFeatures( false );
+
+			// Hide verified sections.
+			$( '#kwtsms-verified-sections' ).hide();
+			$( '#kwtsms-login-btn' ).show();
+			$( '#kwtsms-logout-btn' ).hide();
+
 			const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Verification failed.' );
 			if ( $loginStatus && $loginStatus.length ) {
 				$loginStatus.html( '<span style="color:#dc3232;">' + $( '<span>' ).text( msg ).html() + '</span>' );
@@ -301,22 +313,20 @@
 		.done( function ( resp ) {
 			if ( resp.success && resp.data && resp.data.coverage ) {
 				const coverage = resp.data.coverage;
-				const chipStyle = 'display:inline-flex;align-items:center;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:3px 8px;font-size:13px;';
-				let html = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">';
+				let html = '';
 
 				if ( Array.isArray( coverage ) ) {
 					coverage.forEach( function ( row ) {
 						const name = row.country || row.name || JSON.stringify( row );
-						html += '<span style="' + chipStyle + '">' + $( '<span>' ).text( name ).html() + '</span>';
+						html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( name ).html() + '</span>';
 					} );
 				} else {
 					// Object format: {KW: 'active', SA: 'active', ...}
 					Object.keys( coverage ).forEach( function ( key ) {
-						html += '<span style="' + chipStyle + '">' + $( '<span>' ).text( key ).html() + '</span>';
+						html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( key ).html() + '</span>';
 					} );
 				}
 
-				html += '</div>';
 				$result.html( html );
 			} else {
 				const msg = resp.data && resp.data.message ? resp.data.message : ( s.coverageError || 'Could not load coverage data.' );
@@ -327,8 +337,56 @@
 			$result.html( '<p style="color:#dc3232;">' + ( s.coverageError || 'Network error.' ) + '</p>' );
 		} )
 		.always( function () {
-			$btn.prop( 'disabled', false ).text( s.loadCoverage || 'Load Active Coverage' );
+			$btn.prop( 'disabled', false ).text( '↻ ' + ( s.refreshCoverage || 'Refresh Coverage' ) );
 		} );
 	} );
+
+	// =========================================================================
+	// Logout button
+	// =========================================================================
+
+	$( '#kwtsms-logout-btn' ).on( 'click', function () {
+		credentialsVerified = false;
+
+		// Toggle buttons.
+		$( '#kwtsms-login-btn' ).show();
+		$( '#kwtsms-logout-btn' ).hide();
+
+		// Hide verified sections.
+		$( '#kwtsms-verified-sections' ).hide();
+
+		// Clear login status.
+		$( '#kwtsms-login-status' ).html( '' );
+
+		// Clear balance display.
+		$( '#kwtsms-balance' ).text( '—' );
+		$( '#kwtsms-balance-purchased' ).text( '' );
+
+		// Server-side: clear credentials_verified flag.
+		$.post( ajaxUrl, {
+			action: 'kwtsms_logout_gateway',
+			nonce:  nonce,
+		} );
+	} );
+
+	// =========================================================================
+	// On page load: render saved coverage chips
+	// =========================================================================
+
+	( function () {
+		const savedCov = data.savedCoverage || [];
+		if ( savedCov.length ) {
+			const $result = $( '#kwtsms-coverage-result' );
+			// Only populate if the result div is currently empty (PHP may have pre-rendered).
+			if ( ! $result.children().length && ! $result.text().trim() ) {
+				let html = '';
+				savedCov.forEach( function ( c ) {
+					const name = ( typeof c === 'object' ) ? ( c.name || c.country || '' ) : String( c );
+					html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( name ).html() + '</span>';
+				} );
+				$result.html( html );
+			}
+		}
+	}() );
 
 } )( jQuery );
