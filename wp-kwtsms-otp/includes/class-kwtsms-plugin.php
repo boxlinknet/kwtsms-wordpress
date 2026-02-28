@@ -253,14 +253,13 @@ class KwtSMS_Plugin {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 		}
 
+		$is_test_mode = (bool) $this->settings->get( 'gateway.test_mode', false );
+
 		wp_send_json_success(
 			array(
-				'message' => sprintf(
-					/* translators: %s: phone number */
-					__( 'Test SMS sent to %s. Code: %s (check debug.log if in test mode)', 'wp-kwtsms-otp' ),
-					esc_html( $normalized ),
-					esc_html( $test_code )
-				),
+				'phone'     => esc_html( $normalized ),
+				'code'      => esc_html( $test_code ),
+				'test_mode' => $is_test_mode,
 			)
 		);
 	}

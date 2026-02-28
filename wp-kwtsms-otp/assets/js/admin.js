@@ -153,17 +153,21 @@
 		} )
 		.done( function ( resp ) {
 			if ( resp.success ) {
-				$result.text( s.sent || 'Test SMS sent! Check your phone.' ).css( 'color', '#46b450' );
+				const d   = resp.data || {};
+				const msg = d.test_mode
+					? 'Test mode ON — message queued, NOT delivered to your phone. OTP code: ' + ( d.code || '' ) + ' (check wp-content/debug.log)'
+					: 'SMS delivered to ' + ( d.phone || '' ) + '. Check your messages.';
+				$result.text( msg ).css( 'color', '#46b450' );
 			} else {
-				const msg = resp.data && resp.data.message ? resp.data.message : 'Send failed.';
+				const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Send failed.' );
 				$result.text( msg ).css( 'color', '#dc3232' );
 			}
 		} )
 		.fail( function () {
-			$result.text( 'Network error.' ).css( 'color', '#dc3232' );
+			$result.text( s.error || 'Network error.' ).css( 'color', '#dc3232' );
 		} )
 		.always( function () {
-			$btn.prop( 'disabled', false ).text( 'Send Test SMS Now' );
+			$btn.prop( 'disabled', false ).text( 'Send Gateway Test SMS' );
 		} );
 	} );
 
