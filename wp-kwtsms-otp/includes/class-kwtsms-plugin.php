@@ -288,6 +288,7 @@ class KwtSMS_Plugin {
 				'phone'     => esc_html( $normalized ),
 				'code'      => esc_html( $test_code ),
 				'test_mode' => $is_test_mode,
+				'msg_id'    => esc_html( $result['msg_id'] ?? '' ),
 			)
 		);
 	}
