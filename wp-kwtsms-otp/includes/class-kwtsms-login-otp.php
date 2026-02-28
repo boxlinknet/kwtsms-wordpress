@@ -244,11 +244,31 @@ class KwtSMS_Login_OTP {
 			exit;
 		}
 
-		$user_id   = absint( $partial['user_id'] );
+		$user_id    = absint( $partial['user_id'] );
 		$otp_action = sanitize_key( $partial['action'] ?? 'login' );
 		$otp_phone  = sanitize_text_field( $partial['phone'] ?? '' );
-		$submitted = sanitize_text_field( wp_unslash( $_POST['kwtsms_code'] ?? '' ) );
-		$submitted = preg_replace( '/\D/', '', $submitted ); // Digits only.
+		$raw_code   = sanitize_text_field( wp_unslash( $_POST['kwtsms_code'] ?? '' ) );
+		$submitted  = preg_replace( '/\D/', '', $raw_code ); // Digits only.
+
+		// Detect suspicious input — log as hacking attempt before processing.
+		$expected_length = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
+		$ip              = filter_var( $_SERVER['REMOTE_ADDR'] ?? '', FILTER_VALIDATE_IP ) ? ( $_SERVER['REMOTE_ADDR'] ?? '' ) : '';
+		$raw_len         = strlen( $raw_code );
+
+		// Log if: raw input had non-digit chars, code is empty, or code length is wrong.
+		$is_suspicious = ( $raw_len > 0 && $raw_len !== strlen( $submitted ) ) // non-digit chars present
+			|| ( $raw_len > $expected_length + 4 ) // excessively long — possible injection
+			|| ( $raw_len > 0 && strlen( $submitted ) !== $expected_length && strlen( $submitted ) !== 0 ); // wrong length
+
+		if ( $is_suspicious ) {
+			KwtSMS_API::append_attempt_log( $user_id, $otp_phone, $ip, $otp_action, 'invalid_input' );
+		}
+
+		// Empty code — no point calling verify.
+		if ( '' === $submitted ) {
+			$this->render_otp_page( __( 'Please enter your verification code.', 'wp-kwtsms-otp' ), $token );
+			exit;
+		}
 
 		$result = $this->plugin->otp->verify( $user_id, $submitted, $otp_action, $user_id, $otp_phone );
 

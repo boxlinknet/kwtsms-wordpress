@@ -17,6 +17,7 @@ $captcha_provider = $general['captcha_provider'] ?? 'none';
 $referral_link    = ! empty( $general['referral_link'] );
 $default_cc       = $general['default_country_code'] ?? 'KW';
 $allowed_iso2     = $general['allowed_countries'] ?? array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' );
+$debug_logging    = ! empty( $general['debug_logging'] );
 
 // Load all countries for dropdowns.
 $all_countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
@@ -276,6 +277,42 @@ foreach ( $all_countries as $cc ) {
 						<?php esc_html_e( 'Display "SMS service by kwtSMS.com" footer on login pages', 'wp-kwtsms-otp' ); ?>
 					</label>
 					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'wp-kwtsms-otp' ); ?></p>
+				</td>
+			</tr>
+
+		</table>
+
+		<!-- ===== Developer Tools ===== -->
+		<h2 class="title"><?php esc_html_e( 'Developer Tools', 'wp-kwtsms-otp' ); ?></h2>
+		<table class="form-table" role="presentation">
+
+			<tr>
+				<th scope="row"><label for="kwtsms_debug_logging"><?php esc_html_e( 'Debug Logging', 'wp-kwtsms-otp' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_general[debug_logging]" id="kwtsms_debug_logging"
+							value="1" <?php checked( $debug_logging ); ?> />
+						<?php esc_html_e( 'Enable detailed logging for troubleshooting.', 'wp-kwtsms-otp' ); ?>
+					</label>
+					<?php if ( $debug_logging ) : ?>
+					<p class="description" style="color:#d63638;font-weight:600;">
+						<?php esc_html_e( '⚠ Debug Logging is ON — disable this on production sites. Log includes request/response data (passwords are not logged).', 'wp-kwtsms-otp' ); ?>
+					</p>
+					<?php endif; ?>
+					<p class="description">
+						<?php
+						$log_path = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/kwtsms-debug.log' : 'wp-content/kwtsms-debug.log';
+						printf(
+							/* translators: %s: path to the debug log file */
+							esc_html__( 'Log file: %s', 'wp-kwtsms-otp' ),
+							'<code>' . esc_html( $log_path ) . '</code>'
+						);
+						?>
+						&mdash;
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-help' ) ); ?>">
+							<?php esc_html_e( 'See Help page for troubleshooting guide →', 'wp-kwtsms-otp' ); ?>
+						</a>
+					</p>
 				</td>
 			</tr>
 
