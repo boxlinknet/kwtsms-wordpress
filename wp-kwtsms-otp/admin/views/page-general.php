@@ -28,7 +28,19 @@ foreach ( $all_countries as $cc ) {
 ?>
 <div class="wrap kwtsms-admin-wrap">
 	<div class="kwtsms-admin-header">
+		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'kwtSMS OTP — General Settings', 'wp-kwtsms-otp' ); ?></h1>
+	</div>
+
+	<div class="kwtsms-intro-box" style="background:#fff8ed;border:1px solid #FFA200;border-radius:4px;padding:16px 20px;margin-bottom:20px;">
+		<p style="margin:0 0 8px;font-size:14px;line-height:1.6;">
+			<?php esc_html_e( 'kwtSMS is a Kuwaiti SMS gateway with global coverage, trusted by businesses across the GCC. Key features include: global SMS delivery to 200+ countries, credits that never expire, private Sender ID registration, free API testing, competitive rates, and a simple REST API. Create a free account to get started — your API credentials are used in the Gateway Settings tab.', 'wp-kwtsms-otp' ); ?>
+		</p>
+		<p style="margin:0;">
+			<a href="https://www.kwtsms.com/register/" target="_blank" rel="noopener noreferrer" style="color:#FFA200;font-weight:600;">
+				<?php esc_html_e( 'Sign up for free →', 'wp-kwtsms-otp' ); ?>
+			</a>
+		</p>
 	</div>
 
 	<form method="post" action="options.php">
@@ -120,6 +132,75 @@ foreach ( $all_countries as $cc ) {
 
 		</table>
 
+		<!-- ===== Phone & Country Settings ===== -->
+		<h2 class="title"><?php esc_html_e( 'Phone &amp; Country Settings', 'wp-kwtsms-otp' ); ?></h2>
+		<table class="form-table" role="presentation">
+
+			<tr>
+				<th scope="row">
+					<label for="kwtsms_default_country_code"><?php esc_html_e( 'Default Country Code', 'wp-kwtsms-otp' ); ?></label>
+				</th>
+				<td>
+					<select name="kwtsms_otp_general[default_country_code]" id="kwtsms_default_country_code">
+						<?php foreach ( $all_countries as $cc ) : ?>
+						<option value="<?php echo esc_attr( $cc['iso2'] ); ?>"
+							<?php selected( $default_cc, $cc['iso2'] ); ?>>
+							<?php echo esc_html( $cc['name'] . ' (+' . $cc['dial'] . ')' ); ?>
+						</option>
+						<?php endforeach; ?>
+					</select>
+					<p class="description"><?php esc_html_e( 'This is pre-filled as the default dial code on login forms. Users only need to enter their local phone number without the country code. GeoIP detection will override this automatically when available.', 'wp-kwtsms-otp' ); ?></p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Allowed Countries', 'wp-kwtsms-otp' ); ?></th>
+				<td>
+					<div id="kwtsms-allowed-countries-wrap">
+						<div id="kwtsms-allowed-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+							<?php foreach ( $allowed_iso2 as $iso2 ) : ?>
+							<?php $cc_data = $cc_by_iso2[ $iso2 ] ?? null; ?>
+							<?php if ( $cc_data ) : ?>
+							<span class="kwtsms-country-tag" style="display:inline-flex;align-items:center;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:3px 8px;font-size:13px;">
+								<?php echo esc_html( $cc_data['name'] . ' (+' . $cc_data['dial'] . ')' ); ?>
+								<button type="button" class="kwtsms-remove-country" data-iso2="<?php echo esc_attr( $iso2 ); ?>"
+									style="background:none;border:none;cursor:pointer;margin-left:6px;color:#dc3232;font-weight:bold;font-size:14px;line-height:1;" aria-label="<?php esc_attr_e( 'Remove', 'wp-kwtsms-otp' ); ?>">
+									×
+								</button>
+							</span>
+							<?php endif; ?>
+							<?php endforeach; ?>
+						</div>
+
+						<div style="display:flex;gap:8px;align-items:center;">
+							<select id="kwtsms-add-country-select">
+								<option value=""><?php esc_html_e( '— Add a country —', 'wp-kwtsms-otp' ); ?></option>
+								<?php foreach ( $all_countries as $cc ) : ?>
+								<option value="<?php echo esc_attr( $cc['iso2'] ); ?>"
+									data-dial="<?php echo esc_attr( $cc['dial'] ); ?>"
+									data-name="<?php echo esc_attr( $cc['name'] ); ?>">
+									<?php echo esc_html( $cc['name'] . ' (+' . $cc['dial'] . ')' ); ?>
+								</option>
+								<?php endforeach; ?>
+							</select>
+							<button type="button" id="kwtsms-add-country-btn" class="button">
+								<?php esc_html_e( 'Add', 'wp-kwtsms-otp' ); ?>
+							</button>
+						</div>
+
+						<!-- Hidden field stores JSON array of ISO2 codes -->
+						<input type="hidden" name="kwtsms_otp_general[allowed_countries]"
+							id="kwtsms-allowed-countries-input"
+							value="<?php echo esc_attr( wp_json_encode( $allowed_iso2 ) ); ?>" />
+					</div>
+					<p class="description">
+						<?php esc_html_e( 'Only phone numbers from these countries will be accepted for OTP. GCC countries are the default.', 'wp-kwtsms-otp' ); ?>
+					</p>
+				</td>
+			</tr>
+
+		</table>
+
 		<!-- ===== CAPTCHA ===== -->
 		<h2 class="title"><?php esc_html_e( 'CAPTCHA Protection', 'wp-kwtsms-otp' ); ?></h2>
 		<table class="form-table" role="presentation">
@@ -176,75 +257,6 @@ foreach ( $all_countries as $cc ) {
 						<a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">
 							<?php esc_html_e( 'Get keys from Cloudflare Dashboard →', 'wp-kwtsms-otp' ); ?>
 						</a>
-					</p>
-				</td>
-			</tr>
-
-		</table>
-
-		<!-- ===== Phone & Country Settings ===== -->
-		<h2 class="title"><?php esc_html_e( 'Phone &amp; Country Settings', 'wp-kwtsms-otp' ); ?></h2>
-		<table class="form-table" role="presentation">
-
-			<tr>
-				<th scope="row">
-					<label for="kwtsms_default_country_code"><?php esc_html_e( 'Default Country Code', 'wp-kwtsms-otp' ); ?></label>
-				</th>
-				<td>
-					<select name="kwtsms_otp_general[default_country_code]" id="kwtsms_default_country_code">
-						<?php foreach ( $all_countries as $cc ) : ?>
-						<option value="<?php echo esc_attr( $cc['iso2'] ); ?>"
-							<?php selected( $default_cc, $cc['iso2'] ); ?>>
-							<?php echo esc_html( $cc['name'] . ' (+' . $cc['dial'] . ')' ); ?>
-						</option>
-						<?php endforeach; ?>
-					</select>
-					<p class="description"><?php esc_html_e( 'Pre-selected country on login forms when GeoIP detection fails.', 'wp-kwtsms-otp' ); ?></p>
-				</td>
-			</tr>
-
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Allowed Countries', 'wp-kwtsms-otp' ); ?></th>
-				<td>
-					<div id="kwtsms-allowed-countries-wrap">
-						<div id="kwtsms-allowed-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
-							<?php foreach ( $allowed_iso2 as $iso2 ) : ?>
-							<?php $cc_data = $cc_by_iso2[ $iso2 ] ?? null; ?>
-							<?php if ( $cc_data ) : ?>
-							<span class="kwtsms-country-tag" style="display:inline-flex;align-items:center;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:3px 8px;font-size:13px;">
-								<?php echo esc_html( $cc_data['name'] . ' (+' . $cc_data['dial'] . ')' ); ?>
-								<button type="button" class="kwtsms-remove-country" data-iso2="<?php echo esc_attr( $iso2 ); ?>"
-									style="background:none;border:none;cursor:pointer;margin-left:6px;color:#dc3232;font-weight:bold;font-size:14px;line-height:1;" aria-label="<?php esc_attr_e( 'Remove', 'wp-kwtsms-otp' ); ?>">
-									×
-								</button>
-							</span>
-							<?php endif; ?>
-							<?php endforeach; ?>
-						</div>
-
-						<div style="display:flex;gap:8px;align-items:center;">
-							<select id="kwtsms-add-country-select">
-								<option value=""><?php esc_html_e( '— Add a country —', 'wp-kwtsms-otp' ); ?></option>
-								<?php foreach ( $all_countries as $cc ) : ?>
-								<option value="<?php echo esc_attr( $cc['iso2'] ); ?>"
-									data-dial="<?php echo esc_attr( $cc['dial'] ); ?>"
-									data-name="<?php echo esc_attr( $cc['name'] ); ?>">
-									<?php echo esc_html( $cc['name'] . ' (+' . $cc['dial'] . ')' ); ?>
-								</option>
-								<?php endforeach; ?>
-							</select>
-							<button type="button" id="kwtsms-add-country-btn" class="button">
-								<?php esc_html_e( 'Add', 'wp-kwtsms-otp' ); ?>
-							</button>
-						</div>
-
-						<!-- Hidden field stores JSON array of ISO2 codes -->
-						<input type="hidden" name="kwtsms_otp_general[allowed_countries]"
-							id="kwtsms-allowed-countries-input"
-							value="<?php echo esc_attr( wp_json_encode( $allowed_iso2 ) ); ?>" />
-					</div>
-					<p class="description">
-						<?php esc_html_e( 'Only phone numbers from these countries will be accepted for OTP. GCC countries are the default.', 'wp-kwtsms-otp' ); ?>
 					</p>
 				</td>
 			</tr>
