@@ -257,11 +257,11 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 		<ul style="font-size:14px;line-height:2;">
 			<li>
 				<strong><?php esc_html_e( 'kwtSMS API Documentation:', 'wp-kwtsms-otp' ); ?></strong>
-				<a href="https://www.kwtsms.com/api-documentation/" target="_blank" rel="noopener">kwtsms.com/api-documentation</a>
+				<a href="https://www.kwtsms.com/doc/KwtSMS.com_API_Documentation_v41.pdf" target="_blank" rel="noopener">KwtSMS API v4.1 (PDF)</a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'kwtSMS Support:', 'wp-kwtsms-otp' ); ?></strong>
-				<a href="https://www.kwtsms.com/contact/" target="_blank" rel="noopener">kwtsms.com/contact</a>
+				<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener">kwtsms.com/#contact</a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'kwtSMS Dashboard (balance, coverage, sender IDs):', 'wp-kwtsms-otp' ); ?></strong>
