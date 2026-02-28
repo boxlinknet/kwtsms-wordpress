@@ -129,10 +129,11 @@ class KwtSMS_API {
 	 * @param string $phone     Recipient phone in international format (e.g. 96599220322).
 	 * @param string $sender_id Approved sender ID for this account.
 	 * @param string $message   Message text (English or Arabic).
+	 * @param string $type      Context type for logging: 'login'|'reset'|'passwordless'|'welcome'|'test'.
 	 *
 	 * @return array{msg_id: string, balance_after: float}|WP_Error
 	 */
-	public function send_sms( $phone, $sender_id, $message ) {
+	public function send_sms( $phone, $sender_id, $message, $type = 'login' ) {
 		$payload = array(
 			'sender'  => $sender_id,
 			'mobile'  => $phone,
@@ -151,11 +152,13 @@ class KwtSMS_API {
 				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 				file_put_contents( KWTSMS_OTP_DIR . 'test-otp.log', date( 'Y-m-d H:i:s' ) . ' ' . $log_line . PHP_EOL, FILE_APPEND );
 			}
-			$result = array(
-				'msg_id'        => 'TEST-' . time(),
+			$test_msg_id = 'TEST-' . time();
+			$result      = array(
+				'msg_id'        => $test_msg_id,
 				'balance_after' => 0.0,
 			);
 			self::append_send_log( $phone, 'sent' );
+			self::append_sms_history( $phone, $message, 'sent', $type, $test_msg_id );
 			return $result;
 		}
 
@@ -163,14 +166,35 @@ class KwtSMS_API {
 
 		if ( is_wp_error( $response ) ) {
 			self::append_send_log( $phone, 'failed' );
+			self::append_sms_history( $phone, $message, 'failed', $type, '' );
 			return $response;
 		}
 
+		$msg_id = sanitize_text_field( $response['msg-id'] ?? '' );
 		self::append_send_log( $phone, 'sent' );
+		self::append_sms_history( $phone, $message, 'sent', $type, $msg_id );
 		return array(
-			'msg_id'        => sanitize_text_field( $response['msg-id'] ?? '' ),
+			'msg_id'        => $msg_id,
 			'balance_after' => (float) ( $response['balance-after'] ?? 0 ),
 		);
+	}
+
+	/**
+	 * Retrieve SMS coverage information for the account.
+	 *
+	 * Returns an array of coverage data (countries and their status).
+	 *
+	 * @return array|WP_Error Coverage data array on success.
+	 */
+	public function get_coverage() {
+		$response = $this->request( 'coverage/', array() );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		// Normalize: some API versions return under 'countries', some at root.
+		return isset( $response['countries'] ) ? $response['countries'] : $response;
 	}
 
 	/**
@@ -232,6 +256,87 @@ class KwtSMS_API {
 		}
 
 		update_option( 'kwtsms_otp_send_log', $log, false );
+	}
+
+	/**
+	 * Append a full (unredacted) SMS send entry to the SMS history log.
+	 *
+	 * Stored in wp_options as kwtsms_otp_sms_history (max 500 entries).
+	 * The full phone number and message text are stored here — only visible
+	 * to administrators via the Logs page.
+	 *
+	 * @param string $phone   Full normalised phone number (e.g. 96599220322).
+	 * @param string $message The exact message that was sent.
+	 * @param string $status  'sent' or 'failed'.
+	 * @param string $type    Context: 'login'|'reset'|'passwordless'|'welcome'|'test'.
+	 * @param string $msg_id  Message ID returned by API, or empty on failure.
+	 */
+	public static function append_sms_history( $phone, $message, $status, $type, $msg_id = '' ) {
+		$log = get_option( 'kwtsms_otp_sms_history', array() );
+		if ( ! is_array( $log ) ) {
+			$log = array();
+		}
+
+		array_unshift(
+			$log,
+			array(
+				'time'    => time(),
+				'phone'   => sanitize_text_field( $phone ),
+				'message' => sanitize_textarea_field( $message ),
+				'status'  => in_array( $status, array( 'sent', 'failed' ), true ) ? $status : 'failed',
+				'type'    => sanitize_key( $type ),
+				'msg_id'  => sanitize_text_field( $msg_id ),
+			)
+		);
+
+		// Cap at 500 entries.
+		if ( count( $log ) > 500 ) {
+			$log = array_slice( $log, 0, 500 );
+		}
+
+		update_option( 'kwtsms_otp_sms_history', $log, false );
+	}
+
+	/**
+	 * Append an OTP attempt event to the attempt log.
+	 *
+	 * Stored in wp_options as kwtsms_otp_attempt_log (max 500 entries).
+	 * Phone number is masked (last 4 digits replaced) in this log.
+	 *
+	 * @param int|null $user_id  WordPress user ID, or null for unauthenticated attempts.
+	 * @param string   $phone    Normalised phone number (will be masked for storage).
+	 * @param string   $ip       Client IP address.
+	 * @param string   $action   'login'|'passwordless'|'reset'.
+	 * @param string   $result   'success'|'wrong_code'|'expired'|'locked'|'rate_limited'|'brute_force'.
+	 */
+	public static function append_attempt_log( $user_id, $phone, $ip, $action, $result ) {
+		$log = get_option( 'kwtsms_otp_attempt_log', array() );
+		if ( ! is_array( $log ) ) {
+			$log = array();
+		}
+
+		// Mask phone: keep all but last 4 digits.
+		$len    = strlen( (string) $phone );
+		$masked = $len > 4 ? substr( $phone, 0, $len - 4 ) . '****' : '****';
+
+		array_unshift(
+			$log,
+			array(
+				'time'    => time(),
+				'user_id' => is_null( $user_id ) ? null : absint( $user_id ),
+				'phone'   => $masked,
+				'ip'      => sanitize_text_field( $ip ),
+				'action'  => sanitize_key( $action ),
+				'result'  => sanitize_key( $result ),
+			)
+		);
+
+		// Cap at 500 entries.
+		if ( count( $log ) > 500 ) {
+			$log = array_slice( $log, 0, 500 );
+		}
+
+		update_option( 'kwtsms_otp_attempt_log', $log, false );
 	}
 
 	// =========================================================================
@@ -354,7 +459,7 @@ class KwtSMS_API {
 		if ( empty( $this->username ) || empty( $this->password ) ) {
 			return new WP_Error(
 				'kwtsms_no_credentials',
-				__( 'kwtsms API credentials are not configured. Please set them in Settings → kwtsms OTP → Gateway.', 'wp-kwtsms-otp' )
+				__( 'kwtSMS API credentials are not configured. Please set them in Settings → kwtSMS OTP → Gateway.', 'wp-kwtsms-otp' )
 			);
 		}
 

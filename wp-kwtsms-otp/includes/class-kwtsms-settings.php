@@ -26,25 +26,28 @@ class KwtSMS_Settings {
 	 */
 	const DEFAULTS = array(
 		'general'   => array(
-			'otp_mode'         => '2fa',     // '2fa' | 'passwordless' | 'both'
-			'otp_length'       => 6,          // 4 or 6
-			'otp_expiry'       => 3,          // minutes
-			'max_attempts'     => 3,
-			'resend_cooldown'  => 60,         // seconds
-			'login_otp'        => 1,
-			'reset_otp'        => 1,
-			'captcha_provider' => 'none',     // 'none' | 'recaptcha' | 'turnstile'
+			'otp_mode'             => '2fa',     // '2fa' | 'passwordless' | 'both'
+			'otp_length'           => 6,          // 4 or 6
+			'otp_expiry'           => 5,          // minutes
+			'max_attempts'         => 3,
+			'resend_cooldown'      => 120,        // seconds
+			'login_otp'            => 1,
+			'reset_otp'            => 1,
+			'captcha_provider'     => 'none',     // 'none' | 'recaptcha' | 'turnstile'
 			'recaptcha_site_key'   => '',
 			'recaptcha_secret_key' => '',
 			'turnstile_site_key'   => '',
 			'turnstile_secret_key' => '',
+			'referral_link'        => 1,          // show "SMS service by kwtSMS.com" on login pages
+			'default_country_code' => 'KW',       // ISO2 default for phone dropdown
+			'allowed_countries'    => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ), // GCC default
 		),
 		'gateway'   => array(
 			'api_username' => '',
 			'api_password' => '',
 			'sender_id'    => '',
 			'test_mode'    => 1,
-			'test_phone'   => '96599220322',
+			'test_phone'   => '',
 		),
 		'templates' => array(
 			'login_otp' => array(
