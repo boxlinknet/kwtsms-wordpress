@@ -222,6 +222,8 @@ class KwtSMS_API {
 		$this->write_debug_log( 'send_sms()', "SUCCESS: msg-id={$msg_id}" );
 		self::append_send_log( $phone, 'sent' );
 		self::append_sms_history( $phone, $message, 'sent', $type, $msg_id );
+		// Update saved balance so the UI reflects the latest balance after each live send.
+		self::update_saved_balance( (float) ( $response['balance-after'] ?? 0 ) );
 		return array(
 			'msg_id'        => $msg_id,
 			'balance_after' => (float) ( $response['balance-after'] ?? 0 ),
@@ -244,6 +246,22 @@ class KwtSMS_API {
 
 		// Normalize: some API versions return under 'countries', some at root.
 		return isset( $response['countries'] ) ? $response['countries'] : $response;
+	}
+
+	/**
+	 * Persist the latest account balance to the gateway option.
+	 *
+	 * Called after a successful live send or explicit balance check.
+	 *
+	 * @param float $available  Available credits.
+	 * @param float $purchased  Total purchased credits (0 if unknown).
+	 */
+	public static function update_saved_balance( $available, $purchased = 0.0 ) {
+		$gw                      = get_option( 'kwtsms_otp_gateway', array() );
+		$gw['balance_available']  = (float) $available;
+		$gw['balance_purchased']  = $purchased > 0.0 ? (float) $purchased : ( $gw['balance_purchased'] ?? null );
+		$gw['balance_updated_at'] = time();
+		update_option( 'kwtsms_otp_gateway', $gw );
 	}
 
 	/**
