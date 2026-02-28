@@ -439,12 +439,22 @@ class KwtSMS_Admin {
 	 */
 	public function render_page_notices() {
 		// Settings API messages (e.g. "Settings saved.", validation errors).
+		// Capture output and add 'inline' class so WP admin JS doesn't move
+		// these notices to after the <h1> inside our flex header row.
+		ob_start();
 		settings_errors();
+		$se_html = ob_get_clean();
+		// WP outputs settings_errors with single-quoted class attr (class='notice ...').
+		// Add 'inline' so WP admin JS doesn't relocate the notice into our flex header.
+		$se_html = str_replace( "class='notice ", "class='notice inline ", $se_html );
+		echo $se_html; // phpcs:ignore WordPress.Security.EscapeOutput
 
 		// Notice: site is not HTTPS.
+		// The 'inline' class prevents WP admin JS from relocating the notice
+		// to after the first <h1> (which is inside our flex header row).
 		if ( ! is_ssl() ) {
 			printf(
-				'<div class="notice notice-warning is-dismissible"><p><strong>%s</strong> %s</p></div>',
+				'<div class="notice notice-warning inline is-dismissible"><p><strong>%s</strong> %s</p></div>',
 				esc_html__( 'kwtSMS OTP Warning:', 'wp-kwtsms-otp' ),
 				esc_html__( 'Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security.', 'wp-kwtsms-otp' )
 			);
@@ -455,7 +465,7 @@ class KwtSMS_Admin {
 		$password = $this->plugin->settings->get( 'gateway.api_password', '' );
 		if ( empty( $username ) || empty( $password ) ) {
 			printf(
-				'<div class="notice notice-error is-dismissible"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+				'<div class="notice notice-error inline is-dismissible"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
 				esc_html__( 'kwtSMS OTP:', 'wp-kwtsms-otp' ),
 				esc_html__( 'API credentials are not configured. The plugin will not be able to send SMS messages.', 'wp-kwtsms-otp' ),
 				esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ),
@@ -466,7 +476,7 @@ class KwtSMS_Admin {
 		// Notice: test mode is active.
 		if ( $this->plugin->settings->get( 'gateway.test_mode', 1 ) ) {
 			printf(
-				'<div class="notice notice-info is-dismissible"><p>%s</p></div>',
+				'<div class="notice notice-info inline is-dismissible"><p>%s</p></div>',
 				esc_html__( 'kwtSMS OTP is in Test Mode. SMS messages will be queued but not delivered. OTP codes are written to wp-content/debug.log.', 'wp-kwtsms-otp' )
 			);
 		}
