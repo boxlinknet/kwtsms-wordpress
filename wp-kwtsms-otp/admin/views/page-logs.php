@@ -20,6 +20,44 @@ $active_tab    = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_his
 $per_page      = 20;
 $current_page  = max( 1, absint( $_GET['paged'] ?? 1 ) );
 
+// Debug log tab variables — only relevant when debug_logging is enabled.
+$debug_log_path   = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/kwtsms-debug.log' : '';
+$debug_logging_on = (bool) $this->plugin->settings->get( 'general.debug_logging', 0 );
+$debug_log_exists = $debug_log_path && file_exists( $debug_log_path );
+$show_debug_tab   = $debug_logging_on && $debug_log_exists;
+
+// -------------------------------------------------------------------------
+// Handle debug log download.
+// -------------------------------------------------------------------------
+if ( isset( $_GET['action'], $_GET['_wpnonce'] ) &&
+	'download_debug_log' === $_GET['action'] &&
+	$show_debug_tab &&
+	wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_download_debug_log' )
+) {
+	$filename = 'kwtsms-debug-' . date( 'Y-m-d' ) . '.log';
+	header( 'Content-Type: text/plain; charset=UTF-8' );
+	header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
+	header( 'Pragma: no-cache' );
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+	echo file_get_contents( $debug_log_path );
+	exit;
+}
+
+// -------------------------------------------------------------------------
+// Handle debug log clear action.
+// -------------------------------------------------------------------------
+if ( isset( $_GET['action'], $_GET['_wpnonce'] ) &&
+	'clear_debug_log' === $_GET['action'] &&
+	$show_debug_tab &&
+	wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_clear_debug_log' )
+) {
+	// Truncate the log file.
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+	file_put_contents( $debug_log_path, '' );
+	wp_redirect( kwtsms_logs_tab_url( 'debug_log' ) );
+	exit;
+}
+
 // -------------------------------------------------------------------------
 // Handle CSV export.
 // -------------------------------------------------------------------------
@@ -128,6 +166,12 @@ function kwtsms_attempt_result_label( $result ) {
 			class="nav-tab <?php echo 'attempt_log' === $active_tab ? 'nav-tab-active' : ''; ?>">
 			<?php esc_html_e( 'OTP Attempts', 'wp-kwtsms-otp' ); ?>
 		</a>
+		<?php if ( $show_debug_tab ) : ?>
+		<a href="<?php echo esc_url( kwtsms_logs_tab_url( 'debug_log' ) ); ?>"
+			class="nav-tab <?php echo 'debug_log' === $active_tab ? 'nav-tab-active' : ''; ?>">
+			<?php esc_html_e( 'Debug Log', 'wp-kwtsms-otp' ); ?>
+		</a>
+		<?php endif; ?>
 	</nav>
 
 	<div class="kwtsms-log-toolbar" style="display:flex;gap:10px;align-items:center;margin:16px 0;">
@@ -183,7 +227,7 @@ function kwtsms_attempt_result_label( $result ) {
 	</table>
 	<?php endif; ?>
 
-	<?php else : ?>
+	<?php elseif ( 'attempt_log' === $active_tab ) : ?>
 	<!-- ===== OTP Attempts Tab ===== -->
 	<?php if ( empty( $page_entries ) ) : ?>
 	<p><?php esc_html_e( 'No OTP attempts logged yet.', 'wp-kwtsms-otp' ); ?></p>
@@ -221,7 +265,74 @@ function kwtsms_attempt_result_label( $result ) {
 		</tbody>
 	</table>
 	<?php endif; ?>
+
+	<?php elseif ( 'debug_log' === $active_tab && $show_debug_tab ) : ?>
+	<!-- ===== Debug Log Tab ===== -->
+	<?php
+	// Read file, reverse lines (newest first), paginate.
+	$lines_raw       = file( $debug_log_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+	$lines_raw       = $lines_raw ?: array();
+	$lines           = array_reverse( $lines_raw );
+	$total_lines     = count( $lines );
+	$per_page_dbg    = 100;
+	$total_pages_dbg = max( 1, (int) ceil( $total_lines / $per_page_dbg ) );
+	$cur_page_dbg    = min( max( 1, absint( $_GET['paged'] ?? 1 ) ), $total_pages_dbg );
+	$offset_dbg      = ( $cur_page_dbg - 1 ) * $per_page_dbg;
+	$page_lines      = array_slice( $lines, $offset_dbg, $per_page_dbg );
+	?>
+
+	<div style="margin-bottom:16px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">
+		<strong style="color:#888;font-size:12px;"><?php echo esc_html( $debug_log_path ); ?></strong>
+		<a href="<?php echo esc_url( add_query_arg( array(
+			'action'   => 'download_debug_log',
+			'_wpnonce' => wp_create_nonce( 'kwtsms_download_debug_log' ),
+		), admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ) ); ?>"
+		   class="button button-small">
+			&#11015; <?php esc_html_e( 'Download', 'wp-kwtsms-otp' ); ?>
+		</a>
+		<a href="<?php echo esc_url( add_query_arg( array(
+			'action'   => 'clear_debug_log',
+			'_wpnonce' => wp_create_nonce( 'kwtsms_clear_debug_log' ),
+		), admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ) ); ?>"
+		   class="button button-small" style="color:#dc3232;border-color:#dc3232;"
+		   onclick="return confirm('<?php esc_attr_e( 'Delete the contents of the debug log file?', 'wp-kwtsms-otp' ); ?>');">
+			<?php esc_html_e( 'Clear Log File', 'wp-kwtsms-otp' ); ?>
+		</a>
+		<span style="color:#888;font-size:12px;">
+			<?php printf(
+				/* translators: %d: number of log lines */
+				esc_html__( '%d lines total', 'wp-kwtsms-otp' ),
+				(int) $total_lines
+			); ?>
+		</span>
+	</div>
+
+	<?php if ( empty( $page_lines ) ) : ?>
+	<p><?php esc_html_e( 'The debug log is empty.', 'wp-kwtsms-otp' ); ?></p>
+	<?php else : ?>
+	<pre style="background:#1e1e1e;color:#d4d4d4;font-size:12px;line-height:1.6;padding:16px;border-radius:4px;overflow:auto;max-height:600px;white-space:pre-wrap;"><?php
+	foreach ( $page_lines as $line ) {
+		echo esc_html( $line ) . "\n";
+	}
+	?></pre>
+
+	<?php if ( $total_pages_dbg > 1 ) : ?>
+	<div class="tablenav" style="margin-top:12px;">
+		<div class="tablenav-pages">
+			<?php
+			echo paginate_links( array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( 'debug_log' ) ),
+				'format'  => '',
+				'current' => $cur_page_dbg,
+				'total'   => $total_pages_dbg,
+			) );
+			?>
+		</div>
+	</div>
 	<?php endif; ?>
+	<?php endif; ?>
+
+	<?php endif; // end three-way tab ?>
 
 	<!-- Pagination -->
 	<?php if ( $total_pages > 1 ) : ?>
