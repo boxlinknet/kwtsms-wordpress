@@ -18,6 +18,9 @@ $debug_logging   = (bool) $settings->get( 'general.debug_logging', 0 );
 $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 ?>
 <div class="wrap kwtsms-admin-wrap">
+
+	<?php settings_errors(); ?>
+
 	<div class="kwtsms-admin-header">
 		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'kwtSMS OTP — Help &amp; Support', 'wp-kwtsms-otp' ); ?></h1>

@@ -3,12 +3,13 @@
  *
  * Handles:
  *   - CAPTCHA provider field show/hide
- *   - Save & Verify Credentials AJAX (+ coverage section reveal)
+ *   - Login button (verify credentials + persist state)
+ *   - Save & Verify Credentials AJAX
  *   - Sender ID reload
  *   - Send Test SMS AJAX
  *   - SMS template character counter + page count
  *   - API Username phone-number detection warning
- *   - Coverage AJAX load
+ *   - Coverage AJAX load (renders as tag chips)
  */
 
 /* global kwtSmsAdminData, jQuery */
@@ -16,14 +17,26 @@
 ( function ( $ ) {
 	'use strict';
 
-	const data = window.kwtSmsAdminData || {};
+	const data    = window.kwtSmsAdminData || {};
 	const ajaxUrl = data.ajaxUrl || '';
 	const nonce   = data.nonce   || '';
 	const s       = data.strings || {};
 
-	// Track whether credentials have been verified in this page session.
-	// Set to true after a successful "Save & Verify" response.
-	let credentialsVerified = false;
+	// Track whether credentials have been verified.
+	// Initialized from PHP-persisted state so page reload remembers login.
+	let credentialsVerified = !! data.credentialsVerified;
+
+	// =========================================================================
+	// Enable/disable dependent features based on verified state
+	// =========================================================================
+
+	function setDependentFeatures( enabled ) {
+		$( '#kwtsms-reload-senders, #kwtsms-load-coverage, #kwtsms-send-test-sms' )
+			.prop( 'disabled', ! enabled );
+	}
+
+	// Apply initial state from PHP.
+	setDependentFeatures( credentialsVerified );
 
 	// =========================================================================
 	// API Username — warn if it looks like a phone number
@@ -61,31 +74,113 @@
 	updateCaptchaFields(); // Initial state.
 
 	// =========================================================================
-	// Save & Verify Credentials
+	// Login button — verify credentials + persist state
+	// =========================================================================
+
+	function handleVerifyResponse( resp, $status, $loginStatus ) {
+		if ( resp.success ) {
+			const d = resp.data;
+
+			// Populate sender ID dropdown.
+			const $senderSelect = $( '#kwtsms_sender_id' );
+			if ( d.sender_ids && d.sender_ids.length ) {
+				const savedSender = $senderSelect.val();
+				$senderSelect.empty();
+				d.sender_ids.forEach( function ( id ) {
+					const selected = id === savedSender ? ' selected' : '';
+					$senderSelect.append( $( '<option' + selected + '>' ).val( id ).text( id ) );
+				} );
+			}
+
+			// Show balance.
+			const $balance    = $( '#kwtsms-balance' );
+			const $balanceSub = $( '#kwtsms-balance-purchased' );
+			if ( d.balance ) {
+				$balance.text( parseFloat( d.balance.available ).toFixed( 2 ) + ' credits' );
+				if ( d.balance.purchased ) {
+					$balanceSub.text( 'Purchased: ' + parseFloat( d.balance.purchased ).toFixed( 2 ) );
+				}
+			}
+
+			// Update verified state + enable dependent features.
+			credentialsVerified = true;
+			setDependentFeatures( true );
+
+			// Update login status span.
+			const username = $( '#kwtsms_api_username' ).val().trim();
+			const statusMsg = '✓ ' + ( s.connectedAs
+				? s.connectedAs.replace( '%s', username )
+				: 'Connected as ' + username );
+			if ( $loginStatus && $loginStatus.length ) {
+				$loginStatus.html( '<span style="color:#46b450;">' + $( '<span>' ).text( statusMsg ).html() + '</span>' );
+			}
+			if ( $status ) {
+				$status.addClass( 'is-success' ).text( s.verified || 'Credentials verified! ✓' ).show();
+			}
+		} else {
+			credentialsVerified = false;
+			setDependentFeatures( false );
+			const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Verification failed.' );
+			if ( $loginStatus && $loginStatus.length ) {
+				$loginStatus.html( '<span style="color:#dc3232;">' + $( '<span>' ).text( msg ).html() + '</span>' );
+			}
+			if ( $status ) {
+				$status.addClass( 'is-error' ).text( msg ).show();
+			}
+		}
+	}
+
+	$( '#kwtsms-login-btn' ).on( 'click', function () {
+		const $btn         = $( this );
+		const $loginStatus = $( '#kwtsms-login-status' );
+		const username     = $( '#kwtsms_api_username' ).val().trim();
+		const password     = $( '#kwtsms_api_password' ).val().trim();
+
+		if ( ! username || ! password ) {
+			$loginStatus.html(
+				'<span style="color:#dc3232;">' +
+				( s.credentialsMissing || 'Please enter your API username and password first.' ) +
+				'</span>'
+			);
+			return;
+		}
+
+		$btn.prop( 'disabled', true ).text( s.verifying || 'Verifying...' );
+		$loginStatus.html( '' );
+
+		$.post( ajaxUrl, {
+			action:   'kwtsms_verify_credentials',
+			nonce:    nonce,
+			username: username,
+			password: password,
+		} )
+		.done( function ( resp ) {
+			handleVerifyResponse( resp, null, $loginStatus );
+		} )
+		.fail( function () {
+			$loginStatus.html( '<span style="color:#dc3232;">' + ( s.error || 'Network error.' ) + '</span>' );
+		} )
+		.always( function () {
+			$btn.prop( 'disabled', false ).text( s.login || 'Login' );
+		} );
+	} );
+
+	// =========================================================================
+	// Save & Verify Credentials (bottom button)
 	// =========================================================================
 
 	$( '#kwtsms-verify-btn, #kwtsms-reload-senders' ).on( 'click', function () {
 		const $btn    = $( this );
 		const isReload = $btn.attr( 'id' ) === 'kwtsms-reload-senders';
 		const $status = $( '#kwtsms-api-status' );
-		const $balance = $( '#kwtsms-balance' );
-		const $balanceSub = $( '#kwtsms-balance-purchased' );
-		const $senderSelect = $( '#kwtsms_sender_id' );
 		const username = $( '#kwtsms_api_username' ).val().trim();
 		const password = $( '#kwtsms_api_password' ).val().trim();
 
 		if ( ! username || ! password ) {
 			$status.removeClass( 'is-success' ).addClass( 'is-error' )
-				.text( s.credentialsMissing || 'Please enter your API username and password first, then click Save Settings before reloading.' )
+				.text( s.credentialsMissing || 'Please enter your API username and password first.' )
 				.show();
 			return;
-		}
-
-		// Reload Senders requires that credentials were verified in this session
-		// (or are already saved). Warn but still allow if they just want to try.
-		if ( isReload && ! credentialsVerified ) {
-			const savedUser = $btn.closest( 'form' ).find( '#kwtsms_api_username' ).data( 'saved-value' ) || username;
-			// Allow proceed — the AJAX call will fail with a clear error if credentials are wrong.
 		}
 
 		$btn.prop( 'disabled', true ).text( s.verifying || 'Verifying...' );
@@ -98,40 +193,14 @@
 			password: password,
 		} )
 		.done( function ( resp ) {
-			if ( resp.success ) {
-				const d = resp.data;
-
-				// Populate sender ID dropdown.
-				if ( d.sender_ids && d.sender_ids.length ) {
-					const savedSender = $senderSelect.val();
-					$senderSelect.empty();
-					d.sender_ids.forEach( function ( id ) {
-						const selected = id === savedSender ? ' selected' : '';
-						$senderSelect.append( $( '<option' + selected + '>' ).val( id ).text( id ) );
-					} );
-				}
-
-				// Show balance.
-				if ( d.balance ) {
-					$balance.text( parseFloat( d.balance.available ).toFixed( 2 ) + ' credits' );
-					if ( d.balance.purchased ) {
-						$balanceSub.text( 'Purchased: ' + parseFloat( d.balance.purchased ).toFixed( 2 ) );
-					}
-				}
-
-				credentialsVerified = true;
-				$status.addClass( 'is-success' ).text( s.verified || 'Credentials verified! ✓' ).show();
-			} else {
-				const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Verification failed.' );
-				$status.addClass( 'is-error' ).text( msg ).show();
-			}
+			handleVerifyResponse( resp, $status, $( '#kwtsms-login-status' ) );
 		} )
 		.fail( function () {
 			$status.addClass( 'is-error' ).text( s.error || 'Network error. Please try again.' ).show();
 		} )
 		.always( function () {
 			$btn.prop( 'disabled', false ).text(
-				$btn.attr( 'id' ) === 'kwtsms-reload-senders' ? '↻ Reload' : 'Save & Verify Credentials'
+				isReload ? '↻ Reload' : ( s.saveAndVerify || 'Save & Verify Credentials' )
 			);
 		} );
 	} );
@@ -181,7 +250,7 @@
 			$result.text( s.error || 'Network error.' ).css( 'color', '#dc3232' );
 		} )
 		.always( function () {
-			$btn.prop( 'disabled', false ).text( 'Send Gateway Test SMS' );
+			$btn.prop( 'disabled', false ).text( s.sendTestSms || 'Send Gateway Test SMS' );
 		} );
 	} );
 
@@ -215,7 +284,7 @@
 	} );
 
 	// =========================================================================
-	// Coverage load
+	// Coverage load — renders as tag chips (same style as Allowed Countries)
 	// =========================================================================
 
 	$( '#kwtsms-load-coverage' ).on( 'click', function () {
@@ -232,22 +301,22 @@
 		.done( function ( resp ) {
 			if ( resp.success && resp.data && resp.data.coverage ) {
 				const coverage = resp.data.coverage;
-				let html = '<table class="widefat striped" style="max-width:600px;"><thead><tr>';
-				html += '<th>' + 'Country' + '</th><th>' + 'Status' + '</th>';
-				html += '</tr></thead><tbody>';
+				const chipStyle = 'display:inline-flex;align-items:center;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:3px 8px;font-size:13px;';
+				let html = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">';
+
 				if ( Array.isArray( coverage ) ) {
 					coverage.forEach( function ( row ) {
-						const name   = row.country || row.name || JSON.stringify( row );
-						const status = row.status  || row.active || '—';
-						html += '<tr><td>' + $( '<span>' ).text( name ).html() + '</td><td>' + $( '<span>' ).text( String( status ) ).html() + '</td></tr>';
+						const name = row.country || row.name || JSON.stringify( row );
+						html += '<span style="' + chipStyle + '">' + $( '<span>' ).text( name ).html() + '</span>';
 					} );
 				} else {
-					// Object format: {countryCode: status}
+					// Object format: {KW: 'active', SA: 'active', ...}
 					Object.keys( coverage ).forEach( function ( key ) {
-						html += '<tr><td>' + $( '<span>' ).text( key ).html() + '</td><td>' + $( '<span>' ).text( String( coverage[ key ] ) ).html() + '</td></tr>';
+						html += '<span style="' + chipStyle + '">' + $( '<span>' ).text( key ).html() + '</span>';
 					} );
 				}
-				html += '</tbody></table>';
+
+				html += '</div>';
 				$result.html( html );
 			} else {
 				const msg = resp.data && resp.data.message ? resp.data.message : ( s.coverageError || 'Could not load coverage data.' );
@@ -258,7 +327,7 @@
 			$result.html( '<p style="color:#dc3232;">' + ( s.coverageError || 'Network error.' ) + '</p>' );
 		} )
 		.always( function () {
-			$btn.prop( 'disabled', false ).text( 'Load Active Coverage' );
+			$btn.prop( 'disabled', false ).text( s.loadCoverage || 'Load Active Coverage' );
 		} );
 	} );
 
