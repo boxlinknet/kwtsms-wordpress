@@ -55,6 +55,14 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 			return true;
 		} );
 
+		// Mock WP options functions used by append_attempt_log / append_send_log.
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'update_option' )->justReturn( true );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'sanitize_key' )->alias( function ( $v ) {
+			return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $v ) );
+		} );
+
 		// Mock WP functions used in build_message.
 		Functions\when( 'get_locale' )->justReturn( 'en_US' );
 		Functions\when( 'get_bloginfo' )->justReturn( 'Test Site' );
