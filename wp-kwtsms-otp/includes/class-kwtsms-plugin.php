@@ -93,6 +93,9 @@ class KwtSMS_Plugin {
 		// CAPTCHA module — always loaded so it can enqueue on login page.
 		new KwtSMS_Captcha( $this->settings );
 
+		// Third-party plugin integrations (WooCommerce, CF7, WPForms, Elementor).
+		new KwtSMS_Integrations( $this );
+
 		// AJAX handlers.
 		$this->register_ajax_handlers();
 
