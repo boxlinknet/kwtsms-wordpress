@@ -74,6 +74,33 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 					<?php endif; ?>
 				</td>
 			</tr>
+			<tr>
+				<td style="padding:6px 0;"><strong><?php esc_html_e( 'Account Balance', 'wp-kwtsms-otp' ); ?></strong></td>
+				<td>
+					<?php
+					$bal_available = $settings->get( 'gateway.balance_available', null );
+					$bal_updated   = (int) $settings->get( 'gateway.balance_updated_at', 0 );
+					if ( null !== $bal_available ) :
+					?>
+					<span style="color:#46b450;font-weight:600;">
+						<?php echo esc_html( number_format( (float) $bal_available, 2 ) ); ?>
+					</span>
+					<?php if ( $bal_updated > 0 ) : ?>
+					<span style="color:#888;font-size:12px;">
+						<?php printf(
+							/* translators: %s: human-readable time difference */
+							esc_html__( '(updated %s ago)', 'wp-kwtsms-otp' ),
+							esc_html( human_time_diff( $bal_updated, time() ) )
+						); ?>
+					</span>
+					<?php endif; ?>
+					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Gateway Settings →', 'wp-kwtsms-otp' ); ?></a>
+					<?php else : ?>
+					<span style="color:#888;"><?php esc_html_e( 'Not available — Login on the Gateway page first.', 'wp-kwtsms-otp' ); ?></span>
+					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms-otp' ); ?></a>
+					<?php endif; ?>
+				</td>
+			</tr>
 		</table>
 	</div>
 
