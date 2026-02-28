@@ -188,6 +188,20 @@ class Test_KwtSMS_API extends TestCase {
 		// Test mode + WP_DEBUG_LOG — just verify no exception and result is an array.
 		$this->assertIsArray( $result );
 	}
+
+	// =========================================================================
+	// Debug log rotation
+	// =========================================================================
+
+	public function test_debug_log_max_bytes_constant_is_one_mib() {
+		$this->assertSame( 1048576, KwtSMS_API::DEBUG_LOG_MAX_BYTES );
+	}
+
+	public function test_debug_log_rotation_code_exists_in_source() {
+		$source = file_get_contents( dirname( __DIR__ ) . '/includes/class-kwtsms-api.php' );
+		$this->assertStringContainsString( 'DEBUG_LOG_MAX_BYTES', $source );
+		$this->assertStringContainsString( 'rename(', $source );
+	}
 }
 
 /**
