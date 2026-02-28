@@ -286,6 +286,12 @@ class KwtSMS_Admin {
 			'test_mode'            => ! empty( $raw['test_mode'] ) ? 1 : 0,
 			'test_phone'           => $test_phone,
 			'credentials_verified' => $credentials_verified,
+			// Preserve Login-AJAX-managed fields — form save must not clear them.
+			'sender_ids'           => $current_gw['sender_ids']         ?? array(),
+			'balance_available'    => $current_gw['balance_available']  ?? null,
+			'balance_purchased'    => $current_gw['balance_purchased']  ?? null,
+			'balance_updated_at'   => $current_gw['balance_updated_at'] ?? 0,
+			'coverage'             => $current_gw['coverage']           ?? array(),
 		);
 	}
 
@@ -385,6 +391,13 @@ class KwtSMS_Admin {
 				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
 				'nonce'                => wp_create_nonce( 'kwtsms_admin_nonce' ),
 				'credentialsVerified'  => (bool) $this->plugin->settings->get( 'gateway.credentials_verified', false ),
+				'savedSenderIds'      => array_values( (array) $this->plugin->settings->get( 'gateway.sender_ids', array() ) ),
+				'savedBalance'        => array(
+					'available'  => $this->plugin->settings->get( 'gateway.balance_available', null ),
+					'purchased'  => $this->plugin->settings->get( 'gateway.balance_purchased', null ),
+					'updated_at' => (int) $this->plugin->settings->get( 'gateway.balance_updated_at', 0 ),
+				),
+				'savedCoverage'       => array_values( (array) $this->plugin->settings->get( 'gateway.coverage', array() ) ),
 				'strings'              => array(
 					'verifying'          => __( 'Verifying...', 'wp-kwtsms-otp' ),
 					'verified'           => __( 'Credentials verified!', 'wp-kwtsms-otp' ),
@@ -397,6 +410,7 @@ class KwtSMS_Admin {
 					'loadingCoverage'    => __( 'Loading coverage...', 'wp-kwtsms-otp' ),
 					'coverageError'      => __( 'Could not load coverage data.', 'wp-kwtsms-otp' ),
 					'credentialsMissing' => __( 'Please enter your API username and password, then click "Save Settings" before performing this action.', 'wp-kwtsms-otp' ),
+					'connectedAs'        => __( 'Connected as %s', 'wp-kwtsms-otp' ),
 				),
 			)
 		);

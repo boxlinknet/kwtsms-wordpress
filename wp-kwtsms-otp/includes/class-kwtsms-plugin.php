@@ -153,14 +153,24 @@ class KwtSMS_Plugin {
 			);
 		}
 
-		// Persist the verified state and the credentials used so that
-		// sanitize_gateway_settings() can compare them on the next form save.
-		// The password is already stored in plain text by the Settings API
-		// when saved via the form, so this is consistent with that behaviour.
-		$gw = get_option( 'kwtsms_otp_gateway', array() );
+		// Also fetch coverage to persist alongside sender IDs and balance.
+		$coverage     = $api->get_coverage();
+		$coverage_arr = ( ! is_wp_error( $coverage ) ) ? (array) $coverage : array();
+
+		// Persist the verified state, credentials, and all fetched gateway data
+		// so that page reloads (and multi-worker SQLite in WP Playground) do not
+		// lose the sender ID list, balance, or coverage between AJAX and form-save.
+		$gw                         = get_option( 'kwtsms_otp_gateway', array() );
 		$gw['credentials_verified'] = 1;
 		$gw['api_username']         = $username;
 		$gw['api_password']         = $password;
+		$gw['sender_ids']           = (array) $sender_ids;
+		$gw['coverage']             = $coverage_arr;
+		if ( ! is_wp_error( $balance ) ) {
+			$gw['balance_available']  = $balance['available']  ?? null;
+			$gw['balance_purchased']  = $balance['purchased']  ?? null;
+			$gw['balance_updated_at'] = time();
+		}
 		update_option( 'kwtsms_otp_gateway', $gw );
 
 		$balance_data = is_wp_error( $balance ) ? null : $balance;
@@ -169,6 +179,7 @@ class KwtSMS_Plugin {
 			array(
 				'sender_ids' => $sender_ids,
 				'balance'    => $balance_data,
+				'coverage'   => $coverage_arr,
 			)
 		);
 	}
