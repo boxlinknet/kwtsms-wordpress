@@ -269,19 +269,32 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 	?>
 	<hr style="margin:30px 0;" />
 	<h2><?php esc_html_e( 'Recent OTP Activity', 'wp-kwtsms-otp' ); ?></h2>
-	<table class="widefat striped kwtsms-otp-log" style="max-width:700px;">
+	<table class="widefat striped kwtsms-otp-log" style="max-width:800px;">
 		<thead>
 			<tr>
 				<th><?php esc_html_e( 'Date / Time', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Phone', 'wp-kwtsms-otp' ); ?></th>
+				<th><?php esc_html_e( 'Type', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Status', 'wp-kwtsms-otp' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
-			<?php foreach ( $send_log as $entry ) : ?>
+			<?php foreach ( array_reverse( $send_log ) as $entry ) : ?>
 			<tr>
 				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $entry['time'] ?? 0 ) ); ?></td>
 				<td><?php echo esc_html( $entry['phone'] ?? '' ); ?></td>
+				<td>
+					<?php
+					$entry_type = $entry['type'] ?? '';
+					if ( 'test' === $entry_type ) {
+						echo '<span style="color:#888;">' . esc_html__( 'Test', 'wp-kwtsms-otp' ) . '</span>';
+					} elseif ( $entry_type ) {
+						echo '<span>' . esc_html( ucfirst( $entry_type ) ) . '</span>';
+					} else {
+						echo '<span style="color:#888;">—</span>';
+					}
+					?>
+				</td>
 				<td style="color:<?php echo 'sent' === ( $entry['status'] ?? '' ) ? '#46b450' : '#dc3232'; ?>;">
 					<?php echo 'sent' === ( $entry['status'] ?? '' ) ? esc_html__( 'Sent', 'wp-kwtsms-otp' ) : esc_html__( 'Failed', 'wp-kwtsms-otp' ); ?>
 				</td>
@@ -289,5 +302,10 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 			<?php endforeach; ?>
 		</tbody>
 	</table>
+	<p style="margin-top:8px;">
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=sms_history' ) ); ?>">
+			<?php esc_html_e( 'View full SMS history in Logs →', 'wp-kwtsms-otp' ); ?>
+		</a>
+	</p>
 	<?php endif; ?>
 </div>

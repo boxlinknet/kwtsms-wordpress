@@ -152,7 +152,7 @@ class KwtSMS_API {
 				__( 'Cannot send SMS: phone number is missing. Please check user phone in their profile.', 'wp-kwtsms-otp' )
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: phone missing' );
-			self::append_send_log( '?', 'failed' );
+			self::append_send_log( '?', 'failed', $type );
 			self::append_sms_history( $phone, $message, 'failed', $type, '' );
 			return $err;
 		}
@@ -163,7 +163,7 @@ class KwtSMS_API {
 				__( 'Cannot send SMS: message is empty. Please check your SMS templates in Settings → kwtSMS OTP → Templates.', 'wp-kwtsms-otp' )
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: message empty' );
-			self::append_send_log( $phone, 'failed' );
+			self::append_send_log( $phone, 'failed', $type );
 			self::append_sms_history( $phone, $message, 'failed', $type, '' );
 			return $err;
 		}
@@ -175,7 +175,7 @@ class KwtSMS_API {
 				__( 'Cannot send SMS: no Sender ID configured. Go to Settings → kwtSMS OTP → Gateway, save your credentials, then choose a Sender ID from the dropdown.', 'wp-kwtsms-otp' )
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty (live mode)' );
-			self::append_send_log( $phone, 'failed' );
+			self::append_send_log( $phone, 'failed', $type );
 			self::append_sms_history( $phone, $message, 'failed', $type, '' );
 			return $err;
 		}
@@ -204,7 +204,7 @@ class KwtSMS_API {
 				'balance_after' => 0.0,
 			);
 			$this->write_debug_log( 'send_sms()', "TEST mode — mock sent, msg_id={$test_msg_id}" );
-			self::append_send_log( $phone, 'sent' );
+			self::append_send_log( $phone, 'sent', $type );
 			self::append_sms_history( $phone, $message, 'sent', $type, $test_msg_id );
 			return $result;
 		}
@@ -213,14 +213,14 @@ class KwtSMS_API {
 
 		if ( is_wp_error( $response ) ) {
 			$this->write_debug_log( 'send_sms()', 'FAILED: ' . $response->get_error_message() );
-			self::append_send_log( $phone, 'failed' );
+			self::append_send_log( $phone, 'failed', $type );
 			self::append_sms_history( $phone, $message, 'failed', $type, '' );
 			return $response;
 		}
 
 		$msg_id = sanitize_text_field( $response['msg-id'] ?? '' );
 		$this->write_debug_log( 'send_sms()', "SUCCESS: msg-id={$msg_id}" );
-		self::append_send_log( $phone, 'sent' );
+		self::append_send_log( $phone, 'sent', $type );
 		self::append_sms_history( $phone, $message, 'sent', $type, $msg_id );
 		// Update saved balance so the UI reflects the latest balance after each live send.
 		self::update_saved_balance( (float) ( $response['balance-after'] ?? 0 ) );
@@ -297,8 +297,9 @@ class KwtSMS_API {
 	 *
 	 * @param string $phone  Normalised phone number.
 	 * @param string $status 'sent' or 'failed'.
+	 * @param string $type   Context type: 'login'|'reset'|'passwordless'|'welcome'|'test'.
 	 */
-	public static function append_send_log( $phone, $status ) {
+	public static function append_send_log( $phone, $status, $type = '' ) {
 		$log = get_option( 'kwtsms_otp_send_log', array() );
 		if ( ! is_array( $log ) ) {
 			$log = array();
@@ -310,6 +311,7 @@ class KwtSMS_API {
 				'time'   => time(),
 				'phone'  => sanitize_text_field( $phone ), // full phone — admin-only view
 				'status' => $status,
+				'type'   => sanitize_key( $type ),
 			)
 		);
 
