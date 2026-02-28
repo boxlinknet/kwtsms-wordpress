@@ -203,3 +203,255 @@ class Test_KwtSMS_Woo extends TestCase {
 		return $plugin;
 	}
 }
+
+/**
+ * Class Test_KwtSMS_CF7
+ *
+ * Tests for the Contact Form 7 integration class.
+ */
+class Test_KwtSMS_CF7 extends TestCase {
+
+	/**
+	 * Hooks captured during add_action calls.
+	 *
+	 * @var string[]
+	 */
+	private $registered_actions = array();
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+
+		$this->registered_actions = array();
+
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
+
+		Functions\when( 'add_action' )->alias( function ( $hook ) {
+			$this->registered_actions[] = $hook;
+			return null;
+		} );
+		Functions\when( 'add_filter' )->justReturn( null );
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	// =========================================================================
+	// Class / file existence
+	// =========================================================================
+
+	public function test_class_exists() {
+		$this->assertTrue( class_exists( 'KwtSMS_CF7' ) );
+	}
+
+	public function test_integration_file_exists() {
+		$this->assertFileExists( dirname( __DIR__ ) . '/includes/integrations/class-kwtsms-cf7.php' );
+	}
+
+	// =========================================================================
+	// Hook registration
+	// =========================================================================
+
+	public function test_constructor_registers_wpcf7_mail_sent_hook() {
+		$plugin = $this->make_plugin_stub();
+		new KwtSMS_CF7( $plugin );
+
+		$this->assertContains( 'wpcf7_mail_sent', $this->registered_actions );
+	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
+
+	/**
+	 * Build a minimal KwtSMS_Plugin stub for CF7 tests.
+	 *
+	 * @return KwtSMS_Plugin
+	 */
+	private function make_plugin_stub() {
+		$settings = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'get' ) )
+			->getMock();
+		$settings->method( 'get' )->willReturn( '' );
+
+		/** @var KwtSMS_Plugin $plugin */
+		$plugin           = $this->getMockBuilder( 'KwtSMS_Plugin' )
+			->disableOriginalConstructor()
+			->getMock();
+		$plugin->settings = $settings;
+
+		return $plugin;
+	}
+}
+
+/**
+ * Class Test_KwtSMS_WPForms
+ *
+ * Tests for the WPForms integration class.
+ */
+class Test_KwtSMS_WPForms extends TestCase {
+
+	/**
+	 * Hooks captured during add_action calls.
+	 *
+	 * @var string[]
+	 */
+	private $registered_actions = array();
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+
+		$this->registered_actions = array();
+
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
+
+		Functions\when( 'add_action' )->alias( function ( $hook ) {
+			$this->registered_actions[] = $hook;
+			return null;
+		} );
+		Functions\when( 'add_filter' )->justReturn( null );
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	// =========================================================================
+	// Class / file existence
+	// =========================================================================
+
+	public function test_class_exists() {
+		$this->assertTrue( class_exists( 'KwtSMS_WPForms' ) );
+	}
+
+	public function test_integration_file_exists() {
+		$this->assertFileExists( dirname( __DIR__ ) . '/includes/integrations/class-kwtsms-wpforms.php' );
+	}
+
+	// =========================================================================
+	// Hook registration
+	// =========================================================================
+
+	public function test_constructor_registers_wpforms_process_complete_hook() {
+		$plugin = $this->make_plugin_stub();
+		new KwtSMS_WPForms( $plugin );
+
+		$this->assertContains( 'wpforms_process_complete', $this->registered_actions );
+	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
+
+	/**
+	 * Build a minimal KwtSMS_Plugin stub for WPForms tests.
+	 *
+	 * @return KwtSMS_Plugin
+	 */
+	private function make_plugin_stub() {
+		$settings = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'get' ) )
+			->getMock();
+		$settings->method( 'get' )->willReturn( '' );
+
+		/** @var KwtSMS_Plugin $plugin */
+		$plugin           = $this->getMockBuilder( 'KwtSMS_Plugin' )
+			->disableOriginalConstructor()
+			->getMock();
+		$plugin->settings = $settings;
+
+		return $plugin;
+	}
+}
+
+/**
+ * Class Test_KwtSMS_Elementor
+ *
+ * Tests for the Elementor Pro Forms integration class.
+ */
+class Test_KwtSMS_Elementor extends TestCase {
+
+	/**
+	 * Hooks captured during add_action calls.
+	 *
+	 * @var string[]
+	 */
+	private $registered_actions = array();
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+
+		$this->registered_actions = array();
+
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
+
+		Functions\when( 'add_action' )->alias( function ( $hook ) {
+			$this->registered_actions[] = $hook;
+			return null;
+		} );
+		Functions\when( 'add_filter' )->justReturn( null );
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	// =========================================================================
+	// Class / file existence
+	// =========================================================================
+
+	public function test_class_exists() {
+		$this->assertTrue( class_exists( 'KwtSMS_Elementor' ) );
+	}
+
+	public function test_integration_file_exists() {
+		$this->assertFileExists( dirname( __DIR__ ) . '/includes/integrations/class-kwtsms-elementor.php' );
+	}
+
+	// =========================================================================
+	// Hook registration
+	// =========================================================================
+
+	public function test_constructor_registers_elementor_forms_hook() {
+		$plugin = $this->make_plugin_stub();
+		new KwtSMS_Elementor( $plugin );
+
+		$this->assertContains( 'elementor_pro/forms/new_record', $this->registered_actions );
+	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
+
+	/**
+	 * Build a minimal KwtSMS_Plugin stub for Elementor tests.
+	 *
+	 * @return KwtSMS_Plugin
+	 */
+	private function make_plugin_stub() {
+		$settings = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'get' ) )
+			->getMock();
+		$settings->method( 'get' )->willReturn( '' );
+
+		/** @var KwtSMS_Plugin $plugin */
+		$plugin           = $this->getMockBuilder( 'KwtSMS_Plugin' )
+			->disableOriginalConstructor()
+			->getMock();
+		$plugin->settings = $settings;
+
+		return $plugin;
+	}
+}

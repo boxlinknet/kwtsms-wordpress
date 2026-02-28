@@ -54,6 +54,20 @@ class KwtSMS_Integrations {
 			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-woo.php';
 			new KwtSMS_Woo( $this->plugin );
 		}
-		// Future: CF7, WPForms, Elementor integrations go here.
+
+		if ( class_exists( 'WPCF7' ) ) {
+			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-cf7.php';
+			new KwtSMS_CF7( $this->plugin );
+		}
+
+		if ( function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' ) ) {
+			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-wpforms.php';
+			new KwtSMS_WPForms( $this->plugin );
+		}
+
+		if ( did_action( 'elementor/loaded' ) || class_exists( '\Elementor\Plugin' ) ) {
+			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-elementor.php';
+			new KwtSMS_Elementor( $this->plugin );
+		}
 	}
 }
