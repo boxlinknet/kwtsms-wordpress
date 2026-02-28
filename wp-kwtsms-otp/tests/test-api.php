@@ -192,21 +192,73 @@ class Test_KwtSMS_API extends TestCase {
 
 /**
  * Minimal WP_Error stub for unit tests.
+ *
+ * Supports multiple errors via add() so that registration-form validation
+ * tests can call $errors->add() and $errors->has_errors() exactly as the
+ * real WP_Error class does.
  */
 if ( ! class_exists( 'WP_Error' ) ) {
 	class WP_Error {
-		private $code;
-		private $message;
-		private $data;
+		/** @var array<int,array{code:string,message:string,data:mixed}> */
+		private $errors = array();
 
 		public function __construct( $code = '', $message = '', $data = array() ) {
-			$this->code    = $code;
-			$this->message = $message;
-			$this->data    = $data;
+			if ( '' !== $code ) {
+				$this->errors[] = array(
+					'code'    => $code,
+					'message' => $message,
+					'data'    => $data,
+				);
+			}
 		}
 
-		public function get_error_code() { return $this->code; }
-		public function get_error_message() { return $this->message; }
-		public function get_error_data() { return $this->data; }
+		/**
+		 * Add an error — mirrors WP_Error::add().
+		 *
+		 * @param string $code    Error code.
+		 * @param string $message Human-readable message.
+		 * @param mixed  $data    Optional data.
+		 */
+		public function add( $code, $message, $data = array() ) {
+			$this->errors[] = array(
+				'code'    => $code,
+				'message' => $message,
+				'data'    => $data,
+			);
+		}
+
+		/** @return bool True if any errors have been added. */
+		public function has_errors() {
+			return ! empty( $this->errors );
+		}
+
+		/** @return string First error code, or empty string when no errors. */
+		public function get_error_code() {
+			return isset( $this->errors[0] ) ? $this->errors[0]['code'] : '';
+		}
+
+		/**
+		 * Return message for a specific error code, or first message when no
+		 * code is given.
+		 *
+		 * @param string $code Optional error code to filter by.
+		 * @return string
+		 */
+		public function get_error_message( $code = '' ) {
+			if ( '' === $code ) {
+				return isset( $this->errors[0] ) ? $this->errors[0]['message'] : '';
+			}
+			foreach ( $this->errors as $err ) {
+				if ( $err['code'] === $code ) {
+					return $err['message'];
+				}
+			}
+			return '';
+		}
+
+		/** @return mixed First error data, or empty array. */
+		public function get_error_data() {
+			return isset( $this->errors[0] ) ? $this->errors[0]['data'] : array();
+		}
 	}
 }
