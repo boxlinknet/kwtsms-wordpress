@@ -120,7 +120,8 @@ class KwtSMS_Reset_OTP {
 		$result   = $this->plugin->api->send_sms(
 			$phone,
 			$this->plugin->settings->get( 'gateway.sender_id', '' ),
-			$message
+			$message,
+			'reset'
 		);
 
 		if ( is_wp_error( $result ) ) {
