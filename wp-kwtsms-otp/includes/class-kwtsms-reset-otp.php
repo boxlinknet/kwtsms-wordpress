@@ -102,7 +102,7 @@ class KwtSMS_Reset_OTP {
 
 		// Rate-limit checks: per-phone, per-IP, per-account.
 		// Errors are injected via lostpassword_post so WP renders the form with the message.
-		$rate_limited = $this->plugin->otp->is_rate_limited( $phone )
+		$rate_limited = $this->plugin->otp->is_rate_limited( $phone, 'reset', $resolved_user->ID )
 			|| $this->plugin->otp->is_ip_rate_limited( 'reset', $resolved_user->ID, $phone )
 			|| $this->plugin->otp->is_user_rate_limited( $resolved_user->ID, 'reset', $phone );
 
