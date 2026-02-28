@@ -224,7 +224,7 @@ class KwtSMS_Plugin {
 		check_ajax_referer( 'kwtsms_otp_nonce', 'nonce' );
 
 		$session_token = sanitize_text_field( wp_unslash( $_POST['token'] ?? '' ) );
-		$context       = sanitize_key( $_POST['context'] ?? 'login' );
+		$context       = sanitize_key( wp_unslash( $_POST['context'] ?? 'login' ) );
 
 		// Normalise context to either 'reset' or 'login'.
 		if ( 'reset' !== $context ) {
