@@ -407,7 +407,10 @@ class KwtSMS_Admin {
 	// =========================================================================
 
 	/**
-	 * Display contextual admin notices on the plugin settings pages.
+	 * Hook callback for admin_notices — skips plugin pages (they render inline).
+	 *
+	 * This prevents duplicate rendering: plugin pages call render_page_notices()
+	 * directly inside the .wrap div so notices appear before the logo header.
 	 */
 	public function show_admin_notices() {
 		$screen = get_current_screen();
@@ -421,14 +424,27 @@ class KwtSMS_Admin {
 			true
 		) || strpos( $screen->id, 'kwtsms' ) !== false;
 
-		if ( ! $is_plugin_page ) {
+		// Plugin pages render notices inline (before the logo) — skip here.
+		if ( $is_plugin_page ) {
 			return;
 		}
+	}
+
+	/**
+	 * Render contextual plugin notices inline.
+	 *
+	 * Called at the top of every plugin page template, before the logo header,
+	 * so notices visually appear above the branding rather than beside it.
+	 * Also calls settings_errors() to show Settings API save/validation messages.
+	 */
+	public function render_page_notices() {
+		// Settings API messages (e.g. "Settings saved.", validation errors).
+		settings_errors();
 
 		// Notice: site is not HTTPS.
 		if ( ! is_ssl() ) {
 			printf(
-				'<div class="notice notice-warning"><p><strong>%s</strong> %s</p></div>',
+				'<div class="notice notice-warning is-dismissible"><p><strong>%s</strong> %s</p></div>',
 				esc_html__( 'kwtSMS OTP Warning:', 'wp-kwtsms-otp' ),
 				esc_html__( 'Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security.', 'wp-kwtsms-otp' )
 			);
@@ -439,7 +455,7 @@ class KwtSMS_Admin {
 		$password = $this->plugin->settings->get( 'gateway.api_password', '' );
 		if ( empty( $username ) || empty( $password ) ) {
 			printf(
-				'<div class="notice notice-error"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+				'<div class="notice notice-error is-dismissible"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
 				esc_html__( 'kwtSMS OTP:', 'wp-kwtsms-otp' ),
 				esc_html__( 'API credentials are not configured. The plugin will not be able to send SMS messages.', 'wp-kwtsms-otp' ),
 				esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ),
@@ -450,7 +466,7 @@ class KwtSMS_Admin {
 		// Notice: test mode is active.
 		if ( $this->plugin->settings->get( 'gateway.test_mode', 1 ) ) {
 			printf(
-				'<div class="notice notice-info"><p>%s</p></div>',
+				'<div class="notice notice-info is-dismissible"><p>%s</p></div>',
 				esc_html__( 'kwtSMS OTP is in Test Mode. SMS messages will be queued but not delivered. OTP codes are written to wp-content/debug.log.', 'wp-kwtsms-otp' )
 			);
 		}

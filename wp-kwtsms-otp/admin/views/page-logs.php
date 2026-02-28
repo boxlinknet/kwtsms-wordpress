@@ -111,7 +111,7 @@ function kwtsms_attempt_result_label( $result ) {
 
 <div class="wrap kwtsms-admin-wrap">
 
-	<?php settings_errors(); ?>
+	<?php $this->render_page_notices(); ?>
 
 	<div class="kwtsms-admin-header">
 		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
