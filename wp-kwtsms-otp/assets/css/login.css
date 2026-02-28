@@ -141,15 +141,6 @@ body.login {
 	outline: none;
 }
 
-/* Resend link — brand orange */
-.kwtsms-resend-btn {
-	color: #FFA200;
-}
-
-.kwtsms-resend-btn:hover:not(:disabled) {
-	color: #c07e00;
-}
-
 /* =========================================================================
    Resend button
    ========================================================================= */
@@ -162,11 +153,16 @@ body.login {
 .kwtsms-resend-btn {
 	background: transparent;
 	border: none;
+	color: #FFA200;
 	cursor: pointer;
 	font-size: 14px;
 	padding: 0;
 	text-decoration: underline;
 	transition: color 0.15s;
+}
+
+.kwtsms-resend-btn:hover:not(:disabled) {
+	color: #c07e00;
 }
 
 .kwtsms-resend-btn:disabled {

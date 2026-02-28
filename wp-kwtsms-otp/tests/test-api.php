@@ -17,6 +17,15 @@ class Test_KwtSMS_API extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		Monkey\setUp();
+
+		// Mock WP options / sanitize functions used by append_send_log / append_attempt_log.
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'update_option' )->justReturn( true );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'sanitize_textarea_field' )->alias( 'trim' );
+		Functions\when( 'sanitize_key' )->alias( function ( $v ) {
+			return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $v ) );
+		} );
 	}
 
 	protected function tearDown(): void {
@@ -121,7 +130,6 @@ class Test_KwtSMS_API extends TestCase {
 	public function test_map_error_code_returns_fallback_for_unknown_code() {
 		Functions\when( '__' )->returnArg( 1 );
 		Functions\when( 'esc_html' )->returnArg( 1 );
-		Functions\when( 'sprintf' )->alias( 'sprintf' );
 		$msg = KwtSMS_API::map_error_code( 'ERR999' );
 		$this->assertIsString( $msg );
 		$this->assertStringContainsString( 'ERR999', $msg );
