@@ -69,7 +69,8 @@ class KwtSMS_Plugin {
 		$this->api      = new KwtSMS_API(
 			$this->settings->get( 'gateway.api_username', '' ),
 			$this->settings->get( 'gateway.api_password', '' ),
-			(bool) $this->settings->get( 'gateway.test_mode', true )
+			(bool) $this->settings->get( 'gateway.test_mode', true ),
+			(bool) $this->settings->get( 'general.debug_logging', 0 )
 		);
 		$this->otp = new KwtSMS_OTP_Engine( $this->settings );
 
