@@ -35,7 +35,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 	?>
 	<div class="kwtsms-balance-bar" id="kwtsms-balance-card"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
 		<div class="kwtsms-balance-bar-main">
-			💳 <strong id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></strong>
+			<strong id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></strong>
 			<?php esc_html_e( 'credits available', 'wp-kwtsms-otp' ); ?>
 		</div>
 		<div class="kwtsms-balance-bar-sub" id="kwtsms-balance-purchased">
@@ -43,20 +43,6 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 				<?php printf( esc_html__( 'of %s purchased', 'wp-kwtsms-otp' ), esc_html( number_format( (float) $bal_purchased, 2 ) ) ); ?>
 			<?php endif; ?>
 		</div>
-	</div>
-
-	<!-- API Login Status -->
-	<div id="kwtsms-api-status" class="kwtsms-api-status<?php echo $credentials_verified ? ' is-success' : ''; ?>"
-		<?php echo $credentials_verified ? '' : 'style="display:none;"'; ?> aria-live="polite">
-		<?php if ( $credentials_verified ) : ?>
-			<?php
-			printf(
-				/* translators: %s: API username */
-				esc_html__( 'Connected as %s', 'wp-kwtsms-otp' ),
-				'<strong>' . esc_html( $gateway['api_username'] ) . '</strong>'
-			);
-			?>
-		<?php endif; ?>
 	</div>
 
 	<form method="post" action="options.php" id="kwtsms-gateway-form">
@@ -192,7 +178,17 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 					$saved_cov = $gateway['coverage'] ?? array();
 					if ( ! empty( $saved_cov ) ) :
 						foreach ( $saved_cov as $c ) :
-							$name = is_array( $c ) ? ( $c['name'] ?? $c['country'] ?? (string) $c ) : (string) $c;
+							if ( is_array( $c ) ) {
+								$name = $c['name'] ?? $c['country'] ?? $c['countryName'] ?? $c['CountryName'] ?? $c['cc'] ?? '';
+								if ( '' === $name ) {
+									foreach ( $c as $v ) {
+										if ( is_string( $v ) && '' !== $v ) { $name = $v; break; }
+									}
+								}
+							} else {
+								$name = (string) $c;
+							}
+							if ( '' === $name ) continue;
 							echo '<span class="kwtsms-tag-chip">' . esc_html( $name ) . '</span>';
 						endforeach;
 					endif;
