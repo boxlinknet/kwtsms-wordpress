@@ -97,9 +97,9 @@
 			const $balance    = $( '#kwtsms-balance' );
 			const $balanceSub = $( '#kwtsms-balance-purchased' );
 			if ( d.balance ) {
-				$balance.text( parseFloat( d.balance.available ).toFixed( 2 ) + ' credits' );
+				$balance.text( parseFloat( d.balance.available ).toFixed( 2 ) );
 				if ( d.balance.purchased ) {
-					$balanceSub.text( 'Purchased: ' + parseFloat( d.balance.purchased ).toFixed( 2 ) );
+					$balanceSub.text( 'of ' + parseFloat( d.balance.purchased ).toFixed( 2 ) + ' purchased' );
 				}
 			}
 

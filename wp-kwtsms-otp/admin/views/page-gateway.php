@@ -33,12 +33,12 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 	$bal_available = $gateway['balance_available'] ?? null;
 	$bal_purchased = $gateway['balance_purchased'] ?? null;
 	?>
-	<div class="kwtsms-balance-card" id="kwtsms-balance-card">
-		<div class="kwtsms-balance-label"><?php esc_html_e( 'Account Balance', 'wp-kwtsms-otp' ); ?></div>
-		<div class="kwtsms-balance-value" id="kwtsms-balance">
-			<?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?>
+	<div class="kwtsms-balance-bar" id="kwtsms-balance-card">
+		<div class="kwtsms-balance-bar-main">
+			💳 <strong id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></strong>
+			<?php esc_html_e( 'credits available', 'wp-kwtsms-otp' ); ?>
 		</div>
-		<div class="kwtsms-balance-sub" id="kwtsms-balance-purchased">
+		<div class="kwtsms-balance-bar-sub" id="kwtsms-balance-purchased">
 			<?php if ( null !== $bal_purchased && $bal_purchased > 0 ) : ?>
 				<?php printf( esc_html__( 'of %s purchased', 'wp-kwtsms-otp' ), esc_html( number_format( (float) $bal_purchased, 2 ) ) ); ?>
 			<?php endif; ?>
