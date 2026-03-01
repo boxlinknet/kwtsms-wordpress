@@ -335,6 +335,31 @@
 	margin: 0 0 26px;
 }
 
+#kwtsms-unsaved-hint {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	background: #fffbe6;
+	border: 1px solid #ffe066;
+	border-left: 4px solid #FFA200;
+	border-radius: 4px;
+	padding: 10px 14px;
+	margin-bottom: 22px;
+	text-align: left;
+}
+
+#kwtsms-unsaved-hint-icon {
+	font-size: 16px;
+	line-height: 1.4;
+	flex-shrink: 0;
+}
+
+#kwtsms-unsaved-hint-text {
+	font-size: 13px;
+	color: #5a4000;
+	line-height: 1.55;
+}
+
 #kwtsms-unsaved-actions {
 	display: flex;
 	gap: 12px;

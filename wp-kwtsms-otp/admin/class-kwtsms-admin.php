@@ -671,6 +671,7 @@ class KwtSMS_Admin {
 					'unsavedBody'        => __( 'You have unsaved changes. Leaving this page will discard them.', 'wp-kwtsms-otp' ),
 					'unsavedStay'        => __( 'Stay on Page', 'wp-kwtsms-otp' ),
 					'unsavedLeave'       => __( 'Leave Page', 'wp-kwtsms-otp' ),
+					'unsavedHint'        => __( 'To save: click "Stay on Page", then scroll to the bottom and click the Save Settings button.', 'wp-kwtsms-otp' ),
 				),
 			)
 		);
