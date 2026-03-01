@@ -119,6 +119,15 @@ class KwtSMS_Reset_OTP {
 			return;
 		}
 
+		// Anti-enumeration: silently succeed for blocked phones without sending SMS.
+		if ( $this->plugin->otp->is_phone_blocked( $phone ) ) {
+			add_filter( 'send_retrieve_password_email', '__return_false' );
+			wp_safe_redirect(
+				add_query_arg( 'action', 'kwtsms_reset_otp', wp_login_url() )
+			);
+			exit;
+		}
+
 		// Generate OTP and send SMS.
 		$otp_code = $this->plugin->otp->generate( $resolved_user->ID, 'reset' );
 		$message  = $this->plugin->otp->build_message( $otp_code, 'reset_otp' );

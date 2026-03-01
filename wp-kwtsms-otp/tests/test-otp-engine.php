@@ -428,6 +428,63 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	}
 
 	/**
+	 * Storing a formatted number (with spaces) in blocked_phones and checking
+	 * the normalised (digits-only) form should still return true.
+	 *
+	 * This verifies that is_phone_blocked() normalises both the stored list
+	 * entries and the incoming phone before comparison.
+	 */
+	public function test_is_phone_blocked_matches_formatted_number() {
+		$this->settings = $this->createMock( KwtSMS_Settings::class );
+		$this->settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) {
+				$map = array(
+					'general.otp_length'      => 6,
+					'general.otp_expiry'      => 3,
+					'general.max_attempts'    => 3,
+					'general.resend_cooldown' => 60,
+					// Stored with spaces — normalisation must strip them.
+					'general.blocked_phones'  => '965 99 123456',
+				);
+				return $map[ $key ] ?? $default;
+			}
+		);
+		$engine = new KwtSMS_OTP_Engine( $this->settings );
+
+		// digits-only form of '965 99 123456' — normalisation should match.
+		$this->assertTrue(
+			$engine->is_phone_blocked( '96599123456' ),
+			'Formatted number in block list must match digits-only input after normalisation.'
+		);
+	}
+
+	/**
+	 * When the blocked_phones list is empty, is_phone_blocked() should return
+	 * false immediately without iterating (fast-exit path).
+	 */
+	public function test_is_phone_blocked_returns_false_for_empty_list() {
+		$this->settings = $this->createMock( KwtSMS_Settings::class );
+		$this->settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) {
+				$map = array(
+					'general.otp_length'      => 6,
+					'general.otp_expiry'      => 3,
+					'general.max_attempts'    => 3,
+					'general.resend_cooldown' => 60,
+					'general.blocked_phones'  => '', // empty list
+				);
+				return $map[ $key ] ?? $default;
+			}
+		);
+		$engine = new KwtSMS_OTP_Engine( $this->settings );
+
+		$this->assertFalse(
+			$engine->is_phone_blocked( '96599220322' ),
+			'Empty block list must return false for any phone number.'
+		);
+	}
+
+	/**
 	 * A phone NOT in the blocked list should pass through and have an OTP
 	 * generated (i.e. the OTP transient is written as part of generate()).
 	 */

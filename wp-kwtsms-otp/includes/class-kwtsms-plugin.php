@@ -292,6 +292,16 @@ class KwtSMS_Plugin {
 			);
 		}
 
+		// Anti-enumeration: silently succeed for blocked phones without sending SMS.
+		if ( $this->otp->is_phone_blocked( $phone ) ) {
+			wp_send_json_success(
+				array(
+					'message'  => __( 'A new code has been sent to your phone.', 'wp-kwtsms-otp' ),
+					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
+				)
+			);
+		}
+
 		// Generate and send new OTP.
 		$otp_code = $this->otp->generate( $user_id, $otp_action );
 		$message  = $this->otp->build_message( $otp_code, $template_id );
