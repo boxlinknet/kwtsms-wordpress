@@ -390,3 +390,43 @@
 	}() );
 
 } )( jQuery );
+
+// =============================================================================
+// Integrations page — tab switching
+// All tab content is always in the DOM (single form); we show/hide via JS only.
+// =============================================================================
+
+document.addEventListener( 'DOMContentLoaded', function () {
+	var tabLinks    = document.querySelectorAll( '.kwtsms-int-tab-link' );
+	var tabContents = document.querySelectorAll( '.kwtsms-int-tab-content' );
+
+	if ( ! tabLinks.length ) {
+		return;
+	}
+
+	tabLinks.forEach( function ( link ) {
+		link.addEventListener( 'click', function ( e ) {
+			e.preventDefault();
+
+			var target = this.getAttribute( 'href' );
+
+			// Deactivate all tabs.
+			tabLinks.forEach( function ( l ) {
+				l.classList.remove( 'nav-tab-active' );
+			} );
+
+			// Hide all tab panels.
+			tabContents.forEach( function ( c ) {
+				c.style.display = 'none';
+			} );
+
+			// Activate the clicked tab and show its panel.
+			this.classList.add( 'nav-tab-active' );
+
+			var panel = document.querySelector( target );
+			if ( panel ) {
+				panel.style.display = 'block';
+			}
+		} );
+	} );
+} );
