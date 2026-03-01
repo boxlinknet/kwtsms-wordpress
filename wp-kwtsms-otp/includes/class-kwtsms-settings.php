@@ -43,7 +43,7 @@ class KwtSMS_Settings {
 			'allowed_countries'    => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ), // GCC default
 			'debug_logging'        => 0,          // write detailed logs to wp-content/kwtsms-debug.log
 			'blocked_phones'       => '',         // newline or comma-separated normalized phone numbers
-			'otp_required_roles'   => array(),    // empty = require OTP for all roles; non-empty = only listed roles
+			'otp_required_roles'   => array( 'editor', 'author', 'contributor', 'subscriber' ), // administrator excluded by default
 		),
 		'gateway'   => array(
 			'api_username'         => '',
