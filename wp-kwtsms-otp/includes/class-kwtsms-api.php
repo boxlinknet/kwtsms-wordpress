@@ -216,8 +216,8 @@ class KwtSMS_API {
 				'balance_after' => 0.0,
 			);
 			$this->write_debug_log( 'send_sms()', "TEST mode — mock sent, msg_id={$test_msg_id}" );
-			self::append_send_log( $phone, 'sent', $type );
-			self::append_sms_history( $phone, $message, 'sent', $type, $test_msg_id );
+			self::append_send_log( $phone, 'sent', $type, $sender_id );
+			self::append_sms_history( $phone, $message, 'sent', $type, $test_msg_id, $sender_id );
 			return $result;
 		}
 
@@ -225,15 +225,15 @@ class KwtSMS_API {
 
 		if ( is_wp_error( $response ) ) {
 			$this->write_debug_log( 'send_sms()', 'FAILED: ' . $response->get_error_message() );
-			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '' );
+			self::append_send_log( $phone, 'failed', $type, $sender_id );
+			self::append_sms_history( $phone, $message, 'failed', $type, '', $sender_id );
 			return $response;
 		}
 
 		$msg_id = sanitize_text_field( $response['msg-id'] ?? '' );
 		$this->write_debug_log( 'send_sms()', "SUCCESS: msg-id={$msg_id}" );
-		self::append_send_log( $phone, 'sent', $type );
-		self::append_sms_history( $phone, $message, 'sent', $type, $msg_id );
+		self::append_send_log( $phone, 'sent', $type, $sender_id );
+		self::append_sms_history( $phone, $message, 'sent', $type, $msg_id, $sender_id );
 		// Update saved balance so the UI reflects the latest balance after each live send.
 		self::update_saved_balance( (float) ( $response['balance-after'] ?? 0 ) );
 		return array(
@@ -360,7 +360,7 @@ class KwtSMS_API {
 	 * @param string $status 'sent' or 'failed'.
 	 * @param string $type   Context type: 'login'|'reset'|'passwordless'|'welcome'|'test'.
 	 */
-	public static function append_send_log( $phone, $status, $type = '' ) {
+	public static function append_send_log( $phone, $status, $type = '', $sender_id = '' ) {
 		$log = get_option( 'kwtsms_otp_send_log', array() );
 		if ( ! is_array( $log ) ) {
 			$log = array();
@@ -369,10 +369,11 @@ class KwtSMS_API {
 		array_unshift(
 			$log,
 			array(
-				'time'   => time(),
-				'phone'  => sanitize_text_field( $phone ), // full phone — admin-only view
-				'status' => $status,
-				'type'   => sanitize_key( $type ),
+				'time'      => time(),
+				'phone'     => sanitize_text_field( $phone ), // full phone — admin-only view
+				'status'    => $status,
+				'type'      => sanitize_key( $type ),
+				'sender_id' => sanitize_text_field( $sender_id ),
 			)
 		);
 
@@ -397,7 +398,7 @@ class KwtSMS_API {
 	 * @param string $type    Context: 'login'|'reset'|'passwordless'|'welcome'|'test'.
 	 * @param string $msg_id  Message ID returned by API, or empty on failure.
 	 */
-	public static function append_sms_history( $phone, $message, $status, $type, $msg_id = '' ) {
+	public static function append_sms_history( $phone, $message, $status, $type, $msg_id = '', $sender_id = '' ) {
 		$log = get_option( 'kwtsms_otp_sms_history', array() );
 		if ( ! is_array( $log ) ) {
 			$log = array();
@@ -406,12 +407,13 @@ class KwtSMS_API {
 		array_unshift(
 			$log,
 			array(
-				'time'    => time(),
-				'phone'   => sanitize_text_field( $phone ),
-				'message' => sanitize_textarea_field( $message ),
-				'status'  => in_array( $status, array( 'sent', 'failed' ), true ) ? $status : 'failed',
-				'type'    => sanitize_key( $type ),
-				'msg_id'  => sanitize_text_field( $msg_id ),
+				'time'      => time(),
+				'phone'     => sanitize_text_field( $phone ),
+				'message'   => sanitize_textarea_field( $message ),
+				'status'    => in_array( $status, array( 'sent', 'failed' ), true ) ? $status : 'failed',
+				'type'      => sanitize_key( $type ),
+				'msg_id'    => sanitize_text_field( $msg_id ),
+				'sender_id' => sanitize_text_field( $sender_id ),
 			)
 		);
 

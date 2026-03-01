@@ -265,6 +265,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 				<th><?php esc_html_e( 'Date / Time', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Phone', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Type', 'wp-kwtsms-otp' ); ?></th>
+				<th><?php esc_html_e( 'Sender ID', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Status', 'wp-kwtsms-otp' ); ?></th>
 			</tr>
 		</thead>
@@ -285,6 +286,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 					}
 					?>
 				</td>
+				<td><?php echo esc_html( $entry['sender_id'] ?? '' ); ?></td>
 				<td style="color:<?php echo 'sent' === ( $entry['status'] ?? '' ) ? '#46b450' : '#dc3232'; ?>;">
 					<?php echo 'sent' === ( $entry['status'] ?? '' ) ? esc_html__( 'Sent', 'wp-kwtsms-otp' ) : esc_html__( 'Failed', 'wp-kwtsms-otp' ); ?>
 				</td>

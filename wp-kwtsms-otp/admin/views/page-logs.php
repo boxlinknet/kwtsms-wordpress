@@ -79,15 +79,16 @@ if ( isset( $_GET['action'], $_GET['_wpnonce'] ) && 'export_csv' === $_GET['acti
 		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 
 		if ( 'sms_history' === $log_key ) {
-			fputcsv( $out, array( 'Date/Time', 'Type', 'Phone', 'Message', 'Status', 'Msg ID' ) );
+			fputcsv( $out, array( 'Date/Time', 'Type', 'Phone', 'Message', 'Sender ID', 'Status', 'Msg ID' ) );
 			foreach ( $log as $entry ) {
 				fputcsv( $out, array(
 					date_i18n( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
 					$entry['type']    ?? '',
 					$entry['phone']   ?? '',
-					$entry['message'] ?? '',
-					$entry['status']  ?? '',
-					$entry['msg_id']  ?? '',
+					$entry['message']   ?? '',
+					$entry['sender_id'] ?? '',
+					$entry['status']    ?? '',
+					$entry['msg_id']    ?? '',
 				) );
 			}
 		} else {
@@ -208,6 +209,7 @@ function kwtsms_attempt_result_label( $result ) {
 				<th><?php esc_html_e( 'Type', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Phone', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Message', 'wp-kwtsms-otp' ); ?></th>
+				<th><?php esc_html_e( 'Sender ID', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Status', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Msg ID', 'wp-kwtsms-otp' ); ?></th>
 			</tr>
@@ -219,6 +221,7 @@ function kwtsms_attempt_result_label( $result ) {
 				<td><?php echo esc_html( $entry['type'] ?? '' ); ?></td>
 				<td><code><?php echo esc_html( $entry['phone'] ?? '' ); ?></code></td>
 				<td style="max-width:400px;word-break:break-word;"><?php echo esc_html( $entry['message'] ?? '' ); ?></td>
+				<td><?php echo esc_html( $entry['sender_id'] ?? '' ); ?></td>
 				<td style="color:<?php echo 'sent' === ( $entry['status'] ?? '' ) ? '#46b450' : '#dc3232'; ?>;">
 					<?php echo 'sent' === ( $entry['status'] ?? '' ) ? esc_html__( 'Sent', 'wp-kwtsms-otp' ) : esc_html__( 'Failed', 'wp-kwtsms-otp' ); ?>
 				</td>
