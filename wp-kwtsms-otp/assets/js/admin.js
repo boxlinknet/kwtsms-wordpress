@@ -111,6 +111,9 @@
 			$( '#kwtsms-verified-sections' ).show();
 			$( '#kwtsms-balance-card' ).show();
 			$( '.kwtsms-signup-note' ).hide();
+			$( '#kwtsms-row-username' ).hide();
+			$( '#kwtsms-row-password' ).hide();
+			$( '#kwtsms-sender-row' ).show();
 			$( '#kwtsms-login-btn' ).hide();
 			$( '#kwtsms-logout-btn' ).show();
 
@@ -133,6 +136,9 @@
 			$( '#kwtsms-verified-sections' ).hide();
 			$( '#kwtsms-balance-card' ).hide();
 			$( '.kwtsms-signup-note' ).show();
+			$( '#kwtsms-row-username' ).show();
+			$( '#kwtsms-row-password' ).show();
+			$( '#kwtsms-sender-row' ).hide();
 			$( '#kwtsms-login-btn' ).show();
 			$( '#kwtsms-logout-btn' ).hide();
 
@@ -367,6 +373,9 @@
 		$( '#kwtsms-balance' ).text( '—' );
 		$( '#kwtsms-balance-purchased' ).text( '' );
 		$( '.kwtsms-signup-note' ).show();
+		$( '#kwtsms-row-username' ).show();
+		$( '#kwtsms-row-password' ).show();
+		$( '#kwtsms-sender-row' ).hide();
 
 		// Server-side: clear credentials_verified flag.
 		$.post( ajaxUrl, {
