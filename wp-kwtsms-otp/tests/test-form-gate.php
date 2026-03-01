@@ -84,6 +84,7 @@ class Test_Form_Gate_CF7 extends TestCase {
 		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
 		Functions\when( 'wp_unslash' )->alias( function ( $v ) { return $v; } );
 		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
+		Functions\when( '__' )->returnArg();
 
 		Functions\when( 'add_action' )->alias( function ( $hook ) {
 			$this->registered_actions[] = $hook;
