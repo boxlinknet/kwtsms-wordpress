@@ -318,20 +318,18 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	}
 
 	/**
-	 * Sliding-window test 3: boundary exploit is not possible.
+	 * Sliding-window test 3: expired timestamps are pruned, allowing new requests.
 	 *
-	 * With a fixed window, an attacker can send $max at t=599 and $max more at
-	 * t=601 (window resets at t=600) and both batches would be allowed.
-	 * With a sliding window, the second batch at t=601 still sees the first
-	 * batch's timestamps at t=0 (only 601 seconds ago, window=600s, so they
-	 * expired), meaning the second batch IS allowed but for the right reason —
-	 * the old timestamps really did expire.
+	 * Populates the transient with $max timestamps that are window+1 seconds old
+	 * (i.e., just outside the 600 s window). On the next call, all of those
+	 * timestamps must be pruned during the array_filter() step, leaving the
+	 * count below $max so the caller is not blocked.
 	 *
-	 * This test verifies that requests sent at t=0 do NOT bleed into a window
-	 * centred on t=601 (i.e., they are correctly pruned), and that a fresh
-	 * batch at t=601 starts clean.
+	 * This directly tests the pruning logic in is_rate_limited_sliding(): once
+	 * all recorded timestamps fall outside the window the caller should be
+	 * allowed again, regardless of how many requests were made previously.
 	 */
-	public function test_sliding_window_not_gamed_at_boundary() {
+	public function test_sliding_window_prunes_expired_timestamps_correctly() {
 		$phone  = '96599220322';
 		$max    = KwtSMS_OTP_Engine::RATE_LIMIT_MAX;
 		$window = KwtSMS_OTP_Engine::RATE_LIMIT_WINDOW; // 600 s
