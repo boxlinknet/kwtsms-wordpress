@@ -522,3 +522,97 @@ class Test_KwtSMS_Integrations_Settings extends TestCase {
 		$this->assertSame( 1, $enabled );
 	}
 }
+
+/**
+ * Class Test_KwtSMS_Integrations_Page
+ *
+ * Tests for the rewritten Integrations admin view (page-integrations.php).
+ * All assertions are static file-content checks — no WordPress runtime needed.
+ */
+class Test_KwtSMS_Integrations_Page extends TestCase {
+
+	/**
+	 * Absolute path to the view file under test.
+	 *
+	 * @return string
+	 */
+	private function view_path(): string {
+		return dirname( __DIR__ ) . '/admin/views/page-integrations.php';
+	}
+
+	// =========================================================================
+	// File existence
+	// =========================================================================
+
+	public function test_integrations_page_file_exists() {
+		$this->assertFileExists( $this->view_path() );
+	}
+
+	// =========================================================================
+	// Tab navigation structure
+	// =========================================================================
+
+	public function test_integrations_page_has_nav_tab_wrapper() {
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'nav-tab-wrapper', $src );
+	}
+
+	// =========================================================================
+	// WooCommerce template field names
+	// =========================================================================
+
+	public function test_integrations_page_has_woo_template_fields() {
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'woo_processing', $src );
+		$this->assertStringContainsString( 'woo_shipped', $src );
+		$this->assertStringContainsString( 'woo_completed', $src );
+		$this->assertStringContainsString( 'woo_cancelled', $src );
+	}
+
+	// =========================================================================
+	// CF7 template field name
+	// =========================================================================
+
+	public function test_integrations_page_has_cf7_template_field() {
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'cf7_confirmation', $src );
+	}
+
+	// =========================================================================
+	// WPForms template field name
+	// =========================================================================
+
+	public function test_integrations_page_has_wpforms_template_field() {
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'wpforms_confirmation', $src );
+	}
+
+	// =========================================================================
+	// Elementor template field name
+	// =========================================================================
+
+	public function test_integrations_page_has_elementor_template_field() {
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'elementor_confirmation', $src );
+	}
+
+	// =========================================================================
+	// Single-form constraint
+	// =========================================================================
+
+	public function test_integrations_page_uses_single_form() {
+		$src = file_get_contents( $this->view_path() );
+		// The view must contain exactly one opening <form tag so that all
+		// tab inputs are submitted together, preventing data loss.
+		$this->assertSame( 1, substr_count( $src, '<form ' ) );
+	}
+
+	// =========================================================================
+	// Correct settings group
+	// =========================================================================
+
+	public function test_integrations_page_uses_correct_settings_group() {
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'kwtsms_otp_integrations_group', $src );
+	}
+}
