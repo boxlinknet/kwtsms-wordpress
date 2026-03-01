@@ -317,9 +317,9 @@ class KwtSMS_Plugin {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 		}
 
-		$this->otp->increment_rate( $phone );
-		$this->otp->increment_ip_rate();
-		$this->otp->increment_user_rate( $user_id );
+		// Sliding-window counters are recorded inside is_rate_limited(),
+		// is_ip_rate_limited(), and is_user_rate_limited() — no separate
+		// increment calls needed.
 
 		wp_send_json_success(
 			array(
