@@ -6,11 +6,11 @@
  *   - Login button (verify credentials + persist state)
  *   - Logout button (clear verified state)
  *   - Save & Verify Credentials AJAX
- *   - Sender ID reload
+ *   - Reload-All button (sender IDs + coverage in one click)
  *   - Send Test SMS AJAX
  *   - SMS template character counter + page count
  *   - API Username phone-number detection warning
- *   - Coverage AJAX load (renders as tag chips)
+ *   - Coverage rendering helper (renderCoverageChips)
  */
 
 /* global kwtSmsAdminData, jQuery */
@@ -32,8 +32,7 @@
 	// =========================================================================
 
 	function setDependentFeatures( enabled ) {
-		$( '#kwtsms-reload-senders, #kwtsms-load-coverage, #kwtsms-send-test-sms' )
-			.prop( 'disabled', ! enabled );
+		$( '#kwtsms-reload-all, #kwtsms-send-test-sms' ).prop( 'disabled', ! enabled );
 	}
 
 	// Apply initial state from PHP.
@@ -107,7 +106,7 @@
 			credentialsVerified = true;
 			setDependentFeatures( true );
 
-			// Show verified sections and toggle login/logout buttons.
+			// Show verified sections and toggle login/logout/reload buttons.
 			$( '#kwtsms-verified-sections' ).show();
 			$( '#kwtsms-balance-card' ).show();
 			$( '.kwtsms-signup-note' ).hide();
@@ -116,6 +115,12 @@
 			$( '#kwtsms-sender-row' ).show();
 			$( '#kwtsms-login-btn' ).hide();
 			$( '#kwtsms-logout-btn' ).show();
+			$( '#kwtsms-reload-all' ).show();
+
+			// Render coverage chips if returned.
+			if ( d.coverage ) {
+				renderCoverageChips( d.coverage, $( '#kwtsms-coverage-result' ) );
+			}
 
 			// Update login status span.
 			const username = $( '#kwtsms_api_username' ).val().trim();
@@ -141,6 +146,7 @@
 			$( '#kwtsms-sender-row' ).hide();
 			$( '#kwtsms-login-btn' ).show();
 			$( '#kwtsms-logout-btn' ).hide();
+			$( '#kwtsms-reload-all' ).hide();
 
 			const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Verification failed.' );
 			if ( $loginStatus && $loginStatus.length ) {
@@ -191,9 +197,8 @@
 	// Save & Verify Credentials (bottom button)
 	// =========================================================================
 
-	$( '#kwtsms-verify-btn, #kwtsms-reload-senders' ).on( 'click', function () {
+	$( '#kwtsms-verify-btn' ).on( 'click', function () {
 		const $btn    = $( this );
-		const isReload = $btn.attr( 'id' ) === 'kwtsms-reload-senders';
 		const $status = $( '#kwtsms-api-status' );
 		const username = $( '#kwtsms_api_username' ).val().trim();
 		const password = $( '#kwtsms_api_password' ).val().trim();
@@ -221,9 +226,35 @@
 			$status.addClass( 'is-error' ).text( s.error || 'Network error. Please try again.' ).show();
 		} )
 		.always( function () {
-			$btn.prop( 'disabled', false ).text(
-				isReload ? '↻ Reload' : ( s.saveAndVerify || 'Save & Verify Credentials' )
-			);
+			$btn.prop( 'disabled', false ).text( s.saveAndVerify || 'Save & Verify Credentials' );
+		} );
+	} );
+
+	// =========================================================================
+	// Reload-All button (sender IDs + coverage in one click)
+	// =========================================================================
+
+	$( '#kwtsms-reload-all' ).on( 'click', function () {
+		const $btn     = $( this );
+		const username = $( '#kwtsms_api_username' ).val().trim() || data.savedUsername || '';
+		const password = $( '#kwtsms_api_password' ).val().trim() || data.savedPassword || '';
+
+		$btn.prop( 'disabled', true ).text( s.verifying || 'Reloading...' );
+
+		$.post( ajaxUrl, {
+			action:   'kwtsms_verify_credentials',
+			nonce:    nonce,
+			username: username,
+			password: password,
+		} )
+		.done( function ( resp ) {
+			handleVerifyResponse( resp, null, $( '#kwtsms-login-status' ) );
+		} )
+		.fail( function () {
+			$( '#kwtsms-login-status' ).html( '<span style="color:#dc3232;">Network error.</span>' );
+		} )
+		.always( function () {
+			$btn.prop( 'disabled', false ).text( '↻ ' + ( s.reload || 'Reload' ) );
 		} );
 	} );
 
@@ -234,7 +265,8 @@
 	$( '#kwtsms-send-test-sms' ).on( 'click', function () {
 		const $btn    = $( this );
 		const $result = $( '#kwtsms-test-sms-result' );
-		const phone   = $( '#kwtsms_test_phone' ).val();
+		const $field  = $( '#kwtsms_test_phone' );
+		let   phone   = $field.val().trim();
 		const username = $( '#kwtsms_api_username' ).val().trim();
 		const password = $( '#kwtsms_api_password' ).val().trim();
 
@@ -246,6 +278,14 @@
 		if ( ! phone ) {
 			$result.text( 'Please enter a test phone number first.' ).css( 'color', '#dc3232' );
 			return;
+		}
+
+		// Auto-prefix short numbers (local format without country code).
+		const digitsOnly = phone.replace( /^\+/, '' ).replace( /^00/, '' ).replace( /\D/g, '' );
+		if ( digitsOnly.length <= 8 && digitsOnly.length >= 5 ) {
+			const dial = data.defaultDialCode || '965';
+			phone = dial + digitsOnly;
+			$field.val( phone ); // update the field so user sees the full number
 		}
 
 		$btn.prop( 'disabled', true ).text( s.sending || 'Sending...' );
@@ -306,50 +346,27 @@
 	} );
 
 	// =========================================================================
-	// Coverage load — renders as tag chips (same style as Allowed Countries)
+	// Coverage rendering helper (used by Reload-All and page load)
 	// =========================================================================
 
-	$( '#kwtsms-load-coverage' ).on( 'click', function () {
-		const $btn    = $( this );
-		const $result = $( '#kwtsms-coverage-result' );
-
-		$btn.prop( 'disabled', true ).text( s.loadingCoverage || 'Loading coverage...' );
-		$result.html( '' );
-
-		$.post( ajaxUrl, {
-			action: 'kwtsms_get_coverage',
-			nonce:  nonce,
-		} )
-		.done( function ( resp ) {
-			if ( resp.success && resp.data && resp.data.coverage ) {
-				const coverage = resp.data.coverage;
-				let html = '';
-
-				if ( Array.isArray( coverage ) ) {
-					coverage.forEach( function ( row ) {
-						const name = row.country || row.name || JSON.stringify( row );
-						html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( name ).html() + '</span>';
-					} );
-				} else {
-					// Object format: {KW: 'active', SA: 'active', ...}
-					Object.keys( coverage ).forEach( function ( key ) {
-						html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( key ).html() + '</span>';
-					} );
+	function renderCoverageChips( coverage, $result ) {
+		let html = '';
+		if ( Array.isArray( coverage ) ) {
+			coverage.forEach( function ( row ) {
+				const name = ( typeof row === 'object' )
+					? ( row.name || row.country || row.countryName || Object.values( row ).find( v => typeof v === 'string' ) || '' )
+					: String( row );
+				if ( name ) {
+					html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( name ).html() + '</span>';
 				}
-
-				$result.html( html );
-			} else {
-				const msg = resp.data && resp.data.message ? resp.data.message : ( s.coverageError || 'Could not load coverage data.' );
-				$result.html( '<p style="color:#dc3232;">' + $( '<span>' ).text( msg ).html() + '</p>' );
-			}
-		} )
-		.fail( function () {
-			$result.html( '<p style="color:#dc3232;">' + ( s.coverageError || 'Network error.' ) + '</p>' );
-		} )
-		.always( function () {
-			$btn.prop( 'disabled', false ).text( '↻ ' + ( s.refreshCoverage || 'Refresh Coverage' ) );
-		} );
-	} );
+			} );
+		} else if ( coverage && typeof coverage === 'object' ) {
+			Object.keys( coverage ).forEach( function ( key ) {
+				html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( key ).html() + '</span>';
+			} );
+		}
+		$result.html( html );
+	}
 
 	// =========================================================================
 	// Logout button
@@ -376,6 +393,7 @@
 		$( '#kwtsms-row-username' ).show();
 		$( '#kwtsms-row-password' ).show();
 		$( '#kwtsms-sender-row' ).hide();
+		$( '#kwtsms-reload-all' ).hide();
 
 		// Server-side: clear credentials_verified flag.
 		$.post( ajaxUrl, {
@@ -390,17 +408,10 @@
 
 	( function () {
 		const savedCov = data.savedCoverage || [];
-		if ( savedCov.length ) {
-			const $result = $( '#kwtsms-coverage-result' );
-			// Only populate if the result div is currently empty (PHP may have pre-rendered).
-			if ( ! $result.children().length && ! $result.text().trim() ) {
-				let html = '';
-				savedCov.forEach( function ( c ) {
-					const name = ( typeof c === 'object' ) ? ( c.name || c.country || '' ) : String( c );
-					html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( name ).html() + '</span>';
-				} );
-				$result.html( html );
-			}
+		const $result  = $( '#kwtsms-coverage-result' );
+		// Only populate if PHP did not pre-render chips.
+		if ( savedCov.length && ! $result.children().length && ! $result.text().trim() ) {
+			renderCoverageChips( savedCov, $result );
 		}
 	}() );
 

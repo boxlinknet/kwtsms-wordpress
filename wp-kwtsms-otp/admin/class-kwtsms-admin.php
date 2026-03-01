@@ -625,6 +625,17 @@ class KwtSMS_Admin {
 			true
 		);
 
+		// Resolve default dial code for auto-prefixing short phone numbers in JS.
+		$default_iso2  = $this->plugin->settings->get( 'general.default_country_code', 'KW' );
+		$all_ccs       = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+		$default_dial  = '965'; // Kuwait fallback.
+		foreach ( $all_ccs as $cc_row ) {
+			if ( $cc_row['iso2'] === $default_iso2 ) {
+				$default_dial = $cc_row['dial'];
+				break;
+			}
+		}
+
 		wp_localize_script(
 			'kwtsms-admin',
 			'kwtSmsAdminData',
@@ -632,6 +643,7 @@ class KwtSMS_Admin {
 				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
 				'nonce'                => wp_create_nonce( 'kwtsms_admin_nonce' ),
 				'credentialsVerified'  => (bool) $this->plugin->settings->get( 'gateway.credentials_verified', false ),
+				'defaultDialCode'      => $default_dial,
 				'savedSenderIds'      => array_values( (array) $this->plugin->settings->get( 'gateway.sender_ids', array() ) ),
 				'savedBalance'        => array(
 					'available'  => $this->plugin->settings->get( 'gateway.balance_available', null ),
@@ -652,6 +664,7 @@ class KwtSMS_Admin {
 					'coverageError'      => __( 'Could not load coverage data.', 'wp-kwtsms-otp' ),
 					'credentialsMissing' => __( 'Please enter your API username and password, then click "Save Settings" before performing this action.', 'wp-kwtsms-otp' ),
 					'connectedAs'        => __( 'Connected as %s', 'wp-kwtsms-otp' ),
+					'reload'             => __( 'Reload', 'wp-kwtsms-otp' ),
 				),
 			)
 		);

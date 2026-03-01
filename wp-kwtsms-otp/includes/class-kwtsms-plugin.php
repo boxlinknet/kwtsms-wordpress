@@ -610,6 +610,21 @@ class KwtSMS_Plugin {
 			$phone = $this->settings->get( 'gateway.test_phone', '' );
 		}
 
+		// Auto-prepend default country code when the number looks like a local
+		// number (≤ 8 stripped digits, e.g. "99220322" missing the "+965" prefix).
+		$digits_only = preg_replace( '/\D/', '', ltrim( trim( $phone ), '+' ) );
+		$digits_only = preg_replace( '/^00/', '', $digits_only );
+		if ( strlen( $digits_only ) <= 8 && strlen( $digits_only ) >= 5 ) {
+			$iso2      = $this->settings->get( 'general.default_country_code', 'KW' );
+			$countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+			foreach ( $countries as $cc_row ) {
+				if ( $cc_row['iso2'] === $iso2 ) {
+					$phone = $cc_row['dial'] . $digits_only;
+					break;
+				}
+			}
+		}
+
 		$normalized = KwtSMS_API::normalize_phone( $phone );
 		if ( is_wp_error( $normalized ) ) {
 			wp_send_json_error( array( 'message' => $normalized->get_error_message() ) );
