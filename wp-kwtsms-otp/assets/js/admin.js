@@ -469,4 +469,39 @@
 		} );
 	}() );
 
+	// =========================================================================
+	// Unsaved changes warning
+	// Tracks whether any settings form field has been modified since page load.
+	// Shows a browser confirmation if the user tries to navigate away before saving.
+	// =========================================================================
+
+	( function () {
+		// Only applies to pages that have a settings form.
+		var $forms = $( '.kwtsms-admin-wrap form[action="options.php"]' );
+		if ( ! $forms.length ) {
+			return;
+		}
+
+		var dirty = false;
+
+		// Mark dirty on any user-initiated field change.
+		$forms.on( 'input change', 'input, select, textarea', function () {
+			dirty = true;
+		} );
+
+		// Clear dirty when the form is submitted (Save Settings clicked).
+		$forms.on( 'submit', function () {
+			dirty = false;
+		} );
+
+		// Warn when leaving the page with unsaved changes.
+		window.addEventListener( 'beforeunload', function ( e ) {
+			if ( dirty ) {
+				e.preventDefault();
+				// returnValue is required for legacy browser support.
+				e.returnValue = '';
+			}
+		} );
+	}() );
+
 } )( jQuery );
