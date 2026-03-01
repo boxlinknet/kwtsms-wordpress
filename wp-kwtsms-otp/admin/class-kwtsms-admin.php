@@ -60,18 +60,13 @@ class KwtSMS_Admin {
 	 * Register the top-level admin menu and subpages.
 	 */
 	public function register_menus() {
-		// Top-level menu — uses a kwtsms-branded SVG icon as base64 data URI.
-		$icon_url = 'data:image/svg+xml;base64,' . base64_encode( // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
-			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#FFA200"/><text x="3" y="15" font-size="12" font-family="Arial" fill="#fff" font-weight="bold">OTP</text></svg>'
-		);
-
 		$this->page_hooks[] = add_menu_page(
 			__( 'kwtSMS', 'wp-kwtsms-otp' ),
 			__( 'kwtSMS', 'wp-kwtsms-otp' ),
 			'manage_options',
 			'kwtsms-otp',
 			array( $this, 'render_general_page' ),
-			$icon_url,
+			'dashicons-format-chat',
 			80
 		);
 
