@@ -20,8 +20,8 @@ msgstr ""
 "X-Generator: kwtsms-otp\n"
 "X-Domain: wp-kwtsms-otp\n"
 
-msgid "kwtsms OTP"
-msgstr "كود التحقق - كويت SMS"
+msgid "kwtSMS"
+msgstr "kwtSMS"
 
 msgid "General Settings"
 msgstr "الإعدادات العامة"
@@ -353,14 +353,14 @@ msgstr "لم يتم تهيئة بيانات اعتماد kwtSMS API. يرجى ا
 msgid "Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security."
 msgstr "موقعك لا يعمل عبر HTTPS. قد يتم اعتراض رموز التحقق أثناء النقل. يرجى تفعيل SSL للأمان."
 
-msgid "kwtsms OTP is in Test Mode. SMS messages will be queued but not delivered. OTP codes are written to wp-content/debug.log."
-msgstr "إضافة kwtsms OTP في وضع الاختبار. سيتم وضع رسائل SMS في قائمة الانتظار دون إرسالها. تُكتب رموز التحقق في wp-content/debug.log."
+msgid "kwtSMS is in Test Mode. SMS messages will be queued but not delivered. OTP codes are written to wp-content/debug.log."
+msgstr "إضافة kwtSMS في وضع الاختبار. سيتم وضع رسائل SMS في قائمة الانتظار دون إرسالها. تُكتب رموز التحقق في wp-content/debug.log."
 
-msgid "kwtsms OTP Warning:"
-msgstr "تحذير kwtsms OTP:"
+msgid "kwtSMS Warning:"
+msgstr "تحذير kwtSMS:"
 
-msgid "kwtsms OTP:"
-msgstr "kwtsms OTP:"
+msgid "kwtSMS:"
+msgstr "kwtSMS:"
 
 msgid "Configure now →"
 msgstr "تهيئة الآن ←"
@@ -374,14 +374,14 @@ msgstr "تم إرسال SMS الاختبار! تحقق من هاتفك."
 msgid "Sending..."
 msgstr "جارٍ الإرسال..."
 
-msgid "kwtsms OTP — General Settings"
-msgstr "kwtsms OTP — الإعدادات العامة"
+msgid "kwtSMS — General Settings"
+msgstr "kwtSMS — الإعدادات العامة"
 
-msgid "kwtsms OTP — Gateway Settings"
-msgstr "kwtsms OTP — إعدادات البوابة"
+msgid "kwtSMS — Gateway Settings"
+msgstr "kwtSMS — إعدادات البوابة"
 
-msgid "kwtsms OTP — SMS Templates"
-msgstr "kwtsms OTP — قوالب SMS"
+msgid "kwtSMS — SMS Templates"
+msgstr "kwtSMS — قوالب SMS"
 
 msgid "reCAPTCHA v3 Keys"
 msgstr "مفاتيح reCAPTCHA v3"
