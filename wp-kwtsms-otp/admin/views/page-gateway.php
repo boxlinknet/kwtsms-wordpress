@@ -85,13 +85,17 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 			<tr>
 				<th scope="row"></th>
 				<td>
-					<div style="display:flex;align-items:center;gap:12px;">
+					<div style="display:flex;align-items:flex-start;gap:12px;">
+						<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
 						<?php if ( $credentials_verified ) : ?>
 						<button type="button" id="kwtsms-login-btn" class="button button-primary" style="display:none;">
 							<?php esc_html_e( 'Login', 'wp-kwtsms-otp' ); ?>
 						</button>
 						<button type="button" id="kwtsms-logout-btn" class="button">
 							<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
+						</button>
+						<button type="button" id="kwtsms-reload-all" class="button">
+							&#x21BB; <?php esc_html_e( 'Reload', 'wp-kwtsms-otp' ); ?>
 						</button>
 						<?php else : ?>
 						<button type="button" id="kwtsms-login-btn" class="button button-primary">
@@ -100,7 +104,11 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 						<button type="button" id="kwtsms-logout-btn" class="button" style="display:none;">
 							<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
 						</button>
+						<button type="button" id="kwtsms-reload-all" class="button" style="display:none;">
+							&#x21BB; <?php esc_html_e( 'Reload', 'wp-kwtsms-otp' ); ?>
+						</button>
 						<?php endif; ?>
+						</div>
 						<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite">
 							<?php if ( $credentials_verified ) : ?>
 							<span style="color:#46b450;">
@@ -121,8 +129,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 			<tr id="kwtsms-sender-row"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
 				<th scope="row"><label for="kwtsms_sender_id"><?php esc_html_e( 'Sender ID', 'wp-kwtsms-otp' ); ?></label></th>
 				<td>
-					<div style="display:flex;align-items:center;gap:10px;">
-						<select name="kwtsms_otp_gateway[sender_id]" id="kwtsms_sender_id">
+					<select name="kwtsms_otp_gateway[sender_id]" id="kwtsms_sender_id">
 							<?php if ( ! empty( $sender_ids ) ) : ?>
 								<?php foreach ( $sender_ids as $sid ) : ?>
 								<option value="<?php echo esc_attr( $sid ); ?>"
@@ -137,11 +144,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 							<?php else : ?>
 								<option value=""><?php esc_html_e( '— Login to load —', 'wp-kwtsms-otp' ); ?></option>
 							<?php endif; ?>
-						</select>
-						<button type="button" id="kwtsms-reload-senders" class="button"<?php echo $credentials_verified ? '' : ' disabled'; ?>>
-							&#x21BB; <?php esc_html_e( 'Reload', 'wp-kwtsms-otp' ); ?>
-						</button>
-					</div>
+					</select>
 					<p class="description"><?php esc_html_e( 'Select the sender ID approved for your kwtSMS account.', 'wp-kwtsms-otp' ); ?></p>
 					<p class="description">
 						<a href="https://www.kwtsms.com/sender-id-help.html" target="_blank" rel="noopener">
@@ -168,10 +171,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 			<p style="margin:0 0 10px;color:#888;font-size:12px;">
 				<?php esc_html_e( 'In test mode, messages are queued but not delivered. Delete messages from your kwtSMS queue to recover credits.', 'wp-kwtsms-otp' ); ?>
 			</p>
-			<button type="button" id="kwtsms-load-coverage" class="button">
-				&#x21BB; <?php esc_html_e( 'Refresh Coverage', 'wp-kwtsms-otp' ); ?>
-			</button>
-			<div id="kwtsms-coverage-result" style="margin-top:10px;" aria-live="polite">
+			<div id="kwtsms-coverage-result" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;" aria-live="polite">
 					<?php
 					$saved_cov = $gateway['coverage'] ?? array();
 					if ( ! empty( $saved_cov ) ) :
