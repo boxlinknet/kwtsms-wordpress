@@ -129,8 +129,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 							<?php endif; ?>
 						</span>
 					</div>
-					<p class="description"><?php esc_html_e( 'Verify your credentials against kwtSMS. Loads your Sender IDs, account balance, and SMS coverage.', 'wp-kwtsms-otp' ); ?></p>
-				</td>
+					</td>
 			</tr>
 
 			<tr style="display:none;">
