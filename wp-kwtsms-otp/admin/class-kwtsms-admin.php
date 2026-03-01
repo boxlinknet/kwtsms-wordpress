@@ -180,6 +180,15 @@ class KwtSMS_Admin {
 				'sanitize_callback' => array( $this, 'sanitize_template_settings' ),
 			)
 		);
+
+		// ----- Integration settings -----
+		register_setting(
+			'kwtsms_otp_integrations_group',
+			'kwtsms_otp_integrations',
+			array(
+				'sanitize_callback' => array( $this, 'sanitize_integrations_settings' ),
+			)
+		);
 	}
 
 	// =========================================================================
@@ -328,6 +337,48 @@ class KwtSMS_Admin {
 			}
 
 			$template = $raw[ $key ];
+			$sanitized[ $key ] = array(
+				'enabled' => ! empty( $template['enabled'] ) ? 1 : 0,
+				'en'      => $this->sanitize_template_content( $template['en'] ?? '' ),
+				'ar'      => $this->sanitize_template_content( $template['ar'] ?? '' ),
+			);
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize integration settings.
+	 *
+	 * Handles both boolean enable flags and template content arrays.
+	 *
+	 * @param mixed $raw Raw form input.
+	 *
+	 * @return array Sanitized settings array.
+	 */
+	public function sanitize_integrations_settings( $raw ) {
+		if ( ! is_array( $raw ) ) {
+			return array();
+		}
+
+		$template_keys = array(
+			'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled',
+			'cf7_confirmation', 'wpforms_confirmation', 'elementor_confirmation',
+		);
+
+		$sanitized = array(
+			'woo_enabled'       => ! empty( $raw['woo_enabled'] ) ? 1 : 0,
+			'cf7_enabled'       => ! empty( $raw['cf7_enabled'] ) ? 1 : 0,
+			'wpforms_enabled'   => ! empty( $raw['wpforms_enabled'] ) ? 1 : 0,
+			'elementor_enabled' => ! empty( $raw['elementor_enabled'] ) ? 1 : 0,
+			'woo_checkout_otp'  => ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0,
+		);
+
+		foreach ( $template_keys as $key ) {
+			if ( ! isset( $raw[ $key ] ) || ! is_array( $raw[ $key ] ) ) {
+				continue;
+			}
+			$template          = $raw[ $key ];
 			$sanitized[ $key ] = array(
 				'enabled' => ! empty( $template['enabled'] ) ? 1 : 0,
 				'en'      => $this->sanitize_template_content( $template['en'] ?? '' ),

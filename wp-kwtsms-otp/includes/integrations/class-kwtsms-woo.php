@@ -277,7 +277,7 @@ class KwtSMS_Woo {
 	 * @return bool
 	 */
 	private function is_checkout_otp_enabled() {
-		return (bool) $this->plugin->settings->get( 'general.woo_checkout_otp', 0 );
+		return (bool) $this->plugin->settings->get( 'integrations.woo_checkout_otp', 0 );
 	}
 
 	/**
