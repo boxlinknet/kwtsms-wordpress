@@ -17,8 +17,10 @@ $captcha_provider = $general['captcha_provider'] ?? 'none';
 $referral_link    = ! empty( $general['referral_link'] );
 $default_cc       = $general['default_country_code'] ?? 'KW';
 $allowed_iso2     = $general['allowed_countries'] ?? array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' );
-$debug_logging    = ! empty( $general['debug_logging'] );
-$blocked_phones   = $general['blocked_phones'] ?? '';
+$debug_logging        = ! empty( $general['debug_logging'] );
+$blocked_phones       = $general['blocked_phones'] ?? '';
+$otp_required_roles   = $general['otp_required_roles'] ?? array();
+$all_wp_roles         = wp_roles()->get_names();
 
 // Load all countries for dropdowns.
 $all_countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
@@ -93,6 +95,24 @@ foreach ( $all_countries as $cc ) {
 						<input type="checkbox" name="kwtsms_otp_general[reset_otp]" value="1" <?php checked( $general['reset_otp'], 1 ); ?> />
 						<?php esc_html_e( 'Use SMS OTP for password reset (instead of email link)', 'wp-kwtsms-otp' ); ?>
 					</label>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Require OTP for', 'wp-kwtsms-otp' ); ?></th>
+				<td>
+					<?php foreach ( $all_wp_roles as $role_slug => $role_label ) : ?>
+					<label style="display:block;margin-bottom:4px;">
+						<input type="checkbox"
+							name="kwtsms_otp_general[otp_required_roles][]"
+							value="<?php echo esc_attr( $role_slug ); ?>"
+							<?php checked( in_array( $role_slug, (array) $otp_required_roles, true ) ); ?> />
+						<?php echo esc_html( translate_user_role( $role_label ) ); ?>
+					</label>
+					<?php endforeach; ?>
+					<p class="description">
+						<?php esc_html_e( 'Users in unchecked roles will skip OTP and log in directly. Leave all unchecked to require OTP for all users (default behavior).', 'wp-kwtsms-otp' ); ?>
+					</p>
 				</td>
 			</tr>
 

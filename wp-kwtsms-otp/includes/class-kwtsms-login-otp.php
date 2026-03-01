@@ -82,6 +82,19 @@ class KwtSMS_Login_OTP {
 			return $user;
 		}
 
+		// Per-role enforcement: if a non-empty role list is configured, skip OTP
+		// for users whose roles do not intersect with the required list.
+		// Empty list (default) means all users must pass OTP.
+		$required_roles = $this->plugin->settings->get( 'general.otp_required_roles', array() );
+		if ( ! empty( $required_roles ) ) {
+			$user_roles = $user->roles ?? array();
+			$intersect  = array_intersect( $user_roles, (array) $required_roles );
+			if ( empty( $intersect ) ) {
+				// User's role is not in the required list — bypass OTP, allow direct login.
+				return $user;
+			}
+		}
+
 		$phone = get_user_meta( $user->ID, 'kwtsms_phone', true );
 
 		// If user has no phone, honour admin setting for bypass.
