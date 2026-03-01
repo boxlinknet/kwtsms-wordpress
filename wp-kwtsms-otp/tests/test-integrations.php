@@ -599,7 +599,12 @@ class Test_KwtSMS_Integrations_Settings extends TestCase {
 /**
  * Class Test_KwtSMS_Integrations_Page
  *
- * Tests for the rewritten Integrations admin view (page-integrations.php).
+ * Tests for the Integrations overview page (page-integrations.php).
+ *
+ * As of the v2.x redesign this page is a status overview table with "Configure"
+ * links to per-integration sub-pages. Template fields no longer live here;
+ * they live in page-int-woo.php (WooCommerce) and page-int-form.php (all others).
+ *
  * All assertions are static file-content checks — no WordPress runtime needed.
  */
 class Test_KwtSMS_Integrations_Page extends TestCase {
@@ -613,6 +618,24 @@ class Test_KwtSMS_Integrations_Page extends TestCase {
 		return dirname( __DIR__ ) . '/admin/views/page-integrations.php';
 	}
 
+	/**
+	 * Absolute path to the WooCommerce sub-page view.
+	 *
+	 * @return string
+	 */
+	private function woo_path(): string {
+		return dirname( __DIR__ ) . '/admin/views/page-int-woo.php';
+	}
+
+	/**
+	 * Absolute path to the shared form-integration sub-page view.
+	 *
+	 * @return string
+	 */
+	private function form_path(): string {
+		return dirname( __DIR__ ) . '/admin/views/page-int-form.php';
+	}
+
 	// =========================================================================
 	// File existence
 	// =========================================================================
@@ -621,21 +644,32 @@ class Test_KwtSMS_Integrations_Page extends TestCase {
 		$this->assertFileExists( $this->view_path() );
 	}
 
-	// =========================================================================
-	// Tab navigation structure
-	// =========================================================================
+	public function test_woo_sub_page_file_exists() {
+		$this->assertFileExists( $this->woo_path() );
+	}
 
-	public function test_integrations_page_has_nav_tab_wrapper() {
-		$src = file_get_contents( $this->view_path() );
-		$this->assertStringContainsString( 'nav-tab-wrapper', $src );
+	public function test_form_sub_page_file_exists() {
+		$this->assertFileExists( $this->form_path() );
 	}
 
 	// =========================================================================
-	// WooCommerce template field names
+	// Overview table structure (replaces old tab navigation)
+	// =========================================================================
+
+	public function test_integrations_page_has_nav_tab_wrapper() {
+		// The overview page is a wp-list-table — no nav-tab-wrapper needed.
+		// Verify the overview table is present instead.
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'wp-list-table', $src );
+	}
+
+	// =========================================================================
+	// WooCommerce template field names — now in page-int-woo.php
 	// =========================================================================
 
 	public function test_integrations_page_has_woo_template_fields() {
-		$src = file_get_contents( $this->view_path() );
+		// WooCommerce template fields moved to the dedicated sub-page.
+		$src = file_get_contents( $this->woo_path() );
 		$this->assertStringContainsString( 'woo_processing', $src );
 		$this->assertStringContainsString( 'woo_shipped', $src );
 		$this->assertStringContainsString( 'woo_completed', $src );
@@ -648,50 +682,54 @@ class Test_KwtSMS_Integrations_Page extends TestCase {
 	}
 
 	// =========================================================================
-	// CF7 template field name
+	// CF7 template field name — now in page-int-form.php
 	// =========================================================================
 
 	public function test_integrations_page_has_cf7_template_field() {
-		$src = file_get_contents( $this->view_path() );
+		// CF7 template field moved to the shared form sub-page.
+		$src = file_get_contents( $this->form_path() );
 		$this->assertStringContainsString( 'cf7_confirmation', $src );
 	}
 
 	// =========================================================================
-	// WPForms template field name
+	// WPForms template field name — now in page-int-form.php
 	// =========================================================================
 
 	public function test_integrations_page_has_wpforms_template_field() {
-		$src = file_get_contents( $this->view_path() );
+		$src = file_get_contents( $this->form_path() );
 		$this->assertStringContainsString( 'wpforms_confirmation', $src );
 	}
 
 	// =========================================================================
-	// Elementor template field name
+	// Elementor template field name — now in page-int-form.php
 	// =========================================================================
 
 	public function test_integrations_page_has_elementor_template_field() {
-		$src = file_get_contents( $this->view_path() );
+		$src = file_get_contents( $this->form_path() );
 		$this->assertStringContainsString( 'elementor_confirmation', $src );
 	}
 
 	// =========================================================================
-	// Single-form constraint
+	// Each sub-page has its own form with the correct settings group
 	// =========================================================================
 
 	public function test_integrations_page_uses_single_form() {
-		$src = file_get_contents( $this->view_path() );
-		// The view must contain exactly one opening <form tag so that all
-		// tab inputs are submitted together, preventing data loss.
+		// The overview page has no form. Each sub-page has exactly one form.
+		// Verify the WooCommerce sub-page has exactly one <form tag.
+		$src = file_get_contents( $this->woo_path() );
 		$this->assertSame( 1, substr_count( $src, '<form ' ) );
 	}
 
 	// =========================================================================
-	// Correct settings group
+	// Correct settings group — present in sub-pages
 	// =========================================================================
 
 	public function test_integrations_page_uses_correct_settings_group() {
-		$src = file_get_contents( $this->view_path() );
-		$this->assertStringContainsString( 'kwtsms_otp_integrations_group', $src );
+		// Settings group is used by the sub-pages (woo + form), not the overview.
+		$woo_src  = file_get_contents( $this->woo_path() );
+		$form_src = file_get_contents( $this->form_path() );
+		$this->assertStringContainsString( 'kwtsms_otp_integrations_group', $woo_src );
+		$this->assertStringContainsString( 'kwtsms_otp_integrations_group', $form_src );
 	}
 }
 
@@ -2564,7 +2602,11 @@ class Test_KwtSMS_GF_NF_Settings extends TestCase {
 /**
  * Class Test_KwtSMS_GF_NF_IntegrationsPage
  *
- * Tests that the integrations admin view file includes the new GF and NF tabs.
+ * Tests that the integrations views include GF and NF settings.
+ *
+ * As of the v2.x redesign, GF and NF are configured on the shared
+ * page-int-form.php sub-page (not on the overview table). The overview table
+ * references the integration slugs; the shared sub-page contains the fields.
  */
 class Test_KwtSMS_GF_NF_IntegrationsPage extends TestCase {
 
@@ -2572,23 +2614,31 @@ class Test_KwtSMS_GF_NF_IntegrationsPage extends TestCase {
 		return dirname( __DIR__ ) . '/admin/views/page-integrations.php';
 	}
 
+	private function form_path(): string {
+		return dirname( __DIR__ ) . '/admin/views/page-int-form.php';
+	}
+
 	public function test_integrations_page_has_gf_tab_link() {
+		// The overview table references the gf integration slug.
 		$src = file_get_contents( $this->view_path() );
-		$this->assertStringContainsString( 'kwtsms-tab-gf', $src );
+		$this->assertStringContainsString( 'kwtsms-otp-int-gf', $src );
 	}
 
 	public function test_integrations_page_has_nf_tab_link() {
+		// The overview table references the nf integration slug.
 		$src = file_get_contents( $this->view_path() );
-		$this->assertStringContainsString( 'kwtsms-tab-nf', $src );
+		$this->assertStringContainsString( 'kwtsms-otp-int-nf', $src );
 	}
 
 	public function test_integrations_page_has_gf_confirmation_field() {
-		$src = file_get_contents( $this->view_path() );
+		// GF confirmation field lives in the shared form sub-page.
+		$src = file_get_contents( $this->form_path() );
 		$this->assertStringContainsString( 'gf_confirmation', $src );
 	}
 
 	public function test_integrations_page_has_nf_confirmation_field() {
-		$src = file_get_contents( $this->view_path() );
+		// NF confirmation field lives in the shared form sub-page.
+		$src = file_get_contents( $this->form_path() );
 		$this->assertStringContainsString( 'nf_confirmation', $src );
 	}
 }

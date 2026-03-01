@@ -111,6 +111,39 @@ class KwtSMS_Admin {
 			array( $this, 'render_integrations_page' )
 		);
 
+		// Conditionally register sub-pages for each active integration.
+		$integrations_active = array(
+			'woo'       => class_exists( 'WooCommerce' ),
+			'cf7'       => class_exists( 'WPCF7' ),
+			'wpforms'   => function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' ),
+			'elementor' => did_action( 'elementor/loaded' ) || class_exists( '\Elementor\Plugin' ),
+			'gf'        => class_exists( 'GFForms' ),
+			'nf'        => class_exists( 'Ninja_Forms' ),
+		);
+
+		$int_labels = array(
+			'woo'       => __( 'WooCommerce', 'wp-kwtsms-otp' ),
+			'cf7'       => __( 'Contact Form 7', 'wp-kwtsms-otp' ),
+			'wpforms'   => __( 'WPForms', 'wp-kwtsms-otp' ),
+			'elementor' => __( 'Elementor', 'wp-kwtsms-otp' ),
+			'gf'        => __( 'Gravity Forms', 'wp-kwtsms-otp' ),
+			'nf'        => __( 'Ninja Forms', 'wp-kwtsms-otp' ),
+		);
+
+		foreach ( $integrations_active as $key => $active ) {
+			if ( ! $active ) {
+				continue;
+			}
+			$this->page_hooks[] = add_submenu_page(
+				'kwtsms-otp',
+				sprintf( __( '%s Settings', 'wp-kwtsms-otp' ), $int_labels[ $key ] ),
+				'&#8627; ' . $int_labels[ $key ],
+				'manage_options',
+				'kwtsms-otp-int-' . $key,
+				array( $this, 'render_int_' . $key . '_page' )
+			);
+		}
+
 		$this->page_hooks[] = add_submenu_page(
 			'kwtsms-otp',
 			__( 'kwtSMS Logs', 'wp-kwtsms-otp' ),
@@ -411,6 +444,10 @@ class KwtSMS_Admin {
 	 * Sanitize integration settings.
 	 *
 	 * Handles both boolean enable flags and template content arrays.
+	 * Uses the currently saved option as a base so that saving one
+	 * integration's sub-form does not wipe the settings of others.
+	 * The hidden `_save_section` field identifies which sub-form was
+	 * submitted; 'all' (or absent) means the legacy full-page form.
 	 *
 	 * @param mixed $raw Raw form input.
 	 *
@@ -421,73 +458,117 @@ class KwtSMS_Admin {
 			return array();
 		}
 
-		$template_keys = array(
-			'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled',
-			'woo_pending', 'woo_refunded', 'woo_failed',
-			'cf7_confirmation', 'wpforms_confirmation', 'elementor_confirmation',
-			'gf_confirmation', 'nf_confirmation',
-		);
+		// Start from currently saved values so that saving one integration's
+		// sub-form does not wipe the other integrations' settings.
+		$current = get_option( 'kwtsms_otp_integrations', array() );
+		if ( ! is_array( $current ) ) {
+			$current = array();
+		}
 
-		// Sanitize woo_notify_admin_statuses: array of recognised WC order status slugs.
-		// Both sides are normalized with sanitize_key() so comparisons are consistent.
-		$allowed_statuses      = array_map( 'sanitize_key', array(
+		// _save_section identifies which integration sub-form was submitted.
+		// 'all' or empty means the legacy full-page form — sanitize everything.
+		$section = sanitize_key( $raw['_save_section'] ?? 'all' );
+
+		$valid_modes = array( 'notification', 'gate' );
+
+		$allowed_statuses  = array_map( 'sanitize_key', array(
 			'processing', 'on-hold', 'completed', 'cancelled',
 			'pending', 'refunded', 'failed',
 		) );
-		$raw_notify            = $raw['woo_notify_admin_statuses'] ?? array();
+		$raw_notify        = $raw['woo_notify_admin_statuses'] ?? array();
 		$notify_admin_statuses = array_values(
 			array_filter(
 				(array) $raw_notify,
-				function( $s ) use ( $allowed_statuses ) {
+				function ( $s ) use ( $allowed_statuses ) {
 					return in_array( sanitize_key( $s ), $allowed_statuses, true );
 				}
 			)
 		);
 
-		// Validate mode values — only 'notification' or 'gate' are accepted.
-		$valid_modes = array( 'notification', 'gate' );
+		// Use current saved values as base; overwrite only the submitted section.
+		$sanitized = $current;
 
-		$sanitized = array(
-			'woo_enabled'               => ! empty( $raw['woo_enabled'] ) ? 1 : 0,
-			'cf7_enabled'               => ! empty( $raw['cf7_enabled'] ) ? 1 : 0,
-			'wpforms_enabled'           => ! empty( $raw['wpforms_enabled'] ) ? 1 : 0,
-			'elementor_enabled'         => ! empty( $raw['elementor_enabled'] ) ? 1 : 0,
-			'gf_enabled'                => ! empty( $raw['gf_enabled'] ) ? 1 : 0,
-			'nf_enabled'                => ! empty( $raw['nf_enabled'] ) ? 1 : 0,
-			'woo_checkout_otp'          => ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0,
-			'cf7_mode'                  => in_array( $raw['cf7_mode'] ?? '', $valid_modes, true )
-				? $raw['cf7_mode']
-				: 'notification',
-			'wpforms_mode'              => in_array( $raw['wpforms_mode'] ?? '', $valid_modes, true )
-				? $raw['wpforms_mode']
-				: 'notification',
-			'elementor_mode'            => in_array( $raw['elementor_mode'] ?? '', $valid_modes, true )
-				? $raw['elementor_mode']
-				: 'notification',
-			'gf_mode'                   => in_array( $raw['gf_mode'] ?? '', $valid_modes, true )
-				? $raw['gf_mode']
-				: 'notification',
-			'nf_mode'                   => in_array( $raw['nf_mode'] ?? '', $valid_modes, true )
-				? $raw['nf_mode']
-				: 'notification',
-			'woo_admin_phone'           => sanitize_text_field( wp_unslash( $raw['woo_admin_phone'] ?? '' ) ),
-			'woo_notify_admin_statuses' => $notify_admin_statuses,
-		);
+		$update_woo       = in_array( $section, array( 'all', 'woo' ), true );
+		$update_cf7       = in_array( $section, array( 'all', 'cf7' ), true );
+		$update_wpforms   = in_array( $section, array( 'all', 'wpforms' ), true );
+		$update_elementor = in_array( $section, array( 'all', 'elementor' ), true );
+		$update_gf        = in_array( $section, array( 'all', 'gf' ), true );
+		$update_nf        = in_array( $section, array( 'all', 'nf' ), true );
 
-		// Note: template sub-arrays absent from POST are silently skipped (not written back).
-		// This means saved values remain in the DB from previous saves.
-		// The tabbed UI must submit ALL tab inputs (not just the visible tab) to avoid clearing
-		// templates from other tabs on save. Use hidden inputs or a single form for all tabs.
-		foreach ( $template_keys as $key ) {
-			if ( ! isset( $raw[ $key ] ) || ! is_array( $raw[ $key ] ) ) {
-				continue;
+		if ( $update_woo ) {
+			$sanitized['woo_enabled']              = ! empty( $raw['woo_enabled'] ) ? 1 : 0;
+			$sanitized['woo_checkout_otp']         = ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0;
+			$sanitized['woo_admin_phone']          = sanitize_text_field( wp_unslash( $raw['woo_admin_phone'] ?? '' ) );
+			$sanitized['woo_notify_admin_statuses'] = $notify_admin_statuses;
+			foreach ( array( 'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled', 'woo_pending', 'woo_refunded', 'woo_failed' ) as $key ) {
+				if ( isset( $raw[ $key ] ) && is_array( $raw[ $key ] ) ) {
+					$sanitized[ $key ] = array(
+						'enabled' => ! empty( $raw[ $key ]['enabled'] ) ? 1 : 0,
+						'en'      => $this->sanitize_template_content( $raw[ $key ]['en'] ?? '' ),
+						'ar'      => $this->sanitize_template_content( $raw[ $key ]['ar'] ?? '' ),
+					);
+				}
 			}
-			$template          = $raw[ $key ];
-			$sanitized[ $key ] = array(
-				'enabled' => ! empty( $template['enabled'] ) ? 1 : 0,
-				'en'      => $this->sanitize_template_content( $template['en'] ?? '' ),
-				'ar'      => $this->sanitize_template_content( $template['ar'] ?? '' ),
-			);
+		}
+
+		if ( $update_cf7 ) {
+			$sanitized['cf7_enabled'] = ! empty( $raw['cf7_enabled'] ) ? 1 : 0;
+			$sanitized['cf7_mode']    = in_array( $raw['cf7_mode'] ?? '', $valid_modes, true ) ? $raw['cf7_mode'] : 'notification';
+			if ( isset( $raw['cf7_confirmation'] ) && is_array( $raw['cf7_confirmation'] ) ) {
+				$sanitized['cf7_confirmation'] = array(
+					'enabled' => ! empty( $raw['cf7_confirmation']['enabled'] ) ? 1 : 0,
+					'en'      => $this->sanitize_template_content( $raw['cf7_confirmation']['en'] ?? '' ),
+					'ar'      => $this->sanitize_template_content( $raw['cf7_confirmation']['ar'] ?? '' ),
+				);
+			}
+		}
+
+		if ( $update_wpforms ) {
+			$sanitized['wpforms_enabled'] = ! empty( $raw['wpforms_enabled'] ) ? 1 : 0;
+			$sanitized['wpforms_mode']    = in_array( $raw['wpforms_mode'] ?? '', $valid_modes, true ) ? $raw['wpforms_mode'] : 'notification';
+			if ( isset( $raw['wpforms_confirmation'] ) && is_array( $raw['wpforms_confirmation'] ) ) {
+				$sanitized['wpforms_confirmation'] = array(
+					'enabled' => ! empty( $raw['wpforms_confirmation']['enabled'] ) ? 1 : 0,
+					'en'      => $this->sanitize_template_content( $raw['wpforms_confirmation']['en'] ?? '' ),
+					'ar'      => $this->sanitize_template_content( $raw['wpforms_confirmation']['ar'] ?? '' ),
+				);
+			}
+		}
+
+		if ( $update_elementor ) {
+			$sanitized['elementor_enabled'] = ! empty( $raw['elementor_enabled'] ) ? 1 : 0;
+			$sanitized['elementor_mode']    = in_array( $raw['elementor_mode'] ?? '', $valid_modes, true ) ? $raw['elementor_mode'] : 'notification';
+			if ( isset( $raw['elementor_confirmation'] ) && is_array( $raw['elementor_confirmation'] ) ) {
+				$sanitized['elementor_confirmation'] = array(
+					'enabled' => ! empty( $raw['elementor_confirmation']['enabled'] ) ? 1 : 0,
+					'en'      => $this->sanitize_template_content( $raw['elementor_confirmation']['en'] ?? '' ),
+					'ar'      => $this->sanitize_template_content( $raw['elementor_confirmation']['ar'] ?? '' ),
+				);
+			}
+		}
+
+		if ( $update_gf ) {
+			$sanitized['gf_enabled'] = ! empty( $raw['gf_enabled'] ) ? 1 : 0;
+			$sanitized['gf_mode']    = in_array( $raw['gf_mode'] ?? '', $valid_modes, true ) ? $raw['gf_mode'] : 'notification';
+			if ( isset( $raw['gf_confirmation'] ) && is_array( $raw['gf_confirmation'] ) ) {
+				$sanitized['gf_confirmation'] = array(
+					'enabled' => ! empty( $raw['gf_confirmation']['enabled'] ) ? 1 : 0,
+					'en'      => $this->sanitize_template_content( $raw['gf_confirmation']['en'] ?? '' ),
+					'ar'      => $this->sanitize_template_content( $raw['gf_confirmation']['ar'] ?? '' ),
+				);
+			}
+		}
+
+		if ( $update_nf ) {
+			$sanitized['nf_enabled'] = ! empty( $raw['nf_enabled'] ) ? 1 : 0;
+			$sanitized['nf_mode']    = in_array( $raw['nf_mode'] ?? '', $valid_modes, true ) ? $raw['nf_mode'] : 'notification';
+			if ( isset( $raw['nf_confirmation'] ) && is_array( $raw['nf_confirmation'] ) ) {
+				$sanitized['nf_confirmation'] = array(
+					'enabled' => ! empty( $raw['nf_confirmation']['enabled'] ) ? 1 : 0,
+					'en'      => $this->sanitize_template_content( $raw['nf_confirmation']['en'] ?? '' ),
+					'ar'      => $this->sanitize_template_content( $raw['nf_confirmation']['ar'] ?? '' ),
+				);
+			}
 		}
 
 		return $sanitized;
@@ -703,6 +784,71 @@ class KwtSMS_Admin {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
 		}
 		include KWTSMS_OTP_DIR . 'admin/views/page-integrations.php';
+	}
+
+	/**
+	 * Render WooCommerce integration settings sub-page.
+	 */
+	public function render_int_woo_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
+		}
+		include KWTSMS_OTP_DIR . 'admin/views/page-int-woo.php';
+	}
+
+	/**
+	 * Render Contact Form 7 integration settings sub-page.
+	 */
+	public function render_int_cf7_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
+		}
+		$int_key = 'cf7';
+		include KWTSMS_OTP_DIR . 'admin/views/page-int-form.php';
+	}
+
+	/**
+	 * Render WPForms integration settings sub-page.
+	 */
+	public function render_int_wpforms_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
+		}
+		$int_key = 'wpforms';
+		include KWTSMS_OTP_DIR . 'admin/views/page-int-form.php';
+	}
+
+	/**
+	 * Render Elementor integration settings sub-page.
+	 */
+	public function render_int_elementor_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
+		}
+		$int_key = 'elementor';
+		include KWTSMS_OTP_DIR . 'admin/views/page-int-form.php';
+	}
+
+	/**
+	 * Render Gravity Forms integration settings sub-page.
+	 */
+	public function render_int_gf_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
+		}
+		$int_key = 'gf';
+		include KWTSMS_OTP_DIR . 'admin/views/page-int-form.php';
+	}
+
+	/**
+	 * Render Ninja Forms integration settings sub-page.
+	 */
+	public function render_int_nf_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
+		}
+		$int_key = 'nf';
+		include KWTSMS_OTP_DIR . 'admin/views/page-int-form.php';
 	}
 
 	/**

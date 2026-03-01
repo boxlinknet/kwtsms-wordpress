@@ -288,24 +288,6 @@ foreach ( $all_countries as $cc ) {
 
 		</table>
 
-		<!-- ===== Referral Link ===== -->
-		<h2 class="title"><?php esc_html_e( 'Powered-by Footer', 'wp-kwtsms-otp' ); ?></h2>
-		<table class="form-table" role="presentation">
-
-			<tr>
-				<th scope="row"><label for="kwtsms_referral_link"><?php esc_html_e( 'Show Referral Link', 'wp-kwtsms-otp' ); ?></label></th>
-				<td>
-					<label>
-						<input type="checkbox" name="kwtsms_otp_general[referral_link]" id="kwtsms_referral_link"
-							value="1" <?php checked( $referral_link ); ?> />
-						<?php esc_html_e( 'Display "SMS service by kwtSMS.com" footer on login pages', 'wp-kwtsms-otp' ); ?>
-					</label>
-					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'wp-kwtsms-otp' ); ?></p>
-				</td>
-			</tr>
-
-		</table>
-
 		<!-- ===== Security ===== -->
 		<h2 class="title"><?php esc_html_e( 'Security', 'wp-kwtsms-otp' ); ?></h2>
 		<table class="form-table" role="presentation">
@@ -321,6 +303,24 @@ foreach ( $all_countries as $cc ) {
 					<p class="description">
 						<?php esc_html_e( 'One per line or comma-separated, with country code (digits only). These numbers will never receive OTP SMS. Blocked requests return a silent success to prevent enumeration.', 'wp-kwtsms-otp' ); ?>
 					</p>
+				</td>
+			</tr>
+
+		</table>
+
+		<!-- ===== Referral Link ===== -->
+		<h2 class="title"><?php esc_html_e( 'Powered-by Footer', 'wp-kwtsms-otp' ); ?></h2>
+		<table class="form-table" role="presentation">
+
+			<tr>
+				<th scope="row"><label for="kwtsms_referral_link"><?php esc_html_e( 'Show Referral Link', 'wp-kwtsms-otp' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_general[referral_link]" id="kwtsms_referral_link"
+							value="1" <?php checked( $referral_link ); ?> />
+						<?php esc_html_e( 'Display "SMS service by kwtSMS.com" footer on login pages', 'wp-kwtsms-otp' ); ?>
+					</label>
+					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'wp-kwtsms-otp' ); ?></p>
 				</td>
 			</tr>
 

@@ -1,13 +1,9 @@
 <?php
 /**
- * Admin View: Integrations Page.
+ * Admin View: Integrations Overview Page.
  *
- * Tabbed settings hub for all third-party plugin integrations.
- * Each tab has an enable toggle and editable SMS template cards.
- *
- * IMPORTANT: All tab content is rendered in a single <form> so that
- * submitting one tab never erases data from another tab. All inputs are
- * always present in the DOM (tabs are shown/hidden via CSS/JS only).
+ * Shows all supported integrations with install status.
+ * Installed integrations link to their own dedicated settings sub-page.
  *
  * @package KwtSMS_OTP
  */
@@ -16,23 +12,53 @@ defined( 'ABSPATH' ) || exit;
 
 /** @var KwtSMS_Admin $this */
 
-$woo_active       = class_exists( 'WooCommerce' );
-$cf7_active       = class_exists( 'WPCF7' );
-$wpforms_active   = function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' );
-$elementor_active = did_action( 'elementor/loaded' ) || class_exists( '\Elementor\Plugin' );
-$gf_active        = class_exists( 'GFForms' );
-$nf_active        = class_exists( 'Ninja_Forms' );
-
-$settings = $this->plugin->settings;
-
-// Load saved integration settings with defaults merged in.
-$int = array_merge(
-	KwtSMS_Settings::DEFAULTS['integrations'],
-	(array) $settings->get( 'integrations' )
+$integrations = array(
+	'woo' => array(
+		'label'       => __( 'WooCommerce', 'wp-kwtsms-otp' ),
+		'description' => __( 'Order status SMS notifications (7 statuses), checkout OTP gate, admin alerts, and per-order custom SMS from the order metabox.', 'wp-kwtsms-otp' ),
+		'active'      => class_exists( 'WooCommerce' ),
+		'slug'        => 'kwtsms-otp-int-woo',
+	),
+	'cf7' => array(
+		'label'       => __( 'Contact Form 7', 'wp-kwtsms-otp' ),
+		'description' => __( 'Send a confirmation SMS on form submission, or enable OTP gate to verify the phone before the form submits.', 'wp-kwtsms-otp' ),
+		'active'      => class_exists( 'WPCF7' ),
+		'slug'        => 'kwtsms-otp-int-cf7',
+	),
+	'wpforms' => array(
+		'label'       => __( 'WPForms', 'wp-kwtsms-otp' ),
+		'description' => __( 'Send a confirmation SMS on form submission, or enable OTP gate to verify the phone before the form submits.', 'wp-kwtsms-otp' ),
+		'active'      => function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' ),
+		'slug'        => 'kwtsms-otp-int-wpforms',
+	),
+	'elementor' => array(
+		'label'       => __( 'Elementor', 'wp-kwtsms-otp' ),
+		'description' => __( 'Send a confirmation SMS after an Elementor Pro form submission, or gate the form behind phone OTP verification.', 'wp-kwtsms-otp' ),
+		'active'      => did_action( 'elementor/loaded' ) || class_exists( '\Elementor\Plugin' ),
+		'slug'        => 'kwtsms-otp-int-elementor',
+	),
+	'gf' => array(
+		'label'       => __( 'Gravity Forms', 'wp-kwtsms-otp' ),
+		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification.', 'wp-kwtsms-otp' ),
+		'active'      => class_exists( 'GFForms' ),
+		'slug'        => 'kwtsms-otp-int-gf',
+	),
+	'nf' => array(
+		'label'       => __( 'Ninja Forms', 'wp-kwtsms-otp' ),
+		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification.', 'wp-kwtsms-otp' ),
+		'active'      => class_exists( 'Ninja_Forms' ),
+		'slug'        => 'kwtsms-otp-int-nf',
+	),
 );
 
-// For each template key, merge saved values over the defaults.
-$templates = $settings->get_all_integration_templates();
+$icons = array(
+	'woo'       => '&#x1F6D2;',
+	'cf7'       => '&#x1F4CB;',
+	'wpforms'   => '&#x1F4DD;',
+	'elementor' => '&#x1F3A8;',
+	'gf'        => '&#x1F4CA;',
+	'nf'        => '&#x1F977;',
+);
 ?>
 <div class="wrap kwtsms-admin-wrap">
 
@@ -43,932 +69,45 @@ $templates = $settings->get_all_integration_templates();
 		<h1><?php esc_html_e( 'kwtSMS — Integrations', 'wp-kwtsms-otp' ); ?></h1>
 	</div>
 
-	<p style="max-width:800px;font-size:14px;">
-		<?php esc_html_e( 'Configure SMS notifications for each supported third-party plugin. Settings are saved together — switching tabs does not lose unsaved changes.', 'wp-kwtsms-otp' ); ?>
+	<p style="max-width:800px;font-size:14px;color:#555;">
+		<?php esc_html_e( 'Configure SMS for each supported plugin. Settings pages appear for installed and active plugins only.', 'wp-kwtsms-otp' ); ?>
 	</p>
 
-	<!-- ===== Tab Navigation ===== -->
-	<h2 class="nav-tab-wrapper kwtsms-int-tabs">
-		<a href="#kwtsms-tab-woo" class="nav-tab nav-tab-active kwtsms-int-tab-link">
-			<?php esc_html_e( 'WooCommerce', 'wp-kwtsms-otp' ); ?>
-			<?php if ( ! $woo_active ) : ?>
-				<span class="kwtsms-badge-inactive"><?php esc_html_e( 'Not installed', 'wp-kwtsms-otp' ); ?></span>
-			<?php endif; ?>
-		</a>
-		<a href="#kwtsms-tab-cf7" class="nav-tab kwtsms-int-tab-link">
-			<?php esc_html_e( 'Contact Form 7', 'wp-kwtsms-otp' ); ?>
-			<?php if ( ! $cf7_active ) : ?>
-				<span class="kwtsms-badge-inactive"><?php esc_html_e( 'Not installed', 'wp-kwtsms-otp' ); ?></span>
-			<?php endif; ?>
-		</a>
-		<a href="#kwtsms-tab-wpforms" class="nav-tab kwtsms-int-tab-link">
-			<?php esc_html_e( 'WPForms', 'wp-kwtsms-otp' ); ?>
-			<?php if ( ! $wpforms_active ) : ?>
-				<span class="kwtsms-badge-inactive"><?php esc_html_e( 'Not installed', 'wp-kwtsms-otp' ); ?></span>
-			<?php endif; ?>
-		</a>
-		<a href="#kwtsms-tab-elementor" class="nav-tab kwtsms-int-tab-link">
-			<?php esc_html_e( 'Elementor', 'wp-kwtsms-otp' ); ?>
-			<?php if ( ! $elementor_active ) : ?>
-				<span class="kwtsms-badge-inactive"><?php esc_html_e( 'Not installed', 'wp-kwtsms-otp' ); ?></span>
-			<?php endif; ?>
-		</a>
-		<a href="#kwtsms-tab-gf" class="nav-tab kwtsms-int-tab-link">
-			<?php esc_html_e( 'Gravity Forms', 'wp-kwtsms-otp' ); ?>
-			<?php if ( ! $gf_active ) : ?>
-				<span class="kwtsms-badge-inactive"><?php esc_html_e( 'Not installed', 'wp-kwtsms-otp' ); ?></span>
-			<?php endif; ?>
-		</a>
-		<a href="#kwtsms-tab-nf" class="nav-tab kwtsms-int-tab-link">
-			<?php esc_html_e( 'Ninja Forms', 'wp-kwtsms-otp' ); ?>
-			<?php if ( ! $nf_active ) : ?>
-				<span class="kwtsms-badge-inactive"><?php esc_html_e( 'Not installed', 'wp-kwtsms-otp' ); ?></span>
-			<?php endif; ?>
-		</a>
-	</h2>
-
-	<!-- ===== Single form wrapping ALL tab content ===== -->
-	<form method="post" action="options.php">
-		<?php settings_fields( 'kwtsms_otp_integrations_group' ); ?>
-
-		<!-- ================================================================
-		     Tab: WooCommerce
-		     ================================================================ -->
-		<div id="kwtsms-tab-woo" class="kwtsms-int-tab-content">
-
-			<?php if ( ! $woo_active ) : ?>
-			<div class="notice notice-warning inline" style="margin:16px 0;">
-				<p><?php esc_html_e( 'WooCommerce is not installed or activated. The settings below will be saved and applied once WooCommerce is active.', 'wp-kwtsms-otp' ); ?></p>
-			</div>
-			<?php endif; ?>
-
-			<!-- Enable toggle -->
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'WooCommerce Integration', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[woo_enabled]"
-							value="1"
-							<?php checked( $int['woo_enabled'], 1 ); ?> />
-						<span><?php esc_html_e( 'Enable WooCommerce SMS Integration', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description">
-					<?php esc_html_e( 'Send SMS notifications for order status changes and registration events.', 'wp-kwtsms-otp' ); ?>
-				</p>
-
-				<!-- Checkout OTP Gate -->
-				<table class="form-table" style="margin-top:12px;">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Checkout OTP Gate', 'wp-kwtsms-otp' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox"
-									name="kwtsms_otp_integrations[woo_checkout_otp]"
-									value="1"
-									<?php checked( $int['woo_checkout_otp'], 1 ); ?> />
-								<?php esc_html_e( 'Require OTP verification before placing an order', 'wp-kwtsms-otp' ); ?>
-							</label>
-							<p class="description">
-								<?php esc_html_e( 'When enabled, customers must verify their billing phone with an OTP before checkout completes. Recommended for reducing fraudulent orders.', 'wp-kwtsms-otp' ); ?>
-							</p>
-						</td>
-					</tr>
-				</table>
-			</div>
-
-			<!-- Order status template cards -->
-			<?php
-			$woo_template_defs = array(
-				'woo_processing' => array(
-					'label'        => __( 'Order Confirmed (Processing)', 'wp-kwtsms-otp' ),
-					'description'  => __( 'Sent when an order transitions to Processing status.', 'wp-kwtsms-otp' ),
-					'placeholders' => '{order_id}, {total}, {site_name}, {customer_name}',
-				),
-				'woo_shipped'    => array(
-					'label'        => __( 'Order Shipped', 'wp-kwtsms-otp' ),
-					'description'  => __( 'Sent when an order transitions to On-Hold / Shipped status.', 'wp-kwtsms-otp' ),
-					'placeholders' => '{order_id}, {site_name}, {customer_name}',
-				),
-				'woo_completed'  => array(
-					'label'        => __( 'Order Completed', 'wp-kwtsms-otp' ),
-					'description'  => __( 'Sent when an order is marked Completed.', 'wp-kwtsms-otp' ),
-					'placeholders' => '{order_id}, {site_name}, {customer_name}',
-				),
-				'woo_cancelled'  => array(
-					'label'        => __( 'Order Cancelled', 'wp-kwtsms-otp' ),
-					'description'  => __( 'Sent when an order is Cancelled.', 'wp-kwtsms-otp' ),
-					'placeholders' => '{order_id}, {site_name}, {customer_name}',
-				),
-				'woo_pending'    => array(
-					'label'        => __( 'Order Pending Payment', 'wp-kwtsms-otp' ),
-					'description'  => __( 'Sent when an order is created with Pending Payment status (disabled by default).', 'wp-kwtsms-otp' ),
-					'placeholders' => '{order_id}, {site_name}, {customer_name}',
-				),
-				'woo_refunded'   => array(
-					'label'        => __( 'Order Refunded', 'wp-kwtsms-otp' ),
-					'description'  => __( 'Sent when an order is Refunded (disabled by default).', 'wp-kwtsms-otp' ),
-					'placeholders' => '{order_id}, {site_name}, {customer_name}',
-				),
-				'woo_failed'     => array(
-					'label'        => __( 'Order Payment Failed', 'wp-kwtsms-otp' ),
-					'description'  => __( 'Sent when an order payment Fails (disabled by default).', 'wp-kwtsms-otp' ),
-					'placeholders' => '{order_id}, {site_name}, {customer_name}',
-				),
-			);
-
-			foreach ( $woo_template_defs as $key => $def ) :
-				$tpl = $templates[ $key ] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
-			?>
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php echo esc_html( $def['label'] ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[<?php echo esc_attr( $key ); ?>][enabled]"
-							value="1"
-							<?php checked( $tpl['enabled'], 1 ); ?> />
-						<span><?php esc_html_e( 'Enabled', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description"><?php echo esc_html( $def['description'] ); ?></p>
-				<p class="description" style="margin-top:4px;">
-					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong>
-					<code><?php echo esc_html( $def['placeholders'] ); ?></code>
-				</p>
-
-				<div class="kwtsms-template-fields">
-					<!-- English -->
-					<div class="kwtsms-template-field">
-						<label for="int_<?php echo esc_attr( $key ); ?>_en">
-							<span class="kwtsms-lang-flag">🇬🇧</span>
-							<?php esc_html_e( 'English (LTR)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[<?php echo esc_attr( $key ); ?>][en]"
-								id="int_<?php echo esc_attr( $key ); ?>_en"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="ltr"
-								data-lang="en"
-							><?php echo esc_textarea( $tpl['en'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $key ); ?>_en">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-
-					<!-- Arabic -->
-					<div class="kwtsms-template-field">
-						<label for="int_<?php echo esc_attr( $key ); ?>_ar">
-							<span class="kwtsms-lang-flag">🇰🇼</span>
-							<?php esc_html_e( 'Arabic (RTL)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[<?php echo esc_attr( $key ); ?>][ar]"
-								id="int_<?php echo esc_attr( $key ); ?>_ar"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="rtl"
-								data-lang="ar"
-							><?php echo esc_textarea( $tpl['ar'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $key ); ?>_ar">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+	<table class="wp-list-table widefat fixed striped" style="max-width:900px;margin-top:16px;">
+		<thead>
+			<tr>
+				<th style="width:30px;"></th>
+				<th><?php esc_html_e( 'Integration', 'wp-kwtsms-otp' ); ?></th>
+				<th><?php esc_html_e( 'What it does', 'wp-kwtsms-otp' ); ?></th>
+				<th style="width:120px;"><?php esc_html_e( 'Status', 'wp-kwtsms-otp' ); ?></th>
+				<th style="width:120px;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php foreach ( $integrations as $key => $int ) : ?>
+			<tr>
+				<td style="text-align:center;font-size:20px;">
+					<?php echo $icons[ $key ] ?? '&#x1F50C;'; // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				</td>
+				<td><strong><?php echo esc_html( $int['label'] ); ?></strong></td>
+				<td style="color:#555;font-size:13px;"><?php echo esc_html( $int['description'] ); ?></td>
+				<td>
+					<?php if ( $int['active'] ) : ?>
+						<span style="color:#00a32a;font-weight:600;">&#10003; <?php esc_html_e( 'Active', 'wp-kwtsms-otp' ); ?></span>
+					<?php else : ?>
+						<span style="color:#999;">&#8212; <?php esc_html_e( 'Not installed', 'wp-kwtsms-otp' ); ?></span>
+					<?php endif; ?>
+				</td>
+				<td>
+					<?php if ( $int['active'] ) : ?>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . $int['slug'] ) ); ?>" class="button button-secondary">
+							<?php esc_html_e( 'Configure', 'wp-kwtsms-otp' ); ?> &rarr;
+						</a>
+					<?php endif; ?>
+				</td>
+			</tr>
 			<?php endforeach; ?>
-
-			<!-- Admin SMS notification settings -->
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Admin SMS Notifications', 'wp-kwtsms-otp' ); ?></h3>
-				</div>
-				<p class="description">
-					<?php esc_html_e( 'Send an SMS to a store admin phone number when selected order status changes occur.', 'wp-kwtsms-otp' ); ?>
-				</p>
-				<table class="form-table" style="margin-top:12px;">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Admin Phone Number(s)', 'wp-kwtsms-otp' ); ?></th>
-						<td>
-							<input type="text"
-								name="kwtsms_otp_integrations[woo_admin_phone]"
-								value="<?php echo esc_attr( $int['woo_admin_phone'] ?? '' ); ?>"
-								class="regular-text"
-								placeholder="<?php esc_attr_e( 'e.g. 96599220322, 96599220333', 'wp-kwtsms-otp' ); ?>" />
-							<p class="description"><?php esc_html_e( 'Comma-separated list of phone numbers (with country code) to receive admin notifications.', 'wp-kwtsms-otp' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Notify admin for statuses', 'wp-kwtsms-otp' ); ?></th>
-						<td>
-							<?php
-							$admin_notify_statuses = $int['woo_notify_admin_statuses'] ?? array();
-							$status_options        = array(
-								'processing' => __( 'Processing', 'wp-kwtsms-otp' ),
-								'on-hold'    => __( 'On-Hold (Shipped)', 'wp-kwtsms-otp' ),
-								'completed'  => __( 'Completed', 'wp-kwtsms-otp' ),
-								'cancelled'  => __( 'Cancelled', 'wp-kwtsms-otp' ),
-								'pending'    => __( 'Pending Payment', 'wp-kwtsms-otp' ),
-								'refunded'   => __( 'Refunded', 'wp-kwtsms-otp' ),
-								'failed'     => __( 'Payment Failed', 'wp-kwtsms-otp' ),
-							);
-							foreach ( $status_options as $slug => $label ) :
-							?>
-							<label style="display:block;margin-bottom:4px;">
-								<input type="checkbox"
-									name="kwtsms_otp_integrations[woo_notify_admin_statuses][]"
-									value="<?php echo esc_attr( $slug ); ?>"
-									<?php checked( in_array( $slug, (array) $admin_notify_statuses, true ) ); ?> />
-								<?php echo esc_html( $label ); ?>
-							</label>
-							<?php endforeach; ?>
-							<p class="description"><?php esc_html_e( 'Select which status changes trigger an admin SMS notification.', 'wp-kwtsms-otp' ); ?></p>
-						</td>
-					</tr>
-				</table>
-			</div><!-- /.admin-notification-card -->
-
-		</div><!-- /#kwtsms-tab-woo -->
-
-		<!-- ================================================================
-		     Tab: Contact Form 7
-		     ================================================================ -->
-		<div id="kwtsms-tab-cf7" class="kwtsms-int-tab-content" style="display:none;">
-
-			<?php if ( ! $cf7_active ) : ?>
-			<div class="notice notice-warning inline" style="margin:16px 0;">
-				<p><?php esc_html_e( 'Contact Form 7 is not installed or activated. The settings below will be saved and applied once CF7 is active.', 'wp-kwtsms-otp' ); ?></p>
-			</div>
-			<?php endif; ?>
-
-			<!-- Enable toggle -->
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Contact Form 7 Integration', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[cf7_enabled]"
-							value="1"
-							<?php checked( $int['cf7_enabled'], 1 ); ?> />
-						<span><?php esc_html_e( 'Enable CF7 SMS Integration', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description">
-					<?php esc_html_e( 'Send a confirmation SMS after a CF7 form is submitted successfully.', 'wp-kwtsms-otp' ); ?>
-				</p>
-
-				<!-- Mode toggle -->
-				<table class="form-table" style="margin-top:12px;">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms-otp' ); ?></th>
-						<td>
-							<fieldset>
-								<label style="display:block;margin-bottom:6px;">
-									<input type="radio"
-										name="kwtsms_otp_integrations[cf7_mode]"
-										value="notification"
-										<?php checked( $int['cf7_mode'] ?? 'notification', 'notification' ); ?> />
-									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms-otp' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms-otp' ); ?>
-								</label>
-								<label style="display:block;">
-									<input type="radio"
-										name="kwtsms_otp_integrations[cf7_mode]"
-										value="gate"
-										<?php checked( $int['cf7_mode'] ?? 'notification', 'gate' ); ?> />
-									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms-otp' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms-otp' ); ?>
-								</label>
-							</fieldset>
-							<?php if ( 'gate' === ( $int['cf7_mode'] ?? 'notification' ) ) : ?>
-							<div class="notice notice-info inline" style="margin:8px 0 0;">
-								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms-otp' ); ?></p>
-							</div>
-							<?php endif; ?>
-						</td>
-					</tr>
-				</table>
-
-				<div class="notice notice-info inline" style="margin:12px 0 0;">
-					<p>
-						<?php esc_html_e( 'Setup tip: add a tel field named kwtsms_phone to your CF7 form:', 'wp-kwtsms-otp' ); ?>
-						<code>[tel kwtsms_phone placeholder "e.g. 96599220322"]</code>
-					</p>
-				</div>
-			</div>
-
-			<!-- CF7 confirmation template card -->
-			<?php
-			$cf7_tpl = $templates['cf7_confirmation'] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
-			?>
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Form Submission Confirmation', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[cf7_confirmation][enabled]"
-							value="1"
-							<?php checked( $cf7_tpl['enabled'], 1 ); ?> />
-						<span><?php esc_html_e( 'Enabled', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful form submission.', 'wp-kwtsms-otp' ); ?></p>
-				<p class="description" style="margin-top:4px;">
-					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong>
-					<code>{site_name}, {form_name}</code>
-				</p>
-
-				<div class="kwtsms-template-fields">
-					<!-- English -->
-					<div class="kwtsms-template-field">
-						<label for="int_cf7_confirmation_en">
-							<span class="kwtsms-lang-flag">🇬🇧</span>
-							<?php esc_html_e( 'English (LTR)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[cf7_confirmation][en]"
-								id="int_cf7_confirmation_en"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="ltr"
-								data-lang="en"
-							><?php echo esc_textarea( $cf7_tpl['en'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_cf7_confirmation_en">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-
-					<!-- Arabic -->
-					<div class="kwtsms-template-field">
-						<label for="int_cf7_confirmation_ar">
-							<span class="kwtsms-lang-flag">🇰🇼</span>
-							<?php esc_html_e( 'Arabic (RTL)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[cf7_confirmation][ar]"
-								id="int_cf7_confirmation_ar"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="rtl"
-								data-lang="ar"
-							><?php echo esc_textarea( $cf7_tpl['ar'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_cf7_confirmation_ar">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-		</div><!-- /#kwtsms-tab-cf7 -->
-
-		<!-- ================================================================
-		     Tab: WPForms
-		     ================================================================ -->
-		<div id="kwtsms-tab-wpforms" class="kwtsms-int-tab-content" style="display:none;">
-
-			<?php if ( ! $wpforms_active ) : ?>
-			<div class="notice notice-warning inline" style="margin:16px 0;">
-				<p><?php esc_html_e( 'WPForms is not installed or activated. The settings below will be saved and applied once WPForms is active.', 'wp-kwtsms-otp' ); ?></p>
-			</div>
-			<?php endif; ?>
-
-			<!-- Enable toggle -->
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'WPForms Integration', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[wpforms_enabled]"
-							value="1"
-							<?php checked( $int['wpforms_enabled'], 1 ); ?> />
-						<span><?php esc_html_e( 'Enable WPForms SMS Integration', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description">
-					<?php esc_html_e( 'Send a confirmation SMS after a WPForms form is submitted successfully.', 'wp-kwtsms-otp' ); ?>
-				</p>
-				<!-- Mode toggle -->
-				<table class="form-table" style="margin-top:12px;">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms-otp' ); ?></th>
-						<td>
-							<fieldset>
-								<label style="display:block;margin-bottom:6px;">
-									<input type="radio"
-										name="kwtsms_otp_integrations[wpforms_mode]"
-										value="notification"
-										<?php checked( $int['wpforms_mode'] ?? 'notification', 'notification' ); ?> />
-									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms-otp' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms-otp' ); ?>
-								</label>
-								<label style="display:block;">
-									<input type="radio"
-										name="kwtsms_otp_integrations[wpforms_mode]"
-										value="gate"
-										<?php checked( $int['wpforms_mode'] ?? 'notification', 'gate' ); ?> />
-									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms-otp' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms-otp' ); ?>
-								</label>
-							</fieldset>
-							<?php if ( 'gate' === ( $int['wpforms_mode'] ?? 'notification' ) ) : ?>
-							<div class="notice notice-info inline" style="margin:8px 0 0;">
-								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms-otp' ); ?></p>
-							</div>
-							<?php endif; ?>
-						</td>
-					</tr>
-				</table>
-
-				<div class="notice notice-info inline" style="margin:12px 0 0;">
-					<p><?php esc_html_e( 'WPForms automatically detects Phone fields. Add a Phone field to your form to enable SMS delivery.', 'wp-kwtsms-otp' ); ?></p>
-				</div>
-			</div>
-
-			<!-- WPForms confirmation template card -->
-			<?php
-			$wpf_tpl = $templates['wpforms_confirmation'] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
-			?>
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Form Submission Confirmation', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[wpforms_confirmation][enabled]"
-							value="1"
-							<?php checked( $wpf_tpl['enabled'], 1 ); ?> />
-						<span><?php esc_html_e( 'Enabled', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful form submission.', 'wp-kwtsms-otp' ); ?></p>
-				<p class="description" style="margin-top:4px;">
-					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong>
-					<code>{site_name}, {form_name}</code>
-				</p>
-
-				<div class="kwtsms-template-fields">
-					<!-- English -->
-					<div class="kwtsms-template-field">
-						<label for="int_wpforms_confirmation_en">
-							<span class="kwtsms-lang-flag">🇬🇧</span>
-							<?php esc_html_e( 'English (LTR)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[wpforms_confirmation][en]"
-								id="int_wpforms_confirmation_en"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="ltr"
-								data-lang="en"
-							><?php echo esc_textarea( $wpf_tpl['en'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_wpforms_confirmation_en">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-
-					<!-- Arabic -->
-					<div class="kwtsms-template-field">
-						<label for="int_wpforms_confirmation_ar">
-							<span class="kwtsms-lang-flag">🇰🇼</span>
-							<?php esc_html_e( 'Arabic (RTL)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[wpforms_confirmation][ar]"
-								id="int_wpforms_confirmation_ar"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="rtl"
-								data-lang="ar"
-							><?php echo esc_textarea( $wpf_tpl['ar'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_wpforms_confirmation_ar">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-		</div><!-- /#kwtsms-tab-wpforms -->
-
-		<!-- ================================================================
-		     Tab: Elementor
-		     ================================================================ -->
-		<div id="kwtsms-tab-elementor" class="kwtsms-int-tab-content" style="display:none;">
-
-			<?php if ( ! $elementor_active ) : ?>
-			<div class="notice notice-warning inline" style="margin:16px 0;">
-				<p><?php esc_html_e( 'Elementor is not installed or activated. The settings below will be saved and applied once Elementor is active.', 'wp-kwtsms-otp' ); ?></p>
-			</div>
-			<?php endif; ?>
-
-			<!-- Enable toggle -->
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Elementor Integration', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[elementor_enabled]"
-							value="1"
-							<?php checked( $int['elementor_enabled'], 1 ); ?> />
-						<span><?php esc_html_e( 'Enable Elementor SMS Integration', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description">
-					<?php esc_html_e( 'Send a confirmation SMS after an Elementor Pro form is submitted successfully.', 'wp-kwtsms-otp' ); ?>
-				</p>
-				<!-- Mode toggle -->
-				<table class="form-table" style="margin-top:12px;">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms-otp' ); ?></th>
-						<td>
-							<fieldset>
-								<label style="display:block;margin-bottom:6px;">
-									<input type="radio"
-										name="kwtsms_otp_integrations[elementor_mode]"
-										value="notification"
-										<?php checked( $int['elementor_mode'] ?? 'notification', 'notification' ); ?> />
-									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms-otp' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms-otp' ); ?>
-								</label>
-								<label style="display:block;">
-									<input type="radio"
-										name="kwtsms_otp_integrations[elementor_mode]"
-										value="gate"
-										<?php checked( $int['elementor_mode'] ?? 'notification', 'gate' ); ?> />
-									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms-otp' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms-otp' ); ?>
-								</label>
-							</fieldset>
-							<?php if ( 'gate' === ( $int['elementor_mode'] ?? 'notification' ) ) : ?>
-							<div class="notice notice-info inline" style="margin:8px 0 0;">
-								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms-otp' ); ?></p>
-							</div>
-							<?php endif; ?>
-						</td>
-					</tr>
-				</table>
-
-				<div class="notice notice-info inline" style="margin:12px 0 0;">
-					<p><?php esc_html_e( 'Requires Elementor Pro. Add a Tel or Phone field to your form â the plugin will use it as the destination number.', 'wp-kwtsms-otp' ); ?></p>
-				</div>
-			</div>
-
-			<!-- Elementor confirmation template card -->
-			<?php
-			$elm_tpl = $templates['elementor_confirmation'] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
-			?>
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Form Submission Confirmation', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[elementor_confirmation][enabled]"
-							value="1"
-							<?php checked( $elm_tpl['enabled'], 1 ); ?> />
-						<span><?php esc_html_e( 'Enabled', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful Elementor form submission.', 'wp-kwtsms-otp' ); ?></p>
-				<p class="description" style="margin-top:4px;">
-					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong>
-					<code>{site_name}, {form_name}</code>
-				</p>
-
-				<div class="kwtsms-template-fields">
-					<!-- English -->
-					<div class="kwtsms-template-field">
-						<label for="int_elementor_confirmation_en">
-							<span class="kwtsms-lang-flag">🇬🇧</span>
-							<?php esc_html_e( 'English (LTR)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[elementor_confirmation][en]"
-								id="int_elementor_confirmation_en"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="ltr"
-								data-lang="en"
-							><?php echo esc_textarea( $elm_tpl['en'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_elementor_confirmation_en">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-
-					<!-- Arabic -->
-					<div class="kwtsms-template-field">
-						<label for="int_elementor_confirmation_ar">
-							<span class="kwtsms-lang-flag">🇰🇼</span>
-							<?php esc_html_e( 'Arabic (RTL)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[elementor_confirmation][ar]"
-								id="int_elementor_confirmation_ar"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="rtl"
-								data-lang="ar"
-							><?php echo esc_textarea( $elm_tpl['ar'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_elementor_confirmation_ar">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-		</div><!-- /#kwtsms-tab-elementor -->
-
-		<!-- ================================================================
-		     Tab: Gravity Forms
-		     ================================================================ -->
-		<div id="kwtsms-tab-gf" class="kwtsms-int-tab-content" style="display:none;">
-
-			<?php if ( ! $gf_active ) : ?>
-			<div class="notice notice-warning inline" style="margin:16px 0;">
-				<p><?php esc_html_e( 'Gravity Forms is not installed or activated. The settings below will be saved and applied once Gravity Forms is active.', 'wp-kwtsms-otp' ); ?></p>
-			</div>
-			<?php endif; ?>
-
-			<!-- Enable toggle -->
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Gravity Forms Integration', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[gf_enabled]"
-							value="1"
-							<?php checked( $int['gf_enabled'] ?? 1, 1 ); ?> />
-						<span><?php esc_html_e( 'Enable Gravity Forms SMS Integration', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description">
-					<?php esc_html_e( 'Send a confirmation SMS after a Gravity Forms submission, or gate form access behind OTP verification.', 'wp-kwtsms-otp' ); ?>
-				</p>
-				<!-- Mode toggle -->
-				<table class="form-table" style="margin-top:12px;">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms-otp' ); ?></th>
-						<td>
-							<fieldset>
-								<label style="display:block;margin-bottom:6px;">
-									<input type="radio"
-										name="kwtsms_otp_integrations[gf_mode]"
-										value="notification"
-										<?php checked( $int['gf_mode'] ?? 'notification', 'notification' ); ?> />
-									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms-otp' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms-otp' ); ?>
-								</label>
-								<label style="display:block;">
-									<input type="radio"
-										name="kwtsms_otp_integrations[gf_mode]"
-										value="gate"
-										<?php checked( $int['gf_mode'] ?? 'notification', 'gate' ); ?> />
-									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms-otp' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms-otp' ); ?>
-								</label>
-							</fieldset>
-							<?php if ( 'gate' === ( $int['gf_mode'] ?? 'notification' ) ) : ?>
-							<div class="notice notice-info inline" style="margin:8px 0 0;">
-								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms-otp' ); ?></p>
-							</div>
-							<?php endif; ?>
-						</td>
-					</tr>
-				</table>
-
-				<div class="notice notice-info inline" style="margin:12px 0 0;">
-					<p><?php esc_html_e( 'Gravity Forms automatically detects Phone fields (type = phone). Add a Phone field to your form to enable SMS delivery.', 'wp-kwtsms-otp' ); ?></p>
-				</div>
-			</div>
-
-			<!-- GF confirmation template card -->
-			<?php
-			$gf_tpl = $templates['gf_confirmation'] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
-			?>
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Form Submission Confirmation', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[gf_confirmation][enabled]"
-							value="1"
-							<?php checked( $gf_tpl['enabled'], 1 ); ?> />
-						<span><?php esc_html_e( 'Enabled', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful Gravity Forms submission.', 'wp-kwtsms-otp' ); ?></p>
-				<p class="description" style="margin-top:4px;">
-					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong>
-					<code>{form_name}, {phone}</code>
-				</p>
-
-				<div class="kwtsms-template-fields">
-					<!-- English -->
-					<div class="kwtsms-template-field">
-						<label for="int_gf_confirmation_en">
-							<span class="kwtsms-lang-flag">🇬🇧</span>
-							<?php esc_html_e( 'English (LTR)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[gf_confirmation][en]"
-								id="int_gf_confirmation_en"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="ltr"
-								data-lang="en"
-							><?php echo esc_textarea( $gf_tpl['en'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_gf_confirmation_en">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-
-					<!-- Arabic -->
-					<div class="kwtsms-template-field">
-						<label for="int_gf_confirmation_ar">
-							<span class="kwtsms-lang-flag">🇰🇼</span>
-							<?php esc_html_e( 'Arabic (RTL)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[gf_confirmation][ar]"
-								id="int_gf_confirmation_ar"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="rtl"
-								data-lang="ar"
-							><?php echo esc_textarea( $gf_tpl['ar'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_gf_confirmation_ar">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-		</div><!-- /#kwtsms-tab-gf -->
-
-		<!-- ================================================================
-		     Tab: Ninja Forms
-		     ================================================================ -->
-		<div id="kwtsms-tab-nf" class="kwtsms-int-tab-content" style="display:none;">
-
-			<?php if ( ! $nf_active ) : ?>
-			<div class="notice notice-warning inline" style="margin:16px 0;">
-				<p><?php esc_html_e( 'Ninja Forms is not installed or activated. The settings below will be saved and applied once Ninja Forms is active.', 'wp-kwtsms-otp' ); ?></p>
-			</div>
-			<?php endif; ?>
-
-			<!-- Enable toggle -->
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Ninja Forms Integration', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[nf_enabled]"
-							value="1"
-							<?php checked( $int['nf_enabled'] ?? 1, 1 ); ?> />
-						<span><?php esc_html_e( 'Enable Ninja Forms SMS Integration', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description">
-					<?php esc_html_e( 'Send a confirmation SMS after a Ninja Forms submission, or gate form access behind OTP verification.', 'wp-kwtsms-otp' ); ?>
-				</p>
-				<!-- Mode toggle -->
-				<table class="form-table" style="margin-top:12px;">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms-otp' ); ?></th>
-						<td>
-							<fieldset>
-								<label style="display:block;margin-bottom:6px;">
-									<input type="radio"
-										name="kwtsms_otp_integrations[nf_mode]"
-										value="notification"
-										<?php checked( $int['nf_mode'] ?? 'notification', 'notification' ); ?> />
-									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms-otp' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms-otp' ); ?>
-								</label>
-								<label style="display:block;">
-									<input type="radio"
-										name="kwtsms_otp_integrations[nf_mode]"
-										value="gate"
-										<?php checked( $int['nf_mode'] ?? 'notification', 'gate' ); ?> />
-									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms-otp' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms-otp' ); ?>
-								</label>
-							</fieldset>
-							<?php if ( 'gate' === ( $int['nf_mode'] ?? 'notification' ) ) : ?>
-							<div class="notice notice-info inline" style="margin:8px 0 0;">
-								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms-otp' ); ?></p>
-							</div>
-							<?php endif; ?>
-						</td>
-					</tr>
-				</table>
-
-				<div class="notice notice-info inline" style="margin:12px 0 0;">
-					<p><?php esc_html_e( 'Ninja Forms automatically detects Phone and Tel fields (type = phone or tel). Add one to your form to enable SMS delivery.', 'wp-kwtsms-otp' ); ?></p>
-				</div>
-			</div>
-
-			<!-- NF confirmation template card -->
-			<?php
-			$nf_tpl = $templates['nf_confirmation'] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
-			?>
-			<div class="kwtsms-template-card">
-				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Form Submission Confirmation', 'wp-kwtsms-otp' ); ?></h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[nf_confirmation][enabled]"
-							value="1"
-							<?php checked( $nf_tpl['enabled'], 1 ); ?> />
-						<span><?php esc_html_e( 'Enabled', 'wp-kwtsms-otp' ); ?></span>
-					</label>
-				</div>
-				<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful Ninja Forms submission.', 'wp-kwtsms-otp' ); ?></p>
-				<p class="description" style="margin-top:4px;">
-					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong>
-					<code>{form_name}, {phone}</code>
-				</p>
-
-				<div class="kwtsms-template-fields">
-					<!-- English -->
-					<div class="kwtsms-template-field">
-						<label for="int_nf_confirmation_en">
-							<span class="kwtsms-lang-flag">🇬🇧</span>
-							<?php esc_html_e( 'English (LTR)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[nf_confirmation][en]"
-								id="int_nf_confirmation_en"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="ltr"
-								data-lang="en"
-							><?php echo esc_textarea( $nf_tpl['en'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_nf_confirmation_en">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-
-					<!-- Arabic -->
-					<div class="kwtsms-template-field">
-						<label for="int_nf_confirmation_ar">
-							<span class="kwtsms-lang-flag">🇰🇼</span>
-							<?php esc_html_e( 'Arabic (RTL)', 'wp-kwtsms-otp' ); ?>
-						</label>
-						<div class="kwtsms-textarea-wrap">
-							<textarea
-								name="kwtsms_otp_integrations[nf_confirmation][ar]"
-								id="int_nf_confirmation_ar"
-								class="large-text kwtsms-sms-textarea"
-								rows="3"
-								dir="rtl"
-								data-lang="ar"
-							><?php echo esc_textarea( $nf_tpl['ar'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_nf_confirmation_ar">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-		</div><!-- /#kwtsms-tab-nf -->
-
-		<?php submit_button( __( 'Save Integration Settings', 'wp-kwtsms-otp' ), 'primary kwtsms-save-btn' ); ?>
-
-	</form>
+		</tbody>
+	</table>
 
 </div><!-- /.kwtsms-admin-wrap -->
