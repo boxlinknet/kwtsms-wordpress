@@ -270,13 +270,24 @@ class Test_KwtSMS_CF7 extends TestCase {
 	/**
 	 * Build a minimal KwtSMS_Plugin stub for CF7 tests.
 	 *
+	 * Returns 1 for the `integrations.cf7_enabled` key so that the constructor
+	 * does not bail early, allowing hook registration tests to pass.
+	 *
 	 * @return KwtSMS_Plugin
 	 */
 	private function make_plugin_stub() {
 		$settings = $this->getMockBuilder( 'stdClass' )
 			->addMethods( array( 'get' ) )
 			->getMock();
-		$settings->method( 'get' )->willReturn( '' );
+		$settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) {
+				// Return enabled=1 so the constructor does not bail early.
+				if ( 'integrations.cf7_enabled' === $key ) {
+					return 1;
+				}
+				return $default ?? '';
+			}
+		);
 
 		/** @var KwtSMS_Plugin $plugin */
 		$plugin           = $this->getMockBuilder( 'KwtSMS_Plugin' )
@@ -354,13 +365,24 @@ class Test_KwtSMS_WPForms extends TestCase {
 	/**
 	 * Build a minimal KwtSMS_Plugin stub for WPForms tests.
 	 *
+	 * Returns 1 for the `integrations.wpforms_enabled` key so that the constructor
+	 * does not bail early, allowing hook registration tests to pass.
+	 *
 	 * @return KwtSMS_Plugin
 	 */
 	private function make_plugin_stub() {
 		$settings = $this->getMockBuilder( 'stdClass' )
 			->addMethods( array( 'get' ) )
 			->getMock();
-		$settings->method( 'get' )->willReturn( '' );
+		$settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) {
+				// Return enabled=1 so the constructor does not bail early.
+				if ( 'integrations.wpforms_enabled' === $key ) {
+					return 1;
+				}
+				return $default ?? '';
+			}
+		);
 
 		/** @var KwtSMS_Plugin $plugin */
 		$plugin           = $this->getMockBuilder( 'KwtSMS_Plugin' )
@@ -438,13 +460,24 @@ class Test_KwtSMS_Elementor extends TestCase {
 	/**
 	 * Build a minimal KwtSMS_Plugin stub for Elementor tests.
 	 *
+	 * Returns 1 for the `integrations.elementor_enabled` key so that the
+	 * constructor does not bail early, allowing hook registration tests to pass.
+	 *
 	 * @return KwtSMS_Plugin
 	 */
 	private function make_plugin_stub() {
 		$settings = $this->getMockBuilder( 'stdClass' )
 			->addMethods( array( 'get' ) )
 			->getMock();
-		$settings->method( 'get' )->willReturn( '' );
+		$settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) {
+				// Return enabled=1 so the constructor does not bail early.
+				if ( 'integrations.elementor_enabled' === $key ) {
+					return 1;
+				}
+				return $default ?? '';
+			}
+		);
 
 		/** @var KwtSMS_Plugin $plugin */
 		$plugin           = $this->getMockBuilder( 'KwtSMS_Plugin' )
@@ -614,5 +647,396 @@ class Test_KwtSMS_Integrations_Page extends TestCase {
 	public function test_integrations_page_uses_correct_settings_group() {
 		$src = file_get_contents( $this->view_path() );
 		$this->assertStringContainsString( 'kwtsms_otp_integrations_group', $src );
+	}
+}
+
+/**
+ * Class Test_KwtSMS_Integration_Wiring
+ *
+ * Tests that all 4 integration classes:
+ *  - Respect their top-level enable flag (no hooks registered when disabled).
+ *  - Use saved templates from settings instead of hardcoded strings.
+ *  - Respect the per-template `enabled` sub-key.
+ *  - Replace placeholders at runtime.
+ */
+class Test_KwtSMS_Integration_Wiring extends TestCase {
+
+	/**
+	 * Hooks captured during add_action calls.
+	 *
+	 * @var string[]
+	 */
+	private $registered_actions = array();
+
+	/**
+	 * Hooks captured during add_filter calls.
+	 *
+	 * @var string[]
+	 */
+	private $registered_filters = array();
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+
+		$this->registered_actions = array();
+		$this->registered_filters = array();
+
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'update_option' )->justReturn( true );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'sanitize_key' )->alias( function ( $v ) {
+			return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $v ) );
+		} );
+		Functions\when( 'wp_unslash' )->alias( function ( $v ) { return $v; } );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
+		Functions\when( 'get_user_meta' )->justReturn( '' );
+		Functions\when( 'get_bloginfo' )->alias( function ( $show ) {
+			return 'TestSite' === $show || 'name' === $show ? 'TestSite' : '';
+		} );
+		Functions\when( 'is_rtl' )->justReturn( false );
+
+		// Capture add_action / add_filter calls into instance arrays.
+		Functions\when( 'add_action' )->alias( function ( $hook ) {
+			$this->registered_actions[] = $hook;
+			return null;
+		} );
+		Functions\when( 'add_filter' )->alias( function ( $hook ) {
+			$this->registered_filters[] = $hook;
+			return null;
+		} );
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	// =========================================================================
+	// Test 1 — WooCommerce: disabled flag prevents hook registration
+	// =========================================================================
+
+	/**
+	 * When `integrations.woo_enabled` is 0, the constructor must bail early and
+	 * register no WooCommerce hooks at all.
+	 */
+	public function test_woo_disabled_flag_prevents_hook_registration() {
+		new KwtSMS_Woo( $this->make_plugin_stub(
+			array( 'integrations.woo_enabled' => 0 ),
+			array()
+		) );
+
+		$this->assertNotContains( 'woocommerce_order_status_changed', $this->registered_actions );
+		$this->assertNotContains( 'woocommerce_register_form', $this->registered_actions );
+		$this->assertNotContains( 'woocommerce_created_customer', $this->registered_actions );
+	}
+
+	// =========================================================================
+	// Test 2 — WooCommerce: build_order_message uses saved template
+	// =========================================================================
+
+	/**
+	 * When a custom `en` template is in settings, build_order_message() (via
+	 * on_order_status_changed) must produce a message using that template with
+	 * placeholders replaced.
+	 *
+	 * We call on_order_status_changed() directly with a fake WC_Order stub so
+	 * we can inspect the SMS that is dispatched via api->send_sms().
+	 */
+	public function test_woo_build_message_uses_saved_template() {
+		$custom_template = array(
+			'enabled' => 1,
+			'en'      => 'Hello from {site_name}: order #{order_id} total {total}',
+			'ar'      => 'AR placeholder',
+		);
+
+		$integration_templates = array(
+			'woo_processing' => $custom_template,
+			'woo_shipped'    => array( 'enabled' => 1, 'en' => '', 'ar' => '' ),
+			'woo_completed'  => array( 'enabled' => 1, 'en' => '', 'ar' => '' ),
+			'woo_cancelled'  => array( 'enabled' => 1, 'en' => '', 'ar' => '' ),
+		);
+
+		$sent_message = null;
+
+		// Build a plugin stub that records the send_sms call.
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone, $sender_id, $message, $context ) use ( &$sent_message ) {
+				$sent_message = $message;
+			}
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.woo_enabled'     => 1,
+				'integrations.woo_checkout_otp' => 0,
+				'gateway.sender_id'            => 'TESTSENDER',
+			),
+			$integration_templates,
+			$api
+		);
+
+		$woo = new KwtSMS_Woo( $plugin );
+
+		// Stub WC_Order.
+		$order = $this->getMockBuilder( 'WC_Order' )
+			->addMethods( array(
+				'get_customer_id', 'get_billing_phone',
+				'get_order_number', 'get_total',
+				'get_billing_first_name', 'get_billing_last_name',
+			) )
+			->getMock();
+		$order->method( 'get_customer_id' )->willReturn( 0 );
+		$order->method( 'get_billing_phone' )->willReturn( '' );
+		$order->method( 'get_order_number' )->willReturn( '42' );
+		$order->method( 'get_total' )->willReturn( 100.00 );
+		$order->method( 'get_billing_first_name' )->willReturn( 'Jane' );
+		$order->method( 'get_billing_last_name' )->willReturn( 'Doe' );
+
+		// Stub WC functions used inside on_order_status_changed.
+		Functions\when( 'wc_price' )->alias( function ( $amount ) { return (string) $amount; } );
+
+		// Inject a known phone directly via get_user_meta stub: not possible since
+		// get_user_meta is already mocked to return ''. Instead stub billing phone.
+		Functions\when( 'get_user_meta' )->justReturn( '96599220322' );
+
+		$woo->on_order_status_changed( 42, 'pending', 'processing', $order );
+
+		$this->assertNotNull( $sent_message, 'send_sms was not called — no message was sent.' );
+		$this->assertStringContainsString( 'TestSite', $sent_message );
+		$this->assertStringContainsString( '42', $sent_message );
+		$this->assertStringNotContainsString( '{site_name}', $sent_message );
+		$this->assertStringNotContainsString( '{order_id}', $sent_message );
+	}
+
+	// =========================================================================
+	// Test 3 — WooCommerce: disabled per-template flag skips SMS
+	// =========================================================================
+
+	/**
+	 * When `woo_processing.enabled` is 0, build_order_message() must return an
+	 * empty string and no SMS must be sent.
+	 */
+	public function test_woo_template_disabled_skips_sms() {
+		$integration_templates = array(
+			'woo_processing' => array(
+				'enabled' => 0,
+				'en'      => 'Should not be sent',
+				'ar'      => '',
+			),
+			'woo_shipped'    => array( 'enabled' => 1, 'en' => '', 'ar' => '' ),
+			'woo_completed'  => array( 'enabled' => 1, 'en' => '', 'ar' => '' ),
+			'woo_cancelled'  => array( 'enabled' => 1, 'en' => '', 'ar' => '' ),
+		);
+
+		$send_was_called = false;
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function () use ( &$send_was_called ) {
+				$send_was_called = true;
+			}
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.woo_enabled'      => 1,
+				'integrations.woo_checkout_otp' => 0,
+				'gateway.sender_id'             => 'TESTSENDER',
+			),
+			$integration_templates,
+			$api
+		);
+
+		$woo = new KwtSMS_Woo( $plugin );
+
+		$order = $this->getMockBuilder( 'WC_Order' )
+			->addMethods( array(
+				'get_customer_id', 'get_billing_phone',
+				'get_order_number', 'get_total',
+				'get_billing_first_name', 'get_billing_last_name',
+			) )
+			->getMock();
+		$order->method( 'get_customer_id' )->willReturn( 0 );
+		$order->method( 'get_billing_phone' )->willReturn( '' );
+		$order->method( 'get_order_number' )->willReturn( '99' );
+		$order->method( 'get_total' )->willReturn( 50.00 );
+		$order->method( 'get_billing_first_name' )->willReturn( 'John' );
+		$order->method( 'get_billing_last_name' )->willReturn( 'Doe' );
+
+		Functions\when( 'wc_price' )->alias( function ( $amount ) { return (string) $amount; } );
+		Functions\when( 'get_user_meta' )->justReturn( '96599220322' );
+
+		$woo->on_order_status_changed( 99, 'pending', 'processing', $order );
+
+		$this->assertFalse( $send_was_called, 'send_sms should not be called when template is disabled.' );
+	}
+
+	// =========================================================================
+	// Test 4 — CF7: disabled flag prevents hook registration
+	// =========================================================================
+
+	/**
+	 * When `integrations.cf7_enabled` is 0, the CF7 constructor must bail early
+	 * and the wpcf7_mail_sent hook must not be registered.
+	 */
+	public function test_cf7_disabled_flag_prevents_sending() {
+		new KwtSMS_CF7( $this->make_plugin_stub(
+			array( 'integrations.cf7_enabled' => 0 ),
+			array()
+		) );
+
+		$this->assertNotContains( 'wpcf7_mail_sent', $this->registered_actions );
+	}
+
+	// =========================================================================
+	// Test 5 — CF7: uses saved template with {form_name} replaced
+	// =========================================================================
+
+	/**
+	 * When a custom `en` template is in cf7_confirmation settings, send_confirmation_sms()
+	 * must produce a message with {site_name} and {form_name} replaced.
+	 */
+	public function test_cf7_uses_saved_template() {
+		$integration_templates = array(
+			'cf7_confirmation' => array(
+				'enabled' => 1,
+				'en'      => 'Hi! {site_name} got your "{form_name}" form.',
+				'ar'      => '',
+			),
+		);
+
+		$sent_message = null;
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone, $sender_id, $message, $context ) use ( &$sent_message ) {
+				$sent_message = $message;
+			}
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.cf7_enabled' => 1,
+				'gateway.sender_id'        => 'TESTSENDER',
+			),
+			$integration_templates,
+			$api
+		);
+
+		$cf7 = new KwtSMS_CF7( $plugin );
+
+		// Stub the CF7 form object.
+		$cf7_form = $this->getMockBuilder( 'WPCF7_ContactForm' )
+			->addMethods( array( 'title' ) )
+			->getMock();
+		$cf7_form->method( 'title' )->willReturn( 'My Enquiry Form' );
+
+		// Stub WPCF7_Submission.
+		$submission = $this->getMockBuilder( 'WPCF7_Submission' )
+			->addMethods( array( 'get_posted_data' ) )
+			->getMock();
+		$submission->method( 'get_posted_data' )->willReturn(
+			array( 'kwtsms_phone' => '96599220322' )
+		);
+
+		Functions\when( 'is_a' )->alias( function ( $obj, $class ) {
+			return $obj instanceof $class;
+		} );
+
+		// Make WPCF7_Submission::get_instance() return our stub.
+		// We use Brain\Monkey to stub the static method call as a function-call mock.
+		Functions\when( 'WPCF7_Submission::get_instance' )->justReturn( $submission );
+
+		// Stub KwtSMS_API::normalize_phone to return the raw phone (it's already normalised).
+		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96599220322' );
+
+		// Call the handler directly.
+		$cf7->send_confirmation_sms( $cf7_form );
+
+		$this->assertNotNull( $sent_message, 'send_sms was not called — no message was sent.' );
+		$this->assertStringContainsString( 'TestSite', $sent_message );
+		$this->assertStringContainsString( 'My Enquiry Form', $sent_message );
+		$this->assertStringNotContainsString( '{site_name}', $sent_message );
+		$this->assertStringNotContainsString( '{form_name}', $sent_message );
+	}
+
+	// =========================================================================
+	// Test 6 — WPForms: disabled flag prevents hook registration
+	// =========================================================================
+
+	/**
+	 * When `integrations.wpforms_enabled` is 0, the WPForms constructor must bail
+	 * early and the wpforms_process_complete hook must not be registered.
+	 */
+	public function test_wpforms_disabled_flag_prevents_sending() {
+		new KwtSMS_WPForms( $this->make_plugin_stub(
+			array( 'integrations.wpforms_enabled' => 0 ),
+			array()
+		) );
+
+		$this->assertNotContains( 'wpforms_process_complete', $this->registered_actions );
+	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
+
+	/**
+	 * Build a KwtSMS_Plugin mock with configurable settings and integration templates.
+	 *
+	 * The settings stub supports:
+	 *   - get($key, $default) — returns value from $settings_map or $default
+	 *   - get_all_integration_templates() — returns $integration_templates
+	 *
+	 * Optionally accepts a pre-built API mock; otherwise creates a no-op stub.
+	 *
+	 * @param array       $settings_map          Dot-notation key → value map.
+	 * @param array       $integration_templates Return value for get_all_integration_templates().
+	 * @param object|null $api_mock              Optional API mock (stdClass with send_sms method).
+	 *
+	 * @return KwtSMS_Plugin
+	 */
+	private function make_plugin_stub(
+		array $settings_map = array(),
+		array $integration_templates = array(),
+		$api_mock = null
+	) {
+		$settings = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'get', 'get_all_templates', 'get_all_integration_templates' ) )
+			->getMock();
+
+		$settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) use ( $settings_map ) {
+				return array_key_exists( $key, $settings_map ) ? $settings_map[ $key ] : $default;
+			}
+		);
+
+		$settings->method( 'get_all_templates' )->willReturn( array() );
+		$settings->method( 'get_all_integration_templates' )->willReturn( $integration_templates );
+
+		if ( null === $api_mock ) {
+			$api_mock = $this->getMockBuilder( 'stdClass' )
+				->addMethods( array( 'send_sms' ) )
+				->getMock();
+			$api_mock->method( 'send_sms' )->willReturn( null );
+		}
+
+		/** @var KwtSMS_Plugin $plugin */
+		$plugin = $this->getMockBuilder( 'KwtSMS_Plugin' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$plugin->settings = $settings;
+		$plugin->api      = $api_mock;
+
+		return $plugin;
 	}
 }

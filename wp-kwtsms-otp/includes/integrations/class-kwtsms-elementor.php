@@ -36,18 +36,29 @@ class KwtSMS_Elementor {
 	 *
 	 * Registers the elementor_pro/forms/new_record hook so we can send a
 	 * confirmation SMS after every successful Elementor Pro form submission
-	 * that contains a phone / tel field.
+	 * that contains a phone / tel field. If the Elementor integration is
+	 * disabled in settings, no hook is registered and the class exits immediately.
 	 *
 	 * @param KwtSMS_Plugin $plugin The main plugin instance.
 	 */
 	public function __construct( KwtSMS_Plugin $plugin ) {
 		$this->plugin = $plugin;
+
+		// Bail entirely if the Elementor integration is disabled.
+		if ( ! $this->plugin->settings->get( 'integrations.elementor_enabled', 1 ) ) {
+			return;
+		}
+
 		// elementor_pro/forms/new_record fires after a successful Elementor form submission.
 		add_action( 'elementor_pro/forms/new_record', array( $this, 'send_confirmation_sms' ), 10, 2 );
 	}
 
 	/**
 	 * Send a confirmation SMS after an Elementor Pro form submission.
+	 *
+	 * The message text is loaded from the saved `integrations.elementor_confirmation`
+	 * template and supports both English and Arabic (selected via is_rtl()). If
+	 * the template is disabled by the admin, no SMS is sent.
 	 *
 	 * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record  Submitted form record.
 	 * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $handler The form AJAX handler.
@@ -65,21 +76,51 @@ class KwtSMS_Elementor {
 			return;
 		}
 
-		$site_name = get_bloginfo( 'name' );
 		$form_name = sanitize_text_field( $record->get_form_settings( 'form_name' ) ?? '' );
 
-		$message = sprintf(
-			/* translators: 1: site name, 2: form name */
-			__( '%1$s: Your form "%2$s" has been received. Thank you!', 'wp-kwtsms-otp' ),
-			$site_name,
-			$form_name ?: 'Contact Form'
-		);
+		$message = $this->render_confirmation_template( $form_name ?: 'Contact Form' );
+		if ( empty( $message ) ) {
+			return; // Template disabled or missing.
+		}
 
 		$this->plugin->api->send_sms(
 			$normalized,
 			$this->plugin->settings->get( 'gateway.sender_id', '' ),
 			$message,
 			'elementor'
+		);
+	}
+
+	/**
+	 * Render the Elementor confirmation SMS from the saved template.
+	 *
+	 * Loads the `elementor_confirmation` template from integrations settings, checks
+	 * the `enabled` sub-key, selects the correct language string (ar for RTL
+	 * sites, en otherwise), and replaces {site_name} and {form_name} placeholders.
+	 *
+	 * @param string $form_name The Elementor form name.
+	 *
+	 * @return string Rendered SMS message, or empty string if disabled / missing.
+	 */
+	private function render_confirmation_template( $form_name ) {
+		$templates = $this->plugin->settings->get_all_integration_templates();
+		$template  = $templates['elementor_confirmation'] ?? array();
+
+		if ( empty( $template['enabled'] ) ) {
+			return '';
+		}
+
+		$lang    = ( function_exists( 'is_rtl' ) && is_rtl() ) ? 'ar' : 'en';
+		$message = $template[ $lang ] ?? $template['en'] ?? '';
+
+		if ( '' === $message ) {
+			return '';
+		}
+
+		return str_replace(
+			array( '{site_name}', '{form_name}' ),
+			array( get_bloginfo( 'name' ), $form_name ),
+			$message
 		);
 	}
 

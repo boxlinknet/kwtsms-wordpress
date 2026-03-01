@@ -37,13 +37,20 @@ class KwtSMS_Woo {
 	/**
 	 * Constructor.
 	 *
-	 * Registers all WooCommerce hooks. The checkout OTP gate hooks are only
-	 * added when the feature is enabled via the admin settings.
+	 * Registers all WooCommerce hooks. If the WooCommerce integration is
+	 * disabled via the admin settings, no hooks are registered and the class
+	 * exits immediately. The checkout OTP gate hooks are only added when that
+	 * sub-feature is also enabled.
 	 *
 	 * @param KwtSMS_Plugin $plugin The main plugin instance.
 	 */
 	public function __construct( KwtSMS_Plugin $plugin ) {
 		$this->plugin = $plugin;
+
+		// Bail entirely if the WooCommerce integration is disabled.
+		if ( ! $this->plugin->settings->get( 'integrations.woo_enabled', 1 ) ) {
+			return;
+		}
 
 		// Order status notifications.
 		add_action( 'woocommerce_order_status_changed', array( $this, 'on_order_status_changed' ), 10, 4 );
@@ -123,58 +130,86 @@ class KwtSMS_Woo {
 	}
 
 	/**
+	 * Map WooCommerce order status slugs to their settings template keys.
+	 *
+	 * @var array<string,string>
+	 */
+	private static $status_template_map = array(
+		'processing' => 'woo_processing',
+		'on-hold'    => 'woo_shipped',
+		'completed'  => 'woo_completed',
+		'cancelled'  => 'woo_cancelled',
+	);
+
+	/**
 	 * Build an SMS message for a given order status transition.
 	 *
-	 * Returns an empty string for statuses that are not in our notification
-	 * set so the caller can short-circuit without sending.
+	 * Delegates to render_order_template() which reads the saved template from
+	 * settings. Returns an empty string when the status is not handled or when
+	 * the individual template is disabled by the admin.
 	 *
 	 * @param string   $status New status slug.
 	 * @param WC_Order $order  The order.
 	 *
-	 * @return string SMS message, or empty string if status not handled.
+	 * @return string SMS message, or empty string if status not handled / disabled.
 	 */
 	private function build_order_message( $status, WC_Order $order ) {
-		$order_id  = $order->get_order_number();
-		$total     = strip_tags( wc_price( $order->get_total() ) );
-		$site_name = get_bloginfo( 'name' );
+		$order_id       = $order->get_order_number();
+		$total          = strip_tags( wc_price( $order->get_total() ) );
+		$site_name      = get_bloginfo( 'name' );
+		$customer_name  = trim(
+			$order->get_billing_first_name() . ' ' . $order->get_billing_last_name()
+		);
 
-		switch ( $status ) {
-			case 'processing':
-				return sprintf(
-					/* translators: 1: site name, 2: order ID, 3: order total */
-					__( '%1$s: Your order #%2$s has been confirmed. Total: %3$s. Thank you!', 'wp-kwtsms-otp' ),
-					$site_name,
-					$order_id,
-					$total
-				);
+		$vars = array(
+			'{site_name}'      => $site_name,
+			'{order_id}'       => $order_id,
+			'{total}'          => $total,
+			'{customer_name}'  => $customer_name,
+		);
 
-			case 'on-hold':
-				return sprintf(
-					/* translators: 1: site name, 2: order ID */
-					__( '%1$s: Your order #%2$s has been shipped and is on its way!', 'wp-kwtsms-otp' ),
-					$site_name,
-					$order_id
-				);
+		return $this->render_order_template( $status, $vars );
+	}
 
-			case 'completed':
-				return sprintf(
-					/* translators: 1: site name, 2: order ID */
-					__( '%1$s: Your order #%2$s is complete. Thank you for shopping with us!', 'wp-kwtsms-otp' ),
-					$site_name,
-					$order_id
-				);
-
-			case 'cancelled':
-				return sprintf(
-					/* translators: 1: site name, 2: order ID */
-					__( '%1$s: Your order #%2$s has been cancelled. Contact us if this was unexpected.', 'wp-kwtsms-otp' ),
-					$site_name,
-					$order_id
-				);
-
-			default:
-				return '';
+	/**
+	 * Render an order SMS template from saved settings.
+	 *
+	 * Looks up the template key for the given status, loads the saved template
+	 * from the integrations settings group, checks the per-template `enabled`
+	 * flag, selects the correct language string (ar for RTL sites, en otherwise),
+	 * and performs placeholder substitution.
+	 *
+	 * @param string $status WooCommerce order status slug.
+	 * @param array  $vars   Map of placeholder strings to replacement values.
+	 *
+	 * @return string Rendered SMS message, or empty string if not applicable.
+	 */
+	private function render_order_template( $status, array $vars ) {
+		// Look up the settings key for this status.
+		$template_key = self::$status_template_map[ $status ] ?? '';
+		if ( '' === $template_key ) {
+			return '';
 		}
+
+		// Load the template array from settings (merges saved + defaults).
+		$templates = $this->plugin->settings->get_all_integration_templates();
+		$template  = $templates[ $template_key ] ?? array();
+
+		// Respect per-template enabled flag.
+		if ( empty( $template['enabled'] ) ) {
+			return '';
+		}
+
+		// Select language: Arabic for RTL sites, English otherwise.
+		$lang    = ( function_exists( 'is_rtl' ) && is_rtl() ) ? 'ar' : 'en';
+		$message = $template[ $lang ] ?? $template['en'] ?? '';
+
+		if ( '' === $message ) {
+			return '';
+		}
+
+		// Replace all placeholders.
+		return str_replace( array_keys( $vars ), array_values( $vars ), $message );
 	}
 
 	// =========================================================================
