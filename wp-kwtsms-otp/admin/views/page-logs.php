@@ -79,16 +79,17 @@ if ( isset( $_GET['action'], $_GET['_wpnonce'] ) && 'export_csv' === $_GET['acti
 		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 
 		if ( 'sms_history' === $log_key ) {
-			fputcsv( $out, array( 'Date/Time', 'Type', 'Phone', 'Message', 'Sender ID', 'Status', 'Msg ID' ) );
+			fputcsv( $out, array( 'Date/Time', 'Type', 'Phone', 'Message', 'Sender ID', 'Status', 'Result Code', 'Result Message' ) );
 			foreach ( $log as $entry ) {
 				fputcsv( $out, array(
 					date_i18n( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
 					$entry['type']    ?? '',
 					$entry['phone']   ?? '',
-					$entry['message']   ?? '',
-					$entry['sender_id'] ?? '',
-					$entry['status']    ?? '',
-					$entry['msg_id']    ?? '',
+					$entry['message']                          ?? '',
+					$entry['sender_id']                        ?? '',
+					$entry['status']                           ?? '',
+					$entry['gateway_result']['code']    ?? '',
+					$entry['gateway_result']['message'] ?? '',
 				) );
 			}
 		} else {
@@ -211,6 +212,7 @@ function kwtsms_attempt_result_label( $result ) {
 				<th><?php esc_html_e( 'Phone', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Type', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Status', 'wp-kwtsms-otp' ); ?></th>
+				<th><?php esc_html_e( 'Result', 'wp-kwtsms-otp' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -223,6 +225,19 @@ function kwtsms_attempt_result_label( $result ) {
 				<td><?php echo esc_html( $entry['type'] ?? '' ); ?></td>
 				<td style="color:<?php echo 'sent' === ( $entry['status'] ?? '' ) ? '#46b450' : '#dc3232'; ?>;">
 					<?php echo 'sent' === ( $entry['status'] ?? '' ) ? esc_html__( 'Sent', 'wp-kwtsms-otp' ) : esc_html__( 'Failed', 'wp-kwtsms-otp' ); ?>
+				</td>
+				<td>
+					<?php
+					$gr = $entry['gateway_result'] ?? array();
+					if ( ! empty( $gr ) ) :
+						$gr_ok  = ! empty( $gr['ok'] );
+						$gr_code = esc_html( $gr['code'] ?? '' );
+						$gr_msg  = esc_attr( $gr['message'] ?? '' );
+						$gr_label = $gr_ok ? esc_html__( 'OK', 'wp-kwtsms-otp' ) : ( $gr_code ?: esc_html__( 'Error', 'wp-kwtsms-otp' ) );
+						$gr_color = $gr_ok ? '#46b450' : '#dc3232';
+						printf( '<span style="color:%s;" title="%s">%s</span>', esc_attr( $gr_color ), $gr_msg, $gr_label );
+					endif;
+					?>
 				</td>
 			</tr>
 			<?php endforeach; ?>
