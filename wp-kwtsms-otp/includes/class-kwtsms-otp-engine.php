@@ -361,6 +361,71 @@ class KwtSMS_OTP_Engine {
 	}
 
 	// =========================================================================
+	// Phone blocking
+	// =========================================================================
+
+	/**
+	 * Handle a complete OTP request: generate code, build message, send SMS.
+	 *
+	 * Checks whether the phone is on the admin-configured block list first.
+	 * Blocked phones receive a silent success (no SMS sent, no error exposed)
+	 * to prevent enumeration of the block list by attackers.
+	 *
+	 * @param string $normalized_phone Normalised E.164-style phone number (digits only).
+	 * @param int    $identifier       User ID or 0 for guest/phone-based identifiers.
+	 * @param string $template_id      Template key: 'login_otp' | 'reset_otp'.
+	 * @param string $action           Context: 'login' | 'reset' | 'passwordless'.
+	 * @param string $sender_id        Sender ID to use for the SMS.
+	 *
+	 * @return true|WP_Error True on success (or silent block), WP_Error on failure.
+	 */
+	public function request_otp( $normalized_phone, $identifier, $template_id, $action, $sender_id ) {
+		// Blocked phone: silently pretend success — no SMS sent, no error exposed.
+		if ( $this->is_phone_blocked( $normalized_phone ) ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( '[kwtsms-otp] Blocked phone attempted OTP: ' . $normalized_phone );
+			return true; // pretend success, no SMS sent
+		}
+
+		$otp_code = $this->generate( $identifier, $action );
+		$message  = $this->build_message( $otp_code, $template_id );
+
+		return array(
+			'otp_code' => $otp_code,
+			'message'  => $message,
+			'phone'    => $normalized_phone,
+			'sender'   => $sender_id,
+			'action'   => $action,
+		);
+	}
+
+	/**
+	 * Check whether a phone number is on the admin block list.
+	 *
+	 * Accepts a newline- or comma-separated list stored in general.blocked_phones.
+	 * Each entry is normalised (digits only) before comparison so formatting
+	 * differences (e.g. spaces, dashes) do not affect matching.
+	 *
+	 * @param string $phone Normalised phone number (digits only).
+	 *
+	 * @return bool True if the phone is blocked.
+	 */
+	private function is_phone_blocked( string $phone ): bool {
+		$list = $this->settings->get( 'general.blocked_phones', '' );
+		if ( empty( $list ) ) {
+			return false;
+		}
+		$blocked = preg_split( '/[\r\n,]+/', $list, -1, PREG_SPLIT_NO_EMPTY );
+		$blocked = array_map(
+			static function ( $p ) {
+				return preg_replace( '/\D/', '', trim( $p ) );
+			},
+			$blocked
+		);
+		return in_array( $phone, array_filter( $blocked ), true );
+	}
+
+	// =========================================================================
 	// Private helpers
 	// =========================================================================
 

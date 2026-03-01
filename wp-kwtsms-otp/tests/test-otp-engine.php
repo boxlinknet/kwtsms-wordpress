@@ -378,4 +378,107 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 		$this->assertArrayHasKey( $acct_key, $stored );
 		$this->assertSame( 1, $stored[ $acct_key ] );
 	}
+
+	// =========================================================================
+	// Phone blocking
+	// =========================================================================
+
+	/**
+	 * A phone in the blocked list should receive a silent success (true)
+	 * without any OTP transient being written (i.e. no SMS is prepared).
+	 */
+	public function test_blocked_phone_returns_silent_success() {
+		$blocked_phone = '96599123456';
+
+		// Settings: return blocked_phones containing our test number.
+		$this->settings = $this->createMock( KwtSMS_Settings::class );
+		$this->settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) use ( $blocked_phone ) {
+				$map = array(
+					'general.otp_length'      => 6,
+					'general.otp_expiry'      => 3,
+					'general.max_attempts'    => 3,
+					'general.resend_cooldown' => 60,
+					'general.blocked_phones'  => $blocked_phone,
+				);
+				return $map[ $key ] ?? $default;
+			}
+		);
+		$engine = new KwtSMS_OTP_Engine( $this->settings );
+
+		// No transient should be written.
+		$transients_written = array();
+		Functions\when( 'set_transient' )->alias( function ( $k, $v, $ttl = 0 ) use ( &$transients_written ) {
+			$transients_written[ $k ] = $v;
+			return true;
+		} );
+
+		$result = $engine->request_otp( $blocked_phone, 42, 'login_otp', 'login', 'KWTSMS' );
+
+		// Must return true (silent success).
+		$this->assertTrue( $result );
+
+		// No OTP transient should have been stored.
+		$otp_transient_key = 'kwtsms_otp_' . md5( '42' );
+		$this->assertArrayNotHasKey(
+			$otp_transient_key,
+			$transients_written,
+			'Blocked phone must not cause an OTP to be stored.'
+		);
+	}
+
+	/**
+	 * A phone NOT in the blocked list should pass through and have an OTP
+	 * generated (i.e. the OTP transient is written as part of generate()).
+	 */
+	public function test_unblocked_phone_passes_through() {
+		$blocked_phone   = '96599123456';
+		$unblocked_phone = '96598000001';
+
+		// Settings: blocked list does not contain the unblocked phone.
+		$this->settings = $this->createMock( KwtSMS_Settings::class );
+		$this->settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) use ( $blocked_phone ) {
+				$map = array(
+					'general.otp_length'      => 6,
+					'general.otp_expiry'      => 3,
+					'general.max_attempts'    => 3,
+					'general.resend_cooldown' => 60,
+					'general.blocked_phones'  => $blocked_phone,
+				);
+				return $map[ $key ] ?? $default;
+			}
+		);
+		$this->settings->method( 'get_all_templates' )->willReturn( array(
+			'login_otp' => array(
+				'enabled' => 1,
+				'en'      => 'Your code is {otp} on {site_name} valid for {expiry_minutes} min.',
+				'ar'      => 'رمزك: {otp}',
+			),
+		) );
+
+		$engine = new KwtSMS_OTP_Engine( $this->settings );
+
+		// Track transients written during the call.
+		$transients_written = array();
+		Functions\when( 'set_transient' )->alias( function ( $k, $v, $ttl = 0 ) use ( &$transients_written ) {
+			$transients_written[ $k ] = $v;
+			return true;
+		} );
+
+		$result = $engine->request_otp( $unblocked_phone, 42, 'login_otp', 'login', 'KWTSMS' );
+
+		// For unblocked phones, request_otp returns the prepared data array (not true).
+		$this->assertIsArray( $result, 'Unblocked phone should return prepared OTP data array.' );
+		$this->assertArrayHasKey( 'otp_code', $result );
+		$this->assertArrayHasKey( 'message', $result );
+
+		// OTP transient should have been written by generate().
+		$otp_transient_key = 'kwtsms_otp_' . md5( '42' );
+		$this->assertArrayHasKey(
+			$otp_transient_key,
+			$transients_written,
+			'Unblocked phone must cause an OTP transient to be stored.'
+		);
+	}
 }

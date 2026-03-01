@@ -42,6 +42,7 @@ class KwtSMS_Settings {
 			'default_country_code' => 'KW',       // ISO2 default for phone dropdown
 			'allowed_countries'    => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ), // GCC default
 			'debug_logging'        => 0,          // write detailed logs to wp-content/kwtsms-debug.log
+			'blocked_phones'       => '',         // newline or comma-separated normalized phone numbers
 		),
 		'gateway'   => array(
 			'api_username'         => '',
