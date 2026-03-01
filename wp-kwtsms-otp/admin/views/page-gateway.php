@@ -81,7 +81,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 					<input type="text" name="kwtsms_otp_gateway[api_username]" id="kwtsms_api_username"
 						value="<?php echo esc_attr( $gateway['api_username'] ); ?>"
 						class="regular-text" autocomplete="off" />
-					<p class="description"><?php esc_html_e( 'Your kwtSMS API username — found in your kwtSMS account under API Settings, not your login username.', 'wp-kwtsms-otp' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Your kwtSMS API username, found in your kwtSMS account under API Settings, not your login username.', 'wp-kwtsms-otp' ); ?></p>
 					<p class="description" id="kwtsms-username-warning" style="color:#dc3232;display:none;"></p>
 				</td>
 			</tr>
@@ -92,7 +92,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 					<input type="password" name="kwtsms_otp_gateway[api_password]" id="kwtsms_api_password"
 						value="<?php echo esc_attr( $gateway['api_password'] ); ?>"
 						class="regular-text" autocomplete="new-password" />
-					<p class="description"><?php esc_html_e( 'Your kwtSMS API password — found in your kwtSMS account under API Settings, not your login password.', 'wp-kwtsms-otp' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Your kwtSMS API password, found in your kwtSMS account under API Settings, not your login password.', 'wp-kwtsms-otp' ); ?></p>
 				</td>
 			</tr>
 
