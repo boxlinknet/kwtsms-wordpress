@@ -136,6 +136,20 @@ class KwtSMS_Settings {
 				'en'      => '{site_name}: Your form "{form_name}" has been received. Thank you!',
 				'ar'      => '{site_name}: تم استلام نموذج "{form_name}". شكرًا لك!',
 			),
+			'gf_enabled'             => 1,
+			'gf_mode'                => 'notification', // 'notification' | 'gate'
+			'gf_confirmation'        => array(
+				'enabled' => 1,
+				'en'      => '{form_name}: Thank you! Your phone {phone} has been registered.',
+				'ar'      => '{form_name}: شكراً! تم تسجيل رقمك {phone}.',
+			),
+			'nf_enabled'             => 1,
+			'nf_mode'                => 'notification', // 'notification' | 'gate'
+			'nf_confirmation'        => array(
+				'enabled' => 1,
+				'en'      => '{form_name}: Thank you for submitting the form.',
+				'ar'      => '{form_name}: شكراً لإرسال النموذج.',
+			),
 		),
 	);
 
@@ -254,6 +268,7 @@ class KwtSMS_Settings {
 			'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled',
 			'woo_pending', 'woo_refunded', 'woo_failed',
 			'cf7_confirmation', 'wpforms_confirmation', 'elementor_confirmation',
+			'gf_confirmation', 'nf_confirmation',
 		);
 
 		foreach ( $template_keys as $key ) {

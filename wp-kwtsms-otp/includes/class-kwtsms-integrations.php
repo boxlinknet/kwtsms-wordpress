@@ -75,5 +75,15 @@ class KwtSMS_Integrations {
 			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-elementor.php';
 			new KwtSMS_Elementor( $this->plugin );
 		}
+
+		if ( class_exists( 'GFForms' ) ) {
+			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-gravityforms.php';
+			new KwtSMS_GravityForms( $this->plugin );
+		}
+
+		if ( class_exists( 'Ninja_Forms' ) ) {
+			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-ninjaforms.php';
+			new KwtSMS_NinjaForms( $this->plugin );
+		}
 	}
 }

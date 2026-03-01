@@ -372,6 +372,7 @@ class KwtSMS_Admin {
 			'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled',
 			'woo_pending', 'woo_refunded', 'woo_failed',
 			'cf7_confirmation', 'wpforms_confirmation', 'elementor_confirmation',
+			'gf_confirmation', 'nf_confirmation',
 		);
 
 		// Sanitize woo_notify_admin_statuses: array of recognised WC order status slugs.
@@ -398,6 +399,8 @@ class KwtSMS_Admin {
 			'cf7_enabled'               => ! empty( $raw['cf7_enabled'] ) ? 1 : 0,
 			'wpforms_enabled'           => ! empty( $raw['wpforms_enabled'] ) ? 1 : 0,
 			'elementor_enabled'         => ! empty( $raw['elementor_enabled'] ) ? 1 : 0,
+			'gf_enabled'                => ! empty( $raw['gf_enabled'] ) ? 1 : 0,
+			'nf_enabled'                => ! empty( $raw['nf_enabled'] ) ? 1 : 0,
 			'woo_checkout_otp'          => ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0,
 			'cf7_mode'                  => in_array( $raw['cf7_mode'] ?? '', $valid_modes, true )
 				? $raw['cf7_mode']
@@ -407,6 +410,12 @@ class KwtSMS_Admin {
 				: 'notification',
 			'elementor_mode'            => in_array( $raw['elementor_mode'] ?? '', $valid_modes, true )
 				? $raw['elementor_mode']
+				: 'notification',
+			'gf_mode'                   => in_array( $raw['gf_mode'] ?? '', $valid_modes, true )
+				? $raw['gf_mode']
+				: 'notification',
+			'nf_mode'                   => in_array( $raw['nf_mode'] ?? '', $valid_modes, true )
+				? $raw['nf_mode']
 				: 'notification',
 			'woo_admin_phone'           => sanitize_text_field( wp_unslash( $raw['woo_admin_phone'] ?? '' ) ),
 			'woo_notify_admin_statuses' => $notify_admin_statuses,
