@@ -1,100 +1,153 @@
-# kwtSMS OTP Authentication — WordPress Plugin
+# kwtSMS OTP Login and SMS Notifications — WordPress Plugin
 
-Secure SMS-based OTP login and password reset for WordPress, powered by the [kwtSMS](https://www.kwtsms.com) gateway.
+Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress — powered by the [kwtSMS](https://www.kwtsms.com) gateway.
 
-## Features
-
-- **2FA mode** — standard password login followed by a one-time SMS code
-- **Passwordless login** — phone-number-only login (no password required)
-- **Password reset via OTP** — replaces the default email reset flow with SMS
-- **Google reCAPTCHA v3** and **Cloudflare Turnstile** bot protection
-- **Country code dropdown** on login forms — restrict to GCC or custom country list
-- **GeoIP pre-selection** — auto-detects the user's country on the login form
-- **Fully bilingual** — English + Arabic (RTL) with WordPress i18n
-- **Admin gateway dashboard** — login/logout toggle, live balance, sender ID list, SMS coverage map
-- **Logs page** — full SMS history, OTP attempt log (with IP), and debug log viewer
-- **Version:** 1.5.0 | **Requires:** WordPress 6.0+, PHP 7.4+
-
-## Installation
-
-1. Download or clone this repository into `wp-content/plugins/wp-kwtsms-otp/`
-2. Activate the plugin from **Plugins → Installed Plugins**
-3. Go to **Settings → kwtSMS OTP → Gateway** and enter your kwtSMS API credentials
-4. Click **Login** to verify credentials — your sender IDs and balance will load automatically
-5. Configure OTP behaviour under **Settings → kwtSMS OTP → General**
+**Version:** 2.8.0 | **Requires:** WordPress 6.0+, PHP 7.4+
 
 > Don't have a kwtSMS account? [Sign up at kwtsms.com →](https://www.kwtsms.com/signup)
 
+---
+
+## Features
+
+### Authentication
+- **2FA mode** — standard password login followed by a one-time SMS code
+- **Passwordless login** — phone number + OTP only; no password needed
+- **Password reset via OTP** — replaces the default email reset flow with SMS
+- **Per-role enforcement** — choose which user roles require OTP (e.g. skip OTP for subscribers)
+- **Google reCAPTCHA v3** and **Cloudflare Turnstile** bot protection
+- **Country code dropdown** on login forms — restrict to GCC or custom country list
+
+### Security
+- Cryptographically secure OTP generation (`random_int()`)
+- **Sliding-window rate limiting** — per-phone, per-IP, per-account (no fixed-window gaming)
+- **Phone blocking list** — silently drop OTP requests from blocked numbers (anti-enumeration)
+- `hash_equals()` timing-safe OTP verification
+- All cookies `httponly`, `secure`, `SameSite=Strict`
+- Emergency bypass constant `KWTSMS_OTP_DISABLED` for lockout recovery
+
+### WooCommerce
+- **7 order status SMS**: Processing, Shipped, Completed, Cancelled, Pending, Refunded, Failed
+- **Admin SMS notifications** — notify a configurable phone number on any order status change
+- **Per-order custom SMS** — send a free-text SMS to the customer from the order edit screen
+- OTP gate on WooCommerce checkout (verify phone before placing order)
+- HPOS (High-Performance Order Storage) compatible
+
+### Form Integrations — Notification or OTP Gate
+Each integration supports two modes: **Notification** (send confirmation SMS on submit) or **OTP Gate** (block submission until phone is verified via OTP).
+
+| Plugin | Auto-detected | Notification | OTP Gate |
+|--------|:---:|:---:|:---:|
+| Contact Form 7 | ✓ | ✓ | ✓ |
+| WPForms | ✓ | ✓ | ✓ |
+| Elementor Pro | ✓ | ✓ | ✓ |
+| Gravity Forms | ✓ | ✓ | ✓ |
+| Ninja Forms | ✓ | ✓ | ✓ |
+
+### Balance & Gateway
+- Account balance displayed on Gateway and Help pages without re-verifying credentials
+- Pre-send balance check — warns before sending if credits are zero
+- Test phone country code validation with hint text
+- Test Mode — simulates sends without spending credits (OTP written to debug log)
+
+### Admin
+- 6 admin pages under the **kwtSMS** menu: General, Gateway, Templates, Integrations, Logs, Help
+- Live credential verification with Sender ID auto-population
+- OTP send log (last 100 entries)
+- Dashboard widget with today's send count
+- Full Arabic (RTL) translation included
+
+---
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Login page](docs/screenshots/2.x/v2.x-login-page.png) | ![OTP entry](docs/screenshots/2.x/v2.x-otp-entry-page.png) |
+| Login page | OTP entry page |
+| ![Admin menu](docs/screenshots/2.x/v2.1-admin-menu.png) | ![Gateway](docs/screenshots/2.x/v2.2-gateway-page.png) |
+| Admin menu (kwtSMS) | Gateway settings |
+| ![WooCommerce](docs/screenshots/2.x/v2.3-woo-integrations.png) | ![CF7 gate](docs/screenshots/2.x/v2.7-cf7-gate-mode.png) |
+| WooCommerce order SMS | CF7 OTP gate mode toggle |
+| ![Gravity Forms](docs/screenshots/2.x/v2.8-gravityforms-tab.png) | ![Ninja Forms](docs/screenshots/2.x/v2.8-ninjaforms-tab.png) |
+| Gravity Forms integration | Ninja Forms integration |
+
+---
+
 ## Requirements
 
-- WordPress 6.0 or later
-- PHP 7.4 or later
-- An active [kwtSMS](https://www.kwtsms.com) account with API access
+| | Version |
+|---|---|
+| WordPress | 6.0 or later |
+| PHP | 7.4 or later (8.x recommended) |
+| kwtSMS account | [Sign up free](https://www.kwtsms.com/signup) |
+| WooCommerce | Optional |
+| Contact Form 7 / WPForms / Elementor Pro / Gravity Forms / Ninja Forms | Optional |
 
-## Configuration
+---
 
-### Gateway Settings
-| Setting | Description |
-|---------|-------------|
-| API Username | Your kwtSMS account username |
-| API Password | Your kwtSMS account password |
-| Sender ID | Pre-approved sender name shown on SMS |
-| Test Mode | Simulates sends without spending credits (OTP written to debug log) |
+## Installation
 
-### General Settings
-| Setting | Default | Description |
-|---------|---------|-------------|
-| OTP Mode | 2FA | `2fa` or `passwordless` |
-| OTP Length | 6 digits | 4–8 |
-| OTP Expiry | 5 minutes | How long the code is valid |
-| Max Attempts | 3 | Failed attempts before lockout |
-| Resend Cooldown | 120 seconds | Minimum time between resend requests |
-| Allowed Countries | GCC (KW, SA, AE, BH, QA, OM) | Countries shown in the login form dropdown |
-| CAPTCHA Provider | None | `none`, `recaptcha_v3`, or `turnstile` |
-| Referral Link | On | Show "SMS service by kwtSMS.com" on the login footer |
+1. Clone or download this repository
+2. Upload the `wp-kwtsms-otp/` directory to `/wp-content/plugins/`
+3. Activate from **Plugins → Installed Plugins**
+4. Go to **kwtSMS → Gateway** and enter your API credentials
+5. Click **Save & Verify Credentials**
+6. Configure OTP behaviour under **kwtSMS → General**
+
+---
 
 ## Plugin Structure
 
 ```
 wp-kwtsms-otp/
-├── wp-kwtsms-otp.php              # Bootstrap, activation hooks, autoloader
+├── wp-kwtsms-otp.php
 ├── includes/
-│   ├── class-kwtsms-plugin.php    # Main service locator (singleton)
-│   ├── class-kwtsms-api.php       # kwtSMS HTTP API client
-│   ├── class-kwtsms-settings.php  # Settings helper (wp_options wrapper)
-│   ├── class-kwtsms-otp-engine.php # OTP generate / verify / rate-limit
-│   ├── class-kwtsms-login-otp.php  # Login 2FA / passwordless hooks
-│   ├── class-kwtsms-reset-otp.php  # Password reset OTP hooks
-│   ├── class-kwtsms-user-meta.php  # Phone number field on user profile
-│   ├── class-kwtsms-captcha.php    # reCAPTCHA v3 / Turnstile integration
-│   ├── class-kwtsms-geoip.php      # Server-side GeoIP (ip-api.com, cached)
-│   ├── views/
-│   │   ├── page-otp.php            # OTP entry page (2FA)
-│   │   └── page-passwordless.php   # Passwordless login page
-│   └── data/
-│       └── country-codes.php       # Dial code + ISO2 for ~240 countries
+│   ├── class-kwtsms-plugin.php       # Main service locator (singleton)
+│   ├── class-kwtsms-api.php          # kwtSMS HTTP API client
+│   ├── class-kwtsms-settings.php     # Settings helper (wp_options wrapper)
+│   ├── class-kwtsms-otp-engine.php   # OTP generate/verify, sliding-window rate limiting
+│   ├── class-kwtsms-login-otp.php    # Login 2FA / passwordless hooks
+│   ├── class-kwtsms-reset-otp.php    # Password reset OTP hooks
+│   ├── class-kwtsms-user-meta.php    # Phone number field on user profile
+│   ├── class-kwtsms-captcha.php      # reCAPTCHA v3 / Turnstile
+│   ├── class-kwtsms-integrations.php # Integration loader
+│   └── integrations/
+│       ├── class-kwtsms-woo.php         # WooCommerce order SMS
+│       ├── class-kwtsms-woo-metabox.php # Per-order custom SMS metabox
+│       ├── class-kwtsms-cf7.php         # Contact Form 7
+│       ├── class-kwtsms-wpforms.php     # WPForms
+│       ├── class-kwtsms-elementor.php   # Elementor Pro
+│       ├── class-kwtsms-gravityforms.php # Gravity Forms
+│       └── class-kwtsms-ninjaforms.php  # Ninja Forms
 ├── admin/
-│   ├── class-kwtsms-admin.php      # Admin menu, settings pages, AJAX handlers
+│   ├── class-kwtsms-admin.php
 │   └── views/
-│       ├── page-gateway.php        # Gateway settings (credentials, coverage)
-│       ├── page-general.php        # General OTP settings
-│       ├── page-logs.php           # SMS history, OTP attempts, debug log
-│       └── page-help.php           # Quick-start guide, status panel
+│       ├── page-general.php
+│       ├── page-gateway.php
+│       ├── page-templates.php
+│       ├── page-integrations.php
+│       ├── page-logs.php
+│       └── page-help.php
 ├── assets/
 │   ├── css/admin.css
 │   ├── css/login.css
 │   ├── js/admin.js
-│   └── js/login.js
+│   ├── js/login.js
+│   └── js/form-otp.js   # OTP gate modal for form integrations
 ├── languages/
 │   ├── wp-kwtsms-otp.pot
-│   ├── wp-kwtsms-otp-ar.po / .mo   # Arabic translation
+│   ├── wp-kwtsms-otp-ar.po / .mo
 │   └── wp-kwtsms-otp-en_US.po / .mo
-└── uninstall.php                   # Removes all plugin data on deletion
+├── tests/                # PHPUnit 9 + Brain\Monkey (191 tests)
+└── uninstall.php
 ```
+
+---
 
 ## Testing Locally (WP Playground)
 
-No Docker required — use [WordPress Playground](https://wordpress.github.io/wordpress-playground/):
+No Docker required:
 
 ```bash
 cd wp-kwtsms-otp/
@@ -102,33 +155,76 @@ npx @wp-playground/cli@latest server --auto-mount
 # Opens at http://localhost:9400
 ```
 
-Enable **Test Mode** in Gateway settings to simulate SMS sends without spending credits. The OTP code is written to `wp-content/debug.log` (requires `WP_DEBUG_LOG=true`).
+Enable **Test Mode** in Gateway settings — the OTP code is written to `wp-content/debug.log`.
+
+### Running the Test Suite
+
+```bash
+cd wp-kwtsms-otp/
+composer install
+./vendor/bin/phpunit --no-coverage
+```
+
+---
 
 ## Changelog
 
-### 1.5.0
-- Gateway login/logout toggle — credentials persist to DB on login
-- Live account balance auto-updates after each SMS send
-- Two-column SMS coverage display on Gateway page
-- OTP Activity table with type column and link to full Logs
-- Debug Log viewer tab in Logs page
-- Referral link on standard `wp-login.php` footer
-- Account balance shown on Help page
+### 2.8.0
+- Gravity Forms integration: notification SMS on submission + OTP gate mode
+- Ninja Forms integration: notification SMS on submission + OTP gate mode
 
-### 1.4.0
-- Admin notices relocated above page title (WP flex header fix)
-- Improved UX on Gateway settings page
+### 2.7.0
+- **OTP Gate mode** for Contact Form 7, WPForms, and Elementor Pro — block form submission until phone is verified via OTP
+- New frontend `form-otp.js` modal with phone input, code entry, and countdown
+- AJAX endpoints: `kwtsms_form_send_otp` and `kwtsms_form_verify_otp` with attempt limiting and CSPRNG tokens
 
-### 1.0.0 – 1.3.0
-- Initial release: 2FA, passwordless login, password reset via OTP
-- Google reCAPTCHA v3 and Cloudflare Turnstile support
+### 2.6.0
+- Replaced fixed-window rate limiting with **sliding-window** algorithm — prevents gaming at window boundaries
+- Per-phone, per-IP, and per-account limits all updated
+
+### 2.5.0
+- **Per-role OTP enforcement** — configure which user roles require OTP; excluded roles bypass OTP silently
+- Super admin (multisite) automatically treated as Administrator role
+
+### 2.4.0
+- **Phone number blocking list** — textarea in General settings; blocked phones receive a silent success response (anti-enumeration)
+
+### 2.3.0
+- WooCommerce: 3 new order statuses — **Pending**, **Refunded**, **Failed** (disabled by default)
+- **Admin SMS notifications** — configurable phone number notified on any order status change
+- **Per-order custom SMS metabox** — send free-text SMS to customer from order edit screen
+- HPOS-compatible metabox registration
+
+### 2.2.0
+- Balance persisted and shown on Gateway and Help pages without re-verifying
+- Pre-send balance check in `send_sms()` — warns when credits are zero
+- Test phone field now validates country code before sending
+
+### 2.1.0
+- Plugin renamed to **kwtSMS OTP Login and SMS Notifications**
+- Admin menu updated from "kwtSMS OTP" to "kwtSMS"
+- WooCommerce HPOS compatibility declaration
+
+### 2.0.0
+- WooCommerce order SMS (Processing, Shipped, Completed, Cancelled)
+- WooCommerce checkout OTP gate
+- Contact Form 7, WPForms, Elementor Pro integrations (notification mode)
+- Per-IP and per-account rate limiting
+- Emergency bypass constant `KWTSMS_OTP_DISABLED`
+
+### 1.0.0 – 1.5.0
+- 2FA and passwordless login, password reset via OTP
+- Google reCAPTCHA v3 and Cloudflare Turnstile
 - Country code dropdown with GeoIP pre-selection
 - Full Arabic (RTL) translation
-- SMS History and OTP Attempts logs
+- SMS send log, OTP attempt log, debug log viewer
+- Gateway login/logout toggle with live balance
+
+---
 
 ## License
 
-GPL-2.0-or-later — see [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html)
+GPL-2.0-or-later — see [GNU GPL v2.0](https://www.gnu.org/licenses/gpl-2.0.html)
 
 ---
 
