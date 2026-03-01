@@ -110,19 +110,9 @@ class KwtSMS_Login_OTP {
 			);
 		}
 
-		// Anti-enumeration: silently succeed for blocked phones without sending SMS.
+		// Anti-enumeration: silently fail without allocating a session.
+		// User sees the OTP screen but has no valid transient to verify against.
 		if ( $this->plugin->otp->is_phone_blocked( $phone ) ) {
-			$token = wp_generate_password( 40, false );
-			set_transient(
-				'kwtsms_partial_auth_' . $token,
-				array(
-					'user_id' => $user->ID,
-					'action'  => 'login',
-					'phone'   => $phone,
-				),
-				15 * MINUTE_IN_SECONDS
-			);
-			$this->set_partial_auth_cookie( $token );
 			return new WP_Error( 'kwtsms_otp_required', '' );
 		}
 
