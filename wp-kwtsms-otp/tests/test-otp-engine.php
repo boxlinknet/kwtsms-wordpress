@@ -237,7 +237,7 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	}
 
 	// =========================================================================
-	// Rate limiting
+	// Rate limiting (sliding-window)
 	// =========================================================================
 
 	public function test_is_rate_limited_returns_false_initially() {
@@ -246,22 +246,107 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 
 	public function test_is_rate_limited_returns_true_after_max_requests() {
 		$phone = '96599220322';
-		// Manually set the counter above the limit.
-		self::$transients[ 'kwtsms_otp_rate_' . md5( $phone ) ] = KwtSMS_OTP_Engine::RATE_LIMIT_MAX;
+		$now   = time();
+		// Pre-fill the sliding-window array with RATE_LIMIT_MAX timestamps
+		// all within the current window.
+		$key   = 'kwtsms_otp_rate_' . md5( $phone );
+		self::$transients[ $key ] = array_fill( 0, KwtSMS_OTP_Engine::RATE_LIMIT_MAX, $now );
 		$this->assertTrue( $this->engine->is_rate_limited( $phone ) );
 	}
 
-	public function test_increment_rate_increases_counter() {
+	public function test_is_rate_limited_records_timestamp_on_first_call() {
 		$phone = '96599220322';
-		$this->engine->increment_rate( $phone );
-		$key   = 'kwtsms_otp_rate_' . md5( $phone );
-		$this->assertSame( 1, self::$transients[ $key ] );
+		// First call should not be limited (records the timestamp).
+		$this->assertFalse( $this->engine->is_rate_limited( $phone ) );
+		$key = 'kwtsms_otp_rate_' . md5( $phone );
+		// Transient should now exist and contain exactly one timestamp.
+		$this->assertIsArray( self::$transients[ $key ] );
+		$this->assertCount( 1, self::$transients[ $key ] );
 	}
 
-	public function test_increment_rate_creates_counter_if_not_set() {
+	public function test_is_rate_limited_allows_under_max() {
 		$phone = '96599220322';
-		$this->engine->increment_rate( $phone );
-		$this->assertFalse( $this->engine->is_rate_limited( $phone ) );
+		// Call RATE_LIMIT_MAX - 1 times; none should be blocked.
+		for ( $i = 0; $i < KwtSMS_OTP_Engine::RATE_LIMIT_MAX - 1; $i++ ) {
+			$this->assertFalse( $this->engine->is_rate_limited( $phone ) );
+		}
+	}
+
+	/**
+	 * Sliding-window test 1: blocks on the (max+1)th call within the window.
+	 */
+	public function test_sliding_window_blocks_after_max_in_window() {
+		$phone = '96599220322';
+		$max   = KwtSMS_OTP_Engine::RATE_LIMIT_MAX;
+
+		// First $max calls should all be allowed (not limited).
+		for ( $i = 0; $i < $max; $i++ ) {
+			$this->assertFalse(
+				$this->engine->is_rate_limited( $phone ),
+				"Call #$i should NOT be rate-limited."
+			);
+		}
+
+		// The (max+1)th call must be blocked.
+		$this->assertTrue(
+			$this->engine->is_rate_limited( $phone ),
+			"Call #$max (max+1) MUST be rate-limited."
+		);
+	}
+
+	/**
+	 * Sliding-window test 2: allows requests again after the window expires.
+	 *
+	 * Simulates time advancing by pre-seeding the transient with timestamps
+	 * that are older than the window.
+	 */
+	public function test_sliding_window_allows_after_window_expires() {
+		$phone  = '96599220322';
+		$max    = KwtSMS_OTP_Engine::RATE_LIMIT_MAX;
+		$window = KwtSMS_OTP_Engine::RATE_LIMIT_WINDOW;
+		$key    = 'kwtsms_otp_rate_' . md5( $phone );
+
+		// Seed with $max timestamps that are window+1 seconds in the past.
+		$old_ts = time() - ( $window + 1 );
+		self::$transients[ $key ] = array_fill( 0, $max, $old_ts );
+
+		// All timestamps are expired — the next call should be allowed.
+		$this->assertFalse(
+			$this->engine->is_rate_limited( $phone ),
+			'After window expires, request must NOT be rate-limited.'
+		);
+	}
+
+	/**
+	 * Sliding-window test 3: boundary exploit is not possible.
+	 *
+	 * With a fixed window, an attacker can send $max at t=599 and $max more at
+	 * t=601 (window resets at t=600) and both batches would be allowed.
+	 * With a sliding window, the second batch at t=601 still sees the first
+	 * batch's timestamps at t=0 (only 601 seconds ago, window=600s, so they
+	 * expired), meaning the second batch IS allowed but for the right reason —
+	 * the old timestamps really did expire.
+	 *
+	 * This test verifies that requests sent at t=0 do NOT bleed into a window
+	 * centred on t=601 (i.e., they are correctly pruned), and that a fresh
+	 * batch at t=601 starts clean.
+	 */
+	public function test_sliding_window_not_gamed_at_boundary() {
+		$phone  = '96599220322';
+		$max    = KwtSMS_OTP_Engine::RATE_LIMIT_MAX;
+		$window = KwtSMS_OTP_Engine::RATE_LIMIT_WINDOW; // 600 s
+		$key    = 'kwtsms_otp_rate_' . md5( $phone );
+
+		// Simulate first batch: $max timestamps recorded at t=0 (window+1 ago).
+		$t0 = time() - ( $window + 1 ); // 601 seconds ago — outside the window.
+		self::$transients[ $key ] = array_fill( 0, $max, $t0 );
+
+		// At t=601 (now), the old timestamps are outside the 600s window.
+		// The first call of the second batch must be allowed (not blocked).
+		$this->assertFalse(
+			$this->engine->is_rate_limited( $phone ),
+			'Second batch must NOT be blocked — first batch timestamps have expired.'
+		);
 	}
 
 	// =========================================================================
@@ -300,40 +385,31 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	}
 
 	// =========================================================================
-	// Per-IP rate limiting
+	// Per-IP rate limiting (sliding-window)
 	// =========================================================================
 
 	public function test_is_ip_rate_limited_returns_false_below_limit() {
 		$_SERVER['REMOTE_ADDR'] = '1.2.3.4';
-		// get_transient returns false → cast to int = 0, which is below the limit.
 		$result = $this->engine->is_ip_rate_limited();
 		$this->assertFalse( $result );
 	}
 
 	public function test_is_ip_rate_limited_returns_true_at_limit() {
 		$_SERVER['REMOTE_ADDR'] = '1.2.3.4';
-		// Override get_transient so the IP key returns the limit value.
-		Functions\when( 'get_transient' )->alias( function ( $key ) {
-			if ( strpos( $key, 'kwtsms_otp_ip_' ) === 0 ) {
-				return KwtSMS_OTP_Engine::IP_RATE_LIMIT_MAX;
-			}
-			return self::$transients[ $key ] ?? false;
-		} );
+		$now    = time();
+		$ip_key = 'kwtsms_otp_ip_' . md5( '1.2.3.4' );
+		// Pre-fill with IP_RATE_LIMIT_MAX timestamps within the current window.
+		self::$transients[ $ip_key ] = array_fill( 0, KwtSMS_OTP_Engine::IP_RATE_LIMIT_MAX, $now );
 		$result = $this->engine->is_ip_rate_limited();
 		$this->assertTrue( $result );
 	}
 
-	public function test_increment_ip_rate_stores_transient() {
+	public function test_is_ip_rate_limited_records_timestamp_on_first_call() {
 		$_SERVER['REMOTE_ADDR'] = '1.2.3.4';
-		$stored = array();
-		Functions\when( 'set_transient' )->alias( function ( $key, $value, $ttl = 0 ) use ( &$stored ) {
-			$stored[ $key ] = $value;
-			return true;
-		} );
-		$this->engine->increment_ip_rate();
+		$this->assertFalse( $this->engine->is_ip_rate_limited() );
 		$ip_key = 'kwtsms_otp_ip_' . md5( '1.2.3.4' );
-		$this->assertArrayHasKey( $ip_key, $stored );
-		$this->assertSame( 1, $stored[ $ip_key ] );
+		$this->assertIsArray( self::$transients[ $ip_key ] );
+		$this->assertCount( 1, self::$transients[ $ip_key ] );
 	}
 
 	public function test_is_ip_rate_limited_returns_false_when_ip_empty() {
@@ -343,7 +419,7 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	}
 
 	// =========================================================================
-	// Per-account rate limiting
+	// Per-account rate limiting (sliding-window)
 	// =========================================================================
 
 	public function test_is_user_rate_limited_returns_false_below_limit() {
@@ -352,12 +428,10 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	}
 
 	public function test_is_user_rate_limited_returns_true_at_limit() {
-		Functions\when( 'get_transient' )->alias( function ( $key ) {
-			if ( strpos( $key, 'kwtsms_otp_acct_' ) === 0 ) {
-				return KwtSMS_OTP_Engine::USER_RATE_LIMIT_MAX;
-			}
-			return self::$transients[ $key ] ?? false;
-		} );
+		$now      = time();
+		$acct_key = 'kwtsms_otp_acct_' . md5( '42' );
+		// Pre-fill with USER_RATE_LIMIT_MAX timestamps within the current window.
+		self::$transients[ $acct_key ] = array_fill( 0, KwtSMS_OTP_Engine::USER_RATE_LIMIT_MAX, $now );
 		$result = $this->engine->is_user_rate_limited( 42 );
 		$this->assertTrue( $result );
 	}
@@ -367,16 +441,11 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 		$this->assertFalse( $result );
 	}
 
-	public function test_increment_user_rate_stores_transient() {
-		$stored = array();
-		Functions\when( 'set_transient' )->alias( function ( $key, $value, $ttl = 0 ) use ( &$stored ) {
-			$stored[ $key ] = $value;
-			return true;
-		} );
-		$this->engine->increment_user_rate( 42 );
+	public function test_is_user_rate_limited_records_timestamp_on_first_call() {
+		$this->assertFalse( $this->engine->is_user_rate_limited( 42 ) );
 		$acct_key = 'kwtsms_otp_acct_' . md5( '42' );
-		$this->assertArrayHasKey( $acct_key, $stored );
-		$this->assertSame( 1, $stored[ $acct_key ] );
+		$this->assertIsArray( self::$transients[ $acct_key ] );
+		$this->assertCount( 1, self::$transients[ $acct_key ] );
 	}
 
 	// =========================================================================

@@ -8,9 +8,9 @@
  *
  * Transient key schema:
  *   kwtsms_otp_{md5(identifier)}         — the OTP record
- *   kwtsms_otp_rate_{md5(phone)}         — rate-limit counter per phone
- *   kwtsms_otp_ip_{md5(ip)}             — rate-limit counter per IP address
- *   kwtsms_otp_acct_{md5(user_id)}      — rate-limit counter per WordPress user ID
+ *   kwtsms_otp_rate_{md5(phone)}         — sliding-window timestamp array per phone
+ *   kwtsms_otp_ip_{md5(ip)}             — sliding-window timestamp array per IP address
+ *   kwtsms_otp_acct_{md5(user_id)}      — sliding-window timestamp array per WordPress user ID
  *   kwtsms_otp_lock_{md5(identifier)}    — lockout flag after max attempts
  *
  * @package KwtSMS_OTP
@@ -201,47 +201,44 @@ class KwtSMS_OTP_Engine {
 	/**
 	 * Check whether a phone number has exceeded the OTP send rate limit.
 	 *
-	 * Maximum 3 OTP requests per phone per 10 minutes.
-	 * Logs the rate-limited event when the limit is exceeded.
+	 * Uses a sliding-window algorithm: the transient stores an array of Unix
+	 * timestamps, one per request. On each call, timestamps older than the
+	 * window are pruned and the current timestamp is recorded (if not at the
+	 * limit), making it impossible to game the boundary.
+	 *
+	 * Combines the former is_rate_limited() + increment_rate() into one call.
+	 * The timestamp is always recorded when the caller is not blocked, so
+	 * callers must NOT call a separate increment method.
 	 *
 	 * @param string   $phone   Normalised phone number.
 	 * @param string   $action  Context: 'login'|'passwordless'|'reset'.
 	 * @param int|null $user_id User ID for logging.
 	 *
-	 * @return bool True if rate-limited.
+	 * @return bool True if rate-limited (limit reached, timestamp NOT recorded).
+	 *              False if not limited (timestamp recorded for this request).
 	 */
 	public function is_rate_limited( $phone, $action = 'login', $user_id = null ) {
-		$count = (int) get_transient( $this->rate_key( $phone ) );
-		if ( $count >= self::RATE_LIMIT_MAX ) {
+		$limited = $this->is_rate_limited_sliding(
+			$this->rate_key( $phone ),
+			self::RATE_LIMIT_MAX,
+			self::RATE_LIMIT_WINDOW
+		);
+		if ( $limited ) {
 			KwtSMS_API::append_attempt_log( $user_id, $phone, $this->get_client_ip(), $action, 'rate_limited' );
-			return true;
 		}
-		return false;
-	}
-
-	/**
-	 * Increment the rate-limit counter for a phone number.
-	 *
-	 * @param string $phone Normalised phone number.
-	 */
-	public function increment_rate( $phone ) {
-		$key   = $this->rate_key( $phone );
-		$count = (int) get_transient( $key );
-
-		if ( 0 === $count ) {
-			set_transient( $key, 1, self::RATE_LIMIT_WINDOW );
-		} else {
-			// Extend the window on each increment.
-			set_transient( $key, $count + 1, self::RATE_LIMIT_WINDOW );
-		}
+		return $limited;
 	}
 
 	/**
 	 * Check whether the current IP has exceeded the OTP send rate limit.
 	 *
+	 * Uses a sliding-window algorithm (see is_rate_limited() for details).
 	 * Fails open (returns false) if the IP cannot be determined, so that
 	 * users behind proxies or in unusual network environments are not
 	 * incorrectly blocked.
+	 *
+	 * Combines the former is_ip_rate_limited() + increment_ip_rate() into one
+	 * call. Callers must NOT call a separate increment method.
 	 *
 	 * @param string   $action  Context: 'login'|'passwordless'|'reset'.
 	 * @param int|null $user_id User ID for logging.
@@ -254,35 +251,27 @@ class KwtSMS_OTP_Engine {
 		if ( '' === $ip ) {
 			return false; // Cannot determine IP — fail open.
 		}
-		$count = (int) get_transient( 'kwtsms_otp_ip_' . md5( $ip ) );
-		if ( $count >= self::IP_RATE_LIMIT_MAX ) {
+		$limited = $this->is_rate_limited_sliding(
+			'kwtsms_otp_ip_' . md5( $ip ),
+			self::IP_RATE_LIMIT_MAX,
+			self::IP_RATE_LIMIT_WINDOW
+		);
+		if ( $limited ) {
 			KwtSMS_API::append_attempt_log( $user_id, $phone, $ip, $action, 'rate_limited' );
-			return true;
 		}
-		return false;
-	}
-
-	/**
-	 * Increment the per-IP OTP send counter.
-	 *
-	 * No-ops silently when the client IP cannot be determined.
-	 */
-	public function increment_ip_rate() {
-		$ip = $this->get_client_ip();
-		if ( '' === $ip ) {
-			return;
-		}
-		$key   = 'kwtsms_otp_ip_' . md5( $ip );
-		$count = (int) get_transient( $key );
-		set_transient( $key, $count + 1, self::IP_RATE_LIMIT_WINDOW );
+		return $limited;
 	}
 
 	/**
 	 * Check whether a user account has exceeded the OTP send rate limit.
 	 *
+	 * Uses a sliding-window algorithm (see is_rate_limited() for details).
 	 * Only applies when $user_id is a positive integer. Guests (user_id = 0
 	 * or null) are not subject to this limit; they are covered by the per-IP
 	 * and per-phone limits instead.
+	 *
+	 * Combines the former is_user_rate_limited() + increment_user_rate() into
+	 * one call. Callers must NOT call a separate increment method.
 	 *
 	 * @param int      $user_id WordPress user ID.
 	 * @param string   $action  Context: 'login'|'passwordless'|'reset'.
@@ -294,28 +283,15 @@ class KwtSMS_OTP_Engine {
 		if ( ! is_int( $user_id ) || $user_id <= 0 ) {
 			return false;
 		}
-		$count = (int) get_transient( 'kwtsms_otp_acct_' . md5( (string) $user_id ) );
-		if ( $count >= self::USER_RATE_LIMIT_MAX ) {
+		$limited = $this->is_rate_limited_sliding(
+			'kwtsms_otp_acct_' . md5( (string) $user_id ),
+			self::USER_RATE_LIMIT_MAX,
+			self::USER_RATE_LIMIT_WINDOW
+		);
+		if ( $limited ) {
 			KwtSMS_API::append_attempt_log( $user_id, $phone, $this->get_client_ip(), $action, 'rate_limited' );
-			return true;
 		}
-		return false;
-	}
-
-	/**
-	 * Increment the per-account OTP send counter.
-	 *
-	 * No-ops silently for invalid (non-positive) user IDs.
-	 *
-	 * @param int $user_id WordPress user ID.
-	 */
-	public function increment_user_rate( $user_id ) {
-		if ( ! is_int( $user_id ) || $user_id <= 0 ) {
-			return;
-		}
-		$key   = 'kwtsms_otp_acct_' . md5( (string) $user_id );
-		$count = (int) get_transient( $key );
-		set_transient( $key, $count + 1, self::USER_RATE_LIMIT_WINDOW );
+		return $limited;
 	}
 
 	// =========================================================================
@@ -434,6 +410,60 @@ class KwtSMS_OTP_Engine {
 	// =========================================================================
 	// Private helpers
 	// =========================================================================
+
+	/**
+	 * Sliding-window rate-limit primitive.
+	 *
+	 * The transient stores an array of Unix timestamps — one entry per
+	 * recorded request. On every call:
+	 *
+	 *  1. Load the existing array (or start with an empty one).
+	 *  2. Prune timestamps that fall outside the window (older than $window
+	 *     seconds ago). Uses array_values() to re-index after filtering.
+	 *  3. If the count of remaining timestamps is >= $max, the caller is
+	 *     rate-limited: persist the pruned array and return true WITHOUT
+	 *     recording the current timestamp.
+	 *  4. Otherwise, append the current Unix timestamp, persist the updated
+	 *     array with a fresh TTL equal to $window, and return false.
+	 *
+	 * This eliminates the fixed-window boundary exploit: no matter when
+	 * within the window a request arrives, only requests in the last
+	 * $window seconds are counted.
+	 *
+	 * @param string $key    Transient key (already namespaced by the caller).
+	 * @param int    $max    Maximum requests allowed within $window seconds.
+	 * @param int    $window Sliding window size in seconds.
+	 *
+	 * @return bool True if the caller is rate-limited (limit reached).
+	 *              False if not limited (current timestamp appended).
+	 */
+	private function is_rate_limited_sliding( string $key, int $max, int $window ): bool {
+		$data = get_transient( $key );
+		$data = is_array( $data ) ? $data : array();
+		$now  = time();
+
+		// Prune timestamps outside the current window.
+		$data = array_values(
+			array_filter(
+				$data,
+				function ( $ts ) use ( $now, $window ) {
+					return $ts > $now - $window;
+				}
+			)
+		);
+
+		if ( count( $data ) >= $max ) {
+			// At limit — persist pruned array (removes expired entries) but do
+			// NOT record current timestamp; the caller is blocked.
+			set_transient( $key, $data, $window );
+			return true;
+		}
+
+		// Under limit — record the current request timestamp.
+		$data[] = $now;
+		set_transient( $key, $data, $window );
+		return false;
+	}
 
 	/**
 	 * Generate a cryptographically random numeric OTP code.

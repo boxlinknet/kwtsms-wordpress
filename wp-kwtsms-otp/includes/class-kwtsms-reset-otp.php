@@ -147,9 +147,9 @@ class KwtSMS_Reset_OTP {
 			return;
 		}
 
-		$this->plugin->otp->increment_rate( $phone );
-		$this->plugin->otp->increment_ip_rate();
-		$this->plugin->otp->increment_user_rate( $resolved_user->ID );
+		// Sliding-window counters are recorded inside is_rate_limited(),
+		// is_ip_rate_limited(), and is_user_rate_limited() — no separate
+		// increment calls needed.
 
 		// Store reset session.
 		$token = wp_generate_password( 40, false );

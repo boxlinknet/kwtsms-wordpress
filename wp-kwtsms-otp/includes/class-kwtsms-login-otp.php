@@ -155,9 +155,9 @@ class KwtSMS_Login_OTP {
 			return $user;
 		}
 
-		$this->plugin->otp->increment_rate( $phone );
-		$this->plugin->otp->increment_ip_rate();
-		$this->plugin->otp->increment_user_rate( $user->ID );
+		// Sliding-window counters are recorded inside is_rate_limited(),
+		// is_ip_rate_limited(), and is_user_rate_limited() — no separate
+		// increment calls needed.
 
 		// Create partial auth session.
 		$token = wp_generate_password( 40, false );
@@ -509,9 +509,9 @@ class KwtSMS_Login_OTP {
 			}
 		}
 
-		$this->plugin->otp->increment_rate( $normalized );
-		$this->plugin->otp->increment_ip_rate();
-		$this->plugin->otp->increment_user_rate( $user_id );
+		// Sliding-window counters are recorded inside is_rate_limited(),
+		// is_ip_rate_limited(), and is_user_rate_limited() — no separate
+		// increment calls needed.
 
 		// Create partial auth session.
 		$token = wp_generate_password( 40, false );
