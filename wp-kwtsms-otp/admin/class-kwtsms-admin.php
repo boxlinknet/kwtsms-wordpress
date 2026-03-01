@@ -665,6 +665,7 @@ class KwtSMS_Admin {
 					'reloading'          => __( 'Reloading...', 'wp-kwtsms-otp' ),
 					'ofPurchased'        => __( '· of %s purchased', 'wp-kwtsms-otp' ),
 					'testPhoneMissing'   => __( 'Please enter a test phone number first.', 'wp-kwtsms-otp' ),
+					'phoneTooShort'      => __( 'Number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits).', 'wp-kwtsms-otp' ),
 					'testModeResult'     => __( 'Test mode ON — message queued, not delivered.', 'wp-kwtsms-otp' ),
 					'testSmsResult'      => __( 'SMS delivered to %phone%. Check your messages.', 'wp-kwtsms-otp' ),
 					'unsavedTitle'       => __( 'Unsaved Changes', 'wp-kwtsms-otp' ),

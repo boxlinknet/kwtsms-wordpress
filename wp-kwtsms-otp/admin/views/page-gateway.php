@@ -50,16 +50,11 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 	$bal_purchased = $gateway['balance_purchased'] ?? null;
 	?>
 	<div class="kwtsms-balance-bar" id="kwtsms-balance-card"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
-		<div class="kwtsms-balance-label"><?php esc_html_e( 'Available SMS Balance', 'wp-kwtsms-otp' ); ?></div>
-		<div class="kwtsms-balance-amount">
-			<span id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></span>
-			<span class="kwtsms-balance-unit"><?php esc_html_e( 'credits', 'wp-kwtsms-otp' ); ?></span>
-		</div>
-		<div id="kwtsms-balance-purchased" class="kwtsms-balance-sub">
-			<?php if ( null !== $bal_purchased && $bal_purchased > 0 ) : ?>
-			<?php printf( esc_html__( 'of %s purchased', 'wp-kwtsms-otp' ), esc_html( number_format( (float) $bal_purchased, 2 ) ) ); ?>
-			<?php endif; ?>
-		</div>
+		<?php esc_html_e( 'Available balance:', 'wp-kwtsms-otp' ); ?>
+		<strong id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></strong>
+		&nbsp;&mdash;&nbsp;
+		<?php esc_html_e( 'Total purchased:', 'wp-kwtsms-otp' ); ?>
+		<span id="kwtsms-balance-purchased"><?php echo ( null !== $bal_purchased && $bal_purchased > 0 ) ? esc_html( number_format( (float) $bal_purchased, 2 ) ) : '—'; ?></span>
 	</div>
 
 	<form method="post" action="options.php" id="kwtsms-gateway-form">
@@ -198,7 +193,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 								<option value=""><?php esc_html_e( '— Login to load —', 'wp-kwtsms-otp' ); ?></option>
 							<?php endif; ?>
 					</select>
-					<p class="description"><?php esc_html_e( 'Select the sender ID approved for your kwtSMS account.', 'wp-kwtsms-otp' ); ?></p>
+					<p class="description"><?php esc_html_e( 'This is the name recipients see as the sender of your SMS messages. Choose from the sender IDs registered on your kwtSMS account.', 'wp-kwtsms-otp' ); ?></p>
 					<p class="description">
 						<a href="https://www.kwtsms.com/sender-id-help.html" target="_blank" rel="noopener">
 							<?php esc_html_e( 'Register or request a Sender ID at kwtSMS →', 'wp-kwtsms-otp' ); ?>
@@ -266,9 +261,8 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 						?>
 					</div>
 					<p class="description" style="margin-top:8px;">
-						<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener">
-							<?php esc_html_e( 'Add more countries →', 'wp-kwtsms-otp' ); ?>
-						</a>
+						<?php esc_html_e( 'These are the countries your account can currently send SMS to. To send to additional countries, request coverage from your kwtSMS account.', 'wp-kwtsms-otp' ); ?>
+						&nbsp;<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener"><?php esc_html_e( 'Request more coverage →', 'wp-kwtsms-otp' ); ?></a>
 					</p>
 				</td>
 			</tr>
@@ -284,7 +278,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					<input type="tel" id="kwtsms_test_phone"
 						value=""
 						class="regular-text" placeholder="<?php esc_attr_e( 'e.g. 96512345678', 'wp-kwtsms-otp' ); ?>" />
-					<p class="description"><?php esc_html_e( 'Include country code, e.g. 96598765432', 'wp-kwtsms-otp' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Enter the full number with country code. e.g. Kuwait: 965 + 8 digits = 96512345678 (11 digits total).', 'wp-kwtsms-otp' ); ?></p>
 					<?php if ( $test_mode ) : ?>
 					<p class="description">
 						<?php esc_html_e( 'Test Mode is currently ON. The SMS will be queued but will NOT be delivered to your phone.', 'wp-kwtsms-otp' ); ?>
