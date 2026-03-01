@@ -208,10 +208,9 @@ function kwtsms_attempt_result_label( $result ) {
 				<th><?php esc_html_e( 'Date / Time', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Type', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Phone', 'wp-kwtsms-otp' ); ?></th>
-				<th><?php esc_html_e( 'Message', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Sender ID', 'wp-kwtsms-otp' ); ?></th>
+				<th><?php esc_html_e( 'Message', 'wp-kwtsms-otp' ); ?></th>
 				<th><?php esc_html_e( 'Status', 'wp-kwtsms-otp' ); ?></th>
-				<th><?php esc_html_e( 'Msg ID', 'wp-kwtsms-otp' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -220,12 +219,11 @@ function kwtsms_attempt_result_label( $result ) {
 				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $entry['time'] ?? 0 ) ); ?></td>
 				<td><?php echo esc_html( $entry['type'] ?? '' ); ?></td>
 				<td><code><?php echo esc_html( $entry['phone'] ?? '' ); ?></code></td>
-				<td style="max-width:400px;word-break:break-word;"><?php echo esc_html( $entry['message'] ?? '' ); ?></td>
 				<td><?php echo esc_html( $entry['sender_id'] ?? '' ); ?></td>
+				<td style="max-width:400px;word-break:break-word;"><?php echo esc_html( $entry['message'] ?? '' ); ?></td>
 				<td style="color:<?php echo 'sent' === ( $entry['status'] ?? '' ) ? '#46b450' : '#dc3232'; ?>;">
 					<?php echo 'sent' === ( $entry['status'] ?? '' ) ? esc_html__( 'Sent', 'wp-kwtsms-otp' ) : esc_html__( 'Failed', 'wp-kwtsms-otp' ); ?>
 				</td>
-				<td><code><?php echo esc_html( $entry['msg_id'] ?? '' ); ?></code></td>
 			</tr>
 			<?php endforeach; ?>
 		</tbody>
