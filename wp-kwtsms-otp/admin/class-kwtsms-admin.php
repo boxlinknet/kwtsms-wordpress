@@ -374,6 +374,10 @@ class KwtSMS_Admin {
 			'woo_checkout_otp'  => ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0,
 		);
 
+		// Note: template sub-arrays absent from POST are silently skipped (not written back).
+		// This means saved values remain in the DB from previous saves.
+		// The tabbed UI must submit ALL tab inputs (not just the visible tab) to avoid clearing
+		// templates from other tabs on save. Use hidden inputs or a single form for all tabs.
 		foreach ( $template_keys as $key ) {
 			if ( ! isset( $raw[ $key ] ) || ! is_array( $raw[ $key ] ) ) {
 				continue;
@@ -596,7 +600,7 @@ class KwtSMS_Admin {
 	 */
 	public function render_integrations_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Insufficient permissions.', 'wp-kwtsms-otp' ) );
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
 		}
 		include KWTSMS_OTP_DIR . 'admin/views/page-integrations.php';
 	}
