@@ -347,8 +347,8 @@ msgstr "اسم المستخدم وكلمة المرور مطلوبان."
 msgid "API credentials are not configured. The plugin will not be able to send SMS messages."
 msgstr "لم يتم تهيئة بيانات اعتماد API. لن تتمكن الإضافة من إرسال رسائل SMS."
 
-msgid "kwtsms API credentials are not configured. Please set them in Settings → kwtsms OTP → Gateway."
-msgstr "لم يتم تهيئة بيانات اعتماد kwtsms API. يرجى إدخالها في الإعدادات ← kwtsms OTP ← البوابة."
+msgid "kwtSMS API credentials are not configured. Please go to Settings → kwtSMS → Gateway and enter your API username and password."
+msgstr "لم يتم تهيئة بيانات اعتماد kwtSMS API. يرجى الانتقال إلى الإعدادات ← kwtSMS ← البوابة وإدخال اسم المستخدم وكلمة المرور."
 
 msgid "Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security."
 msgstr "موقعك لا يعمل عبر HTTPS. قد يتم اعتراض رموز التحقق أثناء النقل. يرجى تفعيل SSL للأمان."

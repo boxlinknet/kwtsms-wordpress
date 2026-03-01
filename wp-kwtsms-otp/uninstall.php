@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall routine for kwtsms OTP Authentication.
+ * Uninstall routine for kwtSMS OTP Login and SMS Notifications.
  *
  * WordPress only runs this file when the plugin is deleted (not just deactivated).
  * The WP_UNINSTALL_PLUGIN check is required — it prevents direct execution.

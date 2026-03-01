@@ -96,9 +96,9 @@ Secure, convenient SMS-based authentication for WordPress — powered by the [kw
 1. Download or clone this repository
 2. Upload the `wp-kwtsms-otp/` directory to `/wp-content/plugins/`
 3. Activate from **Plugins → Installed Plugins**
-4. Go to **kwtsms OTP → Gateway** and enter your API credentials
+4. Go to **kwtSMS → Gateway** and enter your API credentials
 5. Click **Save & Verify Credentials**
-6. Configure OTP behavior under **kwtsms OTP → General**
+6. Configure OTP behavior under **kwtSMS → General**
 
 ---
 
@@ -107,7 +107,7 @@ Secure, convenient SMS-based authentication for WordPress — powered by the [kw
 1. Visit [kwtsms.com/signup](https://www.kwtsms.com/signup) and create a free account
 2. Log in to the [kwtsms dashboard](https://www.kwtsms.com/login/) to find your API credentials
 3. Register a Sender ID (e.g. your business name) — this appears as the SMS sender
-4. Enter the username and password in **kwtsms OTP → Gateway → Save & Verify Credentials**
+4. Enter the username and password in **kwtSMS → Gateway → Save & Verify Credentials**
 
 > Credentials are stored server-side in `wp_options` only. They are never output to HTML or JavaScript.
 
@@ -115,7 +115,7 @@ Secure, convenient SMS-based authentication for WordPress — powered by the [kw
 
 ## Admin Pages
 
-### General Settings (`kwtsms OTP → General`)
+### General Settings (`kwtSMS → General`)
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -130,7 +130,7 @@ Secure, convenient SMS-based authentication for WordPress — powered by the [kw
 | Default Country | KW | Pre-selected dial code on phone inputs |
 | Allowed Countries | GCC | Countries shown in the dial code picker |
 
-### Gateway Settings (`kwtsms OTP → Gateway`)
+### Gateway Settings (`kwtSMS → Gateway`)
 
 | Setting | Description |
 |---------|-------------|
@@ -142,7 +142,7 @@ Secure, convenient SMS-based authentication for WordPress — powered by the [kw
 | Account Balance | Current / purchased credits (updated on credential verify) |
 | API Status | Green / Red badge showing gateway connectivity |
 
-### SMS Templates (`kwtsms OTP → Templates`)
+### SMS Templates (`kwtSMS → Templates`)
 
 Three editable templates, each with:
 - Enable/disable toggle
@@ -168,7 +168,7 @@ Your {site_name} login code is: {otp}. Valid for {expiry_minutes} minutes. Do no
 رمز تسجيل الدخول إلى {site_name} هو: {otp}. صالح لمدة {expiry_minutes} دقائق. لا تشارك هذا الرمز.
 ```
 
-### Integrations (`kwtsms OTP → Integrations`)
+### Integrations (`kwtSMS → Integrations`)
 
 Shows the status of all supported third-party plugins (Active / Not installed).
 
@@ -177,7 +177,7 @@ Shows the status of all supported third-party plugins (Active / Not installed).
 - **WPForms** — auto-detected via field type
 - **Elementor Pro** — auto-detected via field type `tel`
 
-### Logs (`kwtsms OTP → Logs`)
+### Logs (`kwtSMS → Logs`)
 
 Last 100 OTP send events with:
 - Timestamp
@@ -186,7 +186,7 @@ Last 100 OTP send events with:
 - Status (sent / failed)
 - Error code if failed
 
-### Help (`kwtsms OTP → Help`)
+### Help (`kwtSMS → Help`)
 
 - Quick-start checklist
 - Common error codes and fixes
@@ -316,7 +316,7 @@ Any form with a field of type `Tel` or with "phone" in the field title will trig
 
 Enable test mode for development and QA:
 
-1. Go to **kwtsms OTP → Gateway**
+1. Go to **kwtSMS → Gateway**
 2. Enable **Test Mode**
 3. Set **Test Phone** to your number (e.g. `96598765432`)
 4. Enable `WP_DEBUG_LOG` in `wp-config.php`

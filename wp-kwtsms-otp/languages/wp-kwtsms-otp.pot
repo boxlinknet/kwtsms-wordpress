@@ -498,8 +498,8 @@ msgstr ""
 msgid "An unexpected error occurred (%s). Please try again."
 msgstr ""
 
-#: includes/class-kwtsms-api.php:316
-msgid "kwtsms API credentials are not configured. Please set them in Settings → kwtsms OTP → Gateway."
+#: includes/class-kwtsms-api.php:527
+msgid "kwtSMS API credentials are not configured. Please go to Settings → kwtSMS → Gateway and enter your API username and password."
 msgstr ""
 
 #: includes/class-kwtsms-api.php:348

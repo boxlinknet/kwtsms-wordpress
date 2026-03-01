@@ -2,7 +2,7 @@
 /**
  * Admin Controller — menus, settings registration, admin notices.
  *
- * Registers three subpages under a top-level "kwtsms OTP" menu:
+ * Registers three subpages under a top-level "kwtSMS" menu:
  *   - General Settings  (OTP behaviour, CAPTCHA)
  *   - Gateway Settings  (API credentials, SenderID, balance)
  *   - SMS Templates     (EN + AR templates with character counters)
@@ -706,7 +706,7 @@ class KwtSMS_Admin {
 	// =========================================================================
 
 	/**
-	 * Register the kwtsms OTP dashboard widget.
+	 * Register the kwtSMS dashboard widget.
 	 */
 	public function register_dashboard_widget() {
 		wp_add_dashboard_widget(
@@ -717,7 +717,7 @@ class KwtSMS_Admin {
 	}
 
 	/**
-	 * Render the kwtsms OTP dashboard widget.
+	 * Render the kwtSMS dashboard widget.
 	 */
 	public function render_dashboard_widget() {
 		$log = get_option( 'kwtsms_otp_send_log', array() );
