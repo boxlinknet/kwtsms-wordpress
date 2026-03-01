@@ -33,7 +33,7 @@ foreach ( $all_countries as $cc ) {
 
 	<div class="kwtsms-admin-header">
 		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'kwtSMS OTP — General Settings', 'wp-kwtsms-otp' ); ?></h1>
+		<h1><?php esc_html_e( 'kwtSMS — General Settings', 'wp-kwtsms-otp' ); ?></h1>
 	</div>
 
 	<div class="kwtsms-intro-box" style="background:#fff8ed;border:1px solid #FFA200;border-radius:4px;padding:16px 20px;margin-bottom:20px;">

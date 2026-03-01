@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name:       kwtSMS OTP Authentication
+ * Plugin Name:       kwtSMS OTP Login and SMS Notifications
  * Plugin URI:        https://www.kwtsms.com
  * Description:       Secure SMS-based OTP login and password reset for WordPress, powered by the kwtSMS gateway. Supports 2FA mode, passwordless login, Google reCAPTCHA v3, and Cloudflare Turnstile. Fully multilingual (English + Arabic / RTL).
- * Version:           2.0.0
+ * Version:           2.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            kwtsms
@@ -19,7 +19,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Plugin constants.
-define( 'KWTSMS_OTP_VERSION', '2.0.0' );
+define( 'KWTSMS_OTP_VERSION', '2.1.0' );
 define( 'KWTSMS_OTP_FILE', __FILE__ );
 define( 'KWTSMS_OTP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KWTSMS_OTP_URL', plugin_dir_url( __FILE__ ) );
@@ -123,3 +123,26 @@ function kwtsms_otp_init() {
 	KwtSMS_Plugin::get_instance();
 }
 add_action( 'plugins_loaded', 'kwtsms_otp_init' );
+
+/**
+ * Declare compatibility with WooCommerce High-Performance Order Storage (HPOS).
+ *
+ * This silences the WooCommerce admin notice introduced in WooCommerce 8.5+ for
+ * plugins that have not explicitly declared whether they support HPOS (custom order
+ * tables). The plugin does not query the orders table directly, so compatibility is
+ * declared as true.
+ *
+ * @see https://developer.woocommerce.com/docs/hpos-compatibility-checklist/
+ */
+add_action(
+	'before_woocommerce_init',
+	function() {
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+				'custom_order_tables',
+				KWTSMS_OTP_FILE,
+				true
+			);
+		}
+	}
+);

@@ -160,7 +160,7 @@ class KwtSMS_API {
 		if ( empty( $message ) ) {
 			$err = new WP_Error(
 				'kwtsms_missing_message',
-				__( 'Cannot send SMS: message is empty. Please check your SMS templates in Settings → kwtSMS OTP → Templates.', 'wp-kwtsms-otp' )
+				__( 'Cannot send SMS: message is empty. Please check your SMS templates in Settings → kwtSMS → Templates.', 'wp-kwtsms-otp' )
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: message empty' );
 			self::append_send_log( $phone, 'failed', $type );
@@ -172,7 +172,7 @@ class KwtSMS_API {
 		if ( ! $this->test_mode && empty( $sender_id ) ) {
 			$err = new WP_Error(
 				'kwtsms_missing_sender_id',
-				__( 'Cannot send SMS: no Sender ID configured. Go to Settings → kwtSMS OTP → Gateway, save your credentials, then choose a Sender ID from the dropdown.', 'wp-kwtsms-otp' )
+				__( 'Cannot send SMS: no Sender ID configured. Go to Settings → kwtSMS → Gateway, save your credentials, then choose a Sender ID from the dropdown.', 'wp-kwtsms-otp' )
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty (live mode)' );
 			self::append_send_log( $phone, 'failed', $type );
@@ -524,7 +524,7 @@ class KwtSMS_API {
 		if ( empty( $this->username ) || empty( $this->password ) ) {
 			$err = new WP_Error(
 				'kwtsms_no_credentials',
-				__( 'kwtSMS API credentials are not configured. Please go to Settings → kwtSMS OTP → Gateway and enter your API username and password.', 'wp-kwtsms-otp' )
+				__( 'kwtSMS API credentials are not configured. Please go to Settings → kwtSMS → Gateway and enter your API username and password.', 'wp-kwtsms-otp' )
 			);
 			$this->write_debug_log( "request({$endpoint})", 'ABORT: credentials missing (username or password empty)' );
 			return $err;

@@ -38,7 +38,7 @@ $templates = $settings->get_all_integration_templates();
 
 	<div class="kwtsms-admin-header">
 		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'kwtSMS OTP — Integrations', 'wp-kwtsms-otp' ); ?></h1>
+		<h1><?php esc_html_e( 'kwtSMS — Integrations', 'wp-kwtsms-otp' ); ?></h1>
 	</div>
 
 	<p style="max-width:800px;font-size:14px;">
