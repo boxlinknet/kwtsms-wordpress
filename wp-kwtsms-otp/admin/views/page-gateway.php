@@ -158,22 +158,20 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 
 		<!-- ===== SMS Coverage ===== -->
 		<h2 class="title"><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms-otp' ); ?></h2>
-		<div id="kwtsms-coverage-section" class="kwtsms-coverage-row" aria-live="polite">
-			<div class="kwtsms-coverage-col-left">
-				<p style="margin:0 0 8px;">
-					<?php esc_html_e( 'Countries your kwtSMS account is approved to send SMS to.', 'wp-kwtsms-otp' ); ?>
-				</p>
-				<p style="margin:0;">
-					<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener">
-						<?php esc_html_e( 'Add more countries →', 'wp-kwtsms-otp' ); ?>
-					</a>
-				</p>
-			</div>
-			<div class="kwtsms-coverage-col-right">
-				<button type="button" id="kwtsms-load-coverage" class="button">
-					&#x21BB; <?php esc_html_e( 'Refresh Coverage', 'wp-kwtsms-otp' ); ?>
-				</button>
-				<div id="kwtsms-coverage-result" style="margin-top:10px;" aria-live="polite">
+		<div id="kwtsms-coverage-section" aria-live="polite">
+			<p style="margin:0 0 4px;">
+				<?php esc_html_e( 'Countries your kwtSMS account is approved to send SMS to.', 'wp-kwtsms-otp' ); ?>
+				<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener" style="margin-left:6px;">
+					<?php esc_html_e( 'Add more countries →', 'wp-kwtsms-otp' ); ?>
+				</a>
+			</p>
+			<p style="margin:0 0 10px;color:#888;font-size:12px;">
+				<?php esc_html_e( 'In test mode, messages are queued but not delivered. Delete messages from your kwtSMS queue to recover credits.', 'wp-kwtsms-otp' ); ?>
+			</p>
+			<button type="button" id="kwtsms-load-coverage" class="button">
+				&#x21BB; <?php esc_html_e( 'Refresh Coverage', 'wp-kwtsms-otp' ); ?>
+			</button>
+			<div id="kwtsms-coverage-result" style="margin-top:10px;" aria-live="polite">
 					<?php
 					$saved_cov = $gateway['coverage'] ?? array();
 					if ( ! empty( $saved_cov ) ) :
@@ -193,7 +191,6 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 						endforeach;
 					endif;
 					?>
-				</div>
 			</div>
 		</div>
 
