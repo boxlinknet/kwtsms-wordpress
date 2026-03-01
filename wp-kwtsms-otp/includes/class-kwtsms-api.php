@@ -492,14 +492,16 @@ class KwtSMS_API {
 		$eastern_numerals = array( '۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹' );
 		$phone            = str_replace( $eastern_numerals, $ascii_digits, $phone );
 
-		// 2. Strip leading + or 00.
+		// 2. Strip leading +.
 		$phone = preg_replace( '/^\+/', '', $phone );
-		$phone = preg_replace( '/^00/', '', $phone );
 
 		// 3. Remove all non-digit characters (spaces, dashes, dots, parentheses).
 		$phone = preg_replace( '/\D/', '', $phone );
 
-		// 4. Validate: must be digits only, 8–15 characters.
+		// 4. Strip all leading zeros (trunk/international prefix: 0xxx, 00xxx, 000xxx…).
+		$phone = ltrim( $phone, '0' );
+
+		// 5. Validate: must be digits only, 8–15 characters.
 		if ( ! preg_match( '/^\d{8,15}$/', $phone ) ) {
 			return new WP_Error(
 				'invalid_phone',
