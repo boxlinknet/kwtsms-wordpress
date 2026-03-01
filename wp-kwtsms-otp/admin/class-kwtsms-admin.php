@@ -307,11 +307,8 @@ class KwtSMS_Admin {
 			return array();
 		}
 
-		$test_phone = sanitize_text_field( $raw['test_phone'] ?? '' );
-		if ( ! empty( $test_phone ) ) {
-			$normalized = KwtSMS_API::normalize_phone( $test_phone );
-			$test_phone = is_wp_error( $normalized ) ? '' : $normalized;
-		}
+		// test_phone is intentionally not persisted — the field has no name attribute.
+		$test_phone = '';
 
 		// Warn if the API username looks like a phone number.
 		$api_username_raw = sanitize_text_field( $raw['api_username'] ?? '' );
@@ -666,9 +663,9 @@ class KwtSMS_Admin {
 					'connectedAs'        => __( 'Connected as %s', 'wp-kwtsms-otp' ),
 					'reload'             => __( 'Reload', 'wp-kwtsms-otp' ),
 					'reloading'          => __( 'Reloading...', 'wp-kwtsms-otp' ),
-					'ofPurchased'        => __( 'of %s purchased', 'wp-kwtsms-otp' ),
+					'ofPurchased'        => __( '· of %s purchased', 'wp-kwtsms-otp' ),
 					'testPhoneMissing'   => __( 'Please enter a test phone number first.', 'wp-kwtsms-otp' ),
-					'testModeResult'     => __( 'Test mode ON — message queued, not delivered. OTP code: %code% (check debug.log)', 'wp-kwtsms-otp' ),
+					'testModeResult'     => __( 'Test mode ON — message queued, not delivered.', 'wp-kwtsms-otp' ),
 					'testSmsResult'      => __( 'SMS delivered to %phone%. Check your messages.', 'wp-kwtsms-otp' ),
 				),
 			)
