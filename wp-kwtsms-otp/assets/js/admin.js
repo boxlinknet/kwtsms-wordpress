@@ -389,24 +389,9 @@
 		}
 	}() );
 
-	// =========================================================================
-	// On page load: restore saved balance without a verify round-trip
-	// =========================================================================
-
-	( function () {
-		const saved = ( data.savedBalance || {} );
-		if ( saved.available !== null && saved.available !== undefined ) {
-			$( '#kwtsms-balance' ).text( parseFloat( saved.available ).toFixed( 2 ) + ' credits' );
-			if ( saved.purchased ) {
-				$( '#kwtsms-balance-purchased' ).text( 'Purchased: ' + parseFloat( saved.purchased ).toFixed( 2 ) );
-			}
-			if ( credentialsVerified ) {
-				$( '#kwtsms-verified-sections' ).show();
-				$( '#kwtsms-login-btn' ).hide();
-				$( '#kwtsms-logout-btn' ).show();
-			}
-		}
-	}() );
+	// Balance and login/logout button state on page load are handled server-side
+	// by page-gateway.php. setDependentFeatures( credentialsVerified ) above
+	// handles button enable/disable state on init, so no JS restore is needed.
 
 	// =========================================================================
 	// Integrations page — tab switching
