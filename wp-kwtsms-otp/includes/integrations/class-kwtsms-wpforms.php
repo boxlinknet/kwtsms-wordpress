@@ -91,9 +91,15 @@ class KwtSMS_WPForms {
 		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) );
 
 		if ( empty( $token ) || ! $this->plugin->verify_form_token( $token ) ) {
-			$form_id            = absint( $form_data['id'] ?? 0 );
+			$form_id                      = absint( $form_data['id'] ?? 0 );
 			$errors[ $form_id ]['header'] = __( 'Please verify your phone number before submitting this form.', 'wp-kwtsms-otp' );
+			return $errors;
 		}
+
+		// Token is verified — consume it immediately (single-use) to prevent replay.
+		// Note: form_id in the transient is stored for audit purposes.
+		// Token is single-use (consumed on success) so cross-form replay is prevented.
+		delete_transient( 'kwtsms_form_otp_' . $token );
 
 		return $errors;
 	}

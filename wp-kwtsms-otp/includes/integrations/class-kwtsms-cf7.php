@@ -91,7 +91,11 @@ class KwtSMS_CF7 {
 	 * @return WPCF7_ContactForm The (possibly mutated) form instance.
 	 */
 	public function gate_verify_token( $cf7, &$abort, $submission ) {
-		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) );
+		// Use the CF7 Submission API instead of raw $_POST to read posted data.
+		// This is the correct CF7 idiom and avoids direct superglobal access.
+		$cf7_submission = WPCF7_Submission::get_instance();
+		$posted         = $cf7_submission ? $cf7_submission->get_posted_data() : array();
+		$token          = sanitize_text_field( $posted['kwtsms_form_verified_token'] ?? '' );
 
 		if ( empty( $token ) || ! $this->plugin->verify_form_token( $token ) ) {
 			$abort = true;
@@ -102,7 +106,14 @@ class KwtSMS_CF7 {
 					__( 'Please verify your phone number before submitting this form.', 'wp-kwtsms-otp' )
 				);
 			}
+
+			return $cf7;
 		}
+
+		// Token is verified — consume it immediately (single-use) to prevent replay.
+		// Note: form_id in the transient is stored for audit purposes.
+		// Token is single-use (consumed on success) so cross-form replay is prevented.
+		delete_transient( 'kwtsms_form_otp_' . $token );
 
 		return $cf7;
 	}

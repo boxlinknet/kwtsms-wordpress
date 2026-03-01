@@ -341,11 +341,14 @@
 	}
 
 	/**
-	 * Intercept submit for any matching form on the page.
+	 * Intercept submit only for known integration form wrappers.
+	 * Scoping to .wpcf7-form, .wpforms-form, and .elementor-form prevents
+	 * the modal from hijacking login forms, checkout forms, and other
+	 * non-integration forms that happen to contain a phone field.
 	 * Uses event delegation on document so dynamically-rendered forms (e.g.
 	 * Elementor AJAX-loaded widgets) are also caught.
 	 */
-	$( document ).on( 'submit', 'form', function ( e ) {
+	$( document ).on( 'submit', '.wpcf7-form, .wpforms-form, .elementor-form', function ( e ) {
 		var form = this;
 		var $form = $( form );
 
