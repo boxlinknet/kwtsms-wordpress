@@ -224,8 +224,20 @@ class KwtSMS_Plugin {
 			return;
 		}
 
-		// Generate a 6-digit OTP code.
-		$otp_code = (string) wp_rand( 100000, 999999 );
+		// Rate limit: per-phone and per-IP to prevent SMS credit exhaustion.
+		// user_id = 0 because form gate is used by guests (not logged-in users).
+		if ( $this->otp->is_rate_limited( $normalized, 'form_otp', 0 ) ) {
+			wp_send_json_error( array( 'message' => __( 'Too many requests. Please try again later.', 'wp-kwtsms-otp' ) ) );
+			return;
+		}
+		if ( $this->otp->is_ip_rate_limited( 'form_otp', 0, $normalized ) ) {
+			wp_send_json_error( array( 'message' => __( 'Too many requests. Please try again later.', 'wp-kwtsms-otp' ) ) );
+			return;
+		}
+
+		// Generate a 6-digit OTP code using a CSPRNG (PHP 7+ standard library).
+		// random_int() is cryptographically secure; wp_rand() uses mt_rand which is predictable.
+		$otp_code = (string) random_int( 100000, 999999 );
 		$otp_hash = wp_hash_password( $otp_code );
 
 		// Generate a fresh session token for this verification attempt.
@@ -312,8 +324,19 @@ class KwtSMS_Plugin {
 			return;
 		}
 
+		// Enforce max 5 attempts per token.
+		$attempts = (int) ( $data['attempts'] ?? 0 );
+		if ( $attempts >= 5 ) {
+			delete_transient( $transient_key );
+			wp_send_json_error( array( 'message' => __( 'Too many incorrect attempts. Please request a new code.', 'wp-kwtsms-otp' ) ) );
+			return;
+		}
+
 		// Verify the submitted code against the stored bcrypt hash.
 		if ( ! wp_check_password( $code, $data['otp_hash'] ) ) {
+			// Wrong code — increment attempt counter and persist.
+			$data['attempts'] = $attempts + 1;
+			set_transient( $transient_key, $data, 900 );
 			wp_send_json_error( array( 'message' => __( 'Incorrect code. Please try again.', 'wp-kwtsms-otp' ) ) );
 			return;
 		}

@@ -94,7 +94,10 @@ class KwtSMS_Elementor {
 		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) );
 
 		if ( ! empty( $token ) && $this->plugin->verify_form_token( $token ) ) {
-			// Token is valid — allow submission to proceed.
+			// Token is verified — consume it immediately (single-use) to prevent replay.
+			// Note: form_id in the transient is stored for audit purposes.
+			// Token is single-use (consumed on success) so cross-form replay is prevented.
+			delete_transient( 'kwtsms_form_otp_' . $token );
 			return;
 		}
 
