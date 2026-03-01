@@ -65,7 +65,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 		<?php if ( ! $credentials_verified ) : ?>
 		<div class="kwtsms-api-status is-info kwtsms-signup-note">
 			<?php esc_html_e( "Don't have a kwtSMS account?", 'wp-kwtsms-otp' ); ?>
-			<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener" style="color:#2271b1;font-weight:600;">
+			<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener" style="color:#46b450;font-weight:600;">
 				<?php esc_html_e( 'Sign up for free →', 'wp-kwtsms-otp' ); ?>
 			</a>
 		</div>
