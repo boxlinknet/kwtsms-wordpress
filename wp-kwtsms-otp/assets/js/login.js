@@ -1,5 +1,5 @@
 /**
- * kwtsms OTP — Login Page JavaScript
+ * kwtSMS — Login Page JavaScript
  *
  * Handles the resend countdown timer and OTP resend AJAX call.
  * No jQuery dependency — uses vanilla JS only (lighter for login page).
