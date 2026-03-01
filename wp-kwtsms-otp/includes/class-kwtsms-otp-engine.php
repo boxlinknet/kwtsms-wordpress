@@ -377,13 +377,16 @@ class KwtSMS_OTP_Engine {
 	 * @param string $action           Context: 'login' | 'reset' | 'passwordless'.
 	 * @param string $sender_id        Sender ID to use for the SMS.
 	 *
-	 * @return true|WP_Error True on success (or silent block), WP_Error on failure.
+	 * @return true|array True if the phone is blocked (silent success), or an array with
+	 *                     ['otp_code', 'message', 'phone', 'sender', 'action'] if not blocked.
 	 */
 	public function request_otp( $normalized_phone, $identifier, $template_id, $action, $sender_id ) {
 		// Blocked phone: silently pretend success — no SMS sent, no error exposed.
 		if ( $this->is_phone_blocked( $normalized_phone ) ) {
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			error_log( '[kwtsms-otp] Blocked phone attempted OTP: ' . $normalized_phone );
+			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+				error_log( '[kwtsms-otp] Blocked phone attempted OTP: ' . $normalized_phone );
+			}
 			return true; // pretend success, no SMS sent
 		}
 
@@ -406,11 +409,14 @@ class KwtSMS_OTP_Engine {
 	 * Each entry is normalised (digits only) before comparison so formatting
 	 * differences (e.g. spaces, dashes) do not affect matching.
 	 *
+	 * Made public so call sites (login, passwordless, reset, resend) can check
+	 * the block list before calling generate() + send_sms() directly.
+	 *
 	 * @param string $phone Normalised phone number (digits only).
 	 *
 	 * @return bool True if the phone is blocked.
 	 */
-	private function is_phone_blocked( string $phone ): bool {
+	public function is_phone_blocked( string $phone ): bool {
 		$list = $this->settings->get( 'general.blocked_phones', '' );
 		if ( empty( $list ) ) {
 			return false;

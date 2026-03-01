@@ -110,6 +110,22 @@ class KwtSMS_Login_OTP {
 			);
 		}
 
+		// Anti-enumeration: silently succeed for blocked phones without sending SMS.
+		if ( $this->plugin->otp->is_phone_blocked( $phone ) ) {
+			$token = wp_generate_password( 40, false );
+			set_transient(
+				'kwtsms_partial_auth_' . $token,
+				array(
+					'user_id' => $user->ID,
+					'action'  => 'login',
+					'phone'   => $phone,
+				),
+				15 * MINUTE_IN_SECONDS
+			);
+			$this->set_partial_auth_cookie( $token );
+			return new WP_Error( 'kwtsms_otp_required', '' );
+		}
+
 		// Generate OTP and send SMS.
 		$otp_code = $this->plugin->otp->generate( $user->ID, 'login' );
 		$message  = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
@@ -440,6 +456,12 @@ class KwtSMS_Login_OTP {
 			$this->render_passwordless_page(
 				__( 'Too many requests. Please wait a few minutes before trying again.', 'wp-kwtsms-otp' )
 			);
+			exit;
+		}
+
+		// Anti-enumeration: silently succeed for blocked phones without sending SMS.
+		if ( $this->plugin->otp->is_phone_blocked( $normalized ) ) {
+			$this->render_passwordless_page( '', $generic_message );
 			exit;
 		}
 
