@@ -67,14 +67,7 @@ class KwtSMS_CF7 {
 			return;
 		}
 
-		$submission = WPCF7_Submission::get_instance();
-		if ( ! $submission ) {
-			return;
-		}
-
-		$posted = $submission->get_posted_data();
-		$phone  = isset( $posted['kwtsms_phone'] ) ? sanitize_text_field( $posted['kwtsms_phone'] ) : '';
-
+		$phone = $this->get_submission_phone();
 		if ( empty( $phone ) ) {
 			return;
 		}
@@ -95,6 +88,24 @@ class KwtSMS_CF7 {
 			$message,
 			'cf7'
 		);
+	}
+
+	/**
+	 * Retrieve the `kwtsms_phone` value from the current CF7 submission.
+	 *
+	 * Isolated into a protected method so that tests can override it without
+	 * needing to stub the static WPCF7_Submission::get_instance() call, which
+	 * cannot be intercepted by Brain\Monkey.
+	 *
+	 * @return string Raw phone string from posted data, or empty string if absent.
+	 */
+	protected function get_submission_phone() {
+		$submission = WPCF7_Submission::get_instance();
+		if ( ! $submission ) {
+			return '';
+		}
+		$posted = $submission->get_posted_data();
+		return isset( $posted['kwtsms_phone'] ) ? sanitize_text_field( $posted['kwtsms_phone'] ) : '';
 	}
 
 	/**
