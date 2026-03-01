@@ -652,15 +652,22 @@ class KwtSMS_Plugin {
 			return;
 		}
 
-		// Build the test message: site name + timestamp with timezone.
+		// Build the test message: site name + timestamp with GMT offset label.
 		$tz_string = wp_timezone_string();
 		try {
-			$tz_obj    = new DateTimeZone( $tz_string );
-			$dt        = new DateTime( 'now', $tz_obj );
-			$tz_abbr   = $dt->format( 'T' );
-			$stamp     = $dt->format( 'Y-m-d H:i' ) . ' ' . $tz_abbr;
+			$tz_obj         = new DateTimeZone( $tz_string );
+			$dt             = new DateTime( 'now', $tz_obj );
+			$offset_secs    = (int) $dt->format( 'Z' );
+			$sign           = $offset_secs >= 0 ? '+' : '-';
+			$abs_secs       = abs( $offset_secs );
+			$offset_hours   = intdiv( $abs_secs, 3600 );
+			$offset_minutes = ( $abs_secs % 3600 ) / 60;
+			$tz_label       = $offset_minutes > 0
+				? sprintf( 'GMT%s%d:%02d', $sign, $offset_hours, $offset_minutes )
+				: sprintf( 'GMT%s%d', $sign, $offset_hours );
+			$stamp          = $dt->format( 'Y-m-d H:i' ) . ' ' . $tz_label;
 		} catch ( Exception $e ) {
-			$stamp = gmdate( 'Y-m-d H:i' ) . ' UTC';
+			$stamp = gmdate( 'Y-m-d H:i' ) . ' GMT+0';
 		}
 		$site_name = get_bloginfo( 'name' );
 		$message   = "Test SMS message from {$site_name}\nStamp: {$stamp}";
