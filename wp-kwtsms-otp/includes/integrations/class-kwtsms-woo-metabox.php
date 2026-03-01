@@ -1,0 +1,222 @@
+<?php
+/**
+ * WooCommerce per-order custom SMS metabox.
+ *
+ * Adds a "Send Custom SMS" metabox to the WooCommerce order edit screen.
+ * Compatible with both Classic Orders and HPOS (High-Performance Order Storage,
+ * WooCommerce 8.5+) via the standard add_meta_boxes hook.
+ *
+ * @package KwtSMS_OTP
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class KwtSMS_Woo_Metabox
+ *
+ * Registers and renders a metabox on the WooCommerce order screen that allows
+ * admins to send a free-form SMS to any phone number, pre-populated with the
+ * customer's billing phone.
+ */
+class KwtSMS_Woo_Metabox {
+
+	/**
+	 * kwtsms API client.
+	 *
+	 * @var KwtSMS_API
+	 */
+	private $api;
+
+	/**
+	 * Plugin settings.
+	 *
+	 * @var KwtSMS_Settings
+	 */
+	private $settings;
+
+	/**
+	 * Constructor.
+	 *
+	 * Registers the metabox and the AJAX handler for sending a custom SMS.
+	 *
+	 * @param KwtSMS_API      $api      kwtsms API client.
+	 * @param KwtSMS_Settings $settings Plugin settings helper.
+	 */
+	public function __construct( $api, $settings ) {
+		$this->api      = $api;
+		$this->settings = $settings;
+
+		add_action( 'add_meta_boxes', array( $this, 'register_metabox' ) );
+		add_action( 'wp_ajax_kwtsms_woo_send_custom_sms', array( $this, 'ajax_send_custom_sms' ) );
+	}
+
+	/**
+	 * Register the "Send Custom SMS" metabox on the WooCommerce order screen.
+	 *
+	 * Works with both Classic Orders (post type 'shop_order') and HPOS
+	 * (WooCommerce 8.5+ with custom order tables enabled) via the
+	 * CustomOrdersTableController screen ID.
+	 */
+	public function register_metabox() {
+		// Detect HPOS: use the controller class name as the screen ID when HPOS is active.
+		$screen = 'shop_order';
+		if (
+			class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' )
+			&& function_exists( 'wc_get_container' )
+		) {
+			try {
+				$controller = wc_get_container()->get(
+					\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class
+				);
+				if ( $controller && $controller->custom_orders_table_usage_is_enabled() ) {
+					$screen = \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class;
+				}
+			} catch ( \Exception $e ) {
+				// Fall back to classic screen ID.
+			}
+		}
+
+		add_meta_box(
+			'kwtsms-custom-sms',
+			__( 'Send Custom SMS', 'wp-kwtsms-otp' ),
+			array( $this, 'render_metabox' ),
+			$screen,
+			'side',
+			'default'
+		);
+	}
+
+	/**
+	 * Render the metabox HTML.
+	 *
+	 * Accepts either a WP_Post (Classic Orders) or a WC_Order (HPOS) as the
+	 * first argument. Pre-populates the phone field from the kwtsms_phone order
+	 * meta (set at checkout OTP), falling back to the billing phone.
+	 *
+	 * @param \WP_Post|\WC_Order $post_or_order Post or order object passed by WP.
+	 */
+	public function render_metabox( $post_or_order ) {
+		$order = ( $post_or_order instanceof WC_Order )
+			? $post_or_order
+			: wc_get_order( $post_or_order->ID );
+
+		$phone = '';
+		if ( $order ) {
+			$phone = $order->get_meta( 'kwtsms_phone' );
+			if ( empty( $phone ) ) {
+				$phone = $order->get_billing_phone();
+			}
+		}
+
+		wp_nonce_field( 'kwtsms_woo_custom_sms', 'kwtsms_woo_custom_sms_nonce' );
+		?>
+		<div id="kwtsms-metabox-wrap">
+			<p>
+				<label for="kwtsms-custom-sms-phone"><?php esc_html_e( 'Phone', 'wp-kwtsms-otp' ); ?></label><br>
+				<input
+					type="text"
+					id="kwtsms-custom-sms-phone"
+					name="kwtsms_custom_sms_phone"
+					value="<?php echo esc_attr( $phone ); ?>"
+					class="widefat"
+					placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'wp-kwtsms-otp' ); ?>"
+				>
+			</p>
+			<p>
+				<label for="kwtsms-custom-sms-message"><?php esc_html_e( 'Message', 'wp-kwtsms-otp' ); ?></label><br>
+				<textarea
+					id="kwtsms-custom-sms-message"
+					name="kwtsms_custom_sms_message"
+					rows="4"
+					class="widefat"
+					placeholder="<?php esc_attr_e( 'Type your SMS message...', 'wp-kwtsms-otp' ); ?>"
+				></textarea>
+			</p>
+			<p>
+				<button
+					type="button"
+					id="kwtsms-send-custom-sms-btn"
+					class="button"
+					data-order="<?php echo esc_attr( $order ? (string) $order->get_id() : '0' ); ?>"
+					data-nonce="<?php echo esc_attr( wp_create_nonce( 'kwtsms_woo_custom_sms' ) ); ?>"
+				>
+					<?php esc_html_e( 'Send SMS', 'wp-kwtsms-otp' ); ?>
+				</button>
+				<span id="kwtsms-custom-sms-result" style="margin-left:8px;"></span>
+			</p>
+		</div>
+		<script>
+		jQuery( function( $ ) {
+			$( '#kwtsms-send-custom-sms-btn' ).on( 'click', function() {
+				var btn = $( this );
+				btn.prop( 'disabled', true );
+				$.post( ajaxurl, {
+					action:   'kwtsms_woo_send_custom_sms',
+					order_id: btn.data( 'order' ),
+					phone:    $( '#kwtsms-custom-sms-phone' ).val(),
+					message:  $( '#kwtsms-custom-sms-message' ).val(),
+					nonce:    btn.data( 'nonce' )
+				}, function( r ) {
+					btn.prop( 'disabled', false );
+					$( '#kwtsms-custom-sms-result' ).text(
+						r.success ? '\u2713 Sent' : '\u2717 ' + r.data.message
+					);
+				} );
+			} );
+		} );
+		</script>
+		<?php
+	}
+
+	/**
+	 * AJAX handler — send a custom SMS for a WooCommerce order.
+	 *
+	 * Validates the nonce and the edit_shop_orders capability before sending.
+	 * Phone is normalised via KwtSMS_API::normalize_phone().
+	 *
+	 * Expected POST fields:
+	 *   nonce    — kwtsms_woo_custom_sms nonce
+	 *   order_id — WooCommerce order ID
+	 *   phone    — Destination phone number
+	 *   message  — SMS message text
+	 */
+	public function ajax_send_custom_sms() {
+		check_ajax_referer( 'kwtsms_woo_custom_sms', 'nonce' );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'wp-kwtsms-otp' ) ) );
+			return;
+		}
+
+		$order_id = absint( wp_unslash( $_POST['order_id'] ?? 0 ) );
+		$phone    = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
+		$message  = sanitize_textarea_field( wp_unslash( $_POST['message'] ?? '' ) );
+
+		if ( ! $order_id || ! $phone || ! $message ) {
+			wp_send_json_error(
+				array( 'message' => __( 'Order, phone, and message are required.', 'wp-kwtsms-otp' ) )
+			);
+			return;
+		}
+
+		$normalized = KwtSMS_API::normalize_phone( $phone );
+		if ( is_wp_error( $normalized ) ) {
+			wp_send_json_error( array( 'message' => $normalized->get_error_message() ) );
+			return;
+		}
+
+		$result = $this->api->send_sms(
+			$normalized,
+			$this->settings->get( 'gateway.sender_id', '' ),
+			$message,
+			'woo_custom'
+		);
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
+		}
+
+		wp_send_json_success( array( 'message' => __( 'SMS sent.', 'wp-kwtsms-otp' ) ) );
+	}
+}

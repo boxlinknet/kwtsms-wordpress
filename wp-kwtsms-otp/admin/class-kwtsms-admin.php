@@ -363,15 +363,33 @@ class KwtSMS_Admin {
 
 		$template_keys = array(
 			'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled',
+			'woo_pending', 'woo_refunded', 'woo_failed',
 			'cf7_confirmation', 'wpforms_confirmation', 'elementor_confirmation',
 		);
 
+		// Sanitize woo_notify_admin_statuses: array of recognised WC order status slugs.
+		$allowed_statuses      = array(
+			'processing', 'on-hold', 'completed', 'cancelled',
+			'pending', 'refunded', 'failed',
+		);
+		$raw_notify            = $raw['woo_notify_admin_statuses'] ?? array();
+		$notify_admin_statuses = array_values(
+			array_filter(
+				(array) $raw_notify,
+				function( $s ) use ( $allowed_statuses ) {
+					return in_array( sanitize_key( $s ), $allowed_statuses, true );
+				}
+			)
+		);
+
 		$sanitized = array(
-			'woo_enabled'       => ! empty( $raw['woo_enabled'] ) ? 1 : 0,
-			'cf7_enabled'       => ! empty( $raw['cf7_enabled'] ) ? 1 : 0,
-			'wpforms_enabled'   => ! empty( $raw['wpforms_enabled'] ) ? 1 : 0,
-			'elementor_enabled' => ! empty( $raw['elementor_enabled'] ) ? 1 : 0,
-			'woo_checkout_otp'  => ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0,
+			'woo_enabled'               => ! empty( $raw['woo_enabled'] ) ? 1 : 0,
+			'cf7_enabled'               => ! empty( $raw['cf7_enabled'] ) ? 1 : 0,
+			'wpforms_enabled'           => ! empty( $raw['wpforms_enabled'] ) ? 1 : 0,
+			'elementor_enabled'         => ! empty( $raw['elementor_enabled'] ) ? 1 : 0,
+			'woo_checkout_otp'          => ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0,
+			'woo_admin_phone'           => sanitize_text_field( $raw['woo_admin_phone'] ?? '' ),
+			'woo_notify_admin_statuses' => $notify_admin_statuses,
 		);
 
 		// Note: template sub-arrays absent from POST are silently skipped (not written back).

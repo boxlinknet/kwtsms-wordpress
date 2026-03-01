@@ -37,6 +37,9 @@ class KwtSMS_Woo {
 		'on-hold'    => 'woo_shipped',
 		'completed'  => 'woo_completed',
 		'cancelled'  => 'woo_cancelled',
+		'pending'    => 'woo_pending',
+		'refunded'   => 'woo_refunded',
+		'failed'     => 'woo_failed',
 	);
 
 	/**
@@ -139,6 +142,31 @@ class KwtSMS_Woo {
 			$message,
 			'woo_order'
 		);
+
+		// Admin SMS notification — send to configured admin phone(s) for selected statuses.
+		$admin_phone     = $this->plugin->settings->get( 'integrations.woo_admin_phone', '' );
+		$notify_statuses = $this->plugin->settings->get( 'integrations.woo_notify_admin_statuses', array() );
+		if ( ! empty( $admin_phone ) && in_array( $new_status, (array) $notify_statuses, true ) ) {
+			$admin_msg = sprintf(
+				/* translators: 1: order id 2: customer name 3: status 4: total */
+				__( 'New order #%1$s — %2$s — %3$s — %4$s', 'wp-kwtsms-otp' ),
+				$order->get_id(),
+				$order->get_formatted_billing_full_name(),
+				wc_get_order_status_name( $new_status ),
+				$order->get_formatted_order_total()
+			);
+			foreach ( array_map( 'trim', explode( ',', $admin_phone ) ) as $admin_p ) {
+				$normalized_admin = KwtSMS_API::normalize_phone( $admin_p );
+				if ( ! is_wp_error( $normalized_admin ) ) {
+					$this->plugin->api->send_sms(
+						$normalized_admin,
+						$this->plugin->settings->get( 'gateway.sender_id', '' ),
+						$admin_msg,
+						'woo_admin'
+					);
+				}
+			}
+		}
 	}
 
 	/**
