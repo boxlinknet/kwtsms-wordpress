@@ -2,8 +2,15 @@
 /**
  * WPForms Integration.
  *
- * Sends a confirmation SMS when a WPForms form is submitted.
- * Looks for a Phone field in the form data.
+ * Supports two modes, configurable per-site in the Integrations admin page:
+ *
+ *  - Notification mode (default): sends a confirmation SMS when a WPForms
+ *    form is submitted successfully. Looks for a Phone field in the form data.
+ *
+ *  - OTP Gate mode: blocks form processing until the visitor has verified their
+ *    phone number via an OTP code. The JS layer (form-otp.js) adds a hidden
+ *    input `kwtsms_form_verified_token`; this class verifies it server-side
+ *    via the `wpforms_process_initial_errors` filter.
  *
  * @package KwtSMS_OTP
  */
@@ -13,9 +20,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class KwtSMS_WPForms
  *
- * Hooks into the wpforms_process_complete action, which fires after WPForms
- * has validated and saved the submission. This guarantees we only send an SMS
- * for genuinely successful entries.
+ * Hooks into WPForms events to:
+ *  - (Notification mode) send a confirmation SMS via `wpforms_process_complete`.
+ *  - (Gate mode) inject a validation error via `wpforms_process_initial_errors`
+ *    when the OTP token is absent or unverified.
  *
  * Phone detection strategy:
  *  1. Any field whose WPForms type is 'phone'.
@@ -33,8 +41,12 @@ class KwtSMS_WPForms {
 	/**
 	 * Constructor.
 	 *
-	 * Registers the wpforms_process_complete hook so we can send a confirmation
-	 * SMS after every successful WPForms submission that contains a phone field.
+	 * Registers hooks based on the configured mode:
+	 *  - If wpforms_mode is 'gate', hooks `wpforms_process_initial_errors` to
+	 *    block unverified submissions early in the validation pipeline.
+	 *  - Otherwise (notification mode), hooks `wpforms_process_complete` to
+	 *    send a confirmation SMS after a successful submission.
+	 *
 	 * If the WPForms integration is disabled in settings, no hook is registered
 	 * and the class exits immediately.
 	 *
@@ -48,9 +60,47 @@ class KwtSMS_WPForms {
 			return;
 		}
 
-		// wpforms_process_complete fires after successful submission.
-		add_action( 'wpforms_process_complete', array( $this, 'send_confirmation_sms' ), 10, 4 );
+		$mode = $this->plugin->settings->get( 'integrations.wpforms_mode', 'notification' );
+
+		if ( 'gate' === $mode ) {
+			// Gate mode: inject a form-level error early in WPForms processing.
+			add_filter( 'wpforms_process_initial_errors', array( $this, 'gate_add_error' ), 10, 2 );
+		} else {
+			// Notification mode: wpforms_process_complete fires after successful submission.
+			add_action( 'wpforms_process_complete', array( $this, 'send_confirmation_sms' ), 10, 4 );
+		}
 	}
+
+	// =========================================================================
+	// Gate mode
+	// =========================================================================
+
+	/**
+	 * Gate mode — add a validation error if the OTP token is absent or unverified.
+	 *
+	 * Hooked to `wpforms_process_initial_errors`. The filter receives and must
+	 * return the errors array (keyed by field ID, value is error string). We
+	 * use the special key 'header' to show a form-level (non-field) error.
+	 *
+	 * @param array $errors    Existing errors array (field_id => message).
+	 * @param array $form_data WPForms form configuration array.
+	 *
+	 * @return array Possibly augmented errors array.
+	 */
+	public function gate_add_error( $errors, $form_data ) {
+		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) );
+
+		if ( empty( $token ) || ! $this->plugin->verify_form_token( $token ) ) {
+			$form_id            = absint( $form_data['id'] ?? 0 );
+			$errors[ $form_id ]['header'] = __( 'Please verify your phone number before submitting this form.', 'wp-kwtsms-otp' );
+		}
+
+		return $errors;
+	}
+
+	// =========================================================================
+	// Notification mode
+	// =========================================================================
 
 	/**
 	 * Send confirmation SMS after a WPForms submission.
@@ -89,6 +139,10 @@ class KwtSMS_WPForms {
 			'wpforms'
 		);
 	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
 
 	/**
 	 * Render the WPForms confirmation SMS from the saved template.

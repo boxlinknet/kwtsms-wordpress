@@ -81,6 +81,9 @@ class KwtSMS_Settings {
 			'wpforms_enabled'        => 1,
 			'elementor_enabled'      => 1,
 			'woo_checkout_otp'       => 0,
+			'cf7_mode'               => 'notification', // 'notification' | 'gate'
+			'wpforms_mode'           => 'notification', // 'notification' | 'gate'
+			'elementor_mode'         => 'notification', // 'notification' | 'gate'
 			'woo_processing'         => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your order #{order_id} has been confirmed. Total: {total}. Thank you!',

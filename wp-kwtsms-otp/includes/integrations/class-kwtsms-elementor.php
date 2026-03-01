@@ -2,8 +2,15 @@
 /**
  * Elementor Pro Forms Integration.
  *
- * Sends a confirmation SMS when an Elementor Pro form with a phone field
- * is submitted successfully.
+ * Supports two modes, configurable per-site in the Integrations admin page:
+ *
+ *  - Notification mode (default): sends a confirmation SMS when an Elementor
+ *    Pro form with a phone/tel field is submitted successfully.
+ *
+ *  - OTP Gate mode: blocks form processing until the visitor has verified their
+ *    phone number via an OTP code. The JS layer (form-otp.js) adds a hidden
+ *    input `kwtsms_form_verified_token`; this class verifies it server-side
+ *    via the `elementor_pro/forms/validation` action.
  *
  * @package KwtSMS_OTP
  */
@@ -13,9 +20,11 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class KwtSMS_Elementor
  *
- * Hooks into the elementor_pro/forms/new_record action, which fires after
- * Elementor Pro has validated and processed a form submission. We scan the
- * submitted fields for a telephone / phone field and send a confirmation SMS.
+ * Hooks into Elementor Pro Forms events to:
+ *  - (Notification mode) send a confirmation SMS via
+ *    `elementor_pro/forms/new_record`.
+ *  - (Gate mode) add a field-level validation error via
+ *    `elementor_pro/forms/validation` when the OTP token is absent or unverified.
  *
  * Phone detection strategy:
  *  1. Any field whose Elementor type is 'tel'.
@@ -34,10 +43,14 @@ class KwtSMS_Elementor {
 	/**
 	 * Constructor.
 	 *
-	 * Registers the elementor_pro/forms/new_record hook so we can send a
-	 * confirmation SMS after every successful Elementor Pro form submission
-	 * that contains a phone / tel field. If the Elementor integration is
-	 * disabled in settings, no hook is registered and the class exits immediately.
+	 * Registers hooks based on the configured mode:
+	 *  - If elementor_mode is 'gate', hooks `elementor_pro/forms/validation`
+	 *    to block unverified submissions.
+	 *  - Otherwise (notification mode), hooks `elementor_pro/forms/new_record`
+	 *    to send a confirmation SMS after a successful submission.
+	 *
+	 * If the Elementor integration is disabled in settings, no hook is registered
+	 * and the class exits immediately.
 	 *
 	 * @param KwtSMS_Plugin $plugin The main plugin instance.
 	 */
@@ -49,9 +62,68 @@ class KwtSMS_Elementor {
 			return;
 		}
 
-		// elementor_pro/forms/new_record fires after a successful Elementor form submission.
-		add_action( 'elementor_pro/forms/new_record', array( $this, 'send_confirmation_sms' ), 10, 2 );
+		$mode = $this->plugin->settings->get( 'integrations.elementor_mode', 'notification' );
+
+		if ( 'gate' === $mode ) {
+			// Gate mode: validate token during Elementor's validation pass.
+			add_action( 'elementor_pro/forms/validation', array( $this, 'gate_add_error' ), 10, 2 );
+		} else {
+			// Notification mode: fires after a successful Elementor form submission.
+			add_action( 'elementor_pro/forms/new_record', array( $this, 'send_confirmation_sms' ), 10, 2 );
+		}
 	}
+
+	// =========================================================================
+	// Gate mode
+	// =========================================================================
+
+	/**
+	 * Gate mode — add a validation error to the phone field if unverified.
+	 *
+	 * Hooked to `elementor_pro/forms/validation`. Elementor passes the record
+	 * and the AJAX handler by reference; errors are added via
+	 * `$ajax_handler->add_error( $field_id, $message )`.
+	 *
+	 * We target the first phone-like field in the form, or fall back to a
+	 * generic form-level error when no phone field is present.
+	 *
+	 * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record  Submitted form record.
+	 * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $handler The form AJAX handler.
+	 */
+	public function gate_add_error( $record, $handler ) {
+		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) );
+
+		if ( ! empty( $token ) && $this->plugin->verify_form_token( $token ) ) {
+			// Token is valid — allow submission to proceed.
+			return;
+		}
+
+		// Find the first phone-like field to attach the error to.
+		$fields       = $record->get( 'fields' );
+		$phone_field_id = null;
+
+		foreach ( $fields as $id => $field ) {
+			$type  = strtolower( $field['type'] ?? '' );
+			$title = strtolower( $field['title'] ?? '' );
+			if ( 'tel' === $type || 'phone' === $type || false !== strpos( $title, 'phone' ) ) {
+				$phone_field_id = $id;
+				break;
+			}
+		}
+
+		$error_msg = __( 'Please verify your phone number before submitting this form.', 'wp-kwtsms-otp' );
+
+		if ( null !== $phone_field_id ) {
+			$handler->add_error( $phone_field_id, $error_msg );
+		} else {
+			// No phone field found — add a generic form-level error.
+			$handler->add_error( 'form', $error_msg );
+		}
+	}
+
+	// =========================================================================
+	// Notification mode
+	// =========================================================================
 
 	/**
 	 * Send a confirmation SMS after an Elementor Pro form submission.
@@ -90,6 +162,10 @@ class KwtSMS_Elementor {
 			'elementor'
 		);
 	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
 
 	/**
 	 * Render the Elementor confirmation SMS from the saved template.

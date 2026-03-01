@@ -390,12 +390,24 @@ class KwtSMS_Admin {
 			)
 		);
 
+		// Validate mode values — only 'notification' or 'gate' are accepted.
+		$valid_modes = array( 'notification', 'gate' );
+
 		$sanitized = array(
 			'woo_enabled'               => ! empty( $raw['woo_enabled'] ) ? 1 : 0,
 			'cf7_enabled'               => ! empty( $raw['cf7_enabled'] ) ? 1 : 0,
 			'wpforms_enabled'           => ! empty( $raw['wpforms_enabled'] ) ? 1 : 0,
 			'elementor_enabled'         => ! empty( $raw['elementor_enabled'] ) ? 1 : 0,
 			'woo_checkout_otp'          => ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0,
+			'cf7_mode'                  => in_array( $raw['cf7_mode'] ?? '', $valid_modes, true )
+				? $raw['cf7_mode']
+				: 'notification',
+			'wpforms_mode'              => in_array( $raw['wpforms_mode'] ?? '', $valid_modes, true )
+				? $raw['wpforms_mode']
+				: 'notification',
+			'elementor_mode'            => in_array( $raw['elementor_mode'] ?? '', $valid_modes, true )
+				? $raw['elementor_mode']
+				: 'notification',
 			'woo_admin_phone'           => sanitize_text_field( wp_unslash( $raw['woo_admin_phone'] ?? '' ) ),
 			'woo_notify_admin_statuses' => $notify_admin_statuses,
 		);
