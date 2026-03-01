@@ -111,7 +111,7 @@ foreach ( $all_countries as $cc ) {
 					</label>
 					<?php endforeach; ?>
 					<p class="description">
-						<?php esc_html_e( 'Users in unchecked roles will skip OTP and log in directly. Leave all unchecked to require OTP for all users (default behavior).', 'wp-kwtsms-otp' ); ?>
+						<?php esc_html_e( 'Check roles that must complete OTP verification. Users in unchecked roles skip OTP and log in directly. Leave all unchecked to require OTP for everyone (default). On multisite, super admins are treated as administrators for this check.', 'wp-kwtsms-otp' ); ?>
 					</p>
 				</td>
 			</tr>

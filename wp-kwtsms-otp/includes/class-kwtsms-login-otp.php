@@ -88,7 +88,13 @@ class KwtSMS_Login_OTP {
 		$required_roles = $this->plugin->settings->get( 'general.otp_required_roles', array() );
 		if ( ! empty( $required_roles ) ) {
 			$user_roles = $user->roles ?? array();
-			$intersect  = array_intersect( $user_roles, (array) $required_roles );
+			// On multisite, super admins have an empty roles array.
+			// Treat them as 'administrator' so they are subject to the same
+			// OTP enforcement as regular administrators.
+			if ( empty( $user_roles ) && function_exists( 'is_super_admin' ) && is_super_admin( $user->ID ) ) {
+				$user_roles = array( 'administrator' );
+			}
+			$intersect = array_intersect( $user_roles, (array) $required_roles );
 			if ( empty( $intersect ) ) {
 				// User's role is not in the required list — bypass OTP, allow direct login.
 				return $user;
@@ -453,6 +459,25 @@ class KwtSMS_Login_OTP {
 		}
 
 		$user_id = (int) $users[0];
+
+		// Per-role enforcement: check whether this user's role requires OTP.
+		// If a non-empty role list is configured and the user's role is not in
+		// it, skip OTP entirely and log them in directly via auth cookies.
+		$required_roles = $this->plugin->settings->get( 'general.otp_required_roles', array() );
+		if ( ! empty( $required_roles ) ) {
+			$user_obj   = get_userdata( $user_id );
+			$user_roles = ( $user_obj ? $user_obj->roles : array() ) ?? array();
+			// On multisite, super admins have an empty roles array —
+			// treat them as 'administrator' for the purpose of this check.
+			if ( empty( $user_roles ) && function_exists( 'is_super_admin' ) && is_super_admin( $user_id ) ) {
+				$user_roles = array( 'administrator' );
+			}
+			$intersect = array_intersect( $user_roles, (array) $required_roles );
+			if ( empty( $intersect ) ) {
+				// User's role is not subject to OTP — issue auth cookies directly.
+				$this->issue_auth_and_redirect( $user_id );
+			}
+		}
 
 		// Per-account rate-limit check now that user_id is known.
 		if ( $this->plugin->otp->is_user_rate_limited( $user_id, 'passwordless', $normalized ) ) {
