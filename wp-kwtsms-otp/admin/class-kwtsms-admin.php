@@ -66,8 +66,8 @@ class KwtSMS_Admin {
 		);
 
 		$this->page_hooks[] = add_menu_page(
-			__( 'kwtSMS OTP', 'wp-kwtsms-otp' ),
-			__( 'kwtSMS OTP', 'wp-kwtsms-otp' ),
+			__( 'kwtSMS', 'wp-kwtsms-otp' ),
+			__( 'kwtSMS', 'wp-kwtsms-otp' ),
 			'manage_options',
 			'kwtsms-otp',
 			array( $this, 'render_general_page' ),
@@ -534,7 +534,7 @@ class KwtSMS_Admin {
 		if ( ! is_ssl() ) {
 			printf(
 				'<div class="notice notice-warning inline is-dismissible"><p><strong>%s</strong> %s</p></div>',
-				esc_html__( 'kwtSMS OTP Warning:', 'wp-kwtsms-otp' ),
+				esc_html__( 'kwtSMS Warning:', 'wp-kwtsms-otp' ),
 				esc_html__( 'Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security.', 'wp-kwtsms-otp' )
 			);
 		}
@@ -545,7 +545,7 @@ class KwtSMS_Admin {
 		if ( empty( $username ) || empty( $password ) ) {
 			printf(
 				'<div class="notice notice-error inline is-dismissible"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
-				esc_html__( 'kwtSMS OTP:', 'wp-kwtsms-otp' ),
+				esc_html__( 'kwtSMS:', 'wp-kwtsms-otp' ),
 				esc_html__( 'API credentials are not configured. The plugin will not be able to send SMS messages.', 'wp-kwtsms-otp' ),
 				esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ),
 				esc_html__( 'Configure now →', 'wp-kwtsms-otp' )
@@ -556,7 +556,7 @@ class KwtSMS_Admin {
 		if ( $this->plugin->settings->get( 'gateway.test_mode', 1 ) ) {
 			printf(
 				'<div class="notice notice-info inline is-dismissible"><p>%s</p></div>',
-				esc_html__( 'kwtSMS OTP is in Test Mode. SMS messages will be queued but not delivered. OTP codes are written to wp-content/debug.log.', 'wp-kwtsms-otp' )
+				esc_html__( 'kwtSMS is in Test Mode. SMS messages will be queued but not delivered. OTP codes are written to wp-content/debug.log.', 'wp-kwtsms-otp' )
 			);
 		}
 	}
@@ -711,7 +711,7 @@ class KwtSMS_Admin {
 	public function register_dashboard_widget() {
 		wp_add_dashboard_widget(
 			'kwtsms_otp_dashboard_widget',
-			__( 'kwtSMS OTP', 'wp-kwtsms-otp' ),
+			__( 'kwtSMS', 'wp-kwtsms-otp' ),
 			array( $this, 'render_dashboard_widget' )
 		);
 	}

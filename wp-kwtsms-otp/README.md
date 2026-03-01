@@ -1,4 +1,4 @@
-# kwtsms OTP Authentication for WordPress
+# kwtSMS OTP Login and SMS Notifications for WordPress
 
 Secure, convenient SMS-based authentication for WordPress — powered by the [kwtsms](https://www.kwtsms.com/) gateway. Replace passwords with one-time codes, protect WooCommerce checkouts, send order updates by SMS, and give your customers the fastest login experience possible.
 
@@ -418,6 +418,11 @@ Deleting the plugin from **Plugins → Delete** removes all plugin data:
 ---
 
 ## Changelog
+
+### 2.1.0
+- Plugin renamed to **kwtSMS OTP Login and SMS Notifications** for clarity
+- Admin menu and page headings updated from "kwtSMS OTP" to "kwtSMS"
+- Added WooCommerce HPOS (High-Performance Order Storage) compatibility declaration — silences WooCommerce 8.5+ admin notice
 
 ### 2.0.0
 - WooCommerce integration: order status SMS, checkout OTP gate, registration phone field

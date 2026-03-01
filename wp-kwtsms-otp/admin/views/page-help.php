@@ -23,7 +23,7 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 
 	<div class="kwtsms-admin-header">
 		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'kwtSMS OTP — Help &amp; Support', 'wp-kwtsms-otp' ); ?></h1>
+		<h1><?php esc_html_e( 'kwtSMS — Help &amp; Support', 'wp-kwtsms-otp' ); ?></h1>
 	</div>
 
 	<!-- ===== Plugin Status ===== -->
@@ -120,7 +120,7 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Configure Gateway Settings', 'wp-kwtsms-otp' ); ?></strong><br>
-				<?php esc_html_e( 'Go to kwtSMS OTP → Gateway. Enter your API username and password, then click "Save & Verify Credentials" to load your approved Sender IDs. Select a Sender ID and save.', 'wp-kwtsms-otp' ); ?>
+				<?php esc_html_e( 'Go to kwtSMS → Gateway. Enter your API username and password, then click "Save & Verify Credentials" to load your approved Sender IDs. Select a Sender ID and save.', 'wp-kwtsms-otp' ); ?>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway →', 'wp-kwtsms-otp' ); ?></a>
 			</li>
 			<li>
