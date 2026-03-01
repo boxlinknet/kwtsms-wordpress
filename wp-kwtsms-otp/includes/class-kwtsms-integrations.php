@@ -53,6 +53,12 @@ class KwtSMS_Integrations {
 		if ( class_exists( 'WooCommerce' ) ) {
 			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-woo.php';
 			new KwtSMS_Woo( $this->plugin );
+
+			// Per-order custom SMS metabox (admin only to avoid frontend overhead).
+			if ( is_admin() ) {
+				require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-woo-metabox.php';
+				new KwtSMS_Woo_Metabox( $this->plugin->api, $this->plugin->settings );
+			}
 		}
 
 		if ( class_exists( 'WPCF7' ) ) {

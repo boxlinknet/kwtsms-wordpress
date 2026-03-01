@@ -99,6 +99,23 @@ class KwtSMS_Settings {
 				'en'      => '{site_name}: Your order #{order_id} has been cancelled. Contact us if this was unexpected.',
 				'ar'      => '{site_name}: تم إلغاء طلبك رقم #{order_id}. تواصل معنا إذا لم تطلب ذلك.',
 			),
+			'woo_pending'            => array(
+				'enabled' => 0,
+				'en'      => '{site_name}: We received your order #{order_id}. Awaiting payment.',
+				'ar'      => 'موقع {site_name}: استلمنا طلبك رقم #{order_id}. بانتظار الدفع.',
+			),
+			'woo_refunded'           => array(
+				'enabled' => 0,
+				'en'      => '{site_name}: Your order #{order_id} has been refunded. Contact us for details.',
+				'ar'      => 'موقع {site_name}: تم استرداد مبلغ طلبك رقم #{order_id}. تواصل معنا للتفاصيل.',
+			),
+			'woo_failed'             => array(
+				'enabled' => 0,
+				'en'      => '{site_name}: Payment for your order #{order_id} failed. Please try again.',
+				'ar'      => 'موقع {site_name}: فشل دفع طلبك رقم #{order_id}. يرجى المحاولة مرة أخرى.',
+			),
+			'woo_admin_phone'           => '',
+			'woo_notify_admin_statuses' => array(),
 			'cf7_confirmation'       => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your form "{form_name}" has been submitted successfully. Thank you!',
@@ -230,6 +247,7 @@ class KwtSMS_Settings {
 
 		$template_keys = array(
 			'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled',
+			'woo_pending', 'woo_refunded', 'woo_failed',
 			'cf7_confirmation', 'wpforms_confirmation', 'elementor_confirmation',
 		);
 

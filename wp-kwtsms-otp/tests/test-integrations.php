@@ -13,6 +13,39 @@ use Brain\Monkey\Functions;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * Minimal WC_Order stub so getMockBuilder can create WC_Order mocks without
+ * a WooCommerce installation. Only method stubs are needed — actual method
+ * bodies are overridden by each test via willReturn/willReturnCallback.
+ */
+if ( ! class_exists( 'WC_Order' ) ) {
+	// phpcs:ignore
+	class WC_Order {
+		public function get_customer_id() {}
+		public function get_billing_phone() {}
+		public function get_order_number() {}
+		public function get_total() {}
+		public function get_billing_first_name() {}
+		public function get_billing_last_name() {}
+		public function get_id() {}
+		public function get_formatted_billing_full_name() {}
+		public function get_formatted_order_total() {}
+		public function get_meta( $key ) {}
+	}
+}
+
+/**
+ * Minimal WPCF7_ContactForm stub so getMockBuilder can create CF7 mocks without
+ * a Contact Form 7 installation.
+ */
+if ( ! class_exists( 'WPCF7_ContactForm' ) ) {
+	// phpcs:ignore
+	class WPCF7_ContactForm {
+		public function id() {}
+		public function title() {}
+	}
+}
+
+/**
  * Class Test_KwtSMS_Woo
  */
 class Test_KwtSMS_Woo extends TestCase {
@@ -515,18 +548,24 @@ class Test_KwtSMS_Integrations_Settings extends TestCase {
 		$this->assertArrayHasKey( 'wpforms_enabled',        $defaults );
 		$this->assertArrayHasKey( 'elementor_enabled',      $defaults );
 		$this->assertArrayHasKey( 'woo_checkout_otp',       $defaults );
-		$this->assertArrayHasKey( 'woo_processing',         $defaults );
-		$this->assertArrayHasKey( 'woo_shipped',            $defaults );
-		$this->assertArrayHasKey( 'woo_completed',          $defaults );
-		$this->assertArrayHasKey( 'woo_cancelled',          $defaults );
-		$this->assertArrayHasKey( 'cf7_confirmation',       $defaults );
-		$this->assertArrayHasKey( 'wpforms_confirmation',   $defaults );
-		$this->assertArrayHasKey( 'elementor_confirmation', $defaults );
+		$this->assertArrayHasKey( 'woo_processing',            $defaults );
+		$this->assertArrayHasKey( 'woo_shipped',               $defaults );
+		$this->assertArrayHasKey( 'woo_completed',             $defaults );
+		$this->assertArrayHasKey( 'woo_cancelled',             $defaults );
+		$this->assertArrayHasKey( 'woo_pending',               $defaults );
+		$this->assertArrayHasKey( 'woo_refunded',              $defaults );
+		$this->assertArrayHasKey( 'woo_failed',                $defaults );
+		$this->assertArrayHasKey( 'woo_admin_phone',           $defaults );
+		$this->assertArrayHasKey( 'woo_notify_admin_statuses', $defaults );
+		$this->assertArrayHasKey( 'cf7_confirmation',          $defaults );
+		$this->assertArrayHasKey( 'wpforms_confirmation',      $defaults );
+		$this->assertArrayHasKey( 'elementor_confirmation',    $defaults );
 	}
 
 	public function test_integration_template_keys_have_en_ar_enabled() {
 		$template_keys = array(
 			'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled',
+			'woo_pending', 'woo_refunded', 'woo_failed',
 			'cf7_confirmation', 'wpforms_confirmation', 'elementor_confirmation',
 		);
 		$defaults = KwtSMS_Settings::DEFAULTS['integrations'];
@@ -543,7 +582,7 @@ class Test_KwtSMS_Integrations_Settings extends TestCase {
 		$settings  = new KwtSMS_Settings();
 		$templates = $settings->get_all_integration_templates();
 		$this->assertIsArray( $templates );
-		$this->assertCount( 7, $templates );
+		$this->assertCount( 10, $templates );
 		$this->assertArrayHasKey( 'woo_processing', $templates );
 		$this->assertArrayHasKey( 'cf7_confirmation', $templates );
 		$this->assertArrayHasKey( 'elementor_confirmation', $templates );
@@ -600,6 +639,11 @@ class Test_KwtSMS_Integrations_Page extends TestCase {
 		$this->assertStringContainsString( 'woo_shipped', $src );
 		$this->assertStringContainsString( 'woo_completed', $src );
 		$this->assertStringContainsString( 'woo_cancelled', $src );
+		$this->assertStringContainsString( 'woo_pending', $src );
+		$this->assertStringContainsString( 'woo_refunded', $src );
+		$this->assertStringContainsString( 'woo_failed', $src );
+		$this->assertStringContainsString( 'woo_admin_phone', $src );
+		$this->assertStringContainsString( 'woo_notify_admin_statuses', $src );
 	}
 
 	// =========================================================================
@@ -783,14 +827,15 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 
 		// Stub WC_Order.
 		$order = $this->getMockBuilder( 'WC_Order' )
-			->addMethods( array(
+			->onlyMethods( array(
 				'get_customer_id', 'get_billing_phone',
 				'get_order_number', 'get_total',
 				'get_billing_first_name', 'get_billing_last_name',
 			) )
 			->getMock();
 		$order->method( 'get_customer_id' )->willReturn( 0 );
-		$order->method( 'get_billing_phone' )->willReturn( '' );
+		// Return a valid billing phone — get_customer_id is 0 so user-meta path is skipped.
+		$order->method( 'get_billing_phone' )->willReturn( '96599220322' );
 		$order->method( 'get_order_number' )->willReturn( '42' );
 		$order->method( 'get_total' )->willReturn( 100.00 );
 		$order->method( 'get_billing_first_name' )->willReturn( 'Jane' );
@@ -798,10 +843,6 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 
 		// Stub WC functions used inside on_order_status_changed.
 		Functions\when( 'wc_price' )->alias( function ( $amount ) { return (string) $amount; } );
-
-		// Inject a known phone directly via get_user_meta stub: not possible since
-		// get_user_meta is already mocked to return ''. Instead stub billing phone.
-		Functions\when( 'get_user_meta' )->justReturn( '96599220322' );
 
 		$woo->on_order_status_changed( 42, 'pending', 'processing', $order );
 
@@ -856,7 +897,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 		$woo = new KwtSMS_Woo( $plugin );
 
 		$order = $this->getMockBuilder( 'WC_Order' )
-			->addMethods( array(
+			->onlyMethods( array(
 				'get_customer_id', 'get_billing_phone',
 				'get_order_number', 'get_total',
 				'get_billing_first_name', 'get_billing_last_name',
@@ -946,7 +987,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 
 		// Stub the CF7 form object.
 		$cf7_form = $this->getMockBuilder( 'WPCF7_ContactForm' )
-			->addMethods( array( 'title' ) )
+			->onlyMethods( array( 'title' ) )
 			->getMock();
 		$cf7_form->method( 'title' )->willReturn( 'My Enquiry Form' );
 
@@ -1116,7 +1157,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 		$this->assertContains( 'wpcf7_mail_sent', $this->registered_actions );
 
 		$cf7_form = $this->getMockBuilder( 'WPCF7_ContactForm' )
-			->addMethods( array( 'title' ) )
+			->onlyMethods( array( 'title' ) )
 			->getMock();
 		$cf7_form->method( 'title' )->willReturn( 'My Form' );
 
@@ -1180,6 +1221,425 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$plugin->settings = $settings;
+		$plugin->api      = $api_mock;
+
+		return $plugin;
+	}
+}
+
+/**
+ * Class Test_KwtSMS_Woo_v230
+ *
+ * Tests for v2.3.0 additions:
+ *   - SMS for pending, refunded, failed order statuses
+ *   - Admin phone notification sent when status is in notify list
+ *   - Admin phone notification NOT sent when status is NOT in notify list
+ */
+class Test_KwtSMS_Woo_v230 extends TestCase {
+
+	/**
+	 * Captured add_action hooks.
+	 *
+	 * @var string[]
+	 */
+	private $registered_actions = array();
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+
+		$this->registered_actions = array();
+
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'update_option' )->justReturn( true );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'sanitize_key' )->alias( function ( $v ) {
+			return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $v ) );
+		} );
+		Functions\when( 'wp_unslash' )->alias( function ( $v ) { return $v; } );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
+		Functions\when( 'get_user_meta' )->justReturn( '96599220322' );
+		Functions\when( 'get_bloginfo' )->alias( function ( $show ) {
+			return ( 'name' === $show ) ? 'TestSite' : '';
+		} );
+		Functions\when( 'is_rtl' )->justReturn( false );
+		Functions\when( 'wc_price' )->alias( function ( $amount ) { return (string) $amount; } );
+
+		Functions\when( 'add_action' )->alias( function ( $hook ) {
+			$this->registered_actions[] = $hook;
+			return null;
+		} );
+		Functions\when( 'add_filter' )->justReturn( null );
+
+		// Stub WordPress i18n function used in admin notification sprintf.
+		Functions\when( '__' )->alias( function ( $text, $domain = '' ) { return $text; } );
+
+		// Stub WooCommerce helper used in admin notification message.
+		Functions\when( 'wc_get_order_status_name' )->alias( function ( $status ) { return ucfirst( $status ); } );
+
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	// =========================================================================
+	// Test 1 — pending status sends SMS via woo_pending template
+	// =========================================================================
+
+	/**
+	 * Mock order with status 'pending', assert send_sms() is called with
+	 * the woo_pending template's message (placeholders replaced).
+	 */
+	public function test_on_order_status_changed_sends_sms_for_pending_status() {
+		$sent_messages = array();
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone, $sender_id, $message, $context ) use ( &$sent_messages ) {
+				$sent_messages[] = array( 'message' => $message, 'context' => $context );
+			}
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.woo_enabled'          => 1,
+				'integrations.woo_checkout_otp'     => 0,
+				'integrations.woo_admin_phone'      => '',
+				'integrations.woo_notify_admin_statuses' => array(),
+				'gateway.sender_id'                 => 'TESTSENDER',
+			),
+			array(
+				'woo_pending' => array(
+					'enabled' => 1,
+					'en'      => '{site_name}: We received your order #{order_id}. Awaiting payment.',
+					'ar'      => '',
+				),
+			),
+			$api
+		);
+
+		$woo   = new KwtSMS_Woo( $plugin );
+		$order = $this->make_order_stub( '77', 50.0, 'Jane', 'Smith' );
+
+		$woo->on_order_status_changed( 77, 'checkout-draft', 'pending', $order );
+
+		$this->assertNotEmpty( $sent_messages, 'send_sms was not called for pending status.' );
+		$this->assertStringContainsString( 'TestSite', $sent_messages[0]['message'] );
+		$this->assertStringContainsString( '77', $sent_messages[0]['message'] );
+		$this->assertStringNotContainsString( '{order_id}', $sent_messages[0]['message'] );
+		$this->assertStringNotContainsString( '{site_name}', $sent_messages[0]['message'] );
+	}
+
+	// =========================================================================
+	// Test 2 — refunded status sends SMS via woo_refunded template
+	// =========================================================================
+
+	/**
+	 * Mock order with status 'refunded', assert send_sms() is called with
+	 * the woo_refunded template's message.
+	 */
+	public function test_on_order_status_changed_sends_sms_for_refunded_status() {
+		$sent_messages = array();
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone, $sender_id, $message, $context ) use ( &$sent_messages ) {
+				$sent_messages[] = array( 'message' => $message, 'context' => $context );
+			}
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.woo_enabled'          => 1,
+				'integrations.woo_checkout_otp'     => 0,
+				'integrations.woo_admin_phone'      => '',
+				'integrations.woo_notify_admin_statuses' => array(),
+				'gateway.sender_id'                 => 'TESTSENDER',
+			),
+			array(
+				'woo_refunded' => array(
+					'enabled' => 1,
+					'en'      => '{site_name}: Your order #{order_id} has been refunded.',
+					'ar'      => '',
+				),
+			),
+			$api
+		);
+
+		$woo   = new KwtSMS_Woo( $plugin );
+		$order = $this->make_order_stub( '88', 75.0, 'Ali', 'Hassan' );
+
+		$woo->on_order_status_changed( 88, 'completed', 'refunded', $order );
+
+		$this->assertNotEmpty( $sent_messages, 'send_sms was not called for refunded status.' );
+		$this->assertStringContainsString( 'TestSite', $sent_messages[0]['message'] );
+		$this->assertStringContainsString( '88', $sent_messages[0]['message'] );
+		$this->assertStringContainsString( 'refunded', $sent_messages[0]['message'] );
+	}
+
+	// =========================================================================
+	// Test 3 — failed status sends SMS via woo_failed template
+	// =========================================================================
+
+	/**
+	 * Mock order with status 'failed', assert send_sms() is called with
+	 * the woo_failed template's message.
+	 */
+	public function test_on_order_status_changed_sends_sms_for_failed_status() {
+		$sent_messages = array();
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone, $sender_id, $message, $context ) use ( &$sent_messages ) {
+				$sent_messages[] = array( 'message' => $message, 'context' => $context );
+			}
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.woo_enabled'          => 1,
+				'integrations.woo_checkout_otp'     => 0,
+				'integrations.woo_admin_phone'      => '',
+				'integrations.woo_notify_admin_statuses' => array(),
+				'gateway.sender_id'                 => 'TESTSENDER',
+			),
+			array(
+				'woo_failed' => array(
+					'enabled' => 1,
+					'en'      => '{site_name}: Payment for your order #{order_id} failed. Please try again.',
+					'ar'      => '',
+				),
+			),
+			$api
+		);
+
+		$woo   = new KwtSMS_Woo( $plugin );
+		$order = $this->make_order_stub( '99', 120.0, 'Sara', 'Lee' );
+
+		$woo->on_order_status_changed( 99, 'pending', 'failed', $order );
+
+		$this->assertNotEmpty( $sent_messages, 'send_sms was not called for failed status.' );
+		$this->assertStringContainsString( 'TestSite', $sent_messages[0]['message'] );
+		$this->assertStringContainsString( '99', $sent_messages[0]['message'] );
+		$this->assertStringContainsString( 'failed', $sent_messages[0]['message'] );
+	}
+
+	// =========================================================================
+	// Test 4 — admin notification sent when status is in notify list
+	// =========================================================================
+
+	/**
+	 * When admin phone is set and the new status is in woo_notify_admin_statuses,
+	 * send_sms() must be called a second time with context 'woo_admin'.
+	 */
+	public function test_admin_phone_notification_sent_when_status_in_notify_list() {
+		$sent_contexts = array();
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms', 'normalize_phone' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone, $sender_id, $message, $context ) use ( &$sent_contexts ) {
+				$sent_contexts[] = $context;
+			}
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.woo_enabled'               => 1,
+				'integrations.woo_checkout_otp'          => 0,
+				'integrations.woo_admin_phone'           => '96599220399',
+				'integrations.woo_notify_admin_statuses' => array( 'processing' ),
+				'gateway.sender_id'                      => 'TESTSENDER',
+			),
+			array(
+				'woo_processing' => array(
+					'enabled' => 1,
+					'en'      => '{site_name}: Order #{order_id} confirmed.',
+					'ar'      => '',
+				),
+			),
+			$api
+		);
+
+		$woo   = new KwtSMS_Woo( $plugin );
+		$order = $this->make_order_stub_with_admin_methods( '55', 200.0, 'Bob', 'Marley' );
+
+		$woo->on_order_status_changed( 55, 'pending', 'processing', $order );
+
+		// Customer SMS + admin SMS = 2 calls.
+		$this->assertContains( 'woo_order', $sent_contexts, 'Customer SMS context woo_order expected.' );
+		$this->assertContains( 'woo_admin', $sent_contexts, 'Admin SMS context woo_admin expected.' );
+	}
+
+	// =========================================================================
+	// Test 5 — admin notification NOT sent when status NOT in notify list
+	// =========================================================================
+
+	/**
+	 * When admin phone is set but the new status is NOT in woo_notify_admin_statuses,
+	 * send_sms() must be called only once (for the customer), not for the admin.
+	 */
+	public function test_admin_phone_notification_not_sent_when_status_not_in_notify_list() {
+		$sent_contexts = array();
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone, $sender_id, $message, $context ) use ( &$sent_contexts ) {
+				$sent_contexts[] = $context;
+			}
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.woo_enabled'               => 1,
+				'integrations.woo_checkout_otp'          => 0,
+				'integrations.woo_admin_phone'           => '96599220399',
+				// Only 'cancelled' in the list — 'processing' should NOT trigger admin SMS.
+				'integrations.woo_notify_admin_statuses' => array( 'cancelled' ),
+				'gateway.sender_id'                      => 'TESTSENDER',
+			),
+			array(
+				'woo_processing' => array(
+					'enabled' => 1,
+					'en'      => '{site_name}: Order #{order_id} confirmed.',
+					'ar'      => '',
+				),
+			),
+			$api
+		);
+
+		$woo   = new KwtSMS_Woo( $plugin );
+		$order = $this->make_order_stub( '66', 150.0, 'Tom', 'Jones' );
+
+		$woo->on_order_status_changed( 66, 'pending', 'processing', $order );
+
+		// Only the customer SMS should be sent.
+		$this->assertContains( 'woo_order', $sent_contexts, 'Customer SMS should still be sent.' );
+		$this->assertNotContains( 'woo_admin', $sent_contexts, 'Admin SMS must NOT be sent when status not in notify list.' );
+	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
+
+	/**
+	 * Build a minimal WC_Order stub for status-change tests.
+	 *
+	 * @param string $order_number   Order number (string).
+	 * @param float  $total          Order total.
+	 * @param string $first_name     Customer first name.
+	 * @param string $last_name      Customer last name.
+	 *
+	 * @return \WC_Order (mock)
+	 */
+	private function make_order_stub( $order_number, $total, $first_name, $last_name ) {
+		$order = $this->getMockBuilder( 'WC_Order' )
+			->onlyMethods( array(
+				'get_customer_id', 'get_billing_phone',
+				'get_order_number', 'get_total',
+				'get_billing_first_name', 'get_billing_last_name',
+			) )
+			->getMock();
+
+		$order->method( 'get_customer_id' )->willReturn( 0 );
+		// Return a valid phone so on_order_status_changed doesn't bail with "No phone".
+		$order->method( 'get_billing_phone' )->willReturn( '96599220322' );
+		$order->method( 'get_order_number' )->willReturn( $order_number );
+		$order->method( 'get_total' )->willReturn( $total );
+		$order->method( 'get_billing_first_name' )->willReturn( $first_name );
+		$order->method( 'get_billing_last_name' )->willReturn( $last_name );
+
+		return $order;
+	}
+
+	/**
+	 * Build a WC_Order stub that also exposes get_id() and admin-notification methods.
+	 *
+	 * Required for the admin notification test since on_order_status_changed calls
+	 * $order->get_id(), $order->get_formatted_billing_full_name(), and
+	 * $order->get_formatted_order_total() for the admin SMS message.
+	 *
+	 * @param string $order_number Order number string.
+	 * @param float  $total        Order total.
+	 * @param string $first_name   Customer first name.
+	 * @param string $last_name    Customer last name.
+	 *
+	 * @return \WC_Order (mock)
+	 */
+	private function make_order_stub_with_admin_methods( $order_number, $total, $first_name, $last_name ) {
+		$order = $this->getMockBuilder( 'WC_Order' )
+			->onlyMethods( array(
+				'get_customer_id', 'get_billing_phone',
+				'get_order_number', 'get_total',
+				'get_billing_first_name', 'get_billing_last_name',
+				'get_id', 'get_formatted_billing_full_name', 'get_formatted_order_total',
+			) )
+			->getMock();
+
+		$order->method( 'get_customer_id' )->willReturn( 0 );
+		// Return a valid phone so on_order_status_changed doesn't bail with "No phone".
+		$order->method( 'get_billing_phone' )->willReturn( '96599220322' );
+		$order->method( 'get_order_number' )->willReturn( $order_number );
+		$order->method( 'get_total' )->willReturn( $total );
+		$order->method( 'get_billing_first_name' )->willReturn( $first_name );
+		$order->method( 'get_billing_last_name' )->willReturn( $last_name );
+		$order->method( 'get_id' )->willReturn( (int) $order_number );
+		$order->method( 'get_formatted_billing_full_name' )->willReturn( $first_name . ' ' . $last_name );
+		$order->method( 'get_formatted_order_total' )->willReturn( '$' . $total );
+
+		return $order;
+	}
+
+	/**
+	 * Build a KwtSMS_Plugin mock with configurable settings and integration templates.
+	 *
+	 * @param array       $settings_map          Dot-notation key => value map.
+	 * @param array       $integration_templates Return value for get_all_integration_templates().
+	 * @param object|null $api_mock              Optional API mock.
+	 *
+	 * @return KwtSMS_Plugin
+	 */
+	private function make_plugin_stub(
+		array $settings_map = array(),
+		array $integration_templates = array(),
+		$api_mock = null
+	) {
+		$settings = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'get', 'get_all_templates', 'get_all_integration_templates' ) )
+			->getMock();
+
+		$settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) use ( $settings_map ) {
+				return array_key_exists( $key, $settings_map ) ? $settings_map[ $key ] : $default;
+			}
+		);
+
+		$settings->method( 'get_all_templates' )->willReturn( array() );
+		$settings->method( 'get_all_integration_templates' )->willReturn( $integration_templates );
+
+		if ( null === $api_mock ) {
+			$api_mock = $this->getMockBuilder( 'stdClass' )
+				->addMethods( array( 'send_sms' ) )
+				->getMock();
+			$api_mock->method( 'send_sms' )->willReturn( null );
+		}
+
+		/** @var KwtSMS_Plugin $plugin */
+		$plugin           = $this->getMockBuilder( 'KwtSMS_Plugin' )
+			->disableOriginalConstructor()
+			->getMock();
 		$plugin->settings = $settings;
 		$plugin->api      = $api_mock;
 

@@ -147,6 +147,21 @@ $templates = $settings->get_all_integration_templates();
 					'description'  => __( 'Sent when an order is Cancelled.', 'wp-kwtsms-otp' ),
 					'placeholders' => '{order_id}, {site_name}, {customer_name}',
 				),
+				'woo_pending'    => array(
+					'label'        => __( 'Order Pending Payment', 'wp-kwtsms-otp' ),
+					'description'  => __( 'Sent when an order is created with Pending Payment status (disabled by default).', 'wp-kwtsms-otp' ),
+					'placeholders' => '{order_id}, {site_name}, {customer_name}',
+				),
+				'woo_refunded'   => array(
+					'label'        => __( 'Order Refunded', 'wp-kwtsms-otp' ),
+					'description'  => __( 'Sent when an order is Refunded (disabled by default).', 'wp-kwtsms-otp' ),
+					'placeholders' => '{order_id}, {site_name}, {customer_name}',
+				),
+				'woo_failed'     => array(
+					'label'        => __( 'Order Payment Failed', 'wp-kwtsms-otp' ),
+					'description'  => __( 'Sent when an order payment Fails (disabled by default).', 'wp-kwtsms-otp' ),
+					'placeholders' => '{order_id}, {site_name}, {customer_name}',
+				),
 			);
 
 			foreach ( $woo_template_defs as $key => $def ) :
@@ -216,6 +231,56 @@ $templates = $settings->get_all_integration_templates();
 				</div>
 			</div>
 			<?php endforeach; ?>
+
+			<!-- Admin SMS notification settings -->
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
+					<h3><?php esc_html_e( 'Admin SMS Notifications', 'wp-kwtsms-otp' ); ?></h3>
+				</div>
+				<p class="description">
+					<?php esc_html_e( 'Send an SMS to a store admin phone number when selected order status changes occur.', 'wp-kwtsms-otp' ); ?>
+				</p>
+				<table class="form-table" style="margin-top:12px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Admin Phone Number(s)', 'wp-kwtsms-otp' ); ?></th>
+						<td>
+							<input type="text"
+								name="kwtsms_otp_integrations[woo_admin_phone]"
+								value="<?php echo esc_attr( $int['woo_admin_phone'] ?? '' ); ?>"
+								class="regular-text"
+								placeholder="<?php esc_attr_e( 'e.g. 96599220322, 96599220333', 'wp-kwtsms-otp' ); ?>" />
+							<p class="description"><?php esc_html_e( 'Comma-separated list of phone numbers (with country code) to receive admin notifications.', 'wp-kwtsms-otp' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Notify admin for statuses', 'wp-kwtsms-otp' ); ?></th>
+						<td>
+							<?php
+							$admin_notify_statuses = $int['woo_notify_admin_statuses'] ?? array();
+							$status_options        = array(
+								'processing' => __( 'Processing', 'wp-kwtsms-otp' ),
+								'on-hold'    => __( 'On-Hold (Shipped)', 'wp-kwtsms-otp' ),
+								'completed'  => __( 'Completed', 'wp-kwtsms-otp' ),
+								'cancelled'  => __( 'Cancelled', 'wp-kwtsms-otp' ),
+								'pending'    => __( 'Pending Payment', 'wp-kwtsms-otp' ),
+								'refunded'   => __( 'Refunded', 'wp-kwtsms-otp' ),
+								'failed'     => __( 'Payment Failed', 'wp-kwtsms-otp' ),
+							);
+							foreach ( $status_options as $slug => $label ) :
+							?>
+							<label style="display:block;margin-bottom:4px;">
+								<input type="checkbox"
+									name="kwtsms_otp_integrations[woo_notify_admin_statuses][]"
+									value="<?php echo esc_attr( $slug ); ?>"
+									<?php checked( in_array( $slug, (array) $admin_notify_statuses, true ) ); ?> />
+								<?php echo esc_html( $label ); ?>
+							</label>
+							<?php endforeach; ?>
+							<p class="description"><?php esc_html_e( 'Select which status changes trigger an admin SMS notification.', 'wp-kwtsms-otp' ); ?></p>
+						</td>
+					</tr>
+				</table>
+			</div><!-- /.admin-notification-card -->
 
 		</div><!-- /#kwtsms-tab-woo -->
 
