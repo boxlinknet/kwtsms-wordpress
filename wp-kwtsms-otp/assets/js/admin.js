@@ -109,6 +109,8 @@
 
 			// Show verified sections and toggle login/logout buttons.
 			$( '#kwtsms-verified-sections' ).show();
+			$( '#kwtsms-balance-card' ).show();
+			$( '.kwtsms-signup-note' ).hide();
 			$( '#kwtsms-login-btn' ).hide();
 			$( '#kwtsms-logout-btn' ).show();
 
@@ -129,6 +131,8 @@
 
 			// Hide verified sections.
 			$( '#kwtsms-verified-sections' ).hide();
+			$( '#kwtsms-balance-card' ).hide();
+			$( '.kwtsms-signup-note' ).show();
 			$( '#kwtsms-login-btn' ).show();
 			$( '#kwtsms-logout-btn' ).hide();
 
@@ -358,9 +362,11 @@
 		// Clear login status.
 		$( '#kwtsms-login-status' ).html( '' );
 
-		// Clear balance display.
+		// Hide balance bar and show signup note.
+		$( '#kwtsms-balance-card' ).hide();
 		$( '#kwtsms-balance' ).text( '—' );
 		$( '#kwtsms-balance-purchased' ).text( '' );
+		$( '.kwtsms-signup-note' ).show();
 
 		// Server-side: clear credentials_verified flag.
 		$.post( ajaxUrl, {

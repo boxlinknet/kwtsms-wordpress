@@ -33,7 +33,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 	$bal_available = $gateway['balance_available'] ?? null;
 	$bal_purchased = $gateway['balance_purchased'] ?? null;
 	?>
-	<div class="kwtsms-balance-bar" id="kwtsms-balance-card">
+	<div class="kwtsms-balance-bar" id="kwtsms-balance-card"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
 		<div class="kwtsms-balance-bar-main">
 			💳 <strong id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></strong>
 			<?php esc_html_e( 'credits available', 'wp-kwtsms-otp' ); ?>
@@ -62,12 +62,14 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 	<form method="post" action="options.php" id="kwtsms-gateway-form">
 		<?php settings_fields( 'kwtsms_otp_gateway_group' ); ?>
 
+		<?php if ( ! $credentials_verified ) : ?>
 		<p class="kwtsms-signup-note">
 			<?php esc_html_e( "Don't have a kwtSMS account?", 'wp-kwtsms-otp' ); ?>
 			<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener">
 				<?php esc_html_e( 'Sign up for free →', 'wp-kwtsms-otp' ); ?>
 			</a>
 		</p>
+		<?php endif; ?>
 
 		<!-- ===== API Credentials ===== -->
 		<h2 class="title"><?php esc_html_e( 'API Credentials', 'wp-kwtsms-otp' ); ?></h2>
