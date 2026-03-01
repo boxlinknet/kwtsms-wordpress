@@ -153,7 +153,7 @@ class KwtSMS_Woo {
 				$order->get_id(),
 				$order->get_formatted_billing_full_name(),
 				wc_get_order_status_name( $new_status ),
-				$order->get_formatted_order_total()
+				wp_strip_all_tags( $order->get_formatted_order_total() )
 			);
 			foreach ( array_map( 'trim', explode( ',', $admin_phone ) ) as $admin_p ) {
 				$normalized_admin = KwtSMS_API::normalize_phone( $admin_p );
