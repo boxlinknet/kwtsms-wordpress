@@ -2396,6 +2396,49 @@ class Test_KwtSMS_NinjaForms extends TestCase {
 	}
 
 	// =========================================================================
+	// Test 3b — Gate mode: allow path (valid token, transient consumed)
+	// =========================================================================
+
+	/**
+	 * When a valid token is present gate_validate_fields must return the fields
+	 * without any errors and consume the transient (delete_transient called).
+	 */
+	public function test_ninjaforms_gate_allows_submission_with_valid_token(): void {
+		$token = 'valid_token_abc';
+		$_POST = array( 'kwtsms_form_verified_token' => $token );
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.nf_enabled' => 1,
+				'integrations.nf_mode'    => 'gate',
+			),
+			array()
+		);
+
+		// Stub verify_form_token to return true for any token.
+		$plugin->method( 'verify_form_token' )->willReturn( true );
+
+		$nf = new KwtSMS_NinjaForms( $plugin );
+
+		$fields = array(
+			array(
+				'id'     => '1',
+				'type'   => 'phone',
+				'label'  => 'Phone',
+				'value'  => '96598765432',
+				'errors' => array(),
+			),
+		);
+
+		$result = $nf->gate_validate_fields( $fields );
+
+		// No errors must be attached when the token is valid.
+		$this->assertEmpty( $result[0]['errors'], 'Phone field must have no errors when a valid token is present.' );
+
+		$_POST = array();
+	}
+
+	// =========================================================================
 	// Test 4 — Disabled flag: no hooks registered
 	// =========================================================================
 

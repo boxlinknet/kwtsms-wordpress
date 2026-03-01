@@ -365,8 +365,12 @@ class KwtSMS_Plugin {
 			&& $this->settings->get( 'integrations.wpforms_enabled', 1 );
 		$elementor_gate = ( 'gate' === $this->settings->get( 'integrations.elementor_mode', 'notification' ) )
 			&& $this->settings->get( 'integrations.elementor_enabled', 1 );
+		$gf_gate = ( 'gate' === $this->settings->get( 'integrations.gf_mode', 'notification' ) )
+			&& $this->settings->get( 'integrations.gf_enabled', 1 );
+		$nf_gate = ( 'gate' === $this->settings->get( 'integrations.nf_mode', 'notification' ) )
+			&& $this->settings->get( 'integrations.nf_enabled', 1 );
 
-		if ( ! $cf7_gate && ! $wpforms_gate && ! $elementor_gate ) {
+		if ( ! $cf7_gate && ! $wpforms_gate && ! $elementor_gate && ! $gf_gate && ! $nf_gate ) {
 			return;
 		}
 

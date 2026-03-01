@@ -233,8 +233,8 @@ class KwtSMS_NinjaForms {
 		}
 
 		return str_replace(
-			array( '{form_name}', '{phone}' ),
-			array( $form_title, $phone_value ),
+			array( '{site_name}', '{form_name}', '{phone}' ),
+			array( get_bloginfo( 'name' ), $form_title, $phone_value ),
 			$message
 		);
 	}
