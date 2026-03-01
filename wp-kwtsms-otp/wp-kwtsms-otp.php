@@ -3,7 +3,7 @@
  * Plugin Name:       kwtSMS OTP Login and SMS Notifications
  * Plugin URI:        https://www.kwtsms.com
  * Description:       Secure SMS-based OTP login and password reset for WordPress, powered by the kwtSMS gateway. Supports 2FA mode, passwordless login, Google reCAPTCHA v3, and Cloudflare Turnstile. Fully multilingual (English + Arabic / RTL).
- * Version:           2.3.0
+ * Version:           2.4.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            kwtsms
@@ -19,7 +19,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Plugin constants.
-define( 'KWTSMS_OTP_VERSION', '2.3.0' );
+define( 'KWTSMS_OTP_VERSION', '2.4.0' );
 define( 'KWTSMS_OTP_FILE', __FILE__ );
 define( 'KWTSMS_OTP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KWTSMS_OTP_URL', plugin_dir_url( __FILE__ ) );

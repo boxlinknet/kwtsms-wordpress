@@ -257,6 +257,7 @@ class KwtSMS_Admin {
 			'default_country_code' => $default_cc,
 			'allowed_countries'    => $allowed_countries,
 			'debug_logging'        => ! empty( $raw['debug_logging'] ) ? 1 : 0,
+			'blocked_phones'       => sanitize_textarea_field( wp_unslash( $raw['blocked_phones'] ?? '' ) ),
 		);
 	}
 

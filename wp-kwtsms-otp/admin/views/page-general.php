@@ -18,6 +18,7 @@ $referral_link    = ! empty( $general['referral_link'] );
 $default_cc       = $general['default_country_code'] ?? 'KW';
 $allowed_iso2     = $general['allowed_countries'] ?? array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' );
 $debug_logging    = ! empty( $general['debug_logging'] );
+$blocked_phones   = $general['blocked_phones'] ?? '';
 
 // Load all countries for dropdowns.
 $all_countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
@@ -280,6 +281,26 @@ foreach ( $all_countries as $cc ) {
 						<?php esc_html_e( 'Display "SMS service by kwtSMS.com" footer on login pages', 'wp-kwtsms-otp' ); ?>
 					</label>
 					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'wp-kwtsms-otp' ); ?></p>
+				</td>
+			</tr>
+
+		</table>
+
+		<!-- ===== Security ===== -->
+		<h2 class="title"><?php esc_html_e( 'Security', 'wp-kwtsms-otp' ); ?></h2>
+		<table class="form-table" role="presentation">
+
+			<tr>
+				<th scope="row">
+					<label for="kwtsms_blocked_phones"><?php esc_html_e( 'Blocked Phone Numbers', 'wp-kwtsms-otp' ); ?></label>
+				</th>
+				<td>
+					<textarea name="kwtsms_otp_general[blocked_phones]" id="kwtsms_blocked_phones"
+						rows="6" class="large-text code"
+						placeholder="96599000000&#10;96566000000"><?php echo esc_textarea( $blocked_phones ); ?></textarea>
+					<p class="description">
+						<?php esc_html_e( 'One per line or comma-separated, with country code (digits only). These numbers will never receive OTP SMS. Blocked requests return a silent success to prevent enumeration.', 'wp-kwtsms-otp' ); ?>
+					</p>
 				</td>
 			</tr>
 
