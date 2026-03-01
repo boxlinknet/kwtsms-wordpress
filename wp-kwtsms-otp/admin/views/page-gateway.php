@@ -232,6 +232,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 					<input type="tel" name="kwtsms_otp_gateway[test_phone]" id="kwtsms_test_phone"
 						value="<?php echo esc_attr( $test_phone ); ?>"
 						class="regular-text" placeholder="<?php esc_attr_e( 'e.g. 96512345678', 'wp-kwtsms-otp' ); ?>" />
+					<p class="description"><?php esc_html_e( 'Include country code, e.g. 96598765432', 'wp-kwtsms-otp' ); ?></p>
 					<?php if ( $test_mode ) : ?>
 					<p class="description">
 						<?php esc_html_e( 'Test Mode is currently ON. The SMS will be queued but will NOT be delivered to your phone. The OTP code will appear in wp-content/debug.log.', 'wp-kwtsms-otp' ); ?>

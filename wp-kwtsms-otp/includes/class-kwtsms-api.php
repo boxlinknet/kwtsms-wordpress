@@ -180,6 +180,18 @@ class KwtSMS_API {
 			return $err;
 		}
 
+		// ── Balance check ─────────────────────────────────────────────────────
+		// Only run in live mode — test mode never consumes credits.
+		if ( ! $this->test_mode ) {
+			$balance_check = $this->check_balance_before_send();
+			if ( is_wp_error( $balance_check ) ) {
+				$this->write_debug_log( 'send_sms()', 'ABORT: ' . $balance_check->get_error_message() );
+				self::append_send_log( $phone, 'failed', $type );
+				self::append_sms_history( $phone, $message, 'failed', $type, '' );
+				return $balance_check;
+			}
+		}
+
 		$payload = array(
 			'sender'  => $sender_id,
 			'mobile'  => $phone,
@@ -246,6 +258,55 @@ class KwtSMS_API {
 
 		// Normalize: some API versions return under 'countries', some at root.
 		return isset( $response['countries'] ) ? $response['countries'] : $response;
+	}
+
+	/**
+	 * Check whether the account has sufficient balance before sending an SMS.
+	 *
+	 * Logic:
+	 *   1. If no balance is saved yet (null), allow — the balance simply hasn't
+	 *      been fetched. The send will fail at the API level if truly out of credits.
+	 *   2. If saved available > 0, allow immediately without an extra API call.
+	 *   3. If saved available <= 0, make one live API call to double-check.
+	 *      a. If the API is unreachable (WP_Error), allow — better to attempt.
+	 *      b. If live available > 0, update saved balance and allow.
+	 *      c. If live available <= 0, return WP_Error with a user-friendly message.
+	 *
+	 * @return true|WP_Error True if sending is allowed; WP_Error if insufficient credits.
+	 */
+	public function check_balance_before_send() {
+		$gw        = get_option( 'kwtsms_otp_gateway', array() );
+		$available = $gw['balance_available'] ?? null;
+
+		// Not loaded yet — allow the attempt.
+		if ( null === $available ) {
+			return true;
+		}
+
+		// Positive balance — allow immediately.
+		if ( (float) $available > 0 ) {
+			return true;
+		}
+
+		// Saved balance is 0 or negative — double-check via a live API call.
+		$live = $this->get_balance();
+
+		// API unreachable — allow the attempt (fail gracefully at API level).
+		if ( is_wp_error( $live ) ) {
+			return true;
+		}
+
+		// Persist the refreshed balance.
+		self::update_saved_balance( $live['available'], $live['purchased'] );
+
+		if ( $live['available'] <= 0 ) {
+			return new WP_Error(
+				'no_balance',
+				__( 'Insufficient SMS credits. Please top up your kwtsms account.', 'wp-kwtsms-otp' )
+			);
+		}
+
+		return true;
 	}
 
 	/**
