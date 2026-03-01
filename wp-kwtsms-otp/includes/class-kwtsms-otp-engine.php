@@ -421,10 +421,13 @@ class KwtSMS_OTP_Engine {
 	 *  2. Prune timestamps that fall outside the window (older than $window
 	 *     seconds ago). Uses array_values() to re-index after filtering.
 	 *  3. If the count of remaining timestamps is >= $max, the caller is
-	 *     rate-limited: persist the pruned array and return true WITHOUT
+	 *     rate-limited: persist the pruned array with a TTL derived from the
+	 *     oldest remaining timestamp (so the transient expires naturally when
+	 *     all its entries fall outside the window) and return true WITHOUT
 	 *     recording the current timestamp.
-	 *  4. Otherwise, append the current Unix timestamp, persist the updated
-	 *     array with a fresh TTL equal to $window, and return false.
+	 *  4. Otherwise, if $record is true, append the current Unix timestamp,
+	 *     persist the updated array with a fresh TTL equal to $window, and
+	 *     return false. If $record is false, skip recording (check-only mode).
 	 *
 	 * This eliminates the fixed-window boundary exploit: no matter when
 	 * within the window a request arrives, only requests in the last
@@ -433,11 +436,15 @@ class KwtSMS_OTP_Engine {
 	 * @param string $key    Transient key (already namespaced by the caller).
 	 * @param int    $max    Maximum requests allowed within $window seconds.
 	 * @param int    $window Sliding window size in seconds.
+	 * @param bool   $record Whether to record the current timestamp when under
+	 *                       the limit. Pass false to perform a check-only read
+	 *                       (e.g. for pre-flight checks) without consuming a
+	 *                       slot. Defaults to true (record on every allowed call).
 	 *
 	 * @return bool True if the caller is rate-limited (limit reached).
-	 *              False if not limited (current timestamp appended).
+	 *              False if not limited.
 	 */
-	private function is_rate_limited_sliding( string $key, int $max, int $window ): bool {
+	private function is_rate_limited_sliding( string $key, int $max, int $window, bool $record = true ): bool {
 		$data = get_transient( $key );
 		$data = is_array( $data ) ? $data : array();
 		$now  = time();
@@ -453,15 +460,30 @@ class KwtSMS_OTP_Engine {
 		);
 
 		if ( count( $data ) >= $max ) {
-			// At limit — persist pruned array (removes expired entries) but do
-			// NOT record current timestamp; the caller is blocked.
-			set_transient( $key, $data, $window );
+			// At limit — persist the pruned array but do NOT record the current
+			// timestamp; the caller is blocked.
+			//
+			// Use a TTL derived from the oldest timestamp so the transient
+			// auto-expires when all its entries naturally fall outside the
+			// window. This prevents an attacker from extending the transient
+			// lifetime indefinitely by hammering the endpoint (which would
+			// repeatedly reset a full-$window TTL).
+			$oldest = min( $data );
+			$ttl    = max( 1, $window - ( $now - $oldest ) );
+			set_transient( $key, $data, $ttl );
 			return true;
 		}
 
-		// Under limit — record the current request timestamp.
-		$data[] = $now;
-		set_transient( $key, $data, $window );
+		if ( $record ) {
+			// Under limit — record the current request timestamp.
+			// Note: timestamp is recorded here before the SMS send. If the send
+			// fails, the slot is still consumed. This is intentional — it
+			// prevents an attacker from making unlimited attempts by triggering
+			// gateway errors.
+			$data[] = $now;
+			set_transient( $key, $data, $window );
+		}
+
 		return false;
 	}
 
