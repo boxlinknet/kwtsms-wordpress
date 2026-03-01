@@ -142,6 +142,7 @@ class KwtSMS_CF7 {
 			return;
 		}
 
+		$phone      = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $phone );
 		if ( is_wp_error( $normalized ) ) {
 			return;

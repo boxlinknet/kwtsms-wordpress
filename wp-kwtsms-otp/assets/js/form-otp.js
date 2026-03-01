@@ -49,7 +49,7 @@
 					/* Step 1: phone entry */
 					'<div id="kwtsms-step-phone">' +
 						'<p>' + escHtml( s.enterPhone || 'Enter your phone number to verify' ) + '</p>' +
-						'<input type="tel" id="kwtsms-phone-input" placeholder="' + escAttr( s.phonePlaceholder || 'e.g. 96599220322' ) + '" autocomplete="tel" />' +
+						'<input type="tel" id="kwtsms-phone-input" placeholder="' + escAttr( s.phonePlaceholder || 'e.g. 96598765432' ) + '" autocomplete="tel" />' +
 						'<div id="kwtsms-phone-error" class="kwtsms-otp-error" role="alert"></div>' +
 						'<div class="kwtsms-otp-actions">' +
 							'<button type="button" id="kwtsms-send-btn">' + escHtml( s.sendCode || 'Send Code' ) + '</button>' +
@@ -216,7 +216,13 @@
 	// =========================================================================
 
 	function doSendOtp() {
-		var phone = $.trim( $( '#kwtsms-phone-input' ).val() );
+		var rawPhone = $.trim( $( '#kwtsms-phone-input' ).val() );
+				// Auto-prepend default dial code for local (short) numbers.
+				var digitsOnly = rawPhone.replace( /^\+/, '' ).replace( /^00/, '' ).replace( /\D/g, '' );
+				var phone = ( digitsOnly.length >= 5 && digitsOnly.length <= 8 )
+					? ( ( kwtSmsFormData.defaultDialCode || '965' ) + digitsOnly )
+					: rawPhone;
+				$( '#kwtsms-phone-input' ).val( phone ); // show normalized value to user
 		showPhoneError( '' );
 
 		if ( ! phone ) {

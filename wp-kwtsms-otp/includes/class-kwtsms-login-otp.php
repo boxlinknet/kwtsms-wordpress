@@ -418,6 +418,7 @@ class KwtSMS_Login_OTP {
 		}
 
 		$raw_phone  = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone'] ?? '' ) );
+		$raw_phone  = KwtSMS_API::prepend_country_code_if_local( $raw_phone, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $raw_phone );
 
 		if ( is_wp_error( $normalized ) ) {

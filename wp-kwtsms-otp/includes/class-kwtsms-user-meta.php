@@ -184,6 +184,7 @@ class KwtSMS_User_Meta {
 			return;
 		}
 
+		$raw_phone  = KwtSMS_API::prepend_country_code_if_local( $raw_phone, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $raw_phone );
 
 		if ( is_wp_error( $normalized ) ) {
@@ -220,7 +221,7 @@ class KwtSMS_User_Meta {
 					value="<?php echo esc_attr( $phone ); ?>"
 					size="25"
 					autocomplete="tel"
-					placeholder="e.g. 96599220322"
+					placeholder="e.g. 96598765432"
 				/>
 			</label>
 			<span class="description">
@@ -249,6 +250,7 @@ class KwtSMS_User_Meta {
 			return $errors; // Optional field — no validation needed.
 		}
 
+		$phone      = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $phone );
 		if ( is_wp_error( $normalized ) ) {
 			$errors->add( 'kwtsms_invalid_phone', $normalized->get_error_message() );
@@ -272,6 +274,7 @@ class KwtSMS_User_Meta {
 			return;
 		}
 
+		$phone      = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $phone );
 		if ( is_wp_error( $normalized ) ) {
 			return; // Should not happen if validate_registration_phone() ran, but defensive.

@@ -209,7 +209,7 @@ $woo_active = class_exists( 'WooCommerce' );
 							name="kwtsms_otp_integrations[woo_admin_phone]"
 							value="<?php echo esc_attr( $int['woo_admin_phone'] ?? '' ); ?>"
 							class="regular-text"
-							placeholder="<?php esc_attr_e( 'e.g. 96599220322, 96599220333', 'wp-kwtsms-otp' ); ?>" />
+							placeholder="<?php esc_attr_e( 'e.g. 96598765432, 96599220333', 'wp-kwtsms-otp' ); ?>" />
 						<p class="description"><?php esc_html_e( 'Comma-separated list of phone numbers (with country code) to receive admin notifications.', 'wp-kwtsms-otp' ); ?></p>
 					</td>
 				</tr>

@@ -110,7 +110,7 @@ class KwtSMS_Woo_Metabox {
 					name="kwtsms_custom_sms_phone"
 					value="<?php echo esc_attr( $phone ); ?>"
 					class="widefat"
-					placeholder="<?php esc_attr_e( 'e.g. 96599220322', 'wp-kwtsms-otp' ); ?>"
+					placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'wp-kwtsms-otp' ); ?>"
 				>
 			</p>
 			<p>

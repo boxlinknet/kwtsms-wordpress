@@ -29,7 +29,7 @@ $configs = array(
 		'tpl_key'      => 'cf7_confirmation',
 		'placeholders' => '{site_name}, {form_name}',
 		'tip'          => __( 'Setup tip: add a tel field named kwtsms_phone to your CF7 form:', 'wp-kwtsms-otp' ),
-		'tip_code'     => '[tel kwtsms_phone placeholder "e.g. 96599220322"]',
+		'tip_code'     => '[tel kwtsms_phone placeholder "e.g. 96598765432"]',
 	),
 	'wpforms' => array(
 		'label'        => __( 'WPForms', 'wp-kwtsms-otp' ),
