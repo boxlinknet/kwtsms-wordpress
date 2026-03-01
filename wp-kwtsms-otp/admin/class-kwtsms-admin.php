@@ -667,6 +667,10 @@ class KwtSMS_Admin {
 					'testPhoneMissing'   => __( 'Please enter a test phone number first.', 'wp-kwtsms-otp' ),
 					'testModeResult'     => __( 'Test mode ON — message queued, not delivered.', 'wp-kwtsms-otp' ),
 					'testSmsResult'      => __( 'SMS delivered to %phone%. Check your messages.', 'wp-kwtsms-otp' ),
+					'unsavedTitle'       => __( 'Unsaved Changes', 'wp-kwtsms-otp' ),
+					'unsavedBody'        => __( 'You have unsaved changes. Leaving this page will discard them.', 'wp-kwtsms-otp' ),
+					'unsavedStay'        => __( 'Stay on Page', 'wp-kwtsms-otp' ),
+					'unsavedLeave'       => __( 'Leave Page', 'wp-kwtsms-otp' ),
 				),
 			)
 		);

@@ -470,35 +470,113 @@
 	}() );
 
 	// =========================================================================
-	// Unsaved changes warning
-	// Tracks whether any settings form field has been modified since page load.
-	// Shows a browser confirmation if the user tries to navigate away before saving.
+	// Unsaved changes — custom branded modal
+	//
+	// For in-page link navigation: intercepts the click and shows our own
+	// dialog so we control the title, body, and button labels (and they are
+	// fully translatable via kwtSmsAdminData.strings).
+	//
+	// For browser close / back / forward (where we cannot intercept the click):
+	// a beforeunload listener is still registered as a safety net; browsers
+	// always show their own native text there regardless of what we set.
 	// =========================================================================
 
 	( function () {
-		// Only applies to pages that have a settings form.
 		var $forms = $( '.kwtsms-admin-wrap form[action="options.php"]' );
 		if ( ! $forms.length ) {
 			return;
 		}
 
-		var dirty = false;
+		var dirty       = false;
+		var pendingHref = null;
 
-		// Mark dirty on any user-initiated field change.
+		// ── Build the modal ────────────────────────────────────────────────
+		var $overlay = $(
+			'<div id="kwtsms-unsaved-overlay" role="dialog" aria-modal="true" aria-labelledby="kwtsms-unsaved-title">' +
+				'<div id="kwtsms-unsaved-dialog">' +
+					'<h2 id="kwtsms-unsaved-title"></h2>' +
+					'<p  id="kwtsms-unsaved-body"></p>' +
+					'<div id="kwtsms-unsaved-actions">' +
+						'<button type="button" id="kwtsms-unsaved-stay"  class="button kwtsms-save-btn"></button>' +
+						'<button type="button" id="kwtsms-unsaved-leave" class="button"></button>' +
+					'</div>' +
+				'</div>' +
+			'</div>'
+		).appendTo( 'body' );
+
+		$overlay.find( '#kwtsms-unsaved-title' ).text( s.unsavedTitle || 'Unsaved Changes'                                         );
+		$overlay.find( '#kwtsms-unsaved-body'  ).text( s.unsavedBody  || 'You have unsaved changes. Leaving this page will discard them.' );
+		$overlay.find( '#kwtsms-unsaved-stay'  ).text( s.unsavedStay  || 'Stay on Page'                                           );
+		$overlay.find( '#kwtsms-unsaved-leave' ).text( s.unsavedLeave || 'Leave Page'                                             );
+
+		function showModal( href ) {
+			pendingHref = href || null;
+			$overlay.addClass( 'is-visible' );
+			$( '#kwtsms-unsaved-stay' ).trigger( 'focus' );
+		}
+
+		function hideModal() {
+			pendingHref = null;
+			$overlay.removeClass( 'is-visible' );
+		}
+
+		// "Stay on Page" — dismiss modal, do nothing.
+		$( '#kwtsms-unsaved-stay' ).on( 'click', hideModal );
+
+		// Clicking the backdrop also stays (do not navigate).
+		$overlay.on( 'click', function ( e ) {
+			if ( e.target === this ) { hideModal(); }
+		} );
+
+		// Esc key — stay.
+		$( document ).on( 'keydown', function ( e ) {
+			if ( e.key === 'Escape' && $overlay.hasClass( 'is-visible' ) ) { hideModal(); }
+		} );
+
+		// "Leave Page" — proceed with stored navigation target.
+		$( '#kwtsms-unsaved-leave' ).on( 'click', function () {
+			dirty = false;
+			var href = pendingHref;
+			hideModal();
+			if ( href ) { window.location.href = href; }
+		} );
+
+		// ── Dirty tracking ─────────────────────────────────────────────────
 		$forms.on( 'input change', 'input, select, textarea', function () {
 			dirty = true;
 		} );
 
-		// Clear dirty when the form is submitted (Save Settings clicked).
+		// Clear dirty on save (form submit).
 		$forms.on( 'submit', function () {
 			dirty = false;
 		} );
 
-		// Warn when leaving the page with unsaved changes.
+		// ── Intercept link clicks for in-page navigation ───────────────────
+		$( document ).on( 'click', 'a', function ( e ) {
+			if ( ! dirty ) { return; }
+
+			var rawHref = $( this ).attr( 'href' ) || '';
+			// Skip: empty, same-page anchors, javascript: links, new-tab links.
+			if (
+				! rawHref ||
+				rawHref === '#' ||
+				rawHref.indexOf( 'javascript:' ) === 0 ||
+				$( this ).attr( 'target' ) === '_blank'
+			) {
+				return;
+			}
+
+			e.preventDefault();
+			e.stopPropagation();
+			showModal( this.href );
+		} );
+
+		// ── Fallback for browser close / back / forward ────────────────────
+		// Cannot intercept these as link clicks; the browser will show its own
+		// native dialog text (we cannot customise that text).
 		window.addEventListener( 'beforeunload', function ( e ) {
 			if ( dirty ) {
 				e.preventDefault();
-				// returnValue is required for legacy browser support.
 				e.returnValue = '';
 			}
 		} );

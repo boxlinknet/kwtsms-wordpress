@@ -286,3 +286,65 @@
 	vertical-align: middle;
 	font-weight: normal;
 }
+
+/* =========================================================================
+   Unsaved changes modal
+   ========================================================================= */
+
+#kwtsms-unsaved-overlay {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.55);
+	z-index: 999999;
+	align-items: center;
+	justify-content: center;
+}
+
+#kwtsms-unsaved-overlay.is-visible {
+	display: flex;
+}
+
+#kwtsms-unsaved-dialog {
+	background: #fff;
+	border-top: 4px solid #FFA200;
+	border-radius: 4px;
+	padding: 32px 36px;
+	max-width: 420px;
+	width: 90%;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+	text-align: center;
+}
+
+#kwtsms-unsaved-title {
+	font-family: Montserrat, sans-serif;
+	font-size: 17px;
+	font-weight: 700;
+	color: #434345;
+	margin: 0 0 14px;
+}
+
+#kwtsms-unsaved-body {
+	font-family: Lato, Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	color: #555;
+	line-height: 1.65;
+	margin: 0 0 26px;
+}
+
+#kwtsms-unsaved-actions {
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+}
+
+#kwtsms-unsaved-stay {
+	min-width: 130px;
+}
+
+#kwtsms-unsaved-leave {
+	min-width: 110px;
+}
