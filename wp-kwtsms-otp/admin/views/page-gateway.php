@@ -168,9 +168,6 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 					<?php esc_html_e( 'Add more countries →', 'wp-kwtsms-otp' ); ?>
 				</a>
 			</p>
-			<p style="margin:0 0 10px;color:#888;font-size:12px;">
-				<?php esc_html_e( 'In test mode, messages are queued but not delivered. Delete messages from your kwtSMS queue to recover credits.', 'wp-kwtsms-otp' ); ?>
-			</p>
 			<div id="kwtsms-coverage-result" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;" aria-live="polite">
 					<?php
 					$saved_cov = $gateway['coverage'] ?? array();
