@@ -240,8 +240,20 @@ class KwtSMS_API {
 			return $response;
 		}
 
-		// Normalize: some API versions return under 'countries', some at root.
-		return isset( $response['countries'] ) ? $response['countries'] : $response;
+		// Normalize: try common wrapper keys first.
+		if ( isset( $response['countries'] ) && is_array( $response['countries'] ) ) {
+			return $response['countries'];
+		}
+		if ( isset( $response['coverage'] ) && is_array( $response['coverage'] ) ) {
+			return $response['coverage'];
+		}
+
+		// Root-level response: strip known API meta keys, return remaining values.
+		$meta_keys = array( 'result', 'status', 'code', 'description', 'message', 'error' );
+		foreach ( $meta_keys as $k ) {
+			unset( $response[ $k ] );
+		}
+		return array_values( $response );
 	}
 
 	/**

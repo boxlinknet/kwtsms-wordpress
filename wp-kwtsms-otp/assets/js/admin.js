@@ -351,27 +351,32 @@
 	// =========================================================================
 
 	function renderCoverageChips( coverage, $result ) {
-		let html = '';
+		var API_CODES = [ 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/A', 'NA', 'TRUE', 'FALSE' ];
+		var html = '';
 		if ( Array.isArray( coverage ) ) {
 			coverage.forEach( function ( row ) {
-				let name = '', dial = '';
+				var name = '', dial = '';
 				if ( typeof row === 'object' && row !== null ) {
 					name = row.name || row.country || row.countryName || row.CountryName || '';
 					if ( ! name ) {
-						name = Object.values( row ).find( v => typeof v === 'string' ) || '';
+						name = Object.values( row ).find( function( v ) { return typeof v === 'string'; } ) || '';
 					}
 					dial = row.dial || '';
 				} else {
 					name = String( row );
 				}
-				if ( name ) {
-					const label = dial ? name + ' (+' + dial + ')' : name;
-					html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( label ).html() + '</span>';
-				}
+				if ( ! name ) return;
+				// Skip API status code strings and bare dial-code digit strings.
+				if ( API_CODES.indexOf( name.toUpperCase() ) !== -1 ) return;
+				if ( /^\d+$/.test( name ) ) return;
+				var label = dial ? name + ' (+' + dial + ')' : name;
+				html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( label ).html() + '</span>';
 			} );
 		} else if ( coverage && typeof coverage === 'object' ) {
 			Object.keys( coverage ).forEach( function ( key ) {
-				html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( key ).html() + '</span>';
+				if ( API_CODES.indexOf( String( key ).toUpperCase() ) === -1 ) {
+					html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( key ).html() + '</span>';
+				}
 			} );
 		}
 		$result.html( html );
