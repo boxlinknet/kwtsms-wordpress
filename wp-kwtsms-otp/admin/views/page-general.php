@@ -375,6 +375,7 @@ foreach ( $all_countries as $cc ) {
 	const input     = document.getElementById('kwtsms-allowed-countries-input');
 	const addSelect = document.getElementById('kwtsms-add-country-select');
 	const addBtn    = document.getElementById('kwtsms-add-country-btn');
+	if ( ! tagsDiv || ! input || ! addSelect || ! addBtn ) return;
 
 	function getIso2List() {
 		try { return JSON.parse(input.value) || []; } catch(e) { return []; }
@@ -383,6 +384,8 @@ foreach ( $all_countries as $cc ) {
 	function setIso2List(list) {
 		input.value = JSON.stringify(list);
 	}
+
+	const removeLabel = '<?php echo esc_js( __( 'Remove', 'wp-kwtsms-otp' ) ); ?>';
 
 	function renderTag(iso2, dial, name) {
 		const span = document.createElement('span');
@@ -396,6 +399,7 @@ foreach ( $all_countries as $cc ) {
 		btn.dataset.iso2 = iso2;
 		btn.style.cssText = 'background:none;border:none;cursor:pointer;margin-left:6px;color:#dc3232;font-weight:bold;font-size:14px;line-height:1;';
 		btn.textContent = '×';
+		btn.setAttribute( 'aria-label', removeLabel );
 		btn.addEventListener('click', function() {
 			const list = getIso2List().filter(function(c) { return c !== iso2; });
 			setIso2List(list);

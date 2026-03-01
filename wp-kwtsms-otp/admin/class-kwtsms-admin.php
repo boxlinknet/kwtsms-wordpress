@@ -665,6 +665,11 @@ class KwtSMS_Admin {
 					'credentialsMissing' => __( 'Please enter your API username and password, then click "Save Settings" before performing this action.', 'wp-kwtsms-otp' ),
 					'connectedAs'        => __( 'Connected as %s', 'wp-kwtsms-otp' ),
 					'reload'             => __( 'Reload', 'wp-kwtsms-otp' ),
+					'reloading'          => __( 'Reloading...', 'wp-kwtsms-otp' ),
+					'ofPurchased'        => __( 'of %s purchased', 'wp-kwtsms-otp' ),
+					'testPhoneMissing'   => __( 'Please enter a test phone number first.', 'wp-kwtsms-otp' ),
+					'testModeResult'     => __( 'Test mode ON — message queued, not delivered. OTP code: %code% (check debug.log)', 'wp-kwtsms-otp' ),
+					'testSmsResult'      => __( 'SMS delivered to %phone%. Check your messages.', 'wp-kwtsms-otp' ),
 				),
 			)
 		);
