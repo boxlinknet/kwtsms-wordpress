@@ -179,7 +179,7 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 			<li>.kwtsms-otp-input — <?php esc_html_e( 'the OTP code input field', 'wp-kwtsms-otp' ); ?></li>
 			<li>.kwtsms-submit-btn — <?php esc_html_e( 'the Submit / Verify button', 'wp-kwtsms-otp' ); ?></li>
 			<li>.kwtsms-phone-group — <?php esc_html_e( 'country code + phone input wrapper', 'wp-kwtsms-otp' ); ?></li>
-			<li>.kwtsms-powered-by — <?php esc_html_e( '"SMS service by kwtSMS.com" footer', 'wp-kwtsms-otp' ); ?></li>
+			<li>.kwtsms-powered-by — <?php esc_html_e( '"SMS by kwtSMS.com" footer', 'wp-kwtsms-otp' ); ?></li>
 		</ul>
 		<p>
 			<?php esc_html_e( 'No customisation page is needed. Full CSS control is available through standard WordPress/theme overrides.', 'wp-kwtsms-otp' ); ?>
