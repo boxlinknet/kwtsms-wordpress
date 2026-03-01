@@ -141,6 +141,241 @@ class KwtSMS_Plugin {
 
 		// Test SMS send (admin only).
 		add_action( 'wp_ajax_kwtsms_send_test_sms', array( $this, 'ajax_send_test_sms' ) );
+
+		// Form OTP gate — send OTP to phone before form submission (guests).
+		add_action( 'wp_ajax_nopriv_kwtsms_form_send_otp', array( $this, 'ajax_form_send_otp' ) );
+		add_action( 'wp_ajax_kwtsms_form_send_otp', array( $this, 'ajax_form_send_otp' ) );
+
+		// Form OTP gate — verify code and mark transient as verified (guests).
+		add_action( 'wp_ajax_nopriv_kwtsms_form_verify_otp', array( $this, 'ajax_form_verify_otp' ) );
+		add_action( 'wp_ajax_kwtsms_form_verify_otp', array( $this, 'ajax_form_verify_otp' ) );
+
+		// Enqueue form-otp.js on frontend when gate mode is active.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_form_otp_assets' ) );
+	}
+
+	// =========================================================================
+	// Form OTP Gate helpers
+	// =========================================================================
+
+	/**
+	 * Generate a 32-character hex token for form OTP gate sessions.
+	 *
+	 * @return string 32-char lowercase hex string.
+	 */
+	public function generate_form_token() {
+		return bin2hex( random_bytes( 16 ) );
+	}
+
+	/**
+	 * Check whether a form OTP gate token has been successfully verified.
+	 *
+	 * Looks up the transient `kwtsms_form_otp_{token}` and returns whether
+	 * the `verified` flag is set to true.
+	 *
+	 * @param string $token The 32-char hex token from the hidden form input.
+	 *
+	 * @return bool True if the token exists and is verified; false otherwise.
+	 */
+	public function verify_form_token( $token ) {
+		$token = sanitize_text_field( $token );
+		if ( empty( $token ) || ! preg_match( '/^[0-9a-f]{32}$/', $token ) ) {
+			return false;
+		}
+
+		$data = get_transient( 'kwtsms_form_otp_' . $token );
+		if ( ! is_array( $data ) ) {
+			return false;
+		}
+
+		return ! empty( $data['verified'] );
+	}
+
+	// =========================================================================
+	// AJAX: Form OTP gate — send OTP
+	// =========================================================================
+
+	/**
+	 * AJAX: normalise a phone number, send an OTP, and store the transient.
+	 *
+	 * Expected POST params:
+	 *   nonce  — kwtsms_form_otp_nonce
+	 *   phone  — raw phone number entered by the visitor
+	 *
+	 * Returns JSON success with { token } on success so the JS can store the
+	 * token in a hidden input, or JSON error with { message } on failure.
+	 *
+	 * Security: nonce verified; no capability check (nopriv endpoint — used by
+	 * logged-out visitors filling in public forms).
+	 */
+	public function ajax_form_send_otp() {
+		check_ajax_referer( 'kwtsms_form_otp_nonce', 'nonce' );
+
+		$raw_phone = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
+		if ( empty( $raw_phone ) ) {
+			wp_send_json_error( array( 'message' => __( 'Phone number is required.', 'wp-kwtsms-otp' ) ) );
+			return;
+		}
+
+		$normalized = KwtSMS_API::normalize_phone( $raw_phone );
+		if ( is_wp_error( $normalized ) ) {
+			wp_send_json_error( array( 'message' => $normalized->get_error_message() ) );
+			return;
+		}
+
+		// Generate a 6-digit OTP code.
+		$otp_code = (string) wp_rand( 100000, 999999 );
+		$otp_hash = wp_hash_password( $otp_code );
+
+		// Generate a fresh session token for this verification attempt.
+		$token = $this->generate_form_token();
+
+		// Store in a 15-minute transient.
+		set_transient(
+			'kwtsms_form_otp_' . $token,
+			array(
+				'phone'    => $normalized,
+				'otp_hash' => $otp_hash,
+				'verified' => false,
+			),
+			900 // 15 minutes.
+		);
+
+		// Build and send the OTP SMS.
+		$site_name = get_bloginfo( 'name' );
+		/* translators: 1: site name, 2: OTP code */
+		$message = sprintf(
+			/* translators: 1: site name, 2: OTP code */
+			__( '%1$s: Your verification code is %2$s. Valid for 15 minutes.', 'wp-kwtsms-otp' ),
+			$site_name,
+			$otp_code
+		);
+
+		$result = $this->api->send_sms(
+			$normalized,
+			$this->settings->get( 'gateway.sender_id', '' ),
+			$message,
+			'form_otp'
+		);
+
+		if ( is_wp_error( $result ) ) {
+			// Clean up the transient to avoid orphaned records.
+			delete_transient( 'kwtsms_form_otp_' . $token );
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
+		}
+
+		wp_send_json_success( array( 'token' => $token ) );
+	}
+
+	// =========================================================================
+	// AJAX: Form OTP gate — verify OTP
+	// =========================================================================
+
+	/**
+	 * AJAX: verify the submitted OTP code against the stored hash.
+	 *
+	 * Expected POST params:
+	 *   nonce  — kwtsms_form_otp_nonce
+	 *   token  — 32-char hex session token (from hidden input)
+	 *   code   — OTP code entered by the visitor
+	 *
+	 * On success, updates the transient to set verified=true and returns
+	 * JSON success. On failure returns JSON error with { message }.
+	 *
+	 * Security: nonce verified; no capability check (nopriv endpoint).
+	 */
+	public function ajax_form_verify_otp() {
+		check_ajax_referer( 'kwtsms_form_otp_nonce', 'nonce' );
+
+		$token = sanitize_text_field( wp_unslash( $_POST['token'] ?? '' ) );
+		$code  = sanitize_text_field( wp_unslash( $_POST['code'] ?? '' ) );
+
+		if ( empty( $token ) || empty( $code ) ) {
+			wp_send_json_error( array( 'message' => __( 'Token and code are required.', 'wp-kwtsms-otp' ) ) );
+			return;
+		}
+
+		// Validate token format (must be 32 lowercase hex chars).
+		if ( ! preg_match( '/^[0-9a-f]{32}$/', $token ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid token.', 'wp-kwtsms-otp' ) ) );
+			return;
+		}
+
+		$transient_key = 'kwtsms_form_otp_' . $token;
+		$data          = get_transient( $transient_key );
+
+		if ( ! is_array( $data ) ) {
+			wp_send_json_error( array( 'message' => __( 'Session expired. Please request a new code.', 'wp-kwtsms-otp' ) ) );
+			return;
+		}
+
+		// Verify the submitted code against the stored bcrypt hash.
+		if ( ! wp_check_password( $code, $data['otp_hash'] ) ) {
+			wp_send_json_error( array( 'message' => __( 'Incorrect code. Please try again.', 'wp-kwtsms-otp' ) ) );
+			return;
+		}
+
+		// Mark as verified; keep the transient alive for the form submission check.
+		$data['verified'] = true;
+		set_transient( $transient_key, $data, 900 );
+
+		wp_send_json_success( array( 'message' => __( 'Phone number verified successfully.', 'wp-kwtsms-otp' ) ) );
+	}
+
+	// =========================================================================
+	// Frontend: enqueue form-otp.js
+	// =========================================================================
+
+	/**
+	 * Enqueue form-otp.js on the frontend only when at least one integration
+	 * is configured in gate mode and its integration is enabled.
+	 *
+	 * Hooked to wp_enqueue_scripts so it only runs on public pages.
+	 */
+	public function enqueue_form_otp_assets() {
+		$cf7_gate      = ( 'gate' === $this->settings->get( 'integrations.cf7_mode', 'notification' ) )
+			&& $this->settings->get( 'integrations.cf7_enabled', 1 );
+		$wpforms_gate  = ( 'gate' === $this->settings->get( 'integrations.wpforms_mode', 'notification' ) )
+			&& $this->settings->get( 'integrations.wpforms_enabled', 1 );
+		$elementor_gate = ( 'gate' === $this->settings->get( 'integrations.elementor_mode', 'notification' ) )
+			&& $this->settings->get( 'integrations.elementor_enabled', 1 );
+
+		if ( ! $cf7_gate && ! $wpforms_gate && ! $elementor_gate ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'kwtsms-form-otp',
+			KWTSMS_OTP_URL . 'assets/js/form-otp.js',
+			array( 'jquery' ),
+			KWTSMS_OTP_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'kwtsms-form-otp',
+			'kwtSmsFormData',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'kwtsms_form_otp_nonce' ),
+				'strings' => array(
+					'enterPhone'     => __( 'Enter your phone number to verify', 'wp-kwtsms-otp' ),
+					'sendCode'       => __( 'Send Code', 'wp-kwtsms-otp' ),
+					'sending'        => __( 'Sending...', 'wp-kwtsms-otp' ),
+					'enterCode'      => __( 'Enter the code sent to your phone', 'wp-kwtsms-otp' ),
+					'verifyCode'     => __( 'Verify', 'wp-kwtsms-otp' ),
+					'verifying'      => __( 'Verifying...', 'wp-kwtsms-otp' ),
+					'verified'       => __( 'Phone verified!', 'wp-kwtsms-otp' ),
+					'resend'         => __( 'Resend Code', 'wp-kwtsms-otp' ),
+					'close'          => __( 'Cancel', 'wp-kwtsms-otp' ),
+					'phonePlaceholder' => __( 'e.g. 96598765432', 'wp-kwtsms-otp' ),
+					'codePlaceholder'  => __( '6-digit code', 'wp-kwtsms-otp' ),
+					'modalTitle'     => __( 'Phone Verification Required', 'wp-kwtsms-otp' ),
+					'verifiedMsg'    => __( 'Your phone has been verified. Submitting form...', 'wp-kwtsms-otp' ),
+				),
+			)
+		);
 	}
 
 	/**

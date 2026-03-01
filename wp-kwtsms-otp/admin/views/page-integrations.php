@@ -311,6 +311,38 @@ $templates = $settings->get_all_integration_templates();
 					<?php esc_html_e( 'Send a confirmation SMS after a CF7 form is submitted successfully.', 'wp-kwtsms-otp' ); ?>
 				</p>
 
+				<!-- Mode toggle -->
+				<table class="form-table" style="margin-top:12px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms-otp' ); ?></th>
+						<td>
+							<fieldset>
+								<label style="display:block;margin-bottom:6px;">
+									<input type="radio"
+										name="kwtsms_otp_integrations[cf7_mode]"
+										value="notification"
+										<?php checked( $int['cf7_mode'] ?? 'notification', 'notification' ); ?> />
+									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms-otp' ); ?></strong>
+									&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms-otp' ); ?>
+								</label>
+								<label style="display:block;">
+									<input type="radio"
+										name="kwtsms_otp_integrations[cf7_mode]"
+										value="gate"
+										<?php checked( $int['cf7_mode'] ?? 'notification', 'gate' ); ?> />
+									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms-otp' ); ?></strong>
+									&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms-otp' ); ?>
+								</label>
+							</fieldset>
+							<?php if ( 'gate' === ( $int['cf7_mode'] ?? 'notification' ) ) : ?>
+							<div class="notice notice-info inline" style="margin:8px 0 0;">
+								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms-otp' ); ?></p>
+							</div>
+							<?php endif; ?>
+						</td>
+					</tr>
+				</table>
+
 				<div class="notice notice-info inline" style="margin:12px 0 0;">
 					<p>
 						<?php esc_html_e( 'Setup tip: add a tel field named kwtsms_phone to your CF7 form:', 'wp-kwtsms-otp' ); ?>
@@ -415,6 +447,38 @@ $templates = $settings->get_all_integration_templates();
 				<p class="description">
 					<?php esc_html_e( 'Send a confirmation SMS after a WPForms form is submitted successfully.', 'wp-kwtsms-otp' ); ?>
 				</p>
+				<!-- Mode toggle -->
+				<table class="form-table" style="margin-top:12px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms-otp' ); ?></th>
+						<td>
+							<fieldset>
+								<label style="display:block;margin-bottom:6px;">
+									<input type="radio"
+										name="kwtsms_otp_integrations[wpforms_mode]"
+										value="notification"
+										<?php checked( $int['wpforms_mode'] ?? 'notification', 'notification' ); ?> />
+									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms-otp' ); ?></strong>
+									&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms-otp' ); ?>
+								</label>
+								<label style="display:block;">
+									<input type="radio"
+										name="kwtsms_otp_integrations[wpforms_mode]"
+										value="gate"
+										<?php checked( $int['wpforms_mode'] ?? 'notification', 'gate' ); ?> />
+									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms-otp' ); ?></strong>
+									&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms-otp' ); ?>
+								</label>
+							</fieldset>
+							<?php if ( 'gate' === ( $int['wpforms_mode'] ?? 'notification' ) ) : ?>
+							<div class="notice notice-info inline" style="margin:8px 0 0;">
+								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms-otp' ); ?></p>
+							</div>
+							<?php endif; ?>
+						</td>
+					</tr>
+				</table>
+
 				<div class="notice notice-info inline" style="margin:12px 0 0;">
 					<p><?php esc_html_e( 'WPForms automatically detects Phone fields. Add a Phone field to your form to enable SMS delivery.', 'wp-kwtsms-otp' ); ?></p>
 				</div>
@@ -516,8 +580,40 @@ $templates = $settings->get_all_integration_templates();
 				<p class="description">
 					<?php esc_html_e( 'Send a confirmation SMS after an Elementor Pro form is submitted successfully.', 'wp-kwtsms-otp' ); ?>
 				</p>
+				<!-- Mode toggle -->
+				<table class="form-table" style="margin-top:12px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms-otp' ); ?></th>
+						<td>
+							<fieldset>
+								<label style="display:block;margin-bottom:6px;">
+									<input type="radio"
+										name="kwtsms_otp_integrations[elementor_mode]"
+										value="notification"
+										<?php checked( $int['elementor_mode'] ?? 'notification', 'notification' ); ?> />
+									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms-otp' ); ?></strong>
+									&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms-otp' ); ?>
+								</label>
+								<label style="display:block;">
+									<input type="radio"
+										name="kwtsms_otp_integrations[elementor_mode]"
+										value="gate"
+										<?php checked( $int['elementor_mode'] ?? 'notification', 'gate' ); ?> />
+									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms-otp' ); ?></strong>
+									&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms-otp' ); ?>
+								</label>
+							</fieldset>
+							<?php if ( 'gate' === ( $int['elementor_mode'] ?? 'notification' ) ) : ?>
+							<div class="notice notice-info inline" style="margin:8px 0 0;">
+								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms-otp' ); ?></p>
+							</div>
+							<?php endif; ?>
+						</td>
+					</tr>
+				</table>
+
 				<div class="notice notice-info inline" style="margin:12px 0 0;">
-					<p><?php esc_html_e( 'Requires Elementor Pro. Add a Tel or Phone field to your form — the plugin will use it as the destination number.', 'wp-kwtsms-otp' ); ?></p>
+					<p><?php esc_html_e( 'Requires Elementor Pro. Add a Tel or Phone field to your form â the plugin will use it as the destination number.', 'wp-kwtsms-otp' ); ?></p>
 				</div>
 			</div>
 

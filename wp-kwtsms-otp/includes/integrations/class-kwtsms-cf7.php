@@ -2,8 +2,15 @@
 /**
  * Contact Form 7 Integration.
  *
- * Sends a confirmation SMS when a CF7 form is submitted with a phone number.
- * Use the [tel kwtsms_phone] tag in your CF7 form to capture the phone.
+ * Supports two modes, configurable per-site in the Integrations admin page:
+ *
+ *  - Notification mode (default): sends a confirmation SMS after a successful
+ *    CF7 form submission. Use the [tel kwtsms_phone] tag in your form.
+ *
+ *  - OTP Gate mode: blocks mail delivery until the visitor has verified their
+ *    phone number via an OTP code. The JS layer (form-otp.js) adds a hidden
+ *    input `kwtsms_form_verified_token`; this class verifies it server-side
+ *    using the `wpcf7_before_send_mail` filter.
  *
  * @package KwtSMS_OTP
  */
@@ -13,11 +20,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class KwtSMS_CF7
  *
- * Hooks into the wpcf7_mail_sent action, which fires after Contact Form 7
- * has validated the submission and sent the configured mail(s). This ensures
- * we only send the confirmation SMS for genuinely successful submissions.
+ * Hooks into Contact Form 7 events to:
+ *  - (Notification mode) send a confirmation SMS via `wpcf7_mail_sent`.
+ *  - (Gate mode) block mail unless the phone is OTP-verified via
+ *    `wpcf7_before_send_mail`.
  *
- * To enable the SMS on any form, add a tel field named `kwtsms_phone`:
+ * To enable SMS on any form, add a tel field named `kwtsms_phone`:
  *   [tel kwtsms_phone]          (optional phone)
  *   [tel* kwtsms_phone]         (required phone)
  */
@@ -33,10 +41,14 @@ class KwtSMS_CF7 {
 	/**
 	 * Constructor.
 	 *
-	 * Registers the wpcf7_mail_sent hook so we can send a confirmation SMS
-	 * after every successful CF7 form submission that contains a kwtsms_phone
-	 * field. If the CF7 integration is disabled in settings, no hook is
-	 * registered and the class exits immediately.
+	 * Registers hooks based on the configured mode:
+	 *  - If cf7_mode is 'gate', hooks `wpcf7_before_send_mail` to block
+	 *    unverified submissions.
+	 *  - Otherwise (notification mode), hooks `wpcf7_mail_sent` to send a
+	 *    confirmation SMS after successful submission.
+	 *
+	 * If the CF7 integration is disabled in settings, no hook is registered
+	 * and the class exits immediately.
 	 *
 	 * @param KwtSMS_Plugin $plugin The main plugin instance.
 	 */
@@ -48,9 +60,56 @@ class KwtSMS_CF7 {
 			return;
 		}
 
-		// Fire after CF7 validation succeeds and mail is sent.
-		add_action( 'wpcf7_mail_sent', array( $this, 'send_confirmation_sms' ) );
+		$mode = $this->plugin->settings->get( 'integrations.cf7_mode', 'notification' );
+
+		if ( 'gate' === $mode ) {
+			// Gate mode: verify token before CF7 sends mail.
+			// Returning false from this filter prevents CF7 from sending mail
+			// and causes it to respond with a validation failure message.
+			add_filter( 'wpcf7_before_send_mail', array( $this, 'gate_verify_token' ), 10, 3 );
+		} else {
+			// Notification mode: send SMS after CF7 validation succeeds and mail is sent.
+			add_action( 'wpcf7_mail_sent', array( $this, 'send_confirmation_sms' ) );
+		}
 	}
+
+	// =========================================================================
+	// Gate mode
+	// =========================================================================
+
+	/**
+	 * Gate mode — verify the OTP token before CF7 sends mail.
+	 *
+	 * Hooked to `wpcf7_before_send_mail` with priority 10. CF7 calls this
+	 * filter and, if the return value is false, aborts mail delivery and
+	 * marks the submission as having a validation error.
+	 *
+	 * @param WPCF7_ContactForm $cf7      The contact form instance.
+	 * @param bool              $abort    Whether to abort mail sending (passed by ref in CF7 >= 5.x).
+	 * @param WPCF7_Submission  $submission The current submission object.
+	 *
+	 * @return WPCF7_ContactForm The (possibly mutated) form instance.
+	 */
+	public function gate_verify_token( $cf7, &$abort, $submission ) {
+		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) );
+
+		if ( empty( $token ) || ! $this->plugin->verify_form_token( $token ) ) {
+			$abort = true;
+
+			// Attach an invalidation message so CF7 shows a user-facing error.
+			if ( is_a( $submission, 'WPCF7_Submission' ) ) {
+				$submission->set_response(
+					__( 'Please verify your phone number before submitting this form.', 'wp-kwtsms-otp' )
+				);
+			}
+		}
+
+		return $cf7;
+	}
+
+	// =========================================================================
+	// Notification mode
+	// =========================================================================
 
 	/**
 	 * Send a confirmation SMS after a CF7 form is successfully submitted.
@@ -89,6 +148,10 @@ class KwtSMS_CF7 {
 			'cf7'
 		);
 	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
 
 	/**
 	 * Retrieve the `kwtsms_phone` value from the current CF7 submission.
