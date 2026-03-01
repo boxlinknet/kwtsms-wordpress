@@ -512,6 +512,57 @@ class KwtSMS_API {
 	}
 
 	// =========================================================================
+	// Country-code helpers
+	// =========================================================================
+
+	/**
+	 * Auto-prepend the default country dial code to a local (short) number.
+	 *
+	 * If the stripped digit-only value has 5–8 digits it is treated as a local
+	 * number and the dial code is prepended. Numbers that already contain a
+	 * country code (> 8 stripped digits) are returned unchanged.
+	 *
+	 * @param string $phone     Raw phone input (any format).
+	 * @param string $dial_code Dial code to prepend, digits only (e.g. '965').
+	 * @return string Possibly-modified phone string, ready for normalize_phone().
+	 */
+	public static function prepend_country_code_if_local( string $phone, string $dial_code ): string {
+		$stripped = preg_replace( '/\D/', '', ltrim( trim( $phone ), '+' ) );
+		$stripped = preg_replace( '/^00/', '', $stripped );
+		if ( strlen( $stripped ) >= 5 && strlen( $stripped ) <= 8 ) {
+			return $dial_code . $stripped;
+		}
+		return $phone;
+	}
+
+	/**
+	 * Resolve the admin-configured default country dial code.
+	 *
+	 * Reads general.default_country_code (ISO2) from saved options, maps it to
+	 * a dial code via the country-codes data file, and caches the result for the
+	 * current request lifetime.
+	 *
+	 * @return string Dial code digits, e.g. '965'. Falls back to '965' (Kuwait).
+	 */
+	public static function get_default_dial_code(): string {
+		static $cache = null;
+		if ( null !== $cache ) {
+			return $cache;
+		}
+		$general  = get_option( 'kwtsms_otp_general', array() );
+		$iso2     = $general['default_country_code'] ?? 'KW';
+		$countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+		foreach ( $countries as $cc ) {
+			if ( $cc['iso2'] === $iso2 ) {
+				$cache = $cc['dial'];
+				return $cache;
+			}
+		}
+		$cache = '965'; // Default fallback: Kuwait.
+		return $cache;
+	}
+
+	// =========================================================================
 	// Error code mapping
 	// =========================================================================
 

@@ -216,7 +216,13 @@
 	// =========================================================================
 
 	function doSendOtp() {
-		var phone = $.trim( $( '#kwtsms-phone-input' ).val() );
+		var rawPhone = $.trim( $( '#kwtsms-phone-input' ).val() );
+				// Auto-prepend default dial code for local (short) numbers.
+				var digitsOnly = rawPhone.replace( /^\+/, '' ).replace( /^00/, '' ).replace( /\D/g, '' );
+				var phone = ( digitsOnly.length >= 5 && digitsOnly.length <= 8 )
+					? ( ( kwtSmsFormData.defaultDialCode || '965' ) + digitsOnly )
+					: rawPhone;
+				$( '#kwtsms-phone-input' ).val( phone ); // show normalized value to user
 		showPhoneError( '' );
 
 		if ( ! phone ) {

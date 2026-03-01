@@ -122,6 +122,7 @@ class KwtSMS_Woo {
 		if ( empty( $phone ) ) {
 			$raw = $order->get_billing_phone();
 			if ( ! empty( $raw ) ) {
+				$raw        = KwtSMS_API::prepend_country_code_if_local( $raw, KwtSMS_API::get_default_dial_code() );
 				$normalized = KwtSMS_API::normalize_phone( $raw );
 				$phone      = is_wp_error( $normalized ) ? '' : $normalized;
 			}
@@ -156,6 +157,7 @@ class KwtSMS_Woo {
 				wp_strip_all_tags( $order->get_formatted_order_total() )
 			);
 			foreach ( array_map( 'trim', explode( ',', $admin_phone ) ) as $admin_p ) {
+				$admin_p          = KwtSMS_API::prepend_country_code_if_local( $admin_p, KwtSMS_API::get_default_dial_code() );
 				$normalized_admin = KwtSMS_API::normalize_phone( $admin_p );
 				if ( ! is_wp_error( $normalized_admin ) ) {
 					$this->plugin->api->send_sms(
@@ -288,6 +290,7 @@ class KwtSMS_Woo {
 	public function validate_wc_phone_field( $errors, $username, $email ) {
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		if ( '' !== $phone ) {
+			$phone      = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
 			$normalized = KwtSMS_API::normalize_phone( $phone );
 			if ( is_wp_error( $normalized ) ) {
 				$errors->add( 'kwtsms_invalid_phone', $normalized->get_error_message() );
@@ -310,6 +313,7 @@ class KwtSMS_Woo {
 			return;
 		}
 
+		$phone      = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $phone );
 		if ( is_wp_error( $normalized ) ) {
 			return;
@@ -412,6 +416,7 @@ class KwtSMS_Woo {
 
 		// Get billing phone.
 		$raw_phone  = sanitize_text_field( wp_unslash( $_POST['billing_phone'] ?? '' ) );
+		$raw_phone  = KwtSMS_API::prepend_country_code_if_local( $raw_phone, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $raw_phone );
 		if ( is_wp_error( $normalized ) ) {
 			wc_add_notice( $normalized->get_error_message(), 'error' );
