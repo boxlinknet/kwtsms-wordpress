@@ -97,31 +97,31 @@ class Test_KwtSMS_Woo extends TestCase {
 	// =========================================================================
 
 	public function test_woo_constructor_registers_order_status_hook() {
-		new KwtSMS_Woo( $this->make_plugin_stub( array( 'general.woo_checkout_otp' => 0 ) ) );
+		new KwtSMS_Woo( $this->make_plugin_stub( array( 'integrations.woo_checkout_otp' => 0 ) ) );
 
 		$this->assertContains( 'woocommerce_order_status_changed', $this->registered_actions );
 	}
 
 	public function test_woo_constructor_registers_wc_register_form_action() {
-		new KwtSMS_Woo( $this->make_plugin_stub( array( 'general.woo_checkout_otp' => 0 ) ) );
+		new KwtSMS_Woo( $this->make_plugin_stub( array( 'integrations.woo_checkout_otp' => 0 ) ) );
 
 		$this->assertContains( 'woocommerce_register_form', $this->registered_actions );
 	}
 
 	public function test_woo_constructor_registers_wc_created_customer_action() {
-		new KwtSMS_Woo( $this->make_plugin_stub( array( 'general.woo_checkout_otp' => 0 ) ) );
+		new KwtSMS_Woo( $this->make_plugin_stub( array( 'integrations.woo_checkout_otp' => 0 ) ) );
 
 		$this->assertContains( 'woocommerce_created_customer', $this->registered_actions );
 	}
 
 	public function test_woo_constructor_registers_wc_registration_errors_filter() {
-		new KwtSMS_Woo( $this->make_plugin_stub( array( 'general.woo_checkout_otp' => 0 ) ) );
+		new KwtSMS_Woo( $this->make_plugin_stub( array( 'integrations.woo_checkout_otp' => 0 ) ) );
 
 		$this->assertContains( 'woocommerce_registration_errors', $this->registered_filters );
 	}
 
 	public function test_woo_constructor_registers_checkout_otp_hooks_when_enabled() {
-		new KwtSMS_Woo( $this->make_plugin_stub( array( 'general.woo_checkout_otp' => 1 ) ) );
+		new KwtSMS_Woo( $this->make_plugin_stub( array( 'integrations.woo_checkout_otp' => 1 ) ) );
 
 		$this->assertContains( 'woocommerce_after_order_notes', $this->registered_actions );
 		$this->assertContains( 'woocommerce_checkout_process', $this->registered_actions );
@@ -129,7 +129,7 @@ class Test_KwtSMS_Woo extends TestCase {
 	}
 
 	public function test_woo_constructor_skips_checkout_otp_hooks_when_disabled() {
-		new KwtSMS_Woo( $this->make_plugin_stub( array( 'general.woo_checkout_otp' => 0 ) ) );
+		new KwtSMS_Woo( $this->make_plugin_stub( array( 'integrations.woo_checkout_otp' => 0 ) ) );
 
 		$this->assertNotContains( 'woocommerce_checkout_process', $this->registered_actions );
 		$this->assertNotContains( 'woocommerce_after_order_notes', $this->registered_actions );
@@ -147,7 +147,7 @@ class Test_KwtSMS_Woo extends TestCase {
 			eval( 'class WooCommerce {}' );
 		}
 
-		$plugin = $this->make_plugin_stub( array( 'general.woo_checkout_otp' => 0 ) );
+		$plugin = $this->make_plugin_stub( array( 'integrations.woo_checkout_otp' => 0 ) );
 
 		$loader = new KwtSMS_Integrations( $plugin );
 		$loader->boot();
@@ -157,7 +157,7 @@ class Test_KwtSMS_Woo extends TestCase {
 	}
 
 	public function test_integrations_loader_stores_plugin_reference() {
-		$plugin = $this->make_plugin_stub( array( 'general.woo_checkout_otp' => 0 ) );
+		$plugin = $this->make_plugin_stub( array( 'integrations.woo_checkout_otp' => 0 ) );
 		// Instantiation without error is sufficient — the constructor stores $plugin
 		// and schedules boot() on plugins_loaded. The add_action call is captured.
 		$loader = new KwtSMS_Integrations( $plugin );
@@ -453,5 +453,72 @@ class Test_KwtSMS_Elementor extends TestCase {
 		$plugin->settings = $settings;
 
 		return $plugin;
+	}
+}
+
+/**
+ * Class Test_KwtSMS_Integrations_Settings
+ *
+ * Tests for the kwtsms_otp_integrations settings schema.
+ */
+class Test_KwtSMS_Integrations_Settings extends TestCase {
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'update_option' )->justReturn( true );
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	public function test_integrations_defaults_contain_all_expected_keys() {
+		$defaults = KwtSMS_Settings::DEFAULTS['integrations'];
+		$this->assertArrayHasKey( 'woo_enabled',            $defaults );
+		$this->assertArrayHasKey( 'cf7_enabled',            $defaults );
+		$this->assertArrayHasKey( 'wpforms_enabled',        $defaults );
+		$this->assertArrayHasKey( 'elementor_enabled',      $defaults );
+		$this->assertArrayHasKey( 'woo_checkout_otp',       $defaults );
+		$this->assertArrayHasKey( 'woo_processing',         $defaults );
+		$this->assertArrayHasKey( 'woo_shipped',            $defaults );
+		$this->assertArrayHasKey( 'woo_completed',          $defaults );
+		$this->assertArrayHasKey( 'woo_cancelled',          $defaults );
+		$this->assertArrayHasKey( 'cf7_confirmation',       $defaults );
+		$this->assertArrayHasKey( 'wpforms_confirmation',   $defaults );
+		$this->assertArrayHasKey( 'elementor_confirmation', $defaults );
+	}
+
+	public function test_integration_template_keys_have_en_ar_enabled() {
+		$template_keys = array(
+			'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled',
+			'cf7_confirmation', 'wpforms_confirmation', 'elementor_confirmation',
+		);
+		$defaults = KwtSMS_Settings::DEFAULTS['integrations'];
+		foreach ( $template_keys as $key ) {
+			$this->assertArrayHasKey( 'en',      $defaults[ $key ], "Missing 'en' in $key" );
+			$this->assertArrayHasKey( 'ar',      $defaults[ $key ], "Missing 'ar' in $key" );
+			$this->assertArrayHasKey( 'enabled', $defaults[ $key ], "Missing 'enabled' in $key" );
+			$this->assertNotEmpty( $defaults[ $key ]['en'],  "Empty 'en' in $key" );
+			$this->assertNotEmpty( $defaults[ $key ]['ar'],  "Empty 'ar' in $key" );
+		}
+	}
+
+	public function test_get_all_integration_templates_returns_merged_array() {
+		$settings  = new KwtSMS_Settings();
+		$templates = $settings->get_all_integration_templates();
+		$this->assertIsArray( $templates );
+		$this->assertCount( 7, $templates );
+		$this->assertArrayHasKey( 'woo_processing', $templates );
+		$this->assertArrayHasKey( 'cf7_confirmation', $templates );
+		$this->assertArrayHasKey( 'elementor_confirmation', $templates );
+	}
+
+	public function test_integrations_settings_get_returns_default_woo_enabled() {
+		$settings = new KwtSMS_Settings();
+		$enabled  = $settings->get( 'integrations.woo_enabled', null );
+		$this->assertSame( 1, $enabled );
 	}
 }

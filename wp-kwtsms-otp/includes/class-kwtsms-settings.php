@@ -73,6 +73,48 @@ class KwtSMS_Settings {
 				'ar'      => 'مرحباً بك في {site_name}، {name}! تم إنشاء حسابك بنجاح.',
 			),
 		),
+		'integrations' => array(
+			'woo_enabled'            => 1,
+			'cf7_enabled'            => 1,
+			'wpforms_enabled'        => 1,
+			'elementor_enabled'      => 1,
+			'woo_checkout_otp'       => 0,
+			'woo_processing'         => array(
+				'enabled' => 1,
+				'en'      => '{site_name}: Your order #{order_id} has been confirmed. Total: {total}. Thank you!',
+				'ar'      => '{site_name}: تم تأكيد طلبك رقم #{order_id}. المجموع: {total}. شكرًا لك!',
+			),
+			'woo_shipped'            => array(
+				'enabled' => 1,
+				'en'      => '{site_name}: Your order #{order_id} has been shipped and is on its way!',
+				'ar'      => '{site_name}: طلبك رقم #{order_id} قيد الشحن وفي طريقه إليك!',
+			),
+			'woo_completed'          => array(
+				'enabled' => 1,
+				'en'      => '{site_name}: Your order #{order_id} is complete. Thank you for shopping with us!',
+				'ar'      => '{site_name}: طلبك رقم #{order_id} مكتمل. شكرًا لتسوقك معنا!',
+			),
+			'woo_cancelled'          => array(
+				'enabled' => 1,
+				'en'      => '{site_name}: Your order #{order_id} has been cancelled. Contact us if this was unexpected.',
+				'ar'      => '{site_name}: تم إلغاء طلبك رقم #{order_id}. تواصل معنا إذا لم تطلب ذلك.',
+			),
+			'cf7_confirmation'       => array(
+				'enabled' => 1,
+				'en'      => '{site_name}: Your form "{form_name}" has been submitted successfully. Thank you!',
+				'ar'      => '{site_name}: تم استلام نموذج "{form_name}" بنجاح. شكرًا لك!',
+			),
+			'wpforms_confirmation'   => array(
+				'enabled' => 1,
+				'en'      => '{site_name}: Your form "{form_name}" was received. Thank you!',
+				'ar'      => '{site_name}: تم استلام نموذج "{form_name}". شكرًا لك!',
+			),
+			'elementor_confirmation' => array(
+				'enabled' => 1,
+				'en'      => '{site_name}: Your form "{form_name}" has been received. Thank you!',
+				'ar'      => '{site_name}: تم استلام نموذج "{form_name}". شكرًا لك!',
+			),
+		),
 	);
 
 	/**
@@ -175,9 +217,33 @@ class KwtSMS_Settings {
 	}
 
 	/**
+	 * Get all integration templates with defaults merged in.
+	 *
+	 * Returns only the array-type template entries (not boolean flags).
+	 *
+	 * @return array
+	 */
+	public function get_all_integration_templates() {
+		$saved    = $this->load_group( 'integrations' );
+		$defaults = self::DEFAULTS['integrations'];
+		$merged   = array();
+
+		$template_keys = array(
+			'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled',
+			'cf7_confirmation', 'wpforms_confirmation', 'elementor_confirmation',
+		);
+
+		foreach ( $template_keys as $key ) {
+			$merged[ $key ] = array_merge( $defaults[ $key ], $saved[ $key ] ?? array() );
+		}
+
+		return $merged;
+	}
+
+	/**
 	 * Load and cache an option group from the database.
 	 *
-	 * @param string $group Option group name (general|gateway|templates).
+	 * @param string $group Option group name (general|gateway|templates|integrations).
 	 *
 	 * @return array
 	 */
