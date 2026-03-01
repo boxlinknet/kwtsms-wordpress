@@ -78,7 +78,7 @@ class KwtSMS_Elementor {
 
 		$form_name = sanitize_text_field( $record->get_form_settings( 'form_name' ) ?? '' );
 
-		$message = $this->render_confirmation_template( $form_name ?: 'Contact Form' );
+		$message = $this->render_confirmation_template( $form_name ?: __( 'Contact Form', 'wp-kwtsms-otp' ) );
 		if ( empty( $message ) ) {
 			return; // Template disabled or missing.
 		}
