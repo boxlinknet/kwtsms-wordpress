@@ -4,7 +4,7 @@
  *
  * Adds a "Send Custom SMS" metabox to the WooCommerce order edit screen.
  * Compatible with both Classic Orders and HPOS (High-Performance Order Storage,
- * WooCommerce 8.5+) via the standard add_meta_boxes hook.
+ * WooCommerce 8.6+) via the stable wc_get_page_screen_id() API.
  *
  * @package KwtSMS_OTP
  */
@@ -53,27 +53,19 @@ class KwtSMS_Woo_Metabox {
 	/**
 	 * Register the "Send Custom SMS" metabox on the WooCommerce order screen.
 	 *
-	 * Works with both Classic Orders (post type 'shop_order') and HPOS
-	 * (WooCommerce 8.5+ with custom order tables enabled) via the
-	 * CustomOrdersTableController screen ID.
+	 * Uses the stable wc_get_page_screen_id() API (WooCommerce 8.6+) when available,
+	 * which handles both Classic Orders and HPOS transparently. Falls back to the
+	 * legacy 'shop_order' post-type screen ID for older WooCommerce versions.
+	 *
+	 * This replaces the previous approach of introspecting the internal
+	 * CustomOrdersTableController class, which is an unstable internal API.
 	 */
-	public function register_metabox() {
-		// Detect HPOS: use the controller class name as the screen ID when HPOS is active.
-		$screen = 'shop_order';
-		if (
-			class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' )
-			&& function_exists( 'wc_get_container' )
-		) {
-			try {
-				$controller = wc_get_container()->get(
-					\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class
-				);
-				if ( $controller && $controller->custom_orders_table_usage_is_enabled() ) {
-					$screen = \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class;
-				}
-			} catch ( \Exception $e ) {
-				// Fall back to classic screen ID.
-			}
+	public function register_metabox(): void {
+		// Use stable WC API (WC 8.6+) when available; fall back to legacy 'shop_order' screen.
+		if ( function_exists( 'wc_get_page_screen_id' ) ) {
+			$screen = wc_get_page_screen_id( 'shop-order' );
+		} else {
+			$screen = 'shop_order';
 		}
 
 		add_meta_box(
@@ -108,7 +100,6 @@ class KwtSMS_Woo_Metabox {
 			}
 		}
 
-		wp_nonce_field( 'kwtsms_woo_custom_sms', 'kwtsms_woo_custom_sms_nonce' );
 		?>
 		<div id="kwtsms-metabox-wrap">
 			<p>
@@ -196,6 +187,12 @@ class KwtSMS_Woo_Metabox {
 			wp_send_json_error(
 				array( 'message' => __( 'Order, phone, and message are required.', 'wp-kwtsms-otp' ) )
 			);
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			wp_send_json_error( array( 'message' => __( 'Order not found.', 'wp-kwtsms-otp' ) ) );
 			return;
 		}
 

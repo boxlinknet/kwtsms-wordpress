@@ -368,10 +368,11 @@ class KwtSMS_Admin {
 		);
 
 		// Sanitize woo_notify_admin_statuses: array of recognised WC order status slugs.
-		$allowed_statuses      = array(
+		// Both sides are normalized with sanitize_key() so comparisons are consistent.
+		$allowed_statuses      = array_map( 'sanitize_key', array(
 			'processing', 'on-hold', 'completed', 'cancelled',
 			'pending', 'refunded', 'failed',
-		);
+		) );
 		$raw_notify            = $raw['woo_notify_admin_statuses'] ?? array();
 		$notify_admin_statuses = array_values(
 			array_filter(
@@ -388,7 +389,7 @@ class KwtSMS_Admin {
 			'wpforms_enabled'           => ! empty( $raw['wpforms_enabled'] ) ? 1 : 0,
 			'elementor_enabled'         => ! empty( $raw['elementor_enabled'] ) ? 1 : 0,
 			'woo_checkout_otp'          => ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0,
-			'woo_admin_phone'           => sanitize_text_field( $raw['woo_admin_phone'] ?? '' ),
+			'woo_admin_phone'           => sanitize_text_field( wp_unslash( $raw['woo_admin_phone'] ?? '' ) ),
 			'woo_notify_admin_statuses' => $notify_admin_statuses,
 		);
 

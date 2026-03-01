@@ -1445,7 +1445,7 @@ class Test_KwtSMS_Woo_v230 extends TestCase {
 		$sent_contexts = array();
 
 		$api = $this->getMockBuilder( 'stdClass' )
-			->addMethods( array( 'send_sms', 'normalize_phone' ) )
+			->addMethods( array( 'send_sms' ) )
 			->getMock();
 		$api->method( 'send_sms' )->willReturnCallback(
 			function ( $phone, $sender_id, $message, $context ) use ( &$sent_contexts ) {
@@ -1644,5 +1644,209 @@ class Test_KwtSMS_Woo_v230 extends TestCase {
 		$plugin->api      = $api_mock;
 
 		return $plugin;
+	}
+}
+
+/**
+ * Class Test_KwtSMS_Woo_Metabox
+ *
+ * Tests for the KwtSMS_Woo_Metabox AJAX handler (ajax_send_custom_sms).
+ *
+ * Brain\Monkey stubs are used for all WordPress and WooCommerce functions so
+ * the tests run without a full WordPress or WooCommerce installation.
+ */
+class Test_KwtSMS_Woo_Metabox extends TestCase {
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+
+		// Standard WP function stubs needed by most paths.
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'sanitize_textarea_field' )->alias( 'trim' );
+		Functions\when( 'wp_unslash' )->alias( function ( $v ) { return $v; } );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
+		Functions\when( '__' )->alias( function ( $text, $domain = '' ) { return $text; } );
+		Functions\when( 'absint' )->alias( function ( $v ) { return abs( (int) $v ); } );
+		Functions\when( 'get_option' )->justReturn( array() );
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	// =========================================================================
+	// Test 1 — Rejects request when current user lacks edit_shop_orders cap
+	// =========================================================================
+
+	/**
+	 * When current_user_can('edit_shop_orders') returns false, ajax_send_custom_sms()
+	 * must call wp_send_json_error with a permission-denied message and return
+	 * without calling send_sms().
+	 */
+	public function test_ajax_send_custom_sms_rejects_missing_capability() {
+		Functions\when( 'check_ajax_referer' )->justReturn( true );
+		Functions\when( 'current_user_can' )->justReturn( false );
+
+		$json_error_called = false;
+		$json_error_data   = null;
+		Functions\when( 'wp_send_json_error' )->alias(
+			function ( $data ) use ( &$json_error_called, &$json_error_data ) {
+				$json_error_called = true;
+				$json_error_data   = $data;
+			}
+		);
+		Functions\when( 'wp_send_json_success' )->justReturn( null );
+
+		// Provide POST data so we don't hit the field-missing guard first.
+		$_POST = array(
+			'order_id' => '10',
+			'phone'    => '96598765432',
+			'message'  => 'Hello',
+			'nonce'    => 'fake_nonce',
+		);
+
+		$metabox = $this->make_metabox_instance();
+		$metabox->ajax_send_custom_sms();
+
+		$this->assertTrue( $json_error_called, 'wp_send_json_error should be called for missing capability.' );
+		$this->assertStringContainsString( 'Permission denied', $json_error_data['message'] );
+
+		$_POST = array();
+	}
+
+	// =========================================================================
+	// Test 2 — Rejects request when phone fails normalize_phone validation
+	// =========================================================================
+
+	/**
+	 * When current_user_can returns true and the nonce passes, but the phone
+	 * number is invalid (normalize_phone returns a WP_Error), ajax_send_custom_sms()
+	 * must call wp_send_json_error with the phone validation message.
+	 */
+	public function test_ajax_send_custom_sms_rejects_invalid_phone() {
+		Functions\when( 'check_ajax_referer' )->justReturn( true );
+		Functions\when( 'current_user_can' )->justReturn( true );
+
+		$order_mock = $this->getMockBuilder( 'WC_Order' )->getMock();
+		Functions\when( 'wc_get_order' )->justReturn( $order_mock );
+
+		$phone_error = new WP_Error( 'invalid_phone', 'Phone number must include country code.' );
+		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( $phone_error );
+
+		$json_error_called = false;
+		$json_error_data   = null;
+		Functions\when( 'wp_send_json_error' )->alias(
+			function ( $data ) use ( &$json_error_called, &$json_error_data ) {
+				$json_error_called = true;
+				$json_error_data   = $data;
+			}
+		);
+		Functions\when( 'wp_send_json_success' )->justReturn( null );
+
+		$_POST = array(
+			'order_id' => '10',
+			'phone'    => 'not-a-valid-phone',
+			'message'  => 'Hello',
+			'nonce'    => 'fake_nonce',
+		);
+
+		$metabox = $this->make_metabox_instance();
+		$metabox->ajax_send_custom_sms();
+
+		$this->assertTrue( $json_error_called, 'wp_send_json_error should be called for invalid phone.' );
+		$this->assertStringContainsString( 'country code', $json_error_data['message'] );
+
+		$_POST = array();
+	}
+
+	// =========================================================================
+	// Test 3 — Sends SMS and returns success for valid inputs
+	// =========================================================================
+
+	/**
+	 * When all inputs are valid (capability granted, order exists, phone normalises,
+	 * and send_sms succeeds), ajax_send_custom_sms() must call wp_send_json_success.
+	 */
+	public function test_ajax_send_custom_sms_sends_and_returns_success() {
+		Functions\when( 'check_ajax_referer' )->justReturn( true );
+		Functions\when( 'current_user_can' )->justReturn( true );
+
+		$order_mock = $this->getMockBuilder( 'WC_Order' )->getMock();
+		Functions\when( 'wc_get_order' )->justReturn( $order_mock );
+
+		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96598765432' );
+
+		$send_sms_called = false;
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function () use ( &$send_sms_called ) {
+				$send_sms_called = true;
+				return true;
+			}
+		);
+
+		$json_success_called = false;
+		Functions\when( 'wp_send_json_success' )->alias(
+			function () use ( &$json_success_called ) {
+				$json_success_called = true;
+			}
+		);
+		Functions\when( 'wp_send_json_error' )->justReturn( null );
+
+		$_POST = array(
+			'order_id' => '10',
+			'phone'    => '96598765432',
+			'message'  => 'Hello from test',
+			'nonce'    => 'fake_nonce',
+		);
+
+		$metabox = $this->make_metabox_instance( $api );
+		$metabox->ajax_send_custom_sms();
+
+		$this->assertTrue( $send_sms_called, 'api->send_sms() should have been called.' );
+		$this->assertTrue( $json_success_called, 'wp_send_json_success() should have been called.' );
+
+		$_POST = array();
+	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
+
+	/**
+	 * Build a KwtSMS_Woo_Metabox instance with stubbed API and settings.
+	 *
+	 * @param object|null $api_mock Optional API stub. Defaults to a no-op send_sms stub.
+	 *
+	 * @return KwtSMS_Woo_Metabox
+	 */
+	private function make_metabox_instance( $api_mock = null ) {
+		// Stub add_action — KwtSMS_Woo_Metabox constructor calls it twice.
+		Functions\when( 'add_action' )->justReturn( null );
+
+		if ( null === $api_mock ) {
+			$api_mock = $this->getMockBuilder( 'stdClass' )
+				->addMethods( array( 'send_sms' ) )
+				->getMock();
+			$api_mock->method( 'send_sms' )->willReturn( null );
+		}
+
+		$settings = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'get' ) )
+			->getMock();
+		$settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) {
+				if ( 'gateway.sender_id' === $key ) {
+					return 'TESTSENDER';
+				}
+				return $default;
+			}
+		);
+
+		return new KwtSMS_Woo_Metabox( $api_mock, $settings );
 	}
 }
