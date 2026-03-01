@@ -234,6 +234,11 @@ class KwtSMS_Admin {
 			$default_cc = $defaults['default_country_code'];
 		}
 
+		// Sanitize otp_required_roles: allow only role slugs that exist in WP.
+		$all_roles        = array_keys( wp_roles()->get_names() );
+		$raw_roles        = array_map( 'sanitize_text_field', (array) ( $raw['otp_required_roles'] ?? array() ) );
+		$otp_required_roles = array_values( array_intersect( $raw_roles, $all_roles ) );
+
 		return array(
 			'otp_mode'             => in_array( $raw['otp_mode'] ?? '', array( '2fa', 'passwordless', 'both' ), true )
 				? $raw['otp_mode']
@@ -258,6 +263,7 @@ class KwtSMS_Admin {
 			'allowed_countries'    => $allowed_countries,
 			'debug_logging'        => ! empty( $raw['debug_logging'] ) ? 1 : 0,
 			'blocked_phones'       => sanitize_textarea_field( wp_unslash( $raw['blocked_phones'] ?? '' ) ),
+			'otp_required_roles'   => $otp_required_roles,
 		);
 	}
 
