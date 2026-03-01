@@ -59,6 +59,26 @@ foreach ( $all_countries as $cc ) {
 		<table class="form-table" role="presentation">
 
 			<tr>
+				<th scope="row"><label><?php esc_html_e( 'Enable Login OTP', 'wp-kwtsms-otp' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_general[login_otp]" value="1" <?php checked( $general['login_otp'], 1 ); ?> />
+						<?php esc_html_e( 'Require OTP on login', 'wp-kwtsms-otp' ); ?>
+					</label>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><label><?php esc_html_e( 'Enable Password Reset OTP', 'wp-kwtsms-otp' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_general[reset_otp]" value="1" <?php checked( $general['reset_otp'], 1 ); ?> />
+						<?php esc_html_e( 'Use SMS OTP for password reset (instead of email link)', 'wp-kwtsms-otp' ); ?>
+					</label>
+				</td>
+			</tr>
+
+			<tr>
 				<th scope="row"><label><?php esc_html_e( 'OTP Mode', 'wp-kwtsms-otp' ); ?></label></th>
 				<td>
 					<?php
@@ -76,26 +96,6 @@ foreach ( $all_countries as $cc ) {
 							<?php echo esc_html( $label ); ?>
 						</label>
 					<?php endforeach; ?>
-				</td>
-			</tr>
-
-			<tr>
-				<th scope="row"><label><?php esc_html_e( 'Enable Login OTP', 'wp-kwtsms-otp' ); ?></label></th>
-				<td>
-					<label>
-						<input type="checkbox" name="kwtsms_otp_general[login_otp]" value="1" <?php checked( $general['login_otp'], 1 ); ?> />
-						<?php esc_html_e( 'Require OTP on login', 'wp-kwtsms-otp' ); ?>
-					</label>
-				</td>
-			</tr>
-
-			<tr>
-				<th scope="row"><label><?php esc_html_e( 'Enable Password Reset OTP', 'wp-kwtsms-otp' ); ?></label></th>
-				<td>
-					<label>
-						<input type="checkbox" name="kwtsms_otp_general[reset_otp]" value="1" <?php checked( $general['reset_otp'], 1 ); ?> />
-						<?php esc_html_e( 'Use SMS OTP for password reset (instead of email link)', 'wp-kwtsms-otp' ); ?>
-					</label>
 				</td>
 			</tr>
 
