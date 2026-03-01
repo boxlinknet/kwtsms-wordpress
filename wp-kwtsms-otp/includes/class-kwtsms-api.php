@@ -48,7 +48,7 @@ class KwtSMS_API {
 	private $password;
 
 	/**
-	 * Whether to send in test mode (test=1 — messages queued but not delivered).
+	 * Whether to add test=1 to the send payload (API queues but does not deliver).
 	 *
 	 * @var bool
 	 */
@@ -168,13 +168,12 @@ class KwtSMS_API {
 			return $err;
 		}
 
-		// In test mode: sender_id not needed for actual delivery — skip sender check.
-		if ( ! $this->test_mode && empty( $sender_id ) ) {
+		if ( empty( $sender_id ) ) {
 			$err = new WP_Error(
 				'kwtsms_missing_sender_id',
 				__( 'Cannot send SMS: no Sender ID configured. Go to Settings → kwtSMS → Gateway, save your credentials, then choose a Sender ID from the dropdown.', 'wp-kwtsms-otp' )
 			);
-			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty (live mode)' );
+			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty' );
 			self::append_send_log( $phone, 'failed', $type );
 			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_code() ) );
 			return $err;
@@ -198,27 +197,9 @@ class KwtSMS_API {
 			'message' => $message,
 		);
 
-		// In test mode: log OTP to debug.log and return mock success — no real API call.
+		// In test mode: add test=1 to payload so the API queues but does not deliver.
 		if ( $this->test_mode ) {
-			$log_line = '[kwtsms-otp TEST] SMS to ' . $phone . ': ' . $message;
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				// phpcs:ignore WordPress.PHP.DevelopmentFunctions
-				error_log( $log_line );
-			}
-			// Also write to plugin dir so it's readable from mounted filesystem.
-			if ( defined( 'KWTSMS_OTP_DIR' ) ) {
-				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-				file_put_contents( KWTSMS_OTP_DIR . 'test-otp.log', date( 'Y-m-d H:i:s' ) . ' ' . $log_line . PHP_EOL, FILE_APPEND );
-			}
-			$test_msg_id = 'TEST-' . time();
-			$result      = array(
-				'msg_id'        => $test_msg_id,
-				'balance_after' => 0.0,
-			);
-			$this->write_debug_log( 'send_sms()', "TEST mode — mock sent, msg_id={$test_msg_id}" );
-			self::append_send_log( $phone, 'sent', $type, $sender_id );
-			self::append_sms_history( $phone, $message, 'sent', $type, $test_msg_id, $sender_id, array( 'ok' => true, 'code' => '', 'message' => 'Test mode' ) );
-			return $result;
+			$payload['test'] = 1;
 		}
 
 		$response = $this->request( 'send/', $payload );
