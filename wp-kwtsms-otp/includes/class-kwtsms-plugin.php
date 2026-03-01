@@ -453,20 +453,38 @@ class KwtSMS_Plugin {
 		$coverage_arr = ( ! is_wp_error( $coverage ) ) ? (array) $coverage : array();
 
 		// Enrich coverage items with dial codes from the local country-codes data.
-		$_countries   = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
-		$_dial_name   = array();
-		$_dial_iso2   = array();
+		$_countries    = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+		$_dial_name    = array(); // lowercase name → dial
+		$_dial_iso2    = array(); // ISO2            → dial
+		$_name_by_dial = array(); // dial            → name
 		foreach ( $_countries as $_cc ) {
 			$_dial_name[ strtolower( $_cc['name'] ) ] = $_cc['dial'];
 			$_dial_iso2[ $_cc['iso2'] ]                = $_cc['dial'];
+			$_name_by_dial[ $_cc['dial'] ]             = $_cc['name'];
 		}
 		unset( $_countries, $_cc );
+
+		// API status strings that should never be treated as country names.
+		$_cov_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/A', 'NA', 'TRUE', 'FALSE' );
 
 		$coverage_enriched = array();
 		foreach ( $coverage_arr as $_cov ) {
 			if ( is_array( $_cov ) ) {
 				$_cname = $_cov['name'] ?? $_cov['country'] ?? $_cov['countryName'] ?? $_cov['CountryName'] ?? '';
 				$_ciso2 = $_cov['cc']   ?? $_cov['iso2'] ?? '';
+				// Skip API status codes stored as country names.
+				if ( in_array( strtoupper( (string) $_cname ), $_cov_api_codes, true ) ) {
+					continue;
+				}
+				// Bare digit string stored as name? Treat as dial code → resolve country.
+				if ( '' !== $_cname && ctype_digit( (string) $_cname ) ) {
+					$_rname = $_name_by_dial[ $_cname ] ?? '';
+					if ( '' === $_rname ) {
+						continue;
+					}
+					$coverage_enriched[] = array( 'name' => $_rname, 'dial' => $_cname );
+					continue;
+				}
 				if ( ! isset( $_cov['dial'] ) ) {
 					$_cdial = $_dial_name[ strtolower( $_cname ) ] ?? ( $_ciso2 ? ( $_dial_iso2[ strtoupper( $_ciso2 ) ] ?? '' ) : '' );
 					if ( '' !== $_cdial ) {
@@ -475,12 +493,28 @@ class KwtSMS_Plugin {
 				}
 				$coverage_enriched[] = $_cov;
 			} else {
-				$_cname               = (string) $_cov;
-				$_cdial               = $_dial_name[ strtolower( $_cname ) ] ?? '';
+				$_cname = trim( (string) $_cov );
+				if ( '' === $_cname ) {
+					continue;
+				}
+				// Skip API status codes.
+				if ( in_array( strtoupper( $_cname ), $_cov_api_codes, true ) ) {
+					continue;
+				}
+				// Bare dial-code digit string? Resolve to country name.
+				if ( ctype_digit( $_cname ) ) {
+					$_rname = $_name_by_dial[ $_cname ] ?? '';
+					if ( '' === $_rname ) {
+						continue;
+					}
+					$coverage_enriched[] = array( 'name' => $_rname, 'dial' => $_cname );
+					continue;
+				}
+				$_cdial              = $_dial_name[ strtolower( $_cname ) ] ?? '';
 				$coverage_enriched[] = array_filter( array( 'name' => $_cname, 'dial' => $_cdial ) );
 			}
 		}
-		unset( $_dial_name, $_dial_iso2, $_cov, $_cname, $_ciso2, $_cdial );
+		unset( $_dial_name, $_dial_iso2, $_name_by_dial, $_cov_api_codes, $_cov, $_cname, $_ciso2, $_cdial, $_rname );
 		$coverage_arr = $coverage_enriched;
 
 		// Persist the verified state, credentials, and all fetched gateway data

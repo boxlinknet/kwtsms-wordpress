@@ -18,15 +18,22 @@ $test_mode            = ! empty( $gateway['test_mode'] );
 $credentials_verified = ! empty( $gateway['credentials_verified'] );
 $sender_ids           = $gateway['sender_ids'] ?? array();
 
-// Build a dial-code lookup from country-codes.php for coverage pills.
+// Build dial-code lookups for coverage pills.
 $_cc_data_all  = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
-$_dial_by_name = array();
-$_dial_by_iso2 = array();
+$_dial_by_name = array(); // lowercase name  → dial
+$_dial_by_iso2 = array(); // ISO2            → dial
+$_name_by_dial = array(); // dial            → name  (for bare-code entries)
+$_iso2_by_dial = array(); // dial            → iso2
 foreach ( $_cc_data_all as $_cce ) {
 	$_dial_by_name[ strtolower( $_cce['name'] ) ] = $_cce['dial'];
 	$_dial_by_iso2[ $_cce['iso2'] ]                = $_cce['dial'];
+	$_name_by_dial[ $_cce['dial'] ]                = $_cce['name'];
+	$_iso2_by_dial[ $_cce['dial'] ]                = $_cce['iso2'];
 }
 unset( $_cc_data_all, $_cce );
+
+// API status codes that must never be treated as country names.
+$_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/A', 'NA', 'TRUE', 'FALSE' );
 ?>
 <div class="wrap kwtsms-admin-wrap">
 
@@ -43,14 +50,15 @@ unset( $_cc_data_all, $_cce );
 	$bal_purchased = $gateway['balance_purchased'] ?? null;
 	?>
 	<div class="kwtsms-balance-bar" id="kwtsms-balance-card"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
-		<div class="kwtsms-balance-bar-main">
-			<strong id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></strong>
-			<?php esc_html_e( 'credits available', 'wp-kwtsms-otp' ); ?>
-			<span id="kwtsms-balance-purchased">
+		<div class="kwtsms-balance-label"><?php esc_html_e( 'Available SMS Balance', 'wp-kwtsms-otp' ); ?></div>
+		<div class="kwtsms-balance-amount">
+			<span id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></span>
+			<span class="kwtsms-balance-unit"><?php esc_html_e( 'credits', 'wp-kwtsms-otp' ); ?></span>
+		</div>
+		<div id="kwtsms-balance-purchased" class="kwtsms-balance-sub">
 			<?php if ( null !== $bal_purchased && $bal_purchased > 0 ) : ?>
-				<?php printf( esc_html__( '· of %s purchased', 'wp-kwtsms-otp' ), esc_html( number_format( (float) $bal_purchased, 2 ) ) ); ?>
+			<?php printf( esc_html__( 'of %s purchased', 'wp-kwtsms-otp' ), esc_html( number_format( (float) $bal_purchased, 2 ) ) ); ?>
 			<?php endif; ?>
-			</span>
 		</div>
 	</div>
 
@@ -100,28 +108,28 @@ unset( $_cc_data_all, $_cce );
 						<button type="button" id="kwtsms-login-btn" class="button button-primary" style="display:none;">
 							<?php esc_html_e( 'Login', 'wp-kwtsms-otp' ); ?>
 						</button>
-						<div>
+						<div style="display:flex;flex-direction:row;gap:10px;align-items:center;">
 							<button type="button" id="kwtsms-reload-all" class="button">
 								&#x21BB; <?php esc_html_e( 'Reload', 'wp-kwtsms-otp' ); ?>
 							</button>
-							<p class="description" style="margin-top:4px;"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from kwtSMS.', 'wp-kwtsms-otp' ); ?></p>
+							<button type="button" id="kwtsms-logout-btn" class="button">
+								<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
+							</button>
 						</div>
-						<button type="button" id="kwtsms-logout-btn" class="button">
-							<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
-						</button>
+						<p class="description kwtsms-reload-hint"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from kwtSMS.', 'wp-kwtsms-otp' ); ?></p>
 						<?php else : ?>
 						<button type="button" id="kwtsms-login-btn" class="button button-primary">
 							<?php esc_html_e( 'Login', 'wp-kwtsms-otp' ); ?>
 						</button>
-						<div>
+						<div style="display:flex;flex-direction:row;gap:10px;align-items:center;">
 							<button type="button" id="kwtsms-reload-all" class="button" style="display:none;">
 								&#x21BB; <?php esc_html_e( 'Reload', 'wp-kwtsms-otp' ); ?>
 							</button>
-							<p class="description kwtsms-reload-hint" style="margin-top:4px;display:none;"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from kwtSMS.', 'wp-kwtsms-otp' ); ?></p>
+							<button type="button" id="kwtsms-logout-btn" class="button" style="display:none;">
+								<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
+							</button>
 						</div>
-						<button type="button" id="kwtsms-logout-btn" class="button" style="display:none;">
-							<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
-						</button>
+						<p class="description kwtsms-reload-hint" style="display:none;"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from kwtSMS.', 'wp-kwtsms-otp' ); ?></p>
 						<?php endif; ?>
 						</div>
 						<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite">
@@ -205,13 +213,15 @@ unset( $_cc_data_all, $_cce );
 		<h2 class="title"><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms-otp' ); ?></h2>
 		<table class="form-table" role="presentation">
 			<tr>
-				<th scope="row"><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms-otp' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Active Coverage', 'wp-kwtsms-otp' ); ?></th>
 				<td id="kwtsms-coverage-section" aria-live="polite">
 					<div id="kwtsms-coverage-result" style="display:flex;flex-wrap:wrap;gap:6px;" aria-live="polite">
 						<?php
 						$saved_cov = $gateway['coverage'] ?? array();
 						if ( ! empty( $saved_cov ) ) :
 							foreach ( $saved_cov as $c ) :
+								$_cname = '';
+								$_cdial = '';
 								if ( is_array( $c ) ) {
 									$_cname = $c['name'] ?? $c['country'] ?? $c['countryName'] ?? $c['CountryName'] ?? $c['cc'] ?? '';
 									if ( '' === $_cname ) {
@@ -219,17 +229,37 @@ unset( $_cc_data_all, $_cce );
 											if ( is_string( $v ) && '' !== $v ) { $_cname = $v; break; }
 										}
 									}
-									// Dial code: from stored 'dial' field, or look up by name/iso2.
-									$_cdial = $c['dial'] ?? $_dial_by_name[ strtolower( $_cname ) ] ?? '';
-									if ( '' === $_cdial && ! empty( $c['cc'] ) ) {
-										$_cdial = $_dial_by_iso2[ strtoupper( $c['cc'] ) ] ?? '';
+									if ( '' === $_cname ) continue;
+									// Skip API status codes stored as country names.
+									if ( in_array( strtoupper( $_cname ), $_api_codes, true ) ) continue;
+									// Bare dial-code digit string stored as name? Resolve to country.
+									if ( ctype_digit( $_cname ) ) {
+										$_rname = $_name_by_dial[ $_cname ] ?? '';
+										if ( '' === $_rname ) continue;
+										$_cdial = $_cname;
+										$_cname = $_rname;
+									} else {
+										$_cdial = $c['dial'] ?? $_dial_by_name[ strtolower( $_cname ) ] ?? '';
+										if ( '' === $_cdial && ! empty( $c['cc'] ) ) {
+											$_cdial = $_dial_by_iso2[ strtoupper( $c['cc'] ) ] ?? '';
+										}
 									}
 								} else {
-									$_cname = (string) $c;
-									$_cdial = $_dial_by_name[ strtolower( $_cname ) ] ?? '';
+									$_cname = trim( (string) $c );
+									if ( '' === $_cname ) continue;
+									// Skip API status codes.
+									if ( in_array( strtoupper( $_cname ), $_api_codes, true ) ) continue;
+									// Bare dial-code digit string? Resolve to country name.
+									if ( ctype_digit( $_cname ) ) {
+										$_rname = $_name_by_dial[ $_cname ] ?? '';
+										if ( '' === $_rname ) continue;
+										$_cdial = $_cname;
+										$_cname = $_rname;
+									} else {
+										$_cdial = $_dial_by_name[ strtolower( $_cname ) ] ?? '';
+									}
 								}
-								if ( '' === $_cname ) continue;
-								$_clabel = $_cdial ? $_cname . ' (+' . $_cdial . ')' : $_cname;
+								$_clabel = '' !== $_cdial ? $_cname . ' (+' . $_cdial . ')' : $_cname;
 								echo '<span class="kwtsms-tag-chip">' . esc_html( $_clabel ) . '</span>';
 							endforeach;
 						endif;
