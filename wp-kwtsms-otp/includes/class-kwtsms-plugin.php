@@ -686,6 +686,15 @@ class KwtSMS_Plugin {
 			return;
 		}
 
+		// Reject numbers that are too short — country code + local number must be at least 10 digits.
+		// e.g. Kuwait: 965 (3) + 8 local = 11 total. Anything under 10 is clearly incomplete.
+		if ( strlen( $normalized ) < 10 ) {
+			wp_send_json_error( array(
+				'message' => __( 'Phone number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits, 11 digits total).', 'wp-kwtsms-otp' ),
+			) );
+			return;
+		}
+
 		// Build the test message: site name + timestamp with GMT offset label.
 		$tz_string = wp_timezone_string();
 		try {

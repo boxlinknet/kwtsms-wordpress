@@ -98,7 +98,7 @@
 			if ( d.balance ) {
 				$balance.text( parseFloat( d.balance.available ).toFixed( 2 ) );
 				if ( d.balance.purchased ) {
-					$balanceSub.text( ( s.ofPurchased || 'of %s purchased' ).replace( '%s', parseFloat( d.balance.purchased ).toFixed( 2 ) ) );
+					$balanceSub.text( parseFloat( d.balance.purchased ).toFixed( 2 ) );
 				}
 			}
 
@@ -287,6 +287,13 @@
 			const dial = data.defaultDialCode || '965';
 			phone = dial + digitsOnly;
 			$field.val( phone ); // update the field so user sees the full number
+		}
+
+		// Reject numbers that are too short — must have country code + local number (min 10 digits).
+		const digitsNorm = phone.replace( /^\+/, '' ).replace( /^00/, '' ).replace( /\D/g, '' );
+		if ( digitsNorm.length < 10 ) {
+			$result.text( s.phoneTooShort || 'Number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits).' ).css( 'color', '#dc3232' );
+			return;
 		}
 
 		$btn.prop( 'disabled', true ).text( s.sending || 'Sending...' );
