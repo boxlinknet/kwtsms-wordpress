@@ -80,6 +80,7 @@ class Test_KwtSMS_Woo extends TestCase {
 		Functions\when( 'wp_unslash' )->alias( function ( $v ) { return $v; } );
 		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
 		Functions\when( 'get_user_meta' )->justReturn( '' );
+		Functions\when( 'is_admin' )->justReturn( false );
 
 		// Capture add_action / add_filter calls into instance arrays.
 		Functions\when( 'add_action' )->alias( function ( $hook ) {
@@ -582,7 +583,7 @@ class Test_KwtSMS_Integrations_Settings extends TestCase {
 		$settings  = new KwtSMS_Settings();
 		$templates = $settings->get_all_integration_templates();
 		$this->assertIsArray( $templates );
-		$this->assertCount( 10, $templates );
+		$this->assertCount( 12, $templates );
 		$this->assertArrayHasKey( 'woo_processing', $templates );
 		$this->assertArrayHasKey( 'cf7_confirmation', $templates );
 		$this->assertArrayHasKey( 'elementor_confirmation', $templates );
@@ -995,9 +996,6 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 			return $obj instanceof $class;
 		} );
 
-		// Stub KwtSMS_API::normalize_phone to pass through the phone unchanged.
-		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96598765432' );
-
 		$cf7->send_confirmation_sms( $cf7_form );
 
 		$this->assertNotNull( $sent_message, 'send_sms was not called — no message was sent.' );
@@ -1093,9 +1091,6 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 			'settings' => array( 'form_title' => 'My Contact Form' ),
 		);
 
-		// Stub KwtSMS_API::normalize_phone to pass through the phone unchanged.
-		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96598765432' );
-
 		$wpforms->send_confirmation_sms( $fields, array(), $form_data, 0 );
 
 		$this->assertNotNull( $sent_message, 'send_sms was not called — no message was sent.' );
@@ -1164,8 +1159,6 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 		Functions\when( 'is_a' )->alias( function ( $obj, $class ) {
 			return $obj instanceof $class;
 		} );
-
-		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96598765432' );
 
 		$cf7->send_confirmation_sms( $cf7_form );
 
@@ -1277,6 +1270,9 @@ class Test_KwtSMS_Woo_v230 extends TestCase {
 
 		// Stub WooCommerce helper used in admin notification message.
 		Functions\when( 'wc_get_order_status_name' )->alias( function ( $status ) { return ucfirst( $status ); } );
+
+		// Stub wp_strip_all_tags used when building admin notification messages.
+		Functions\when( 'wp_strip_all_tags' )->returnArg();
 
 	}
 
@@ -1668,6 +1664,7 @@ class Test_KwtSMS_Woo_Metabox extends TestCase {
 		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
 		Functions\when( '__' )->alias( function ( $text, $domain = '' ) { return $text; } );
 		Functions\when( 'absint' )->alias( function ( $v ) { return abs( (int) $v ); } );
+		Functions\when( 'esc_html' )->alias( function ( $text ) { return $text; } );
 		Functions\when( 'get_option' )->justReturn( array() );
 	}
 
@@ -1732,9 +1729,6 @@ class Test_KwtSMS_Woo_Metabox extends TestCase {
 		$order_mock = $this->getMockBuilder( 'WC_Order' )->getMock();
 		Functions\when( 'wc_get_order' )->justReturn( $order_mock );
 
-		$phone_error = new WP_Error( 'invalid_phone', 'Phone number must include country code.' );
-		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( $phone_error );
-
 		$json_error_called = false;
 		$json_error_data   = null;
 		Functions\when( 'wp_send_json_error' )->alias(
@@ -1775,8 +1769,6 @@ class Test_KwtSMS_Woo_Metabox extends TestCase {
 
 		$order_mock = $this->getMockBuilder( 'WC_Order' )->getMock();
 		Functions\when( 'wc_get_order' )->justReturn( $order_mock );
-
-		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96598765432' );
 
 		$send_sms_called = false;
 		$api = $this->getMockBuilder( 'stdClass' )
@@ -1907,6 +1899,7 @@ class Test_KwtSMS_GravityForms extends TestCase {
 		} );
 		Functions\when( 'is_rtl' )->justReturn( false );
 		Functions\when( 'delete_transient' )->justReturn( true );
+		Functions\when( '__' )->alias( function ( $text, $domain = '' ) { return $text; } );
 
 		Functions\when( 'add_action' )->alias( function ( $hook ) {
 			$this->registered_actions[] = $hook;
@@ -1975,9 +1968,6 @@ class Test_KwtSMS_GravityForms extends TestCase {
 			$integration_templates,
 			$api
 		);
-
-		// Stub KwtSMS_API::normalize_phone to pass through unchanged.
-		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96598765432' );
 
 		$gf = new KwtSMS_GravityForms( $plugin );
 
@@ -2149,7 +2139,7 @@ class Test_KwtSMS_GravityForms extends TestCase {
 		/** @var KwtSMS_Plugin $plugin */
 		$plugin = $this->getMockBuilder( 'KwtSMS_Plugin' )
 			->disableOriginalConstructor()
-			->addMethods( array( 'verify_form_token' ) )
+			->onlyMethods( array( 'verify_form_token' ) )
 			->getMock();
 
 		$plugin->settings = $settings;
@@ -2267,8 +2257,6 @@ class Test_KwtSMS_NinjaForms extends TestCase {
 			$api
 		);
 
-		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96598765432' );
-
 		$nf = new KwtSMS_NinjaForms( $plugin );
 
 		// Confirm the notification hook was registered.
@@ -2332,8 +2320,6 @@ class Test_KwtSMS_NinjaForms extends TestCase {
 			$integration_templates,
 			$api
 		);
-
-		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96599220333' );
 
 		$nf = new KwtSMS_NinjaForms( $plugin );
 
@@ -2498,7 +2484,7 @@ class Test_KwtSMS_NinjaForms extends TestCase {
 		/** @var KwtSMS_Plugin $plugin */
 		$plugin = $this->getMockBuilder( 'KwtSMS_Plugin' )
 			->disableOriginalConstructor()
-			->addMethods( array( 'verify_form_token' ) )
+			->onlyMethods( array( 'verify_form_token' ) )
 			->getMock();
 
 		$plugin->settings = $settings;
