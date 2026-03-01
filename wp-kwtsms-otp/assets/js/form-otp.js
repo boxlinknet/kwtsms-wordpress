@@ -231,9 +231,10 @@
 			url:    ajaxUrl,
 			type:   'POST',
 			data:   {
-				action: 'kwtsms_form_send_otp',
-				nonce:  nonce,
-				phone:  phone,
+				action:  'kwtsms_form_send_otp',
+				nonce:   nonce,
+				phone:   phone,
+				form_id: ( pendingForm && pendingForm.id ) ? pendingForm.id : ( pendingForm && $( pendingForm ).data( 'form-id' ) ) || 0,
 			},
 			success: function ( res ) {
 				if ( res.success ) {
