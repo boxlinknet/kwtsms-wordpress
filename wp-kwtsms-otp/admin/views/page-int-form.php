@@ -96,7 +96,7 @@ $current_mode = $int[ $mode_key ] ?? 'notification';
 $tpl         = $templates[ $tpl_key ] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
 
 /* translators: %s: integration label e.g. "WPForms" */
-$page_title = sprintf( __( 'kwtSMS — %s Settings', 'wp-kwtsms-otp' ), $label );
+$page_title = sprintf( __( '%s Settings', 'wp-kwtsms-otp' ), $label );
 ?>
 <div class="wrap kwtsms-admin-wrap">
 

@@ -452,6 +452,37 @@ class KwtSMS_Plugin {
 		$coverage     = $api->get_coverage();
 		$coverage_arr = ( ! is_wp_error( $coverage ) ) ? (array) $coverage : array();
 
+		// Enrich coverage items with dial codes from the local country-codes data.
+		$_countries   = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+		$_dial_name   = array();
+		$_dial_iso2   = array();
+		foreach ( $_countries as $_cc ) {
+			$_dial_name[ strtolower( $_cc['name'] ) ] = $_cc['dial'];
+			$_dial_iso2[ $_cc['iso2'] ]                = $_cc['dial'];
+		}
+		unset( $_countries, $_cc );
+
+		$coverage_enriched = array();
+		foreach ( $coverage_arr as $_cov ) {
+			if ( is_array( $_cov ) ) {
+				$_cname = $_cov['name'] ?? $_cov['country'] ?? $_cov['countryName'] ?? $_cov['CountryName'] ?? '';
+				$_ciso2 = $_cov['cc']   ?? $_cov['iso2'] ?? '';
+				if ( ! isset( $_cov['dial'] ) ) {
+					$_cdial = $_dial_name[ strtolower( $_cname ) ] ?? ( $_ciso2 ? ( $_dial_iso2[ strtoupper( $_ciso2 ) ] ?? '' ) : '' );
+					if ( '' !== $_cdial ) {
+						$_cov['dial'] = $_cdial;
+					}
+				}
+				$coverage_enriched[] = $_cov;
+			} else {
+				$_cname               = (string) $_cov;
+				$_cdial               = $_dial_name[ strtolower( $_cname ) ] ?? '';
+				$coverage_enriched[] = array_filter( array( 'name' => $_cname, 'dial' => $_cdial ) );
+			}
+		}
+		unset( $_dial_name, $_dial_iso2, $_cov, $_cname, $_ciso2, $_cdial );
+		$coverage_arr = $coverage_enriched;
+
 		// Persist the verified state, credentials, and all fetched gateway data
 		// so that page reloads (and multi-worker SQLite in WP Playground) do not
 		// lose the sender ID list, balance, or coverage between AJAX and form-save.
@@ -621,8 +652,19 @@ class KwtSMS_Plugin {
 			return;
 		}
 
-		$test_code = $this->otp->generate( 'test_admin', 'login' );
-		$message   = $this->otp->build_message( $test_code, 'login_otp' );
+		// Build the test message: site name + timestamp with timezone.
+		$tz_string = wp_timezone_string();
+		try {
+			$tz_obj    = new DateTimeZone( $tz_string );
+			$dt        = new DateTime( 'now', $tz_obj );
+			$tz_abbr   = $dt->format( 'T' );
+			$stamp     = $dt->format( 'Y-m-d H:i' ) . ' ' . $tz_abbr;
+		} catch ( Exception $e ) {
+			$stamp = gmdate( 'Y-m-d H:i' ) . ' UTC';
+		}
+		$site_name = get_bloginfo( 'name' );
+		$message   = "Test SMS message from {$site_name}\nStamp: {$stamp}";
+
 		$result    = $this->api->send_sms(
 			$normalized,
 			$this->settings->get( 'gateway.sender_id', '' ),
@@ -639,7 +681,6 @@ class KwtSMS_Plugin {
 		wp_send_json_success(
 			array(
 				'phone'     => esc_html( $normalized ),
-				'code'      => esc_html( $test_code ),
 				'test_mode' => $is_test_mode,
 				'msg_id'    => esc_html( $result['msg_id'] ?? '' ),
 			)

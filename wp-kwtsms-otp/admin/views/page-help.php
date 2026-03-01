@@ -23,7 +23,7 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 
 	<div class="kwtsms-admin-header">
 		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'kwtSMS — Help &amp; Support', 'wp-kwtsms-otp' ); ?></h1>
+		<h1><?php esc_html_e( 'Help &amp; Support', 'wp-kwtsms-otp' ); ?></h1>
 	</div>
 
 	<!-- ===== Plugin Status ===== -->

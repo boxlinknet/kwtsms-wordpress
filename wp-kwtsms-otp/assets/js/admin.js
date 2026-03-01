@@ -116,6 +116,7 @@
 			$( '#kwtsms-login-btn' ).hide();
 			$( '#kwtsms-logout-btn' ).show();
 			$( '#kwtsms-reload-all' ).show();
+			$( '.kwtsms-reload-hint' ).show();
 
 			// Render coverage chips if returned.
 			if ( d.coverage ) {
@@ -300,8 +301,8 @@
 			if ( resp.success ) {
 				const d   = resp.data || {};
 				const msg = d.test_mode
-					? ( s.testModeResult || 'Test mode ON — message queued, not delivered. OTP code: %code% (check debug.log)' ).replace( '%code%', d.code || '' )
-					: ( s.testSmsResult || 'SMS delivered to %phone%. Check your messages.' ).replace( '%phone%', d.phone || '' );
+					? ( s.testModeResult || 'Test mode ON — message queued, not delivered.' )
+					: ( s.testSmsResult || 'SMS sent to %phone%. Check your messages.' ).replace( '%phone%', d.phone || '' );
 				$result.text( msg ).css( 'color', '#46b450' );
 			} else {
 				const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Send failed.' );
@@ -353,11 +354,19 @@
 		let html = '';
 		if ( Array.isArray( coverage ) ) {
 			coverage.forEach( function ( row ) {
-				const name = ( typeof row === 'object' )
-					? ( row.name || row.country || row.countryName || Object.values( row ).find( v => typeof v === 'string' ) || '' )
-					: String( row );
+				let name = '', dial = '';
+				if ( typeof row === 'object' && row !== null ) {
+					name = row.name || row.country || row.countryName || row.CountryName || '';
+					if ( ! name ) {
+						name = Object.values( row ).find( v => typeof v === 'string' ) || '';
+					}
+					dial = row.dial || '';
+				} else {
+					name = String( row );
+				}
 				if ( name ) {
-					html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( name ).html() + '</span>';
+					const label = dial ? name + ' (+' + dial + ')' : name;
+					html += '<span class="kwtsms-tag-chip">' + $( '<span>' ).text( label ).html() + '</span>';
 				}
 			} );
 		} else if ( coverage && typeof coverage === 'object' ) {
@@ -394,6 +403,7 @@
 		$( '#kwtsms-row-password' ).show();
 		$( '#kwtsms-sender-row' ).hide();
 		$( '#kwtsms-reload-all' ).hide();
+		$( '.kwtsms-reload-hint' ).hide();
 
 		// Server-side: clear credentials_verified flag.
 		$.post( ajaxUrl, {
