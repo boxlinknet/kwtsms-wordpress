@@ -253,11 +253,12 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 
 		</table>
 
-		</div><!-- #kwtsms-verified-sections -->
-
 		<div style="margin-top:20px;">
 			<?php submit_button( __( 'Save Settings', 'wp-kwtsms-otp' ), 'primary kwtsms-save-btn', 'submit', false ); ?>
 		</div>
+
+		</div><!-- #kwtsms-verified-sections -->
+
 	</form>
 
 	<?php
