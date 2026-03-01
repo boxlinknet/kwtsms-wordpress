@@ -28,6 +28,18 @@ class KwtSMS_Woo {
 	private $plugin;
 
 	/**
+	 * Map WooCommerce order status slugs to their settings template keys.
+	 *
+	 * @var array<string,string>
+	 */
+	private static $status_template_map = array(
+		'processing' => 'woo_processing',
+		'on-hold'    => 'woo_shipped',
+		'completed'  => 'woo_completed',
+		'cancelled'  => 'woo_cancelled',
+	);
+
+	/**
 	 * Transient prefix for checkout OTP sessions.
 	 *
 	 * @var string
@@ -128,18 +140,6 @@ class KwtSMS_Woo {
 			'woo_order'
 		);
 	}
-
-	/**
-	 * Map WooCommerce order status slugs to their settings template keys.
-	 *
-	 * @var array<string,string>
-	 */
-	private static $status_template_map = array(
-		'processing' => 'woo_processing',
-		'on-hold'    => 'woo_shipped',
-		'completed'  => 'woo_completed',
-		'cancelled'  => 'woo_cancelled',
-	);
 
 	/**
 	 * Build an SMS message for a given order status transition.
