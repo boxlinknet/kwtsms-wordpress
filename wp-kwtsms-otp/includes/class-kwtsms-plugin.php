@@ -212,6 +212,7 @@ class KwtSMS_Plugin {
 		check_ajax_referer( 'kwtsms_form_otp_nonce', 'nonce' );
 
 		$raw_phone = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
+		$form_id   = absint( $_POST['form_id'] ?? 0 );
 		if ( empty( $raw_phone ) ) {
 			wp_send_json_error( array( 'message' => __( 'Phone number is required.', 'wp-kwtsms-otp' ) ) );
 			return;
@@ -235,6 +236,7 @@ class KwtSMS_Plugin {
 			'kwtsms_form_otp_' . $token,
 			array(
 				'phone'    => $normalized,
+				'form_id'  => $form_id,
 				'otp_hash' => $otp_hash,
 				'verified' => false,
 			),
