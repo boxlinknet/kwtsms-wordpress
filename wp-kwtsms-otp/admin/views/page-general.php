@@ -54,8 +54,8 @@ foreach ( $all_countries as $cc ) {
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_general_group' ); ?>
 
-		<!-- ===== OTP Behaviour ===== -->
-		<h2 class="title"><?php esc_html_e( 'OTP Behaviour', 'wp-kwtsms-otp' ); ?></h2>
+		<!-- ===== Login Behaviour ===== -->
+		<h2 class="title"><?php esc_html_e( 'Login Behaviour', 'wp-kwtsms-otp' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr>
