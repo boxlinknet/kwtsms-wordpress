@@ -899,8 +899,13 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 	// =========================================================================
 
 	/**
-	 * When a custom `en` template is in cf7_confirmation settings, send_confirmation_sms()
-	 * must produce a message with {site_name} and {form_name} replaced.
+	 * When a custom `en` template is in cf7_confirmation settings,
+	 * send_confirmation_sms() must produce a message with {site_name} and
+	 * {form_name} replaced.
+	 *
+	 * Brain\Monkey cannot stub the static WPCF7_Submission::get_instance() call,
+	 * so we use an anonymous subclass that overrides the protected
+	 * get_submission_phone() method to return a fixed phone string directly.
 	 */
 	public function test_cf7_uses_saved_template() {
 		$integration_templates = array(
@@ -931,7 +936,13 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 			$api
 		);
 
-		$cf7 = new KwtSMS_CF7( $plugin );
+		// Anonymous subclass overrides get_submission_phone() to bypass the
+		// unmockable WPCF7_Submission::get_instance() static call.
+		$cf7 = new class( $plugin ) extends KwtSMS_CF7 {
+			protected function get_submission_phone() {
+				return '96598765432';
+			}
+		};
 
 		// Stub the CF7 form object.
 		$cf7_form = $this->getMockBuilder( 'WPCF7_ContactForm' )
@@ -939,26 +950,13 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 			->getMock();
 		$cf7_form->method( 'title' )->willReturn( 'My Enquiry Form' );
 
-		// Stub WPCF7_Submission.
-		$submission = $this->getMockBuilder( 'WPCF7_Submission' )
-			->addMethods( array( 'get_posted_data' ) )
-			->getMock();
-		$submission->method( 'get_posted_data' )->willReturn(
-			array( 'kwtsms_phone' => '96598765432' )
-		);
-
 		Functions\when( 'is_a' )->alias( function ( $obj, $class ) {
 			return $obj instanceof $class;
 		} );
 
-		// Make WPCF7_Submission::get_instance() return our stub.
-		// We use Brain\Monkey to stub the static method call as a function-call mock.
-		Functions\when( 'WPCF7_Submission::get_instance' )->justReturn( $submission );
-
-		// Stub KwtSMS_API::normalize_phone to return the raw phone (it's already normalised).
+		// Stub KwtSMS_API::normalize_phone to pass through the phone unchanged.
 		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96598765432' );
 
-		// Call the handler directly.
 		$cf7->send_confirmation_sms( $cf7_form );
 
 		$this->assertNotNull( $sent_message, 'send_sms was not called — no message was sent.' );
@@ -983,6 +981,154 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 		) );
 
 		$this->assertNotContains( 'wpforms_process_complete', $this->registered_actions );
+	}
+
+	// =========================================================================
+	// Test 7 — Elementor: disabled flag prevents hook registration
+	// =========================================================================
+
+	/**
+	 * When `integrations.elementor_enabled` is 0, the Elementor constructor must
+	 * bail early and the elementor_pro/forms/new_record hook must not be registered.
+	 */
+	public function test_elementor_disabled_flag_prevents_sending() {
+		new KwtSMS_Elementor( $this->make_plugin_stub(
+			array( 'integrations.elementor_enabled' => 0 ),
+			array()
+		) );
+
+		$this->assertNotContains( 'elementor_pro/forms/new_record', $this->registered_actions );
+	}
+
+	// =========================================================================
+	// Test 8 — WPForms: uses saved template with placeholders replaced
+	// =========================================================================
+
+	/**
+	 * When a custom `en` template is in wpforms_confirmation settings,
+	 * send_confirmation_sms() must produce a message with {site_name} and
+	 * {form_name} replaced.
+	 *
+	 * WPForms' send_confirmation_sms() accepts plain PHP arrays, so no
+	 * unmockable static calls are required — we pass a minimal $fields array
+	 * whose type is 'phone' and a $form_data array with a form_title.
+	 */
+	public function test_wpforms_uses_saved_template() {
+		$integration_templates = array(
+			'wpforms_confirmation' => array(
+				'enabled' => 1,
+				'en'      => 'Site: {site_name} | Form: {form_name}',
+				'ar'      => '',
+			),
+		);
+
+		$sent_message = null;
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone, $sender_id, $message, $context ) use ( &$sent_message ) {
+				$sent_message = $message;
+			}
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.wpforms_enabled' => 1,
+				'gateway.sender_id'            => 'TESTSENDER',
+			),
+			$integration_templates,
+			$api
+		);
+
+		$wpforms = new KwtSMS_WPForms( $plugin );
+
+		// Minimal WPForms submission data.
+		$fields = array(
+			array( 'type' => 'phone', 'name' => 'Phone', 'value' => '96598765432' ),
+		);
+		$form_data = array(
+			'settings' => array( 'form_title' => 'My Contact Form' ),
+		);
+
+		// Stub KwtSMS_API::normalize_phone to pass through the phone unchanged.
+		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96598765432' );
+
+		$wpforms->send_confirmation_sms( $fields, array(), $form_data, 0 );
+
+		$this->assertNotNull( $sent_message, 'send_sms was not called — no message was sent.' );
+		$this->assertStringContainsString( 'TestSite', $sent_message );
+		$this->assertStringContainsString( 'My Contact Form', $sent_message );
+		$this->assertStringNotContainsString( '{site_name}', $sent_message );
+		$this->assertStringNotContainsString( '{form_name}', $sent_message );
+	}
+
+	// =========================================================================
+	// Test 9 — CF7: per-template disabled flag suppresses SMS
+	// =========================================================================
+
+	/**
+	 * When cf7_enabled=1 but cf7_confirmation.enabled=0, the hook is registered
+	 * but send_confirmation_sms() must bail before calling send_sms().
+	 *
+	 * Uses the same anonymous subclass trick as test_cf7_uses_saved_template to
+	 * bypass the unmockable WPCF7_Submission::get_instance() static call.
+	 */
+	public function test_cf7_template_disabled_skips_sms() {
+		$integration_templates = array(
+			'cf7_confirmation' => array(
+				'enabled' => 0,
+				'en'      => 'Should not be sent',
+				'ar'      => '',
+			),
+		);
+
+		$send_was_called = false;
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function () use ( &$send_was_called ) {
+				$send_was_called = true;
+			}
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.cf7_enabled' => 1,
+				'gateway.sender_id'        => 'TESTSENDER',
+			),
+			$integration_templates,
+			$api
+		);
+
+		// Anonymous subclass overrides get_submission_phone() to bypass the
+		// unmockable WPCF7_Submission::get_instance() static call.
+		$cf7 = new class( $plugin ) extends KwtSMS_CF7 {
+			protected function get_submission_phone() {
+				return '96598765432';
+			}
+		};
+
+		// The hook must still be registered (cf7_enabled=1).
+		$this->assertContains( 'wpcf7_mail_sent', $this->registered_actions );
+
+		$cf7_form = $this->getMockBuilder( 'WPCF7_ContactForm' )
+			->addMethods( array( 'title' ) )
+			->getMock();
+		$cf7_form->method( 'title' )->willReturn( 'My Form' );
+
+		Functions\when( 'is_a' )->alias( function ( $obj, $class ) {
+			return $obj instanceof $class;
+		} );
+
+		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96598765432' );
+
+		$cf7->send_confirmation_sms( $cf7_form );
+
+		$this->assertFalse( $send_was_called, 'send_sms must not be called when cf7_confirmation.enabled=0.' );
 	}
 
 	// =========================================================================
