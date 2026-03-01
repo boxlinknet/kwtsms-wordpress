@@ -427,10 +427,10 @@ class KwtSMS_API {
 	 * Append an OTP attempt event to the attempt log.
 	 *
 	 * Stored in wp_options as kwtsms_otp_attempt_log (max 500 entries).
-	 * Phone number is masked (last 4 digits replaced) in this log.
+	 * Phone number is stored unredacted (admin-only view).
 	 *
 	 * @param int|null $user_id  WordPress user ID, or null for unauthenticated attempts.
-	 * @param string   $phone    Normalised phone number (will be masked for storage).
+	 * @param string   $phone    Normalised phone number.
 	 * @param string   $ip       Client IP address.
 	 * @param string   $action   'login'|'passwordless'|'reset'.
 	 * @param string   $result   'success'|'wrong_code'|'expired'|'locked'|'rate_limited'|'brute_force'.
@@ -441,16 +441,12 @@ class KwtSMS_API {
 			$log = array();
 		}
 
-		// Mask phone: keep all but last 4 digits.
-		$len    = strlen( (string) $phone );
-		$masked = $len > 4 ? substr( $phone, 0, $len - 4 ) . '****' : '****';
-
 		array_unshift(
 			$log,
 			array(
 				'time'    => time(),
 				'user_id' => is_null( $user_id ) ? null : absint( $user_id ),
-				'phone'   => $masked,
+				'phone'   => sanitize_text_field( (string) $phone ),
 				'ip'      => sanitize_text_field( $ip ),
 				'action'  => sanitize_key( $action ),
 				'result'  => sanitize_key( $result ),
