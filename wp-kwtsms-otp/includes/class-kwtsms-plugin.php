@@ -106,7 +106,7 @@ class KwtSMS_Plugin {
 	}
 
 	/**
-	 * Output the "SMS service by kwtSMS.com" credit on the standard WP login page footer.
+	 * Output the "SMS by kwtSMS.com" credit on the standard WP login page footer.
 	 *
 	 * Hooked to `login_footer` when the referral_link setting is enabled.
 	 */
@@ -122,7 +122,7 @@ class KwtSMS_Plugin {
 			'%s' .
 			'</a></p>',
 			esc_url( $ref_url ),
-			esc_html__( 'SMS service by kwtSMS.com', 'wp-kwtsms-otp' )
+			esc_html__( 'SMS by kwtSMS.com', 'wp-kwtsms-otp' )
 		);
 	}
 

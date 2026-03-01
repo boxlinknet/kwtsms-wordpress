@@ -319,7 +319,7 @@ foreach ( $all_countries as $cc ) {
 					<label>
 						<input type="checkbox" name="kwtsms_otp_general[referral_link]" id="kwtsms_referral_link"
 							value="1" <?php checked( $referral_link ); ?> />
-						<?php esc_html_e( 'Display "SMS service by kwtSMS.com" footer on login pages', 'wp-kwtsms-otp' ); ?>
+						<?php esc_html_e( 'Display "SMS by kwtSMS.com" footer on login pages', 'wp-kwtsms-otp' ); ?>
 					</label>
 					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'wp-kwtsms-otp' ); ?></p>
 				</td>
