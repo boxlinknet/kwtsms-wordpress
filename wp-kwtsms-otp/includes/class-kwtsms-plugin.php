@@ -300,6 +300,7 @@ class KwtSMS_Plugin {
 					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 				)
 			);
+			return;
 		}
 
 		// Generate and send new OTP.
