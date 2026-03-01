@@ -21,96 +21,12 @@ $per_page      = 20;
 $current_page  = max( 1, absint( $_GET['paged'] ?? 1 ) );
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
+// NOTE: download/clear/export handlers are registered on admin_init in KwtSMS_Admin::handle_log_exports()
+//       so that Content-Type headers can be sent before any HTML output.
 $debug_log_path   = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/kwtsms-debug.log' : '';
 $debug_logging_on = (bool) $this->plugin->settings->get( 'general.debug_logging', 0 );
 $debug_log_exists = $debug_log_path && file_exists( $debug_log_path );
 $show_debug_tab   = $debug_logging_on && $debug_log_exists;
-
-// -------------------------------------------------------------------------
-// Handle debug log download.
-// -------------------------------------------------------------------------
-if ( isset( $_GET['action'], $_GET['_wpnonce'] ) &&
-	'download_debug_log' === $_GET['action'] &&
-	$show_debug_tab &&
-	wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_download_debug_log' )
-) {
-	$filename = 'kwtsms-debug-' . date( 'Y-m-d' ) . '.log';
-	header( 'Content-Type: text/plain; charset=UTF-8' );
-	header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
-	header( 'Pragma: no-cache' );
-	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-	echo file_get_contents( $debug_log_path );
-	exit;
-}
-
-// -------------------------------------------------------------------------
-// Handle debug log clear action.
-// -------------------------------------------------------------------------
-if ( isset( $_GET['action'], $_GET['_wpnonce'] ) &&
-	'clear_debug_log' === $_GET['action'] &&
-	$show_debug_tab &&
-	wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_clear_debug_log' )
-) {
-	// Truncate the log file.
-	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-	file_put_contents( $debug_log_path, '' );
-	wp_redirect( kwtsms_logs_tab_url( 'debug_log' ) );
-	exit;
-}
-
-// -------------------------------------------------------------------------
-// Handle CSV export.
-// -------------------------------------------------------------------------
-if ( isset( $_GET['action'], $_GET['_wpnonce'] ) && 'export_csv' === $_GET['action'] ) {
-	$log_key = sanitize_key( $_GET['log'] ?? '' );
-	if ( in_array( $log_key, array( 'sms_history', 'attempt_log' ), true ) &&
-		wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_export_csv_' . $log_key )
-	) {
-		$log = get_option( 'kwtsms_otp_' . $log_key, array() );
-		if ( ! is_array( $log ) ) {
-			$log = array();
-		}
-
-		$filename = 'kwtsms-' . $log_key . '-' . date( 'Y-m-d' ) . '.csv';
-		header( 'Content-Type: text/csv; charset=UTF-8' );
-		header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
-		header( 'Pragma: no-cache' );
-
-		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-
-		if ( 'sms_history' === $log_key ) {
-			fputcsv( $out, array( 'Date/Time', 'Type', 'Phone', 'Message', 'Sender ID', 'Status', 'Result Code', 'Result Message' ) );
-			foreach ( $log as $entry ) {
-				fputcsv( $out, array(
-					date_i18n( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
-					$entry['type']    ?? '',
-					$entry['phone']   ?? '',
-					$entry['message']                          ?? '',
-					$entry['sender_id']                        ?? '',
-					$entry['status']                           ?? '',
-					$entry['gateway_result']['code']    ?? '',
-					$entry['gateway_result']['message'] ?? '',
-				) );
-			}
-		} else {
-			fputcsv( $out, array( 'Date/Time', 'User ID', 'Phone', 'IP Address', 'Action', 'Result' ) );
-			foreach ( $log as $entry ) {
-				$user_id = $entry['user_id'] ?? null;
-				fputcsv( $out, array(
-					date_i18n( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
-					is_null( $user_id ) ? 'N/A' : (int) $user_id,
-					$entry['phone']  ?? '',
-					$entry['ip']     ?? '',
-					$entry['action'] ?? '',
-					$entry['result'] ?? '',
-				) );
-			}
-		}
-
-		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-		exit;
-	}
-}
 
 // -------------------------------------------------------------------------
 // Load log data for display.

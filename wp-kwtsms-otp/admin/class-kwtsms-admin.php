@@ -44,6 +44,7 @@ class KwtSMS_Admin {
 
 		add_action( 'admin_menu', array( $this, 'register_menus' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'admin_init', array( $this, 'handle_log_exports' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_notices', array( $this, 'show_admin_notices' ) );
 		add_action( 'wp_dashboard_setup', array( $this, 'register_dashboard_widget' ) );
@@ -938,6 +939,111 @@ class KwtSMS_Admin {
 	// =========================================================================
 	// AJAX: Clear log
 	// =========================================================================
+
+	/**
+	 * Handle log file download/export requests before any HTML output.
+	 *
+	 * Hooked on admin_init so Content-Type / Content-Disposition headers can
+	 * be sent before WordPress outputs any HTML. Handles three actions:
+	 *   - export_csv          — stream SMS history or OTP attempt log as CSV
+	 *   - download_debug_log  — stream the debug log file as a download
+	 *   - clear_debug_log     — truncate the debug log file then redirect
+	 *
+	 * Security: capability check + per-action nonce verification on every branch.
+	 */
+	public function handle_log_exports() {
+		if ( ! isset( $_GET['page'] ) || 'kwtsms-otp-logs' !== $_GET['page'] ) {
+			return;
+		}
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$action = isset( $_GET['action'] ) ? sanitize_key( $_GET['action'] ) : '';
+		if ( empty( $action ) || ! isset( $_GET['_wpnonce'] ) ) {
+			return;
+		}
+
+		$debug_log_path   = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/kwtsms-debug.log' : '';
+		$debug_logging_on = (bool) $this->plugin->settings->get( 'general.debug_logging', 0 );
+		$debug_log_exists = $debug_log_path && file_exists( $debug_log_path );
+		$show_debug_tab   = $debug_logging_on && $debug_log_exists;
+
+		// ---- Download debug log ----
+		if ( 'download_debug_log' === $action && $show_debug_tab &&
+			wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_download_debug_log' )
+		) {
+			$filename = 'kwtsms-debug-' . gmdate( 'Y-m-d' ) . '.log';
+			header( 'Content-Type: text/plain; charset=UTF-8' );
+			header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
+			header( 'Pragma: no-cache' );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			echo file_get_contents( $debug_log_path );
+			exit;
+		}
+
+		// ---- Clear debug log ----
+		if ( 'clear_debug_log' === $action && $show_debug_tab &&
+			wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_clear_debug_log' )
+		) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			file_put_contents( $debug_log_path, '' );
+			wp_safe_redirect( add_query_arg( array( 'page' => 'kwtsms-otp-logs', 'tab' => 'debug_log' ), admin_url( 'admin.php' ) ) );
+			exit;
+		}
+
+		// ---- Export CSV ----
+		if ( 'export_csv' === $action ) {
+			$log_key = sanitize_key( $_GET['log'] ?? '' );
+			if ( in_array( $log_key, array( 'sms_history', 'attempt_log' ), true ) &&
+				wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_export_csv_' . $log_key )
+			) {
+				$log = get_option( 'kwtsms_otp_' . $log_key, array() );
+				if ( ! is_array( $log ) ) {
+					$log = array();
+				}
+
+				$filename = 'kwtsms-' . $log_key . '-' . gmdate( 'Y-m-d' ) . '.csv';
+				header( 'Content-Type: text/csv; charset=UTF-8' );
+				header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
+				header( 'Pragma: no-cache' );
+
+				$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+
+				if ( 'sms_history' === $log_key ) {
+					fputcsv( $out, array( 'Date/Time', 'Type', 'Phone', 'Message', 'Sender ID', 'Status', 'Result Code', 'Result Message' ) );
+					foreach ( $log as $entry ) {
+						fputcsv( $out, array(
+							gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
+							$entry['type']                      ?? '',
+							$entry['phone']                     ?? '',
+							$entry['message']                   ?? '',
+							$entry['sender_id']                 ?? '',
+							$entry['status']                    ?? '',
+							$entry['gateway_result']['code']    ?? '',
+							$entry['gateway_result']['message'] ?? '',
+						) );
+					}
+				} else {
+					fputcsv( $out, array( 'Date/Time', 'User ID', 'Phone', 'IP Address', 'Action', 'Result' ) );
+					foreach ( $log as $entry ) {
+						$user_id = $entry['user_id'] ?? null;
+						fputcsv( $out, array(
+							gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
+							is_null( $user_id ) ? 'N/A' : (int) $user_id,
+							$entry['phone']  ?? '',
+							$entry['ip']     ?? '',
+							$entry['action'] ?? '',
+							$entry['result'] ?? '',
+						) );
+					}
+				}
+
+				fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+				exit;
+			}
+		}
+	}
 
 	/**
 	 * AJAX handler — clear a named log option.
