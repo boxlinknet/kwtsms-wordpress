@@ -390,6 +390,25 @@
 	}() );
 
 	// =========================================================================
+	// On page load: restore saved balance without a verify round-trip
+	// =========================================================================
+
+	( function () {
+		const saved = ( data.savedBalance || {} );
+		if ( saved.available !== null && saved.available !== undefined ) {
+			$( '#kwtsms-balance' ).text( parseFloat( saved.available ).toFixed( 2 ) + ' credits' );
+			if ( saved.purchased ) {
+				$( '#kwtsms-balance-purchased' ).text( 'Purchased: ' + parseFloat( saved.purchased ).toFixed( 2 ) );
+			}
+			if ( credentialsVerified ) {
+				$( '#kwtsms-verified-sections' ).show();
+				$( '#kwtsms-login-btn' ).hide();
+				$( '#kwtsms-logout-btn' ).show();
+			}
+		}
+	}() );
+
+	// =========================================================================
 	// Integrations page — tab switching
 	// All tab content is always in the DOM (single form); we show/hide via JS.
 	// =========================================================================
