@@ -41,7 +41,7 @@ foreach ( $all_countries as $cc ) {
 
 	<div class="kwtsms-intro-box" style="background:#fff8ed;border:1px solid #FFA200;border-radius:4px;padding:16px 20px;margin-bottom:20px;">
 		<p style="margin:0 0 8px;font-size:14px;line-height:1.6;">
-			<?php esc_html_e( 'kwtSMS is a Kuwaiti SMS gateway with global coverage, trusted by businesses across the GCC. Key features include: global SMS delivery to 200+ countries, credits that never expire, private Sender ID registration, free API testing, competitive rates, and a simple REST API. Create a free account to get started. Your API credentials are used in the', 'wp-kwtsms-otp' ); ?>
+			<?php esc_html_e( 'kwtSMS is a Kuwaiti SMS gateway with global coverage, trusted by businesses across the GCC. Key features include: global SMS delivery to 200+ countries, credits that never expire, private Sender ID registration, free API testing, competitive rates, and a simple REST API. Create a free account to get started. Enter your kwtSMS API credentials in the', 'wp-kwtsms-otp' ); ?>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>" style="color:#FFA200;font-weight:600;"><?php esc_html_e( 'Gateway Settings', 'wp-kwtsms-otp' ); ?></a>.
 		</p>
 		<p style="margin:0;">
