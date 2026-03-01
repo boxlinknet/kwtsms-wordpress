@@ -98,7 +98,7 @@
 			if ( d.balance ) {
 				$balance.text( parseFloat( d.balance.available ).toFixed( 2 ) );
 				if ( d.balance.purchased ) {
-					$balanceSub.text( 'of ' + parseFloat( d.balance.purchased ).toFixed( 2 ) + ' purchased' );
+					$balanceSub.text( ( s.ofPurchased || 'of %s purchased' ).replace( '%s', parseFloat( d.balance.purchased ).toFixed( 2 ) ) );
 				}
 			}
 
@@ -239,7 +239,7 @@
 		const username = $( '#kwtsms_api_username' ).val().trim() || data.savedUsername || '';
 		const password = $( '#kwtsms_api_password' ).val().trim() || data.savedPassword || '';
 
-		$btn.prop( 'disabled', true ).text( s.verifying || 'Reloading...' );
+		$btn.prop( 'disabled', true ).text( '↻ ' + ( s.reloading || 'Reloading...' ) );
 
 		$.post( ajaxUrl, {
 			action:   'kwtsms_verify_credentials',
@@ -251,7 +251,7 @@
 			handleVerifyResponse( resp, null, $( '#kwtsms-login-status' ) );
 		} )
 		.fail( function () {
-			$( '#kwtsms-login-status' ).html( '<span style="color:#dc3232;">Network error.</span>' );
+			$( '#kwtsms-login-status' ).html( '<span style="color:#dc3232;">' + ( s.error || 'Network error.' ) + '</span>' );
 		} )
 		.always( function () {
 			$btn.prop( 'disabled', false ).text( '↻ ' + ( s.reload || 'Reload' ) );
@@ -276,7 +276,7 @@
 		}
 
 		if ( ! phone ) {
-			$result.text( 'Please enter a test phone number first.' ).css( 'color', '#dc3232' );
+			$result.text( s.testPhoneMissing || 'Please enter a test phone number first.' ).css( 'color', '#dc3232' );
 			return;
 		}
 
@@ -300,8 +300,8 @@
 			if ( resp.success ) {
 				const d   = resp.data || {};
 				const msg = d.test_mode
-					? 'Test mode ON — message queued, NOT delivered to your phone. OTP code: ' + ( d.code || '' ) + ' (check wp-content/debug.log)'
-					: 'SMS delivered to ' + ( d.phone || '' ) + '. Check your messages.';
+					? ( s.testModeResult || 'Test mode ON — message queued, not delivered. OTP code: %code% (check debug.log)' ).replace( '%code%', d.code || '' )
+					: ( s.testSmsResult || 'SMS delivered to %phone%. Check your messages.' ).replace( '%phone%', d.phone || '' );
 				$result.text( msg ).css( 'color', '#46b450' );
 			} else {
 				const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Send failed.' );
