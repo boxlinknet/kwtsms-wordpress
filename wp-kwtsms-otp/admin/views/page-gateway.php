@@ -75,7 +75,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 		<h2 class="title"><?php esc_html_e( 'API Credentials', 'wp-kwtsms-otp' ); ?></h2>
 		<table class="form-table" role="presentation">
 
-			<tr>
+			<tr id="kwtsms-row-username"<?php echo $credentials_verified ? ' style="display:none;"' : ''; ?>>
 				<th scope="row"><label for="kwtsms_api_username"><?php esc_html_e( 'API Username', 'wp-kwtsms-otp' ); ?></label></th>
 				<td>
 					<input type="text" name="kwtsms_otp_gateway[api_username]" id="kwtsms_api_username"
@@ -86,7 +86,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 				</td>
 			</tr>
 
-			<tr>
+			<tr id="kwtsms-row-password"<?php echo $credentials_verified ? ' style="display:none;"' : ''; ?>>
 				<th scope="row"><label for="kwtsms_api_password"><?php esc_html_e( 'API Password', 'wp-kwtsms-otp' ); ?></label></th>
 				<td>
 					<input type="password" name="kwtsms_otp_gateway[api_password]" id="kwtsms_api_password"
@@ -132,7 +132,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 					</td>
 			</tr>
 
-			<tr style="display:none;">
+			<tr id="kwtsms-sender-row"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
 				<th scope="row"><label for="kwtsms_sender_id"><?php esc_html_e( 'Sender ID', 'wp-kwtsms-otp' ); ?></label></th>
 				<td>
 					<div style="display:flex;align-items:center;gap:10px;">
