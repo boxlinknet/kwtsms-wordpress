@@ -338,6 +338,7 @@ class KwtSMS_Plugin {
 		$normalized = KwtSMS_API::normalize_phone( $phone );
 		if ( is_wp_error( $normalized ) ) {
 			wp_send_json_error( array( 'message' => $normalized->get_error_message() ) );
+			return;
 		}
 
 		$test_code = $this->otp->generate( 'test_admin', 'login' );

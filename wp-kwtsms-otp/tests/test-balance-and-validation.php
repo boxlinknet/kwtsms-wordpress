@@ -159,4 +159,45 @@ class Test_Balance_And_Validation extends TestCase {
 			'check_balance_before_send must return true when balance_available is null (not yet loaded).'
 		);
 	}
+
+	// =========================================================================
+	// 2b. check_balance_before_send() — zero saved balance but API unreachable → allow
+	// =========================================================================
+
+	/**
+	 * When saved balance is 0 but the live API call returns a WP_Error (e.g.
+	 * the kwtSMS service is temporarily unreachable), the method must fail-open
+	 * and return true so the SMS attempt is not silently dropped.
+	 *
+	 * This exercises the `if ( is_wp_error($live) ) return true;` branch in
+	 * check_balance_before_send() at line ~295 of class-kwtsms-api.php.
+	 *
+	 * @covers KwtSMS_API::check_balance_before_send
+	 */
+	public function test_check_balance_before_send_allows_when_api_unreachable() {
+		// Saved balance shows zero — triggers the live API double-check.
+		Functions\when( 'get_option' )
+			->justReturn( array( 'balance_available' => 0.0 ) );
+
+		// is_wp_error must work correctly so the WP_Error branch is reached.
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) {
+			return $v instanceof WP_Error;
+		} );
+
+		// Simulate an unreachable API: wp_remote_post returns a WP_Error.
+		Functions\when( 'wp_remote_post' )->justReturn(
+			new WP_Error( 'http_request_failed', 'Could not connect to kwtSMS API.' )
+		);
+		Functions\when( 'wp_remote_retrieve_response_code' )->justReturn( 0 );
+		Functions\when( 'wp_remote_retrieve_body' )->justReturn( '' );
+		Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
+
+		$api    = new KwtSMS_API( 'testuser', 'testpass', false );
+		$result = $api->check_balance_before_send();
+
+		$this->assertTrue(
+			$result,
+			'check_balance_before_send must return true (fail-open) when the API is unreachable.'
+		);
+	}
 }
