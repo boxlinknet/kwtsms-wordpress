@@ -35,17 +35,29 @@ class KwtSMS_WPForms {
 	 *
 	 * Registers the wpforms_process_complete hook so we can send a confirmation
 	 * SMS after every successful WPForms submission that contains a phone field.
+	 * If the WPForms integration is disabled in settings, no hook is registered
+	 * and the class exits immediately.
 	 *
 	 * @param KwtSMS_Plugin $plugin The main plugin instance.
 	 */
 	public function __construct( KwtSMS_Plugin $plugin ) {
 		$this->plugin = $plugin;
+
+		// Bail entirely if the WPForms integration is disabled.
+		if ( ! $this->plugin->settings->get( 'integrations.wpforms_enabled', 1 ) ) {
+			return;
+		}
+
 		// wpforms_process_complete fires after successful submission.
 		add_action( 'wpforms_process_complete', array( $this, 'send_confirmation_sms' ), 10, 4 );
 	}
 
 	/**
 	 * Send confirmation SMS after a WPForms submission.
+	 *
+	 * The message text is loaded from the saved `integrations.wpforms_confirmation`
+	 * template and supports both English and Arabic (selected via is_rtl()). If
+	 * the template is disabled by the admin, no SMS is sent.
 	 *
 	 * @param array $fields    Processed form fields (keyed by field ID).
 	 * @param array $entry     Raw entry data as submitted.
@@ -63,21 +75,51 @@ class KwtSMS_WPForms {
 			return;
 		}
 
-		$site_name  = get_bloginfo( 'name' );
 		$form_title = sanitize_text_field( $form_data['settings']['form_title'] ?? '' );
 
-		$message = sprintf(
-			/* translators: 1: site name, 2: form name */
-			__( '%1$s: Your form "%2$s" was received. Thank you!', 'wp-kwtsms-otp' ),
-			$site_name,
-			$form_title
-		);
+		$message = $this->render_confirmation_template( $form_title );
+		if ( empty( $message ) ) {
+			return; // Template disabled or missing.
+		}
 
 		$this->plugin->api->send_sms(
 			$normalized,
 			$this->plugin->settings->get( 'gateway.sender_id', '' ),
 			$message,
 			'wpforms'
+		);
+	}
+
+	/**
+	 * Render the WPForms confirmation SMS from the saved template.
+	 *
+	 * Loads the `wpforms_confirmation` template from integrations settings, checks
+	 * the `enabled` sub-key, selects the correct language string (ar for RTL
+	 * sites, en otherwise), and replaces {site_name} and {form_name} placeholders.
+	 *
+	 * @param string $form_title The WPForms form title.
+	 *
+	 * @return string Rendered SMS message, or empty string if disabled / missing.
+	 */
+	private function render_confirmation_template( $form_title ) {
+		$templates = $this->plugin->settings->get_all_integration_templates();
+		$template  = $templates['wpforms_confirmation'] ?? array();
+
+		if ( empty( $template['enabled'] ) ) {
+			return '';
+		}
+
+		$lang    = ( function_exists( 'is_rtl' ) && is_rtl() ) ? 'ar' : 'en';
+		$message = $template[ $lang ] ?? $template['en'] ?? '';
+
+		if ( '' === $message ) {
+			return '';
+		}
+
+		return str_replace(
+			array( '{site_name}', '{form_name}' ),
+			array( get_bloginfo( 'name' ), $form_title ),
+			$message
 		);
 	}
 
