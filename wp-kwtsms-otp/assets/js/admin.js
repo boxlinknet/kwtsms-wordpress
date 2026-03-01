@@ -496,6 +496,10 @@
 				'<div id="kwtsms-unsaved-dialog">' +
 					'<h2 id="kwtsms-unsaved-title"></h2>' +
 					'<p  id="kwtsms-unsaved-body"></p>' +
+					'<div id="kwtsms-unsaved-hint">' +
+						'<span id="kwtsms-unsaved-hint-icon">&#128161;</span>' +
+						'<span id="kwtsms-unsaved-hint-text"></span>' +
+					'</div>' +
 					'<div id="kwtsms-unsaved-actions">' +
 						'<button type="button" id="kwtsms-unsaved-stay"  class="button kwtsms-save-btn"></button>' +
 						'<button type="button" id="kwtsms-unsaved-leave" class="button"></button>' +
@@ -504,10 +508,11 @@
 			'</div>'
 		).appendTo( 'body' );
 
-		$overlay.find( '#kwtsms-unsaved-title' ).text( s.unsavedTitle || 'Unsaved Changes'                                         );
-		$overlay.find( '#kwtsms-unsaved-body'  ).text( s.unsavedBody  || 'You have unsaved changes. Leaving this page will discard them.' );
-		$overlay.find( '#kwtsms-unsaved-stay'  ).text( s.unsavedStay  || 'Stay on Page'                                           );
-		$overlay.find( '#kwtsms-unsaved-leave' ).text( s.unsavedLeave || 'Leave Page'                                             );
+		$overlay.find( '#kwtsms-unsaved-title'     ).text( s.unsavedTitle || 'Unsaved Changes'                                                                              );
+		$overlay.find( '#kwtsms-unsaved-body'      ).text( s.unsavedBody  || 'You have unsaved changes. Leaving this page will discard them.'                               );
+		$overlay.find( '#kwtsms-unsaved-hint-text' ).text( s.unsavedHint  || 'To save: click "Stay on Page", then scroll to the bottom and click the Save Settings button.' );
+		$overlay.find( '#kwtsms-unsaved-stay'      ).text( s.unsavedStay  || 'Stay on Page'                                                                                );
+		$overlay.find( '#kwtsms-unsaved-leave'     ).text( s.unsavedLeave || 'Leave Page'                                                                                  );
 
 		function showModal( href ) {
 			pendingHref = href || null;
