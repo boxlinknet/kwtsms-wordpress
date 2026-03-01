@@ -130,9 +130,9 @@
 }
 
 .kwtsms-api-status.is-info {
-	background: #f0f6ff;
-	border-left: 4px solid #72aee6;
-	color: #2271b1;
+	background: #fff;
+	border-left: 4px solid #46b450;
+	color: #3c3c3c;
 	font-weight: 400;
 }
 
