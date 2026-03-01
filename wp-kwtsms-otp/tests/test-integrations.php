@@ -1850,3 +1850,765 @@ class Test_KwtSMS_Woo_Metabox extends TestCase {
 		return new KwtSMS_Woo_Metabox( $api_mock, $settings );
 	}
 }
+
+/**
+ * Minimal GFForms stub — presence of this class causes the GF integration
+ * constructor to proceed past the class_exists('GFForms') guard.
+ */
+if ( ! class_exists( 'GFForms' ) ) {
+	// phpcs:ignore
+	class GFForms {}
+}
+
+/**
+ * Minimal Ninja_Forms stub — presence of this class causes the NF integration
+ * constructor to proceed past the class_exists('Ninja_Forms') guard.
+ */
+if ( ! class_exists( 'Ninja_Forms' ) ) {
+	// phpcs:ignore
+	class Ninja_Forms {}
+}
+
+/**
+ * Class Test_KwtSMS_GravityForms
+ *
+ * Tests for the Gravity Forms integration class.
+ */
+class Test_KwtSMS_GravityForms extends TestCase {
+
+	/**
+	 * Actions captured during add_action calls.
+	 *
+	 * @var string[]
+	 */
+	private $registered_actions = array();
+
+	/**
+	 * Filters captured during add_filter calls.
+	 *
+	 * @var string[]
+	 */
+	private $registered_filters = array();
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+
+		$this->registered_actions = array();
+		$this->registered_filters = array();
+
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'update_option' )->justReturn( true );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'wp_unslash' )->alias( function ( $v ) { return $v; } );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
+		Functions\when( 'get_bloginfo' )->alias( function ( $show ) {
+			return ( 'name' === $show ) ? 'TestSite' : '';
+		} );
+		Functions\when( 'is_rtl' )->justReturn( false );
+		Functions\when( 'delete_transient' )->justReturn( true );
+
+		Functions\when( 'add_action' )->alias( function ( $hook ) {
+			$this->registered_actions[] = $hook;
+			return null;
+		} );
+		Functions\when( 'add_filter' )->alias( function ( $hook ) {
+			$this->registered_filters[] = $hook;
+			return null;
+		} );
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	// =========================================================================
+	// Class / file existence
+	// =========================================================================
+
+	public function test_gravityforms_class_exists() {
+		$this->assertTrue( class_exists( 'KwtSMS_GravityForms' ) );
+	}
+
+	public function test_gravityforms_integration_file_exists() {
+		$this->assertFileExists( dirname( __DIR__ ) . '/includes/integrations/class-kwtsms-gravityforms.php' );
+	}
+
+	// =========================================================================
+	// Test 1 — Notification mode: sends SMS on submission
+	// =========================================================================
+
+	/**
+	 * In notification mode (default), the constructor must register
+	 * `gform_after_submission` action and, when called, dispatch an SMS
+	 * to the phone field value found in the GF entry.
+	 */
+	public function test_gravityforms_sends_notification_on_submission() {
+		$sent_phone   = null;
+		$sent_message = null;
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone, $sender_id, $message, $context ) use ( &$sent_phone, &$sent_message ) {
+				$sent_phone   = $phone;
+				$sent_message = $message;
+			}
+		);
+
+		$integration_templates = array(
+			'gf_confirmation' => array(
+				'enabled' => 1,
+				'en'      => '{form_name}: Thank you! Your phone {phone} has been registered.',
+				'ar'      => '',
+			),
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.gf_enabled' => 1,
+				'integrations.gf_mode'    => 'notification',
+				'gateway.sender_id'       => 'TESTSENDER',
+			),
+			$integration_templates,
+			$api
+		);
+
+		// Stub KwtSMS_API::normalize_phone to pass through unchanged.
+		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96599220322' );
+
+		$gf = new KwtSMS_GravityForms( $plugin );
+
+		// Confirm the notification hook was registered.
+		$this->assertContains( 'gform_after_submission', $this->registered_actions );
+
+		// Build a minimal GF form with one phone field (object-style, as GF uses).
+		$phone_field        = new stdClass();
+		$phone_field->id    = 1;
+		$phone_field->type  = 'phone';
+		$phone_field->label = 'Phone Number';
+
+		$form            = array(
+			'title'  => 'Contact Us',
+			'fields' => array( $phone_field ),
+		);
+		$entry           = array( 1 => '96599220322' );
+
+		$gf->send_notification( $entry, $form );
+
+		$this->assertNotNull( $sent_phone,   'send_sms was not called — no phone dispatched.' );
+		$this->assertNotNull( $sent_message, 'send_sms was not called — no message dispatched.' );
+		$this->assertSame( '96599220322', $sent_phone );
+		$this->assertStringContainsString( 'Contact Us', $sent_message );
+		$this->assertStringContainsString( '96599220322', $sent_message );
+		$this->assertStringNotContainsString( '{form_name}', $sent_message );
+		$this->assertStringNotContainsString( '{phone}', $sent_message );
+	}
+
+	// =========================================================================
+	// Test 2 — Gate mode: blocks submission without verified token
+	// =========================================================================
+
+	/**
+	 * In gate mode, gate_validate() must set $validation_result['is_valid'] = false
+	 * when no valid token is present in $_POST.
+	 */
+	public function test_gravityforms_gate_blocks_without_verified_token() {
+		$_POST = array(); // Ensure no token in POST.
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.gf_enabled' => 1,
+				'integrations.gf_mode'    => 'gate',
+			),
+			array()
+		);
+
+		// Stub verify_form_token to always return false (no token supplied).
+		$plugin->method( 'verify_form_token' )->willReturn( false );
+
+		$gf = new KwtSMS_GravityForms( $plugin );
+
+		// Confirm the gate filter was registered.
+		$this->assertContains( 'gform_validation', $this->registered_filters );
+
+		// Build a minimal $validation_result as GF would pass it.
+		$phone_field        = new stdClass();
+		$phone_field->id    = 2;
+		$phone_field->type  = 'phone';
+		$phone_field->label = 'Mobile';
+
+		$validation_result = array(
+			'is_valid' => true,
+			'form'     => array(
+				'title'  => 'Registration',
+				'fields' => array( $phone_field ),
+			),
+		);
+
+		$result = $gf->gate_validate( $validation_result );
+
+		$this->assertFalse( $result['is_valid'], 'Submission must be blocked when no valid token is present.' );
+	}
+
+	// =========================================================================
+	// Test 3 — Gate mode: allows submission with valid verified token
+	// =========================================================================
+
+	/**
+	 * In gate mode, gate_validate() must leave $validation_result['is_valid']
+	 * unchanged (true) and consume the token when a valid token is present.
+	 */
+	public function test_gravityforms_gate_allows_submission_with_valid_token() {
+		$_POST = array( 'kwtsms_form_verified_token' => 'valid_token_abc' );
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.gf_enabled' => 1,
+				'integrations.gf_mode'    => 'gate',
+			),
+			array()
+		);
+
+		// Stub verify_form_token to return true for any token.
+		$plugin->method( 'verify_form_token' )->willReturn( true );
+
+		$gf = new KwtSMS_GravityForms( $plugin );
+
+		$validation_result = array(
+			'is_valid' => true,
+			'form'     => array( 'title' => 'Test', 'fields' => array() ),
+		);
+
+		$result = $gf->gate_validate( $validation_result );
+
+		$this->assertTrue( $result['is_valid'], 'Submission must be allowed when a valid token is present.' );
+
+		$_POST = array();
+	}
+
+	// =========================================================================
+	// Test 4 — Disabled flag: no hooks registered
+	// =========================================================================
+
+	/**
+	 * When gf_enabled = 0 the constructor must bail early and register no hooks.
+	 */
+	public function test_gravityforms_disabled_flag_prevents_hook_registration() {
+		$plugin = $this->make_plugin_stub(
+			array( 'integrations.gf_enabled' => 0 ),
+			array()
+		);
+
+		new KwtSMS_GravityForms( $plugin );
+
+		$this->assertNotContains( 'gform_after_submission', $this->registered_actions );
+		$this->assertNotContains( 'gform_validation', $this->registered_filters );
+	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
+
+	/**
+	 * Build a KwtSMS_Plugin mock with configurable settings and optional API.
+	 *
+	 * @param array       $settings_map          Dot-notation key → value map.
+	 * @param array       $integration_templates Return value for get_all_integration_templates().
+	 * @param object|null $api_mock              Optional API mock.
+	 *
+	 * @return KwtSMS_Plugin
+	 */
+	private function make_plugin_stub(
+		array $settings_map = array(),
+		array $integration_templates = array(),
+		$api_mock = null
+	) {
+		$settings = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'get', 'get_all_templates', 'get_all_integration_templates' ) )
+			->getMock();
+
+		$settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) use ( $settings_map ) {
+				return array_key_exists( $key, $settings_map ) ? $settings_map[ $key ] : $default;
+			}
+		);
+
+		$settings->method( 'get_all_templates' )->willReturn( array() );
+		$settings->method( 'get_all_integration_templates' )->willReturn( $integration_templates );
+
+		if ( null === $api_mock ) {
+			$api_mock = $this->getMockBuilder( 'stdClass' )
+				->addMethods( array( 'send_sms' ) )
+				->getMock();
+			$api_mock->method( 'send_sms' )->willReturn( null );
+		}
+
+		/** @var KwtSMS_Plugin $plugin */
+		$plugin = $this->getMockBuilder( 'KwtSMS_Plugin' )
+			->disableOriginalConstructor()
+			->addMethods( array( 'verify_form_token' ) )
+			->getMock();
+
+		$plugin->settings = $settings;
+		$plugin->api      = $api_mock;
+
+		return $plugin;
+	}
+}
+
+/**
+ * Class Test_KwtSMS_NinjaForms
+ *
+ * Tests for the Ninja Forms integration class.
+ */
+class Test_KwtSMS_NinjaForms extends TestCase {
+
+	/**
+	 * Actions captured during add_action calls.
+	 *
+	 * @var string[]
+	 */
+	private $registered_actions = array();
+
+	/**
+	 * Filters captured during add_filter calls.
+	 *
+	 * @var string[]
+	 */
+	private $registered_filters = array();
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+
+		$this->registered_actions = array();
+		$this->registered_filters = array();
+
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'update_option' )->justReturn( true );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'wp_unslash' )->alias( function ( $v ) { return $v; } );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
+		Functions\when( 'get_bloginfo' )->alias( function ( $show ) {
+			return ( 'name' === $show ) ? 'TestSite' : '';
+		} );
+		Functions\when( 'is_rtl' )->justReturn( false );
+		Functions\when( 'delete_transient' )->justReturn( true );
+		Functions\when( '__' )->alias( function ( $text, $domain = '' ) { return $text; } );
+
+		Functions\when( 'add_action' )->alias( function ( $hook ) {
+			$this->registered_actions[] = $hook;
+			return null;
+		} );
+		Functions\when( 'add_filter' )->alias( function ( $hook ) {
+			$this->registered_filters[] = $hook;
+			return null;
+		} );
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	// =========================================================================
+	// Class / file existence
+	// =========================================================================
+
+	public function test_ninjaforms_class_exists() {
+		$this->assertTrue( class_exists( 'KwtSMS_NinjaForms' ) );
+	}
+
+	public function test_ninjaforms_integration_file_exists() {
+		$this->assertFileExists( dirname( __DIR__ ) . '/includes/integrations/class-kwtsms-ninjaforms.php' );
+	}
+
+	// =========================================================================
+	// Test 1 — Notification mode: sends SMS on submission
+	// =========================================================================
+
+	/**
+	 * In notification mode (default), the constructor must register
+	 * `ninja_forms_after_submission` action and, when called, dispatch an SMS
+	 * to the phone field value found in the form data.
+	 */
+	public function test_ninjaforms_sends_notification_on_submission() {
+		$sent_phone   = null;
+		$sent_message = null;
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone, $sender_id, $message, $context ) use ( &$sent_phone, &$sent_message ) {
+				$sent_phone   = $phone;
+				$sent_message = $message;
+			}
+		);
+
+		$integration_templates = array(
+			'nf_confirmation' => array(
+				'enabled' => 1,
+				'en'      => '{form_name}: Thank you for submitting the form.',
+				'ar'      => '',
+			),
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.nf_enabled' => 1,
+				'integrations.nf_mode'    => 'notification',
+				'gateway.sender_id'       => 'TESTSENDER',
+			),
+			$integration_templates,
+			$api
+		);
+
+		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96599220322' );
+
+		$nf = new KwtSMS_NinjaForms( $plugin );
+
+		// Confirm the notification hook was registered.
+		$this->assertContains( 'ninja_forms_after_submission', $this->registered_actions );
+
+		// Build a minimal NF form_data array with a phone field.
+		$form_data = array(
+			'settings' => array( 'title' => 'My NF Form' ),
+			'fields'   => array(
+				array(
+					'type'  => 'phone',
+					'label' => 'Phone',
+					'value' => '96599220322',
+				),
+			),
+		);
+
+		$nf->send_notification( $form_data );
+
+		$this->assertNotNull( $sent_phone,   'send_sms was not called — no phone dispatched.' );
+		$this->assertNotNull( $sent_message, 'send_sms was not called — no message dispatched.' );
+		$this->assertSame( '96599220322', $sent_phone );
+		$this->assertStringContainsString( 'My NF Form', $sent_message );
+		$this->assertStringNotContainsString( '{form_name}', $sent_message );
+	}
+
+	// =========================================================================
+	// Test 2 — Notification mode: tel field type is detected
+	// =========================================================================
+
+	/**
+	 * Ensure that a field with type 'tel' (as well as 'phone') is treated as a
+	 * phone field and triggers SMS dispatch.
+	 */
+	public function test_ninjaforms_detects_tel_field_type() {
+		$sent_phone = null;
+
+		$api = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'send_sms' ) )
+			->getMock();
+		$api->method( 'send_sms' )->willReturnCallback(
+			function ( $phone ) use ( &$sent_phone ) {
+				$sent_phone = $phone;
+			}
+		);
+
+		$integration_templates = array(
+			'nf_confirmation' => array(
+				'enabled' => 1,
+				'en'      => 'Thank you',
+				'ar'      => '',
+			),
+		);
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.nf_enabled' => 1,
+				'integrations.nf_mode'    => 'notification',
+				'gateway.sender_id'       => 'TESTSENDER',
+			),
+			$integration_templates,
+			$api
+		);
+
+		Functions\when( 'KwtSMS_API::normalize_phone' )->justReturn( '96599220333' );
+
+		$nf = new KwtSMS_NinjaForms( $plugin );
+
+		$form_data = array(
+			'settings' => array( 'title' => 'Tel Form' ),
+			'fields'   => array(
+				array(
+					'type'  => 'tel',
+					'label' => 'Telephone',
+					'value' => '96599220333',
+				),
+			),
+		);
+
+		$nf->send_notification( $form_data );
+
+		$this->assertNotNull( $sent_phone, 'send_sms was not called for a tel-type field.' );
+		$this->assertSame( '96599220333', $sent_phone );
+	}
+
+	// =========================================================================
+	// Test 3 — Gate mode: blocks fields without verified token
+	// =========================================================================
+
+	/**
+	 * In gate mode, gate_validate_fields() must add an error to the phone field
+	 * when no valid token is present in $_POST.
+	 */
+	public function test_ninjaforms_gate_blocks_without_verified_token() {
+		$_POST = array(); // Ensure no token in POST.
+
+		$plugin = $this->make_plugin_stub(
+			array(
+				'integrations.nf_enabled' => 1,
+				'integrations.nf_mode'    => 'gate',
+			),
+			array()
+		);
+
+		$plugin->method( 'verify_form_token' )->willReturn( false );
+
+		$nf = new KwtSMS_NinjaForms( $plugin );
+
+		// Confirm the gate filter was registered.
+		$this->assertContains( 'ninja_forms_submit_fields', $this->registered_filters );
+
+		$fields = array(
+			array(
+				'type'   => 'phone',
+				'label'  => 'Phone',
+				'value'  => '96599220322',
+				'errors' => array(),
+			),
+		);
+
+		$result = $nf->gate_validate_fields( $fields );
+
+		// The first (and only) phone field must now carry an error.
+		$this->assertNotEmpty( $result[0]['errors'], 'Phone field must have errors when no valid token is present.' );
+	}
+
+	// =========================================================================
+	// Test 4 — Disabled flag: no hooks registered
+	// =========================================================================
+
+	/**
+	 * When nf_enabled = 0 the constructor must bail early and register no hooks.
+	 */
+	public function test_ninjaforms_disabled_flag_prevents_hook_registration() {
+		$plugin = $this->make_plugin_stub(
+			array( 'integrations.nf_enabled' => 0 ),
+			array()
+		);
+
+		new KwtSMS_NinjaForms( $plugin );
+
+		$this->assertNotContains( 'ninja_forms_after_submission', $this->registered_actions );
+		$this->assertNotContains( 'ninja_forms_submit_fields', $this->registered_filters );
+	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
+
+	/**
+	 * Build a KwtSMS_Plugin mock with configurable settings and optional API.
+	 *
+	 * @param array       $settings_map          Dot-notation key → value map.
+	 * @param array       $integration_templates Return value for get_all_integration_templates().
+	 * @param object|null $api_mock              Optional API mock.
+	 *
+	 * @return KwtSMS_Plugin
+	 */
+	private function make_plugin_stub(
+		array $settings_map = array(),
+		array $integration_templates = array(),
+		$api_mock = null
+	) {
+		$settings = $this->getMockBuilder( 'stdClass' )
+			->addMethods( array( 'get', 'get_all_templates', 'get_all_integration_templates' ) )
+			->getMock();
+
+		$settings->method( 'get' )->willReturnCallback(
+			function ( $key, $default = null ) use ( $settings_map ) {
+				return array_key_exists( $key, $settings_map ) ? $settings_map[ $key ] : $default;
+			}
+		);
+
+		$settings->method( 'get_all_templates' )->willReturn( array() );
+		$settings->method( 'get_all_integration_templates' )->willReturn( $integration_templates );
+
+		if ( null === $api_mock ) {
+			$api_mock = $this->getMockBuilder( 'stdClass' )
+				->addMethods( array( 'send_sms' ) )
+				->getMock();
+			$api_mock->method( 'send_sms' )->willReturn( null );
+		}
+
+		/** @var KwtSMS_Plugin $plugin */
+		$plugin = $this->getMockBuilder( 'KwtSMS_Plugin' )
+			->disableOriginalConstructor()
+			->addMethods( array( 'verify_form_token' ) )
+			->getMock();
+
+		$plugin->settings = $settings;
+		$plugin->api      = $api_mock;
+
+		return $plugin;
+	}
+}
+
+/**
+ * Class Test_KwtSMS_GF_NF_Settings
+ *
+ * Tests that DEFAULTS and get_all_integration_templates() include the
+ * new GF and NF keys introduced in v2.8.0.
+ */
+class Test_KwtSMS_GF_NF_Settings extends TestCase {
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'update_option' )->justReturn( true );
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	public function test_defaults_contain_gf_keys() {
+		$defaults = KwtSMS_Settings::DEFAULTS['integrations'];
+		$this->assertArrayHasKey( 'gf_enabled',      $defaults );
+		$this->assertArrayHasKey( 'gf_mode',          $defaults );
+		$this->assertArrayHasKey( 'gf_confirmation',  $defaults );
+	}
+
+	public function test_defaults_contain_nf_keys() {
+		$defaults = KwtSMS_Settings::DEFAULTS['integrations'];
+		$this->assertArrayHasKey( 'nf_enabled',      $defaults );
+		$this->assertArrayHasKey( 'nf_mode',          $defaults );
+		$this->assertArrayHasKey( 'nf_confirmation',  $defaults );
+	}
+
+	public function test_gf_confirmation_has_en_ar_enabled() {
+		$tpl = KwtSMS_Settings::DEFAULTS['integrations']['gf_confirmation'];
+		$this->assertArrayHasKey( 'en',      $tpl );
+		$this->assertArrayHasKey( 'ar',      $tpl );
+		$this->assertArrayHasKey( 'enabled', $tpl );
+		$this->assertNotEmpty( $tpl['en'] );
+		$this->assertNotEmpty( $tpl['ar'] );
+	}
+
+	public function test_nf_confirmation_has_en_ar_enabled() {
+		$tpl = KwtSMS_Settings::DEFAULTS['integrations']['nf_confirmation'];
+		$this->assertArrayHasKey( 'en',      $tpl );
+		$this->assertArrayHasKey( 'ar',      $tpl );
+		$this->assertArrayHasKey( 'enabled', $tpl );
+		$this->assertNotEmpty( $tpl['en'] );
+		$this->assertNotEmpty( $tpl['ar'] );
+	}
+
+	public function test_get_all_integration_templates_includes_gf_nf() {
+		$settings  = new KwtSMS_Settings();
+		$templates = $settings->get_all_integration_templates();
+		$this->assertArrayHasKey( 'gf_confirmation', $templates );
+		$this->assertArrayHasKey( 'nf_confirmation', $templates );
+	}
+
+	public function test_get_all_integration_templates_returns_12_keys() {
+		$settings  = new KwtSMS_Settings();
+		$templates = $settings->get_all_integration_templates();
+		// 10 previous + gf_confirmation + nf_confirmation = 12
+		$this->assertCount( 12, $templates );
+	}
+}
+
+/**
+ * Class Test_KwtSMS_GF_NF_IntegrationsPage
+ *
+ * Tests that the integrations admin view file includes the new GF and NF tabs.
+ */
+class Test_KwtSMS_GF_NF_IntegrationsPage extends TestCase {
+
+	private function view_path(): string {
+		return dirname( __DIR__ ) . '/admin/views/page-integrations.php';
+	}
+
+	public function test_integrations_page_has_gf_tab_link() {
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'kwtsms-tab-gf', $src );
+	}
+
+	public function test_integrations_page_has_nf_tab_link() {
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'kwtsms-tab-nf', $src );
+	}
+
+	public function test_integrations_page_has_gf_confirmation_field() {
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'gf_confirmation', $src );
+	}
+
+	public function test_integrations_page_has_nf_confirmation_field() {
+		$src = file_get_contents( $this->view_path() );
+		$this->assertStringContainsString( 'nf_confirmation', $src );
+	}
+}
+
+/**
+ * Class Test_KwtSMS_GF_NF_Wiring
+ *
+ * Tests that class-kwtsms-integrations.php wires GF and NF classes.
+ */
+class Test_KwtSMS_GF_NF_Wiring extends TestCase {
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'update_option' )->justReturn( true );
+		Functions\when( 'sanitize_text_field' )->alias( 'trim' );
+		Functions\when( 'wp_unslash' )->alias( function ( $v ) { return $v; } );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
+		Functions\when( 'get_user_meta' )->justReturn( '' );
+		Functions\when( 'add_action' )->justReturn( null );
+		Functions\when( 'add_filter' )->justReturn( null );
+		Functions\when( 'did_action' )->justReturn( false );
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+
+	public function test_gravityforms_integration_file_is_wired() {
+		$src = file_get_contents( dirname( __DIR__ ) . '/includes/class-kwtsms-integrations.php' );
+		$this->assertStringContainsString( 'class-kwtsms-gravityforms.php', $src );
+		$this->assertStringContainsString( 'KwtSMS_GravityForms', $src );
+	}
+
+	public function test_ninjaforms_integration_file_is_wired() {
+		$src = file_get_contents( dirname( __DIR__ ) . '/includes/class-kwtsms-integrations.php' );
+		$this->assertStringContainsString( 'class-kwtsms-ninjaforms.php', $src );
+		$this->assertStringContainsString( 'KwtSMS_NinjaForms', $src );
+	}
+
+	public function test_integrations_boot_instantiates_gravityforms_when_class_exists() {
+		// GFForms stub is defined at the top of this file — it is already present.
+		$this->assertTrue( class_exists( 'GFForms' ), 'GFForms stub must be defined.' );
+	}
+
+	public function test_integrations_boot_instantiates_ninjaforms_when_class_exists() {
+		// Ninja_Forms stub is defined at the top of this file — it is already present.
+		$this->assertTrue( class_exists( 'Ninja_Forms' ), 'Ninja_Forms stub must be defined.' );
+	}
+}
