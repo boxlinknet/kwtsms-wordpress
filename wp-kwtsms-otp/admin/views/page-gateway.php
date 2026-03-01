@@ -163,7 +163,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					</label>
 					<?php if ( $test_mode ) : ?>
 					<p class="description" style="color:#d63638;font-weight:600;">
-						<?php esc_html_e( '⚠ Test Mode is ON — no SMS will reach any phone.', 'wp-kwtsms-otp' ); ?>
+						<?php esc_html_e( '⚠ Test Mode is ON. The SMS will be queued but will NOT be delivered to your phone.', 'wp-kwtsms-otp' ); ?>
 					</p>
 					<?php endif; ?>
 				</td>
@@ -281,7 +281,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					<p class="description"><?php esc_html_e( 'Enter the full number with country code. e.g. Kuwait: 965 + 8 digits = 96512345678 (11 digits total).', 'wp-kwtsms-otp' ); ?></p>
 					<?php if ( $test_mode ) : ?>
 					<p class="description" style="color:#dc3232;font-weight:700;">
-						<?php esc_html_e( 'Test Mode is currently ON. The SMS will be queued but will NOT be delivered to your phone.', 'wp-kwtsms-otp' ); ?>
+						<?php esc_html_e( '⚠ Test Mode is ON. The SMS will be queued but will NOT be delivered to your phone.', 'wp-kwtsms-otp' ); ?>
 					</p>
 					<?php else : ?>
 					<p class="description" style="color:#2a7a2f;font-weight:600;">
