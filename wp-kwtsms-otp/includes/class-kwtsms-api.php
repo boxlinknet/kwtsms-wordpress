@@ -153,7 +153,7 @@ class KwtSMS_API {
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: phone missing' );
 			self::append_send_log( '?', 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ) );
+			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_code() ) );
 			return $err;
 		}
 
@@ -164,7 +164,7 @@ class KwtSMS_API {
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: message empty' );
 			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ) );
+			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_code() ) );
 			return $err;
 		}
 
@@ -176,7 +176,7 @@ class KwtSMS_API {
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty (live mode)' );
 			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ) );
+			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_code() ) );
 			return $err;
 		}
 
@@ -187,7 +187,7 @@ class KwtSMS_API {
 			if ( is_wp_error( $balance_check ) ) {
 				$this->write_debug_log( 'send_sms()', 'ABORT: ' . $balance_check->get_error_message() );
 				self::append_send_log( $phone, 'failed', $type );
-				self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $balance_check->get_error_code(), 'message' => $balance_check->get_error_message() ) );
+				self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $balance_check->get_error_code(), 'message' => $balance_check->get_error_code() ) );
 				return $balance_check;
 			}
 		}
@@ -226,8 +226,10 @@ class KwtSMS_API {
 		if ( is_wp_error( $response ) ) {
 			$this->write_debug_log( 'send_sms()', 'FAILED: ' . $response->get_error_message() );
 			self::append_send_log( $phone, 'failed', $type, $sender_id );
-			$_api_code = $response->get_error_data()['api_code'] ?? '';
-			self::append_sms_history( $phone, $message, 'failed', $type, '', $sender_id, array( 'ok' => false, 'code' => $_api_code ?: $response->get_error_code(), 'message' => $response->get_error_message() ) );
+			$_api_data = is_array( $response->get_error_data() ) ? $response->get_error_data() : array();
+			$_api_code = $_api_data['api_code'] ?? '';
+			$_api_desc = $_api_data['description'] ?? '';
+			self::append_sms_history( $phone, $message, 'failed', $type, '', $sender_id, array( 'ok' => false, 'code' => $_api_code ?: $response->get_error_code(), 'message' => $_api_desc ?: $_api_code ?: $response->get_error_code() ) );
 			return $response;
 		}
 
