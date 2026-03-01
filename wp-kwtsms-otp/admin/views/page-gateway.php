@@ -131,7 +131,7 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 				</td>
 			</tr>
 
-			<tr>
+			<tr style="display:none;">
 				<th scope="row"><label for="kwtsms_sender_id"><?php esc_html_e( 'Sender ID', 'wp-kwtsms-otp' ); ?></label></th>
 				<td>
 					<div style="display:flex;align-items:center;gap:10px;">
@@ -255,11 +255,8 @@ $sender_ids            = $gateway['sender_ids'] ?? array();
 
 		</div><!-- #kwtsms-verified-sections -->
 
-		<div style="display:flex;gap:12px;margin-top:20px;align-items:center;">
+		<div style="margin-top:20px;">
 			<?php submit_button( __( 'Save Settings', 'wp-kwtsms-otp' ), 'primary kwtsms-save-btn', 'submit', false ); ?>
-			<button type="button" id="kwtsms-verify-btn" class="button button-secondary">
-				<?php esc_html_e( 'Save & Verify Credentials', 'wp-kwtsms-otp' ); ?>
-			</button>
 		</div>
 	</form>
 

@@ -305,19 +305,72 @@ class KwtSMS_Admin {
 		);
 		$credentials_verified = $creds_unchanged ? (int) ( $current_gw['credentials_verified'] ?? 0 ) : 0;
 
+		// Carry over previously fetched gateway data by default.
+		$sender_ids        = $current_gw['sender_ids']         ?? array();
+		$balance_available = $current_gw['balance_available']  ?? null;
+		$balance_purchased = $current_gw['balance_purchased']  ?? null;
+		$balance_updated   = $current_gw['balance_updated_at'] ?? 0;
+		$coverage          = $current_gw['coverage']           ?? array();
+		$sender_id_out     = sanitize_text_field( $raw['sender_id'] ?? '' );
+
+		// Auto-verify when credentials are new or changed.
+		if ( ! $creds_unchanged && ! empty( $api_username_raw ) && ! empty( $api_password_raw ) ) {
+			$api               = new KwtSMS_API( $api_username_raw, $api_password_raw, false );
+			$sender_ids_result = $api->get_sender_ids();
+
+			if ( is_wp_error( $sender_ids_result ) ) {
+				add_settings_error(
+					'kwtsms_otp_gateway',
+					'credentials_invalid',
+					sprintf(
+						/* translators: %s: error message from kwtSMS API */
+						__( 'API credentials could not be verified: %s', 'wp-kwtsms-otp' ),
+						$sender_ids_result->get_error_message()
+					),
+					'error'
+				);
+			} else {
+				$credentials_verified = 1;
+				$sender_ids           = $sender_ids_result;
+
+				// Auto-select first sender ID if none was previously saved.
+				if ( empty( $sender_id_out ) && ! empty( $sender_ids ) ) {
+					$sender_id_out = $sender_ids[0];
+				}
+
+				$balance_result    = $api->get_balance();
+				$coverage_result   = $api->get_coverage();
+
+				if ( ! is_wp_error( $balance_result ) ) {
+					$balance_available = $balance_result['available'] ?? null;
+					$balance_purchased = $balance_result['purchased'] ?? null;
+					$balance_updated   = time();
+				}
+				if ( ! is_wp_error( $coverage_result ) ) {
+					$coverage = (array) $coverage_result;
+				}
+
+				add_settings_error(
+					'kwtsms_otp_gateway',
+					'credentials_verified',
+					__( 'API credentials verified successfully.', 'wp-kwtsms-otp' ),
+					'success'
+				);
+			}
+		}
+
 		return array(
 			'api_username'         => $api_username_raw,
 			'api_password'         => $api_password_raw,
-			'sender_id'            => sanitize_text_field( $raw['sender_id'] ?? '' ),
+			'sender_id'            => $sender_id_out,
 			'test_mode'            => ! empty( $raw['test_mode'] ) ? 1 : 0,
 			'test_phone'           => $test_phone,
 			'credentials_verified' => $credentials_verified,
-			// Preserve Login-AJAX-managed fields — form save must not clear them.
-			'sender_ids'           => $current_gw['sender_ids']         ?? array(),
-			'balance_available'    => $current_gw['balance_available']  ?? null,
-			'balance_purchased'    => $current_gw['balance_purchased']  ?? null,
-			'balance_updated_at'   => $current_gw['balance_updated_at'] ?? 0,
-			'coverage'             => $current_gw['coverage']           ?? array(),
+			'sender_ids'           => $sender_ids,
+			'balance_available'    => $balance_available,
+			'balance_purchased'    => $balance_purchased,
+			'balance_updated_at'   => $balance_updated,
+			'coverage'             => $coverage,
 		);
 	}
 
