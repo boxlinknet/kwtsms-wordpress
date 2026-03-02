@@ -92,8 +92,9 @@ function kwtsms_attempt_result_label( $result ) {
 		<?php endif; ?>
 	</nav>
 
+	<?php if ( 'debug_log' !== $active_tab ) : ?>
 	<div class="kwtsms-log-toolbar" style="display:flex;gap:10px;align-items:center;margin:16px 0;">
-		<!-- CSV Export -->
+		<?php if ( $total_entries > 0 ) : ?>
 		<a href="<?php echo esc_url( add_query_arg( array(
 			'action'   => 'export_csv',
 			'log'      => $active_tab,
@@ -102,6 +103,7 @@ function kwtsms_attempt_result_label( $result ) {
 			class="button">
 			⬇ <?php esc_html_e( 'Export CSV', 'wp-kwtsms-otp' ); ?>
 		</a>
+		<?php endif; ?>
 
 		<span style="color:#888;font-size:13px;">
 			<?php
@@ -113,6 +115,7 @@ function kwtsms_attempt_result_label( $result ) {
 			?>
 		</span>
 	</div>
+	<?php endif; ?>
 
 	<?php if ( 'sms_history' === $active_tab ) : ?>
 	<!-- ===== SMS History Tab ===== -->
