@@ -75,7 +75,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 				<td>
 					<?php if ( $debug_logging ) : ?>
 					<span style="color:#FFA200;font-weight:600;"><?php esc_html_e( 'ON', 'wp-kwtsms-otp' ); ?></span>
-					&mdash; <?php echo esc_html( $content_dir . '/kwtsms-debug.log' ); ?>
+					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ); ?>"><?php echo esc_html( $content_dir . '/kwtsms-debug.log' ); ?></a>
 					<?php else : ?>
 					<span style="color:#757575;"><?php esc_html_e( 'OFF', 'wp-kwtsms-otp' ); ?></span>
 					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>"><?php esc_html_e( 'Enable in General Settings →', 'wp-kwtsms-otp' ); ?></a>
@@ -142,9 +142,28 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Send a test SMS', 'wp-kwtsms-otp' ); ?></strong><br>
-				<?php esc_html_e( 'On the Gateway page, enter a test phone number and click "Send Gateway Test SMS". With Test Mode ON, the code will not be delivered but will appear in debug.log.', 'wp-kwtsms-otp' ); ?>
+				<?php esc_html_e( 'On the Gateway page, enter a test phone number and click "Send Gateway Test SMS". With Test Mode ON, the message is queued in your kwtSMS account but not delivered to the phone. Turn Test Mode OFF for real delivery.', 'wp-kwtsms-otp' ); ?>
 			</li>
 		</ol>
+
+		<!-- ===== Test Mode & Credits ===== -->
+		<div style="background:#fff8e1;border-left:4px solid #FFA200;padding:14px 18px;border-radius:0 4px 4px 0;margin-bottom:24px;font-size:14px;">
+			<h3 style="margin-top:0;"><?php esc_html_e( 'Test Mode and Credits — Important', 'wp-kwtsms-otp' ); ?></h3>
+			<p style="margin-top:0;">
+				<?php esc_html_e( 'When Test Mode is ON, every message is sent to the kwtSMS API with a test=1 flag. The kwtSMS servers receive and queue the message, but it is never delivered to the recipient\'s phone.', 'wp-kwtsms-otp' ); ?>
+				<strong><?php esc_html_e( ' Credits are still deducted', 'wp-kwtsms-otp' ); ?></strong> —
+				<?php esc_html_e( 'kwtSMS charges for queued messages even in test mode.', 'wp-kwtsms-otp' ); ?>
+			</p>
+			<p>
+				<?php esc_html_e( 'To recover credits from test messages, log in to your kwtSMS dashboard and delete the queued messages from the outbox queue.', 'wp-kwtsms-otp' ); ?>
+				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener"><?php esc_html_e( 'kwtSMS Dashboard →', 'wp-kwtsms-otp' ); ?></a>
+			</p>
+			<p style="margin-bottom:0;">
+				<strong><?php esc_html_e( 'How to tell:', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'An orange "Test Mode" notice appears at the top of every kwtSMS admin page when active. To disable it, go to Gateway Settings and uncheck Test Mode.', 'wp-kwtsms-otp' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Gateway Settings →', 'wp-kwtsms-otp' ); ?></a>
+			</p>
+		</div>
 
 		<!-- ===== Features ===== -->
 		<h2><?php esc_html_e( 'Features Overview', 'wp-kwtsms-otp' ); ?></h2>
@@ -196,13 +215,45 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<!-- ===== Troubleshooting ===== -->
 		<h2><?php esc_html_e( 'Troubleshooting', 'wp-kwtsms-otp' ); ?></h2>
 
-		<h3><?php esc_html_e( 'SMS is not being sent', 'wp-kwtsms-otp' ); ?></h3>
-		<ol style="font-size:14px;line-height:1.8;">
-			<li><?php esc_html_e( 'Go to Gateway Settings and click "Save & Verify Credentials". If it fails, your username or password is wrong.', 'wp-kwtsms-otp' ); ?></li>
-			<li><?php esc_html_e( 'Make sure a Sender ID is selected. If the dropdown is empty, click "Reload" after verifying credentials.', 'wp-kwtsms-otp' ); ?></li>
-			<li><?php esc_html_e( 'Check that Test Mode is OFF if you expect real delivery. With Test Mode ON, messages are queued but not sent.', 'wp-kwtsms-otp' ); ?></li>
-			<li><?php esc_html_e( 'Enable Debug Logging (General Settings → Developer Tools), attempt a send, and check wp-content/kwtsms-debug.log for the full API response.', 'wp-kwtsms-otp' ); ?></li>
-			<li><?php esc_html_e( 'Check your kwtSMS account balance at kwtsms.com — insufficient credits will cause ERR010 or ERR011.', 'wp-kwtsms-otp' ); ?></li>
+		<h3><?php esc_html_e( 'Messages not being delivered — step by step', 'wp-kwtsms-otp' ); ?></h3>
+		<ol style="font-size:14px;line-height:1.9;">
+			<li>
+				<strong><?php esc_html_e( 'Check whether Test Mode is ON.', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'Look for the orange "kwtSMS is in Test Mode" notice at the top of this page. If it appears, messages are being queued but not delivered. Go to Gateway Settings, uncheck Test Mode, and save. Credits are consumed even in test mode — delete queued messages from the kwtSMS dashboard to recover them.', 'wp-kwtsms-otp' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Gateway Settings →', 'wp-kwtsms-otp' ); ?></a>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'Verify your API credentials.', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'On the Gateway page, click Login. If it fails, your API username or password is incorrect. Log in to kwtsms.com → API Settings to get the correct credentials.', 'wp-kwtsms-otp' ); ?>
+				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener"><?php esc_html_e( 'kwtSMS Dashboard →', 'wp-kwtsms-otp' ); ?></a>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'Confirm a Sender ID is selected.', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'The Sender ID dropdown on the Gateway page must have a selection. If it is empty, click Reload after verifying credentials. Without a Sender ID, no message can be sent.', 'wp-kwtsms-otp' ); ?>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'Check your account balance.', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'You need at least 1 credit per message. Your current balance is shown on the Gateway page and in the Current Status table above. Insufficient credits cause error ERR010 or ERR011.', 'wp-kwtsms-otp' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Gateway Settings →', 'wp-kwtsms-otp' ); ?></a>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'Check the SMS History log.', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'Go to Logs → SMS History. If the send attempt is listed with Status: Failed, the Result column shows the API error code. Match it to the error table below.', 'wp-kwtsms-otp' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=sms_history' ) ); ?>"><?php esc_html_e( 'SMS History →', 'wp-kwtsms-otp' ); ?></a>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'Enable Debug Logging for full API details.', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'Go to General → Developer Tools and turn Debug Logging ON. Trigger a send again. Then view the full request and response (including the exact error from kwtSMS) in the Debug Log.', 'wp-kwtsms-otp' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ); ?>"><?php esc_html_e( 'Debug Log →', 'wp-kwtsms-otp' ); ?></a>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'Check destination coverage.', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'The SMS Coverage table on the Gateway page lists which countries are supported. If the destination country is not covered or shows as inactive, add coverage via your kwtSMS dashboard.', 'wp-kwtsms-otp' ); ?>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'Run a Gateway Test SMS.', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'On the Gateway page, enter a phone number including country code and click "Send Gateway Test SMS". This isolates whether the issue is the API connection or a specific trigger in the plugin.', 'wp-kwtsms-otp' ); ?>
+			</li>
 		</ol>
 
 		<h3><?php esc_html_e( 'Users get "Session expired" error', 'wp-kwtsms-otp' ); ?></h3>
@@ -232,14 +283,14 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<h3><?php esc_html_e( 'Where is the debug log?', 'wp-kwtsms-otp' ); ?></h3>
 		<p>
 			<?php
+			$debug_log_url = admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' );
 			printf(
-				/* translators: %s: path to debug log file */
-				esc_html__( 'When Debug Logging is enabled: %s', 'wp-kwtsms-otp' ),
-				'<code>' . esc_html( $content_dir . '/kwtsms-debug.log' ) . '</code>'
+				/* translators: 1: path to debug log file, 2: link to Logs page */
+				esc_html__( 'When Debug Logging is enabled, all API activity is recorded in %1$s. You can view, scroll, and download it directly from %2$s.', 'wp-kwtsms-otp' ),
+				'<code>' . esc_html( $content_dir . '/kwtsms-debug.log' ) . '</code>',
+				'<a href="' . esc_url( $debug_log_url ) . '">' . esc_html__( 'Logs → Debug Log', 'wp-kwtsms-otp' ) . '</a>'
 			);
 			?>
-			<br>
-			<?php esc_html_e( 'In Test Mode, OTP codes are also written to: wp-content/plugins/wp-kwtsms-otp/test-otp.log', 'wp-kwtsms-otp' ); ?>
 		</p>
 
 		<h3><?php esc_html_e( 'Common API error codes', 'wp-kwtsms-otp' ); ?></h3>
