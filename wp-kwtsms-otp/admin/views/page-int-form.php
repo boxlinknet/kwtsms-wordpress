@@ -5,6 +5,13 @@
  * Used by CF7, WPForms, Elementor, Gravity Forms, and Ninja Forms.
  * The calling render method sets $int_key before including this file.
  *
+ * URL-driven tabs matching the Logs page nav style:
+ *   Settings tab     — enable toggle, mode, and setup tip.
+ *   SMS Template tab — EN + AR textarea with character counter.
+ *
+ * The form wraps both tabs; hidden tab fields still submit, so Save
+ * always persists both sections at once.
+ *
  * Submitting this form only overwrites the fields for the submitted
  * integration section (identified by the hidden _save_section field),
  * leaving all other integrations' settings intact in the database.
@@ -77,26 +84,44 @@ $cfg = $configs[ $int_key ];
 
 $settings = $this->plugin->settings;
 
-// Load saved integration settings with defaults merged in.
 $int = array_merge(
 	KwtSMS_Settings::DEFAULTS['integrations'],
 	(array) $settings->get( 'integrations' )
 );
 
-// For each template key, merge saved values over the defaults.
-$templates = $settings->get_all_integration_templates();
-
+$templates   = $settings->get_all_integration_templates();
 $enabled_key = $cfg['enabled_key'];
 $mode_key    = $cfg['mode_key'];
 $tpl_key     = $cfg['tpl_key'];
 $label       = $cfg['label'];
-
 $is_enabled  = ! empty( $int[ $enabled_key ] );
 $current_mode = $int[ $mode_key ] ?? 'notification';
 $tpl         = $templates[ $tpl_key ] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
 
 /* translators: %s: integration label e.g. "WPForms" */
 $page_title = sprintf( __( '%s Settings', 'wp-kwtsms-otp' ), $label );
+
+// Current page slug — used to build correct tab URLs.
+$page_slug = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : 'kwtsms-otp-int-' . $int_key;
+
+$valid_tabs = array( 'settings', 'template' );
+$active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true )
+	? sanitize_key( $_GET['tab'] )
+	: 'settings';
+
+/**
+ * Build a tab URL for this integration sub-page.
+ *
+ * @param string $slug Current page slug.
+ * @param string $tab  Tab key.
+ * @return string Admin URL with page + tab query args.
+ */
+function kwtsms_int_form_tab_url( $slug, $tab ) {
+	return add_query_arg(
+		array( 'page' => $slug, 'tab' => $tab ),
+		admin_url( 'admin.php' )
+	);
+}
 ?>
 <div class="wrap kwtsms-admin-wrap">
 
@@ -110,125 +135,146 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms-otp' ), $label );
 		</a>
 	</div>
 
+	<!-- Tab navigation -->
+	<nav class="nav-tab-wrapper">
+		<a href="<?php echo esc_url( kwtsms_int_form_tab_url( $page_slug, 'settings' ) ); ?>"
+			class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>">
+			<?php esc_html_e( 'Settings', 'wp-kwtsms-otp' ); ?>
+		</a>
+		<a href="<?php echo esc_url( kwtsms_int_form_tab_url( $page_slug, 'template' ) ); ?>"
+			class="nav-tab <?php echo 'template' === $active_tab ? 'nav-tab-active' : ''; ?>">
+			<?php esc_html_e( 'SMS Template', 'wp-kwtsms-otp' ); ?>
+		</a>
+	</nav>
+
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_integrations_group' ); ?>
 		<input type="hidden" name="kwtsms_otp_integrations[_save_section]" value="<?php echo esc_attr( $int_key ); ?>" />
 
-		<!-- Enable toggle card -->
-		<div class="kwtsms-template-card">
-			<div class="kwtsms-template-card-header">
-				<!-- translators: %s: integration label -->
-				<h3><?php echo esc_html( sprintf( __( '%s Integration', 'wp-kwtsms-otp' ), $label ) ); ?></h3>
-				<label class="kwtsms-toggle">
-					<input type="checkbox"
-						name="kwtsms_otp_integrations[<?php echo esc_attr( $enabled_key ); ?>]"
-						value="1"
-						<?php checked( $is_enabled ); ?> />
+		<!-- ===== Settings Tab ===== -->
+		<div class="kwtsms-tab-section"<?php echo 'settings' === $active_tab ? '' : ' style="display:none;"'; ?>>
+
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
 					<!-- translators: %s: integration label -->
-					<span><?php echo esc_html( sprintf( __( 'Enable %s SMS Integration', 'wp-kwtsms-otp' ), $label ) ); ?></span>
-				</label>
-			</div>
-			<p class="description">
-				<!-- translators: %s: integration label -->
-				<?php echo esc_html( sprintf( __( 'Send a confirmation SMS after a %s form is submitted successfully.', 'wp-kwtsms-otp' ), $label ) ); ?>
-			</p>
-
-			<!-- Mode toggle -->
-			<table class="form-table" style="margin-top:12px;">
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms-otp' ); ?></th>
-					<td>
-						<fieldset>
-							<label style="display:block;margin-bottom:6px;">
-								<input type="radio"
-									name="kwtsms_otp_integrations[<?php echo esc_attr( $mode_key ); ?>]"
-									value="notification"
-									<?php checked( $current_mode, 'notification' ); ?> />
-								<strong><?php esc_html_e( 'Notification', 'wp-kwtsms-otp' ); ?></strong>
-								&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms-otp' ); ?>
-							</label>
-							<label style="display:block;">
-								<input type="radio"
-									name="kwtsms_otp_integrations[<?php echo esc_attr( $mode_key ); ?>]"
-									value="gate"
-									<?php checked( $current_mode, 'gate' ); ?> />
-								<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms-otp' ); ?></strong>
-								&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms-otp' ); ?>
-							</label>
-						</fieldset>
-						<?php if ( 'gate' === $current_mode ) : ?>
-						<div class="notice notice-info inline" style="margin:8px 0 0;">
-							<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms-otp' ); ?></p>
-						</div>
-						<?php endif; ?>
-					</td>
-				</tr>
-			</table>
-
-			<!-- Setup tip -->
-			<div class="notice notice-info inline" style="margin:12px 0 0;">
-				<p>
-					<?php echo esc_html( $cfg['tip'] ); ?>
-					<?php if ( ! empty( $cfg['tip_code'] ) ) : ?>
-						<code><?php echo esc_html( $cfg['tip_code'] ); ?></code>
-					<?php endif; ?>
+					<h3><?php echo esc_html( sprintf( __( '%s Integration', 'wp-kwtsms-otp' ), $label ) ); ?></h3>
+					<label class="kwtsms-toggle">
+						<input type="checkbox"
+							name="kwtsms_otp_integrations[<?php echo esc_attr( $enabled_key ); ?>]"
+							value="1"
+							<?php checked( $is_enabled ); ?> />
+						<!-- translators: %s: integration label -->
+						<span><?php echo esc_html( sprintf( __( 'Enable %s SMS Integration', 'wp-kwtsms-otp' ), $label ) ); ?></span>
+					</label>
+				</div>
+				<p class="description">
+					<!-- translators: %s: integration label -->
+					<?php echo esc_html( sprintf( __( 'Send a confirmation SMS after a %s form is submitted successfully.', 'wp-kwtsms-otp' ), $label ) ); ?>
 				</p>
-			</div>
-		</div>
 
-		<!-- Confirmation template card -->
-		<div class="kwtsms-template-card">
-			<div class="kwtsms-template-card-header">
-				<h3><?php esc_html_e( 'Form Submission Confirmation', 'wp-kwtsms-otp' ); ?></h3>
-			</div>
-			<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful form submission.', 'wp-kwtsms-otp' ); ?></p>
-			<p class="description" style="margin-top:4px;"><strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong> <code><?php echo esc_html( $cfg['placeholders'] ); ?></code></p>
+				<table class="form-table" style="margin-top:12px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms-otp' ); ?></th>
+						<td>
+							<fieldset>
+								<label style="display:block;margin-bottom:6px;">
+									<input type="radio"
+										name="kwtsms_otp_integrations[<?php echo esc_attr( $mode_key ); ?>]"
+										value="notification"
+										<?php checked( $current_mode, 'notification' ); ?> />
+									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms-otp' ); ?></strong>
+									&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms-otp' ); ?>
+								</label>
+								<label style="display:block;">
+									<input type="radio"
+										name="kwtsms_otp_integrations[<?php echo esc_attr( $mode_key ); ?>]"
+										value="gate"
+										<?php checked( $current_mode, 'gate' ); ?> />
+									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms-otp' ); ?></strong>
+									&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms-otp' ); ?>
+								</label>
+							</fieldset>
+							<?php if ( 'gate' === $current_mode ) : ?>
+							<div class="notice notice-info inline" style="margin:8px 0 0;">
+								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms-otp' ); ?></p>
+							</div>
+							<?php endif; ?>
+						</td>
+					</tr>
+				</table>
 
-			<div class="kwtsms-lang-tabs">
-				<div class="kwtsms-tab-nav">
-					<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms-otp' ); ?></button>
-					<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms-otp' ); ?></button>
+				<div class="notice notice-info inline" style="margin:12px 0 0;">
+					<p>
+						<?php echo esc_html( $cfg['tip'] ); ?>
+						<?php if ( ! empty( $cfg['tip_code'] ) ) : ?>
+							<code><?php echo esc_html( $cfg['tip_code'] ); ?></code>
+						<?php endif; ?>
+					</p>
 				</div>
-				<div class="kwtsms-tab-pane" data-tab="en">
-					<div class="kwtsms-textarea-wrap">
-						<textarea
-							name="kwtsms_otp_integrations[<?php echo esc_attr( $tpl_key ); ?>][en]"
-							id="int_<?php echo esc_attr( $tpl_key ); ?>_en"
-							class="large-text kwtsms-sms-textarea"
-							rows="3"
-							dir="ltr"
-							data-lang="en"
-						><?php echo esc_textarea( $tpl['en'] ); ?></textarea>
-						<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $tpl_key ); ?>_en">
-							<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-							&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
+			</div>
+
+		</div><!-- /.kwtsms-tab-section[settings] -->
+
+		<!-- ===== SMS Template Tab ===== -->
+		<div class="kwtsms-tab-section"<?php echo 'template' === $active_tab ? '' : ' style="display:none;"'; ?>>
+
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
+					<h3><?php esc_html_e( 'Form Submission Confirmation', 'wp-kwtsms-otp' ); ?></h3>
+				</div>
+				<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful form submission.', 'wp-kwtsms-otp' ); ?></p>
+				<p class="description" style="margin-top:4px;">
+					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong>
+					<code><?php echo esc_html( $cfg['placeholders'] ); ?></code>
+				</p>
+
+				<div class="kwtsms-lang-tabs">
+					<div class="kwtsms-tab-nav">
+						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms-otp' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms-otp' ); ?></button>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="en">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[<?php echo esc_attr( $tpl_key ); ?>][en]"
+								id="int_<?php echo esc_attr( $tpl_key ); ?>_en"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="ltr"
+								data-lang="en"
+							><?php echo esc_textarea( $tpl['en'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $tpl_key ); ?>_en">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
+							</div>
+						</div>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[<?php echo esc_attr( $tpl_key ); ?>][ar]"
+								id="int_<?php echo esc_attr( $tpl_key ); ?>_ar"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="rtl"
+								data-lang="ar"
+							><?php echo esc_textarea( $tpl['ar'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $tpl_key ); ?>_ar">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
+							</div>
 						</div>
 					</div>
 				</div>
-				<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
-					<div class="kwtsms-textarea-wrap">
-						<textarea
-							name="kwtsms_otp_integrations[<?php echo esc_attr( $tpl_key ); ?>][ar]"
-							id="int_<?php echo esc_attr( $tpl_key ); ?>_ar"
-							class="large-text kwtsms-sms-textarea"
-							rows="3"
-							dir="rtl"
-							data-lang="ar"
-						><?php echo esc_textarea( $tpl['ar'] ); ?></textarea>
-						<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $tpl_key ); ?>_ar">
-							<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms-otp' ); ?>
-							&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms-otp' ); ?>
-						</div>
-					</div>
+				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
+					<button type="button" class="button kwtsms-reset-template"
+						data-key="<?php echo esc_attr( $tpl_key ); ?>">
+						&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms-otp' ); ?>
+					</button>
 				</div>
 			</div>
-			<div class="kwtsms-reset-wrap" style="margin-top:8px;">
-				<button type="button" class="button kwtsms-reset-template"
-					data-key="<?php echo esc_attr( $tpl_key ); ?>">
-					&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms-otp' ); ?>
-				</button>
-			</div>
-		</div>
+
+		</div><!-- /.kwtsms-tab-section[template] -->
 
 		<?php submit_button( __( 'Save Settings', 'wp-kwtsms-otp' ), 'primary kwtsms-save-btn' ); ?>
 
