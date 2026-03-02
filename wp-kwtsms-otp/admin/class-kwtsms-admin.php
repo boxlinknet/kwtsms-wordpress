@@ -944,11 +944,14 @@ class KwtSMS_Admin {
 	}
 
 	// =========================================================================
-	// AJAX: Logout (clear credentials_verified flag)
+	// AJAX: Logout (clear credentials_verified flag and fetched API data)
 	// =========================================================================
 
 	/**
-	 * AJAX: Clear credentials_verified flag (Logout).
+	 * AJAX: Logout — clear verified flag and all data fetched from the API.
+	 *
+	 * Resets credentials_verified, sender_ids, sender_id, coverage, and
+	 * balance so the UI shows a clean state until the user logs in again.
 	 *
 	 * Security: nonce + manage_options.
 	 */
@@ -961,6 +964,12 @@ class KwtSMS_Admin {
 
 		$gw                         = get_option( 'kwtsms_otp_gateway', array() );
 		$gw['credentials_verified'] = 0;
+		$gw['sender_ids']           = array();
+		$gw['sender_id']            = '';
+		$gw['coverage']             = array();
+		$gw['balance_available']    = null;
+		$gw['balance_purchased']    = null;
+		$gw['balance_updated_at']   = 0;
 
 		// Temporarily remove our own sanitize callback so the raw value
 		// (credentials_verified = 0) is written straight to the DB without
