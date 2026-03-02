@@ -700,22 +700,13 @@ class KwtSMS_Plugin {
 			return;
 		}
 
-		// Build the test message: site name + timestamp with GMT offset label.
-		$tz_string = wp_timezone_string();
+		// Build the test message: site name + timestamp in Gulf/Kuwait time (GMT+3).
 		try {
-			$tz_obj         = new DateTimeZone( $tz_string );
-			$dt             = new DateTime( 'now', $tz_obj );
-			$offset_secs    = (int) $dt->format( 'Z' );
-			$sign           = $offset_secs >= 0 ? '+' : '-';
-			$abs_secs       = abs( $offset_secs );
-			$offset_hours   = intdiv( $abs_secs, 3600 );
-			$offset_minutes = ( $abs_secs % 3600 ) / 60;
-			$tz_label       = $offset_minutes > 0
-				? sprintf( 'GMT%s%d:%02d', $sign, $offset_hours, $offset_minutes )
-				: sprintf( 'GMT%s%d', $sign, $offset_hours );
-			$stamp          = $dt->format( 'Y-m-d H:i' ) . ' ' . $tz_label;
+			$tz_obj = new DateTimeZone( 'Asia/Kuwait' );
+			$dt     = new DateTime( 'now', $tz_obj );
+			$stamp  = $dt->format( 'Y-m-d H:i' ) . ' GMT+3';
 		} catch ( Exception $e ) {
-			$stamp = gmdate( 'Y-m-d H:i' ) . ' GMT+0';
+			$stamp = gmdate( 'Y-m-d H:i' ) . ' GMT+3';
 		}
 		$site_name = get_bloginfo( 'name' );
 		$message   = "Test SMS message from {$site_name}\nStamp: {$stamp}";
