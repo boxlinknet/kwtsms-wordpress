@@ -506,6 +506,18 @@
 
 	( function () {
 		var $forms = $( '.kwtsms-admin-wrap form[action="options.php"]' );
+
+		// After a "Save Changes" from the unsaved-changes modal, WordPress saves and
+		// redirects back here with ?settings-updated. Forward to the original destination.
+		var _redir = sessionStorage.getItem( 'kwtsmsRedirectAfterSave' );
+		if ( _redir ) {
+			sessionStorage.removeItem( 'kwtsmsRedirectAfterSave' );
+			if ( window.location.href.indexOf( 'settings-updated' ) !== -1 ) {
+				window.location.href = _redir;
+				return;
+			}
+		}
+
 		if ( ! $forms.length ) {
 			return;
 		}
@@ -519,28 +531,23 @@
 				'<div id="kwtsms-unsaved-dialog">' +
 					'<h2 id="kwtsms-unsaved-title"></h2>' +
 					'<p  id="kwtsms-unsaved-body"></p>' +
-					'<div id="kwtsms-unsaved-hint">' +
-						'<span id="kwtsms-unsaved-hint-icon">&#128161;</span>' +
-						'<span id="kwtsms-unsaved-hint-text"></span>' +
-					'</div>' +
 					'<div id="kwtsms-unsaved-actions">' +
-						'<button type="button" id="kwtsms-unsaved-stay"  class="button kwtsms-save-btn"></button>' +
+						'<button type="button" id="kwtsms-unsaved-save"  class="button kwtsms-save-btn"></button>' +
 						'<button type="button" id="kwtsms-unsaved-leave" class="button"></button>' +
 					'</div>' +
 				'</div>' +
 			'</div>'
 		).appendTo( 'body' );
 
-		$overlay.find( '#kwtsms-unsaved-title'     ).text( s.unsavedTitle || 'Unsaved Changes'                                                                              );
-		$overlay.find( '#kwtsms-unsaved-body'      ).text( s.unsavedBody  || 'You have unsaved changes. Leaving this page will discard them.'                               );
-		$overlay.find( '#kwtsms-unsaved-hint-text' ).text( s.unsavedHint  || 'To save: click "Stay on Page", then scroll to the bottom and click the Save Settings button.' );
-		$overlay.find( '#kwtsms-unsaved-stay'      ).text( s.unsavedStay  || 'Stay on Page'                                                                                );
-		$overlay.find( '#kwtsms-unsaved-leave'     ).text( s.unsavedLeave || 'Leave Page'                                                                                  );
+		$overlay.find( '#kwtsms-unsaved-title' ).text( s.unsavedTitle || 'Unsaved Changes'                                             );
+		$overlay.find( '#kwtsms-unsaved-body'  ).text( s.unsavedBody  || 'You have unsaved changes. Leaving this page will discard them.' );
+		$overlay.find( '#kwtsms-unsaved-save'  ).text( s.unsavedSave  || 'Save Changes'                                                );
+		$overlay.find( '#kwtsms-unsaved-leave' ).text( s.unsavedLeave || 'Leave Page'                                                  );
 
 		function showModal( href ) {
 			pendingHref = href || null;
 			$overlay.addClass( 'is-visible' );
-			$( '#kwtsms-unsaved-stay' ).trigger( 'focus' );
+			$( '#kwtsms-unsaved-save' ).trigger( 'focus' );
 		}
 
 		function hideModal() {
@@ -548,8 +555,15 @@
 			$overlay.removeClass( 'is-visible' );
 		}
 
-		// "Stay on Page" — dismiss modal, do nothing.
-		$( '#kwtsms-unsaved-stay' ).on( 'click', hideModal );
+		// "Save Changes" — submit the form, then navigate to the pending destination.
+		// pendingHref is stored in sessionStorage so it survives the page reload
+		// caused by the WordPress settings save redirect.
+		$( '#kwtsms-unsaved-save' ).on( 'click', function () {
+			var href = pendingHref;
+			if ( href ) { sessionStorage.setItem( 'kwtsmsRedirectAfterSave', href ); }
+			dirty = false;
+			$forms.first().trigger( 'submit' );
+		} );
 
 		// Clicking the backdrop also stays (do not navigate).
 		$overlay.on( 'click', function ( e ) {
