@@ -15,8 +15,8 @@ $credentials_verified = (bool) $settings->get( 'gateway.credentials_verified', f
 $has_credentials      = $credentials_verified
 	&& ! empty( $settings->get( 'gateway.api_username', '' ) )
 	&& ! empty( $settings->get( 'gateway.api_password', '' ) );
-$has_sender      = ! empty( $settings->get( 'gateway.sender_id', '' ) );
-$test_mode       = (bool) $settings->get( 'gateway.test_mode', 1 );
+$has_sender      = $credentials_verified && ! empty( $settings->get( 'gateway.sender_id', '' ) );
+$test_mode       = $credentials_verified ? (bool) $settings->get( 'gateway.test_mode', 1 ) : null;
 $debug_logging   = (bool) $settings->get( 'general.debug_logging', 0 );
 $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 ?>
@@ -58,7 +58,9 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 			<tr>
 				<td style="padding:6px 0;"><strong><?php esc_html_e( 'Test Mode', 'wp-kwtsms-otp' ); ?></strong></td>
 				<td>
-					<?php if ( $test_mode ) : ?>
+					<?php if ( null === $test_mode ) : ?>
+					<span style="color:#888;">—</span>
+					<?php elseif ( $test_mode ) : ?>
 					<span style="color:#FFA200;font-weight:600;"><?php esc_html_e( 'ON — no real SMS is sent', 'wp-kwtsms-otp' ); ?></span>
 					<?php else : ?>
 					<span style="color:#46b450;"><?php esc_html_e( 'OFF — live SMS delivery', 'wp-kwtsms-otp' ); ?></span>
