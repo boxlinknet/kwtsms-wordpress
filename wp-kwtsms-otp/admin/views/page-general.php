@@ -96,9 +96,9 @@ foreach ( $all_countries as $cc ) {
 				<td>
 					<?php
 					$modes = array(
-						'2fa'          => __( 'Two-Factor Authentication (2FA) — password + OTP', 'wp-kwtsms-otp' ),
-						'passwordless' => __( 'Passwordless — phone + OTP only', 'wp-kwtsms-otp' ),
-						'both'         => __( 'Both — users can choose', 'wp-kwtsms-otp' ),
+						'2fa'          => __( 'Two-Factor Authentication (2FA): password + OTP', 'wp-kwtsms-otp' ),
+						'passwordless' => __( 'Passwordless: phone + OTP only', 'wp-kwtsms-otp' ),
+						'both'         => __( 'Both: users can choose', 'wp-kwtsms-otp' ),
 					);
 					foreach ( $modes as $value => $label ) :
 						?>
@@ -354,7 +354,7 @@ foreach ( $all_countries as $cc ) {
 					</label>
 					<?php if ( $debug_logging ) : ?>
 					<p class="description" style="color:#d63638;font-weight:600;">
-						<?php esc_html_e( '⚠ Debug Logging is ON — disable this on production sites. Log includes request/response data (passwords are not logged).', 'wp-kwtsms-otp' ); ?>
+						<?php esc_html_e( '⚠ Debug Logging is ON, disable this on production sites.', 'wp-kwtsms-otp' ); ?>
 					</p>
 					<?php endif; ?>
 					<p class="description">
