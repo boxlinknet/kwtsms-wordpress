@@ -696,9 +696,8 @@ class KwtSMS_Admin {
 					'testSmsFailed'      => __( 'Send failed. Check your API credentials and phone number.', 'wp-kwtsms-otp' ),
 					'unsavedTitle'       => __( 'Unsaved Changes', 'wp-kwtsms-otp' ),
 					'unsavedBody'        => __( 'You have unsaved changes. Leaving this page will discard them.', 'wp-kwtsms-otp' ),
-					'unsavedStay'        => __( 'Stay on Page', 'wp-kwtsms-otp' ),
+					'unsavedSave'        => __( 'Save Changes', 'wp-kwtsms-otp' ),
 					'unsavedLeave'       => __( 'Leave Page', 'wp-kwtsms-otp' ),
-					'unsavedHint'        => __( 'To save: click "Stay on Page", then scroll to the bottom and click the Save Settings button.', 'wp-kwtsms-otp' ),
 				),
 			)
 		);
