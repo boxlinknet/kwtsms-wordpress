@@ -335,8 +335,21 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					}
 					?>
 				</td>
-				<td style="color:<?php echo 'sent' === ( $entry['status'] ?? '' ) ? '#46b450' : '#dc3232'; ?>;">
-					<?php echo 'sent' === ( $entry['status'] ?? '' ) ? esc_html__( 'Sent', 'wp-kwtsms-otp' ) : esc_html__( 'Failed', 'wp-kwtsms-otp' ); ?>
+				<?php
+				$is_sent = 'sent' === ( $entry['status'] ?? '' );
+				if ( ! $is_sent ) {
+					$gr      = $entry['gateway_result'] ?? array();
+					$gr_code = $gr['code'] ?? '';
+					$gr_msg  = $gr['message'] ?? '';
+					$tooltip = $gr_code && $gr_msg ? "{$gr_code}: {$gr_msg}" : ( $gr_msg ?: $gr_code );
+				}
+				?>
+				<td style="color:<?php echo $is_sent ? '#46b450' : '#dc3232'; ?>;"<?php
+					if ( ! $is_sent && ! empty( $tooltip ) ) {
+						echo ' title="' . esc_attr( $tooltip ) . '" style="color:#dc3232;cursor:help;"';
+					}
+				?>>
+					<?php echo $is_sent ? esc_html__( 'Sent', 'wp-kwtsms-otp' ) : esc_html__( 'Failed', 'wp-kwtsms-otp' ); ?>
 				</td>
 			</tr>
 			<?php endforeach; ?>
