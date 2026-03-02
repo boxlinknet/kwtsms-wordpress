@@ -284,7 +284,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					<?php endif; ?>
 					<div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
 						<button type="button" id="kwtsms-send-test-sms" class="button button-primary"<?php echo $credentials_verified ? '' : ' disabled'; ?>>
-							<?php esc_html_e( 'Send Gateway Test SMS', 'wp-kwtsms-otp' ); ?>
+							<?php esc_html_e( 'Send Test SMS', 'wp-kwtsms-otp' ); ?>
 						</button>
 						<span id="kwtsms-test-sms-result" style="font-size:13px;line-height:1.5;" aria-live="polite"></span>
 					</div>
