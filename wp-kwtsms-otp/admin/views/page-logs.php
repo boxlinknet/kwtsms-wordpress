@@ -216,7 +216,7 @@ function kwtsms_attempt_result_label( $result ) {
 	$page_lines      = array_slice( $lines, $offset_dbg, $per_page_dbg );
 	?>
 
-	<div style="margin-bottom:16px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">
+	<div style="margin:16px 0;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">
 		<a href="<?php echo esc_url( add_query_arg( array(
 			'action'   => 'download_debug_log',
 			'_wpnonce' => wp_create_nonce( 'kwtsms_download_debug_log' ),
