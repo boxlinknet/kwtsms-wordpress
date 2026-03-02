@@ -161,6 +161,39 @@ class Test_Balance_And_Validation extends TestCase {
 	}
 
 	// =========================================================================
+	// Country allow-list enforcement in send_sms()
+	// =========================================================================
+
+	/**
+	 * When a phone's country code (966 = Saudi Arabia) is not in the allowed
+	 * list, send_sms() should return WP_Error.
+	 *
+	 * NOTE: As of the current implementation, country allow-list filtering is
+	 * stored in kwtsms_otp_general['allowed_countries'] (sanitized by
+	 * sanitize_general_settings) but is NOT enforced inside send_sms() in
+	 * class-kwtsms-api.php. These tests are skipped until that enforcement is
+	 * added to the API client.
+	 */
+	public function test_send_blocked_when_country_not_in_allowed_list() {
+		$this->markTestSkipped(
+			'Country allow-list enforcement in send_sms() — not yet implemented in class-kwtsms-api.php. ' .
+			'Allowed countries are stored in kwtsms_otp_general[allowed_countries] but send_sms() does not check them.'
+		);
+	}
+
+	public function test_send_allowed_when_country_in_allowed_list() {
+		$this->markTestSkipped(
+			'Pending: country allow-list enforcement in send_sms() not yet implemented.'
+		);
+	}
+
+	public function test_send_allowed_when_allowed_list_empty() {
+		$this->markTestSkipped(
+			'Pending: country allow-list enforcement in send_sms() not yet implemented.'
+		);
+	}
+
+	// =========================================================================
 	// 2b. check_balance_before_send() — zero saved balance but API unreachable → allow
 	// =========================================================================
 

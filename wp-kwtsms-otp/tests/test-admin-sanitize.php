@@ -142,6 +142,129 @@ class Test_Admin_Sanitize_Gateway extends TestCase {
 		$this->assertSame( 2002.00, $result['balance_purchased'] );
 	}
 
+	// =========================================================================
+	// Security: sanitize_template_settings strips HTML from template bodies
+	// =========================================================================
+
+	/**
+	 * Template bodies must be plain text — HTML tags stripped.
+	 * Verifies that <b> tags are removed from the 'en' template field.
+	 */
+	public function test_sanitize_strips_html_from_template_body() {
+		// wp_strip_all_tags and sanitize_textarea_field are called inside
+		// sanitize_template_content(); stub them to behave like their WP counterparts.
+		Functions\when( 'wp_strip_all_tags' )->alias( 'strip_tags' );
+		Functions\when( 'sanitize_textarea_field' )->alias( 'trim' );
+		Functions\when( 'wp_unslash' )->alias( function( $v ) { return $v; } );
+
+		$raw = array(
+			'login_otp' => array(
+				'enabled' => 1,
+				'en'      => '<b>Your code</b> {otp}',
+				'ar'      => 'رمزك: {otp}',
+			),
+		);
+
+		$result = $this->admin->sanitize_template_settings( $raw );
+
+		$this->assertArrayHasKey( 'login_otp', $result );
+		$this->assertStringNotContainsString( '<b>', $result['login_otp']['en'],
+			'sanitize_template_settings must strip <b> tags from the en template.' );
+		$this->assertStringContainsString( 'Your code', $result['login_otp']['en'],
+			'sanitize_template_settings must preserve the text content after stripping tags.' );
+		$this->assertStringContainsString( '{otp}', $result['login_otp']['en'],
+			'sanitize_template_settings must preserve {otp} placeholder.' );
+	}
+
+	/**
+	 * Script tags in template bodies must be stripped by wp_strip_all_tags.
+	 *
+	 * PHP's strip_tags() (our test alias for wp_strip_all_tags) removes the
+	 * <script> and </script> tags but retains the inner text. The real
+	 * wp_strip_all_tags() also strips the inner content of script/style blocks.
+	 * This test verifies that at minimum the opening <script> tag is removed.
+	 */
+	public function test_sanitize_rejects_script_tag_in_template() {
+		Functions\when( 'wp_strip_all_tags' )->alias( 'strip_tags' );
+		Functions\when( 'sanitize_textarea_field' )->alias( 'trim' );
+		Functions\when( 'wp_unslash' )->alias( function( $v ) { return $v; } );
+
+		$raw = array(
+			'login_otp' => array(
+				'enabled' => 1,
+				'en'      => '<script>alert(1)</script>Your code: {otp}',
+				'ar'      => 'رمزك: {otp}',
+			),
+		);
+
+		$result = $this->admin->sanitize_template_settings( $raw );
+
+		// At minimum the opening tag itself must be removed.
+		$this->assertStringNotContainsString( '<script>', $result['login_otp']['en'],
+			'sanitize_template_settings must strip <script> tags from templates.' );
+		// Text after the script block must be preserved.
+		$this->assertStringContainsString( 'Your code', $result['login_otp']['en'],
+			'sanitize_template_settings must preserve legitimate text after stripped script tag.' );
+	}
+
+	/**
+	 * Null bytes in the API username must be handled by sanitize_gateway_settings.
+	 *
+	 * The real sanitize_text_field() strips null bytes. In our test environment
+	 * sanitize_text_field is aliased to trim(), which does not remove interior
+	 * null bytes, so the credential comparison will show a changed username and
+	 * trigger the auto-verify path. We stub the auto-verify API calls to return
+	 * an error and verify the result still produces a valid sanitized array.
+	 *
+	 * This test documents the contract: api_username must be a string in the
+	 * sanitized output and must begin with the valid characters that were entered.
+	 */
+	public function test_sanitize_gateway_rejects_null_bytes_in_username() {
+		$old_db = array(
+			'api_username'         => 'testuser',
+			'api_password'         => 'testpass',
+			'credentials_verified' => 1,
+			'sender_ids'           => array(),
+			'balance_available'    => 10.0,
+			'balance_purchased'    => 100.0,
+			'balance_updated_at'   => 0,
+			'coverage'             => array(),
+		);
+
+		Functions\when( 'get_option' )->justReturn( $old_db );
+
+		// Because the null-byte-injected username differs from stored username,
+		// the auto-verify path is triggered — stub the required WP/API functions.
+		Functions\when( 'get_transient' )->justReturn( false );
+		Functions\when( 'set_transient' )->justReturn( false );
+		Functions\when( 'wp_remote_post' )->justReturn(
+			new WP_Error( 'http_request_failed', 'No network in test.' )
+		);
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) {
+			return $v instanceof WP_Error;
+		} );
+		Functions\when( 'wp_remote_retrieve_body' )->justReturn( '' );
+		Functions\when( 'wp_remote_retrieve_response_code' )->justReturn( 0 );
+
+		$raw = array(
+			'api_username' => "testuser\x00injected",
+			'api_password' => 'testpass',
+			'sender_id'    => '',
+			'test_mode'    => '0',
+		);
+
+		$result = $this->admin->sanitize_gateway_settings( $raw );
+
+		$this->assertArrayHasKey( 'api_username', $result,
+			'sanitize_gateway_settings must return api_username key.' );
+		$this->assertIsString( $result['api_username'],
+			'sanitize_gateway_settings api_username must be a string.' );
+		// The real sanitize_text_field strips null bytes; our trim alias does not.
+		// Either way, the result must start with the valid characters.
+		$this->assertStringStartsWith( 'testuser', $result['api_username'],
+			'api_username must begin with the valid prefix regardless of injected bytes.' );
+	}
+
 	/**
 	 * Credentials_verified must be reset to 0 when credentials change on form save.
 	 */

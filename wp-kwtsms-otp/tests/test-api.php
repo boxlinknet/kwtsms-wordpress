@@ -190,6 +190,50 @@ class Test_KwtSMS_API extends TestCase {
 	}
 
 	// =========================================================================
+	// normalize_phone — edge cases
+	// =========================================================================
+
+	public function test_normalize_phone_with_dot_separator() {
+		// +965.99220322 — dots used as separators (common Kuwaiti format).
+		$result = KwtSMS_API::normalize_phone( '+965.99220322' );
+		$this->assertSame( '96599220322', $result );
+	}
+
+	public function test_normalize_phone_sql_injection_string() {
+		Functions\when( '__' )->returnArg( 1 );
+		Functions\when( 'esc_html' )->returnArg( 1 );
+		$result = KwtSMS_API::normalize_phone( "'; DROP TABLE users; --" );
+		$this->assertInstanceOf( WP_Error::class, $result );
+	}
+
+	public function test_normalize_phone_html_tags() {
+		Functions\when( '__' )->returnArg( 1 );
+		Functions\when( 'esc_html' )->returnArg( 1 );
+		$result = KwtSMS_API::normalize_phone( '<script>alert(1)</script>' );
+		$this->assertInstanceOf( WP_Error::class, $result );
+	}
+
+	public function test_normalize_phone_newline_and_tab_chars() {
+		$result = KwtSMS_API::normalize_phone( "96599220322\n\t" );
+		$this->assertSame( '96599220322', $result );
+	}
+
+	public function test_normalize_phone_arabic_alpha_string() {
+		// Arabic letters (not numerals) — must reject.
+		Functions\when( '__' )->returnArg( 1 );
+		Functions\when( 'esc_html' )->returnArg( 1 );
+		$result = KwtSMS_API::normalize_phone( 'مرحبا' );
+		$this->assertInstanceOf( WP_Error::class, $result );
+	}
+
+	public function test_normalize_phone_unicode_control_chars() {
+		// Null byte and zero-width space injected around a valid number.
+		// After stripping non-digits, should be valid.
+		$result = KwtSMS_API::normalize_phone( "\x0096599220322\xe2\x80\x8b" );
+		$this->assertSame( '96599220322', $result );
+	}
+
+	// =========================================================================
 	// Debug log rotation
 	// =========================================================================
 

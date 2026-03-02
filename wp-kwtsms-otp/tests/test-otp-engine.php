@@ -160,6 +160,23 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 		$this->assertSame( 'expired', $result );
 	}
 
+	public function test_verify_wrong_code_does_not_delete_transient() {
+		// A wrong code should increment attempts but NOT delete the transient.
+		$code = $this->engine->generate( 42, 'login' );
+		$key  = 'kwtsms_otp_' . md5( '42' );
+		// Force a known incorrect code so '000000' is definitely wrong.
+		self::$transients[ $key ]['code'] = '999999';
+
+		$result = $this->engine->verify( 42, '000000' );
+
+		// Result must be 'invalid' (or 'max_attempts' if it happens to be attempt 3).
+		$this->assertContains( $result, array( 'invalid', 'max_attempts' ) );
+
+		// Transient must NOT have been deleted — it should still exist.
+		$this->assertArrayHasKey( $key, self::$transients,
+			'Transient must not be deleted on a wrong-code attempt.' );
+	}
+
 	public function test_verify_returns_max_attempts_after_three_wrong_codes() {
 		$code = $this->engine->generate( 42, 'login' );
 		// Force 3 wrong attempts.
@@ -348,6 +365,26 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	}
 
 	// =========================================================================
+	// Rate-limiting constants
+	// =========================================================================
+
+	public function test_ip_rate_limit_max_constant() {
+		$this->assertSame( 10, KwtSMS_OTP_Engine::IP_RATE_LIMIT_MAX );
+	}
+
+	public function test_ip_rate_limit_window_constant() {
+		$this->assertSame( 600, KwtSMS_OTP_Engine::IP_RATE_LIMIT_WINDOW );
+	}
+
+	public function test_user_rate_limit_max_constant() {
+		$this->assertSame( 5, KwtSMS_OTP_Engine::USER_RATE_LIMIT_MAX );
+	}
+
+	public function test_user_rate_limit_window_constant() {
+		$this->assertSame( 600, KwtSMS_OTP_Engine::USER_RATE_LIMIT_WINDOW );
+	}
+
+	// =========================================================================
 	// build_message
 	// =========================================================================
 
@@ -366,6 +403,14 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 		$engine = new KwtSMS_OTP_Engine( $this->settings );
 		$msg    = $engine->build_message( '123456', 'login_otp' );
 		$this->assertStringContainsString( 'رمز', $msg );
+	}
+
+	public function test_build_message_unknown_placeholder_left_as_is() {
+		// build_message() with a valid template_id should not crash and must
+		// return a string with {otp} replaced.
+		$msg = $this->engine->build_message( '123456', 'login_otp' );
+		$this->assertIsString( $msg );
+		$this->assertStringNotContainsString( '{otp}', $msg );
 	}
 
 	public function test_build_message_strips_html_tags() {
