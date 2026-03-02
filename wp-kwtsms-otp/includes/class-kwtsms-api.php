@@ -218,11 +218,15 @@ class KwtSMS_API {
 		$this->write_debug_log( 'send_sms()', "SUCCESS: msg-id={$msg_id}" );
 		self::append_send_log( $phone, 'sent', $type, $sender_id );
 		self::append_sms_history( $phone, $message, 'sent', $type, $msg_id, $sender_id, array( 'ok' => true, 'code' => '', 'message' => 'OK' ) );
-		// Update saved balance so the UI reflects the latest balance after each live send.
-		self::update_saved_balance( (float) ( $response['balance-after'] ?? 0 ) );
+		// Always update the saved balance when the API returns a balance-after value.
+		// The kwtsms API returns balance-after even in test mode (test=1 still charges
+		// 1 credit per send), so the condition must not be gated on $this->test_mode.
+		if ( isset( $response['balance-after'] ) ) {
+			self::update_saved_balance( (float) $response['balance-after'] );
+		}
 		return array(
 			'msg_id'        => $msg_id,
-			'balance_after' => (float) ( $response['balance-after'] ?? 0 ),
+			'balance_after' => isset( $response['balance-after'] ) ? (float) $response['balance-after'] : null,
 		);
 	}
 
@@ -247,12 +251,42 @@ class KwtSMS_API {
 		if ( isset( $response['coverage'] ) && is_array( $response['coverage'] ) ) {
 			return $response['coverage'];
 		}
+		// The kwtsms API v4.1 returns {"result":"OK","prefixes":["965","966",...]}
+		// Each element is a dial-code string; convert to {dial: "965"} objects so
+		// the enrichment layer can resolve country names.
+		if ( isset( $response['prefixes'] ) && is_array( $response['prefixes'] ) ) {
+			$result = array();
+			foreach ( $response['prefixes'] as $prefix ) {
+				$prefix = (string) $prefix;
+				if ( ctype_digit( $prefix ) && '' !== $prefix ) {
+					$result[] = array( 'dial' => $prefix );
+				}
+			}
+			return $result;
+		}
 
-		// Root-level response: strip known API meta keys, return remaining values.
+		// Root-level response: strip known API meta keys.
 		$meta_keys = array( 'result', 'status', 'code', 'description', 'message', 'error' );
 		foreach ( $meta_keys as $k ) {
 			unset( $response[ $k ] );
 		}
+
+		// If all remaining keys are digit strings (dial codes), the API returned a
+		// {dial_code: status_or_name} map. Preserve the dial codes as 'dial' fields
+		// so the enrichment layer can resolve country names from them.
+		$remaining_keys = array_keys( $response );
+		if ( ! empty( $remaining_keys ) && count( array_filter( $remaining_keys, 'ctype_digit' ) ) === count( $remaining_keys ) ) {
+			$result = array();
+			foreach ( $response as $dial => $value ) {
+				$entry = array( 'dial' => (string) $dial );
+				if ( is_string( $value ) && '' !== $value ) {
+					$entry['name'] = $value; // may be country name or a status string; enrichment resolves
+				}
+				$result[] = $entry;
+			}
+			return $result;
+		}
+
 		return array_values( $response );
 	}
 
