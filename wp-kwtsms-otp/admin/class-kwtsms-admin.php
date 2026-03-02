@@ -35,6 +35,15 @@ class KwtSMS_Admin {
 	private $page_hooks = array();
 
 	/**
+	 * Flag set during ajax_logout_gateway() to signal that sanitize_gateway_settings()
+	 * should pass the raw value through unchanged (used to write the cleared state
+	 * without the sanitizer re-reading stale DB values and overriding it).
+	 *
+	 * @var bool
+	 */
+	private $clearing_credentials = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param KwtSMS_Plugin $plugin Plugin manager.
@@ -308,6 +317,12 @@ class KwtSMS_Admin {
 			return array();
 		}
 
+		// During ajax_logout_gateway() the flag is set to write the cleared state
+		// directly without the sanitizer re-reading and overriding stale DB values.
+		if ( $this->clearing_credentials ) {
+			return $raw;
+		}
+
 		// test_phone is intentionally not persisted — the field has no name attribute.
 		$test_phone = '';
 
@@ -325,6 +340,14 @@ class KwtSMS_Admin {
 		// Preserve credentials_verified flag only if the credentials are unchanged.
 		$current_gw       = get_option( 'kwtsms_otp_gateway', array() );
 		$api_password_raw = sanitize_text_field( $raw['api_password'] ?? '' );
+
+		// The password input is never pre-populated in the HTML (security: prevent
+		// the plaintext credential appearing in page source / browser history).
+		// An empty submission means "keep the stored password unchanged".
+		if ( '' === $api_password_raw ) {
+			$api_password_raw = $current_gw['api_password'] ?? '';
+		}
+
 		$creds_unchanged  = (
 			$api_username_raw === ( $current_gw['api_username'] ?? '' ) &&
 			$api_password_raw === ( $current_gw['api_password'] ?? '' )
@@ -971,6 +994,7 @@ class KwtSMS_Admin {
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms-otp' ) ), 403 );
+			return;
 		}
 
 		$gw                         = get_option( 'kwtsms_otp_gateway', array() );
@@ -984,12 +1008,11 @@ class KwtSMS_Admin {
 		$gw['balance_purchased']    = null;
 		$gw['balance_updated_at']   = 0;
 
-		// Temporarily remove our own sanitize callback so the raw value
-		// (credentials_verified = 0) is written straight to the DB without
-		// the sanitize filter overriding it back to the stale DB value.
-		remove_filter( 'sanitize_option_kwtsms_otp_gateway', array( $this, 'sanitize_gateway_settings' ) );
+		// Set the flag so sanitize_gateway_settings() passes $gw through unchanged,
+		// writing the cleared state without the sanitizer re-reading stale DB values.
+		$this->clearing_credentials = true;
 		update_option( 'kwtsms_otp_gateway', $gw );
-		add_filter( 'sanitize_option_kwtsms_otp_gateway', array( $this, 'sanitize_gateway_settings' ) );
+		$this->clearing_credentials = false;
 
 		wp_send_json_success();
 	}
@@ -1063,13 +1086,13 @@ class KwtSMS_Admin {
 					foreach ( $log as $entry ) {
 						fputcsv( $out, array(
 							gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
-							$entry['type']                      ?? '',
-							$entry['phone']                     ?? '',
-							$entry['message']                   ?? '',
-							$entry['sender_id']                 ?? '',
-							$entry['status']                    ?? '',
-							$entry['gateway_result']['code']    ?? '',
-							$entry['gateway_result']['message'] ?? '',
+							$this->csv_safe( $entry['type']                      ?? '' ),
+							$this->csv_safe( $entry['phone']                     ?? '' ),
+							$this->csv_safe( $entry['message']                   ?? '' ),
+							$this->csv_safe( $entry['sender_id']                 ?? '' ),
+							$this->csv_safe( $entry['status']                    ?? '' ),
+							$this->csv_safe( $entry['gateway_result']['code']    ?? '' ),
+							$this->csv_safe( $entry['gateway_result']['message'] ?? '' ),
 						) );
 					}
 				} else {
@@ -1079,10 +1102,10 @@ class KwtSMS_Admin {
 						fputcsv( $out, array(
 							gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
 							is_null( $user_id ) ? 'N/A' : (int) $user_id,
-							$entry['phone']  ?? '',
-							$entry['ip']     ?? '',
-							$entry['action'] ?? '',
-							$entry['result'] ?? '',
+							$this->csv_safe( $entry['phone']  ?? '' ),
+							$this->csv_safe( $entry['ip']     ?? '' ),
+							$this->csv_safe( $entry['action'] ?? '' ),
+							$this->csv_safe( $entry['result'] ?? '' ),
 						) );
 					}
 				}
@@ -1174,5 +1197,27 @@ class KwtSMS_Admin {
 			<?php endif; ?>
 		</div>
 		<?php
+	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
+
+	/**
+	 * Sanitise a string value for CSV export, neutralising spreadsheet formula injection.
+	 *
+	 * Cells starting with =, +, -, or @ are interpreted as formulas by Excel and
+	 * LibreOffice Calc. Prefixing them with a tab character prevents execution while
+	 * keeping the value readable.
+	 *
+	 * @param string $value Raw cell value.
+	 * @return string Safe cell value.
+	 */
+	private function csv_safe( $value ) {
+		$value = (string) $value;
+		if ( '' !== $value && in_array( $value[0], array( '=', '+', '-', '@' ), true ) ) {
+			$value = "\t" . $value;
+		}
+		return $value;
 	}
 }
