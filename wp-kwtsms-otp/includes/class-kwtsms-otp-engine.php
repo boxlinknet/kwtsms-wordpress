@@ -99,7 +99,7 @@ class KwtSMS_OTP_Engine {
 		$length = (int) $this->settings->get( 'general.otp_length', 6 );
 		$code   = $this->generate_code( $length );
 
-		$expiry = (int) $this->settings->get( 'general.otp_expiry', 3 ) * MINUTE_IN_SECONDS;
+		$expiry = (int) $this->settings->get( 'general.otp_expiry', 5 ) * MINUTE_IN_SECONDS;
 		$key    = $this->transient_key( $identifier );
 
 		set_transient(
@@ -310,7 +310,17 @@ class KwtSMS_OTP_Engine {
 	 *
 	 * @return string Ready-to-send SMS message text.
 	 */
-	public function build_message( $otp_code, $template_id ) {
+	/**
+	 * Build an SMS message from a template, replacing standard and extra placeholders.
+	 *
+	 * @param string $otp_code    OTP code to substitute for {otp} (pass '' for non-OTP templates).
+	 * @param string $template_id Template key: 'login_otp' | 'reset_otp' | 'welcome_sms'.
+	 * @param array  $extra_vars  Optional map of placeholder → value for template-specific vars,
+	 *                            e.g. array( '{name}' => 'Ahmad' ) for the welcome SMS.
+	 *
+	 * @return string The fully rendered, sanitised SMS message.
+	 */
+	public function build_message( $otp_code, $template_id, array $extra_vars = array() ) {
 		$templates = $this->settings->get_all_templates();
 		$template  = $templates[ $template_id ] ?? $templates['login_otp'];
 
@@ -319,8 +329,8 @@ class KwtSMS_OTP_Engine {
 		$lang    = ( strpos( $locale, 'ar' ) === 0 ) ? 'ar' : 'en';
 		$message = $template[ $lang ] ?? $template['en'] ?? '';
 
-		// Replace placeholders.
-		$expiry    = (int) $this->settings->get( 'general.otp_expiry', 3 );
+		// Replace standard placeholders.
+		$expiry    = (int) $this->settings->get( 'general.otp_expiry', 5 );
 		$site_name = get_bloginfo( 'name' );
 
 		$message = str_replace(
@@ -328,6 +338,11 @@ class KwtSMS_OTP_Engine {
 			array( $otp_code, $site_name, $expiry ),
 			$message
 		);
+
+		// Replace template-specific extra placeholders (e.g. {name} for welcome SMS).
+		if ( ! empty( $extra_vars ) ) {
+			$message = str_replace( array_keys( $extra_vars ), array_values( $extra_vars ), $message );
+		}
 
 		// Sanitise: strip HTML, remove emoji and unsupported Unicode.
 		$message = wp_strip_all_tags( $message );
@@ -528,8 +543,42 @@ class KwtSMS_OTP_Engine {
 	 *
 	 * @return string IP address, or empty string.
 	 */
+	/**
+	 * Get the client IP address, respecting reverse-proxy headers.
+	 *
+	 * Uses X-Forwarded-For / X-Real-IP only when REMOTE_ADDR is a private or
+	 * loopback address (indicating a trusted proxy is in front of the server).
+	 * This prevents trivial IP spoofing by external clients on direct connections
+	 * while still working correctly behind AWS ALB, Cloudflare, or Nginx proxies.
+	 *
+	 * @return string Validated IP address, or empty string.
+	 */
 	private function get_client_ip() {
 		$ip = $_SERVER['REMOTE_ADDR'] ?? '';
+
+		// Only trust proxy headers when REMOTE_ADDR is a known private/loopback range.
+		$private_prefixes = array( '127.', '10.', '172.', '192.168.' );
+		$is_private       = false;
+		foreach ( $private_prefixes as $prefix ) {
+			if ( 0 === strpos( $ip, $prefix ) ) {
+				$is_private = true;
+				break;
+			}
+		}
+
+		if ( $is_private ) {
+			foreach ( array( 'HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP' ) as $header ) {
+				if ( ! empty( $_SERVER[ $header ] ) ) {
+					// X-Forwarded-For may be a comma-separated list; take the first (client) IP.
+					$forwarded = trim( explode( ',', sanitize_text_field( wp_unslash( $_SERVER[ $header ] ) ) )[0] );
+					if ( filter_var( $forwarded, FILTER_VALIDATE_IP ) ) {
+						$ip = $forwarded;
+						break;
+					}
+				}
+			}
+		}
+
 		return filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : '';
 	}
 

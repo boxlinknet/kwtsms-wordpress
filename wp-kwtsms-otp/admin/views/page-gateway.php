@@ -89,7 +89,8 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 				<th scope="row"><label for="kwtsms_api_password"><?php esc_html_e( 'API Password', 'wp-kwtsms-otp' ); ?></label></th>
 				<td>
 					<input type="password" name="kwtsms_otp_gateway[api_password]" id="kwtsms_api_password"
-						value="<?php echo esc_attr( $gateway['api_password'] ); ?>"
+						value=""
+						placeholder="<?php echo $credentials_verified ? esc_attr__( '(leave blank to keep current password)', 'wp-kwtsms-otp' ) : ''; ?>"
 						class="regular-text" autocomplete="new-password" />
 					<p class="description"><?php esc_html_e( 'Your kwtSMS API password, found in your kwtSMS account under API Settings, not your login password.', 'wp-kwtsms-otp' ); ?></p>
 				</td>

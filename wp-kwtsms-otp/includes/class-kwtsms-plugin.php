@@ -472,6 +472,7 @@ class KwtSMS_Plugin {
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms-otp' ) ), 403 );
+			return;
 		}
 
 		$username = sanitize_text_field( wp_unslash( $_POST['username'] ?? '' ) );
@@ -479,6 +480,7 @@ class KwtSMS_Plugin {
 
 		if ( empty( $username ) || empty( $password ) ) {
 			wp_send_json_error( array( 'message' => __( 'Username and password are required.', 'wp-kwtsms-otp' ) ) );
+			return;
 		}
 
 		// Use a temporary API instance with the submitted (not yet saved) credentials.
@@ -496,6 +498,7 @@ class KwtSMS_Plugin {
 			wp_send_json_error(
 				array( 'message' => $sender_ids->get_error_message() )
 			);
+			return;
 		}
 
 		// Also fetch coverage to persist alongside sender IDs and balance.
@@ -621,6 +624,7 @@ class KwtSMS_Plugin {
 
 		if ( empty( $session_token ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid session.', 'wp-kwtsms-otp' ) ) );
+			return;
 		}
 
 		// Resolve transient prefix, template ID, and SMS action by context.
@@ -642,6 +646,7 @@ class KwtSMS_Plugin {
 		$partial = get_transient( $transient_key );
 		if ( ! $partial ) {
 			wp_send_json_error( array( 'message' => $expired_msg ) );
+			return;
 		}
 
 		$user_id = absint( $partial['user_id'] );
@@ -649,6 +654,7 @@ class KwtSMS_Plugin {
 
 		if ( empty( $phone ) ) {
 			wp_send_json_error( array( 'message' => __( 'No phone number on this account.', 'wp-kwtsms-otp' ) ) );
+			return;
 		}
 
 		// Rate limit checks: per-phone, per-IP, per-account.
@@ -659,6 +665,7 @@ class KwtSMS_Plugin {
 					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 				)
 			);
+			return;
 		}
 		if ( $this->otp->is_ip_rate_limited( $otp_action, $user_id, $phone ) ) {
 			wp_send_json_error(
@@ -667,6 +674,7 @@ class KwtSMS_Plugin {
 					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 				)
 			);
+			return;
 		}
 		if ( $this->otp->is_user_rate_limited( $user_id, $otp_action, $phone ) ) {
 			wp_send_json_error(
@@ -675,6 +683,7 @@ class KwtSMS_Plugin {
 					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 				)
 			);
+			return;
 		}
 
 		// Anti-enumeration: silently succeed for blocked phones without sending SMS.
@@ -701,6 +710,7 @@ class KwtSMS_Plugin {
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
 		}
 
 		// Sliding-window counters are recorded inside is_rate_limited(),
@@ -725,6 +735,7 @@ class KwtSMS_Plugin {
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms-otp' ) ), 403 );
+			return;
 		}
 
 		$phone = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
@@ -770,6 +781,7 @@ class KwtSMS_Plugin {
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
 		}
 
 		$is_test_mode = (bool) $this->settings->get( 'gateway.test_mode', false );
