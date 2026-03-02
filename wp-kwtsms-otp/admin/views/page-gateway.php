@@ -97,8 +97,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 			<tr>
 				<th scope="row"></th>
 				<td>
-					<div style="display:flex;align-items:flex-start;gap:12px;">
-						<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
+					<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
 						<?php if ( $credentials_verified ) : ?>
 						<button type="button" id="kwtsms-login-btn" class="button button-primary" style="display:none;">
 							<?php esc_html_e( 'Login', 'wp-kwtsms-otp' ); ?>
@@ -110,6 +109,9 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 							<button type="button" id="kwtsms-logout-btn" class="button">
 								<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
 							</button>
+							<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite">
+								<span style="color:#46b450;">&#x2713; <?php printf( esc_html__( 'Connected as %s', 'wp-kwtsms-otp' ), esc_html( $gateway['api_username'] ) ); ?></span>
+							</span>
 						</div>
 						<p class="description kwtsms-reload-hint"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from kwtSMS.', 'wp-kwtsms-otp' ); ?></p>
 						<?php else : ?>
@@ -123,23 +125,10 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 							<button type="button" id="kwtsms-logout-btn" class="button" style="display:none;">
 								<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
 							</button>
+							<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite"></span>
 						</div>
 						<p class="description kwtsms-reload-hint" style="display:none;"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from kwtSMS.', 'wp-kwtsms-otp' ); ?></p>
 						<?php endif; ?>
-						</div>
-						<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite">
-							<?php if ( $credentials_verified ) : ?>
-							<span style="color:#46b450;">
-								&#x2713; <?php
-								printf(
-									/* translators: %s: API username */
-									esc_html__( 'Connected as %s', 'wp-kwtsms-otp' ),
-									esc_html( $gateway['api_username'] )
-								);
-								?>
-							</span>
-							<?php endif; ?>
-						</span>
 					</div>
 					</td>
 			</tr>
