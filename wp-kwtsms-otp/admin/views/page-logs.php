@@ -147,12 +147,18 @@ function kwtsms_attempt_result_label( $result ) {
 					<?php
 					$gr = $entry['gateway_result'] ?? array();
 					if ( ! empty( $gr ) ) :
-						$gr_ok  = ! empty( $gr['ok'] );
-						$gr_code = esc_html( $gr['code'] ?? '' );
-						$gr_msg  = esc_attr( $gr['message'] ?? '' );
-						$gr_label = $gr_ok ? esc_html__( 'OK', 'wp-kwtsms-otp' ) : ( $gr_code ?: esc_html__( 'Error', 'wp-kwtsms-otp' ) );
-						$gr_color = $gr_ok ? '#46b450' : '#dc3232';
-						printf( '<span style="color:%s;" title="%s">%s</span>', esc_attr( $gr_color ), $gr_msg, $gr_label );
+						$gr_ok   = ! empty( $gr['ok'] );
+						$gr_code = $gr['code'] ?? '';
+						$gr_msg  = $gr['message'] ?? '';
+						if ( $gr_ok ) {
+							$gr_label = esc_html__( 'OK', 'wp-kwtsms-otp' );
+							$gr_color = '#46b450';
+						} else {
+							$parts    = array_filter( array( $gr_code, $gr_msg ) );
+							$gr_label = $parts ? esc_html( implode( ': ', $parts ) ) : esc_html__( 'Error', 'wp-kwtsms-otp' );
+							$gr_color = '#dc3232';
+						}
+						printf( '<span style="color:%s;">%s</span>', esc_attr( $gr_color ), $gr_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					endif;
 					?>
 				</td>
