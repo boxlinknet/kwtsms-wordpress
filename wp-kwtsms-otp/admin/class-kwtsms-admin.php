@@ -331,12 +331,28 @@ class KwtSMS_Admin {
 		);
 		$credentials_verified = $creds_unchanged ? (int) ( $current_gw['credentials_verified'] ?? 0 ) : 0;
 
-		// Carry over previously fetched gateway data by default.
-		$sender_ids        = $current_gw['sender_ids']         ?? array();
-		$balance_available = $current_gw['balance_available']  ?? null;
-		$balance_purchased = $current_gw['balance_purchased']  ?? null;
-		$balance_updated   = $current_gw['balance_updated_at'] ?? 0;
-		$coverage          = $current_gw['coverage']           ?? array();
+		// Carry over previously fetched gateway data.
+		// When called from a form POST, $raw only contains the HTML form fields
+		// (balance, coverage, sender_ids are absent from the POST body).
+		// When called via update_option() from an AJAX handler the full option
+		// array is passed as $raw, so we must prefer those values — otherwise
+		// the sanitize filter silently overwrites the freshly-fetched data with
+		// the old values that were in the DB when the filter fired.
+		$sender_ids        = is_array( $raw['sender_ids'] ?? null )
+			? (array) $raw['sender_ids']
+			: (array) ( $current_gw['sender_ids'] ?? array() );
+		$balance_available = array_key_exists( 'balance_available', $raw )
+			? $raw['balance_available']
+			: ( $current_gw['balance_available'] ?? null );
+		$balance_purchased = array_key_exists( 'balance_purchased', $raw )
+			? $raw['balance_purchased']
+			: ( $current_gw['balance_purchased'] ?? null );
+		$balance_updated   = array_key_exists( 'balance_updated_at', $raw )
+			? (int) $raw['balance_updated_at']
+			: (int) ( $current_gw['balance_updated_at'] ?? 0 );
+		$coverage          = is_array( $raw['coverage'] ?? null )
+			? (array) $raw['coverage']
+			: (array) ( $current_gw['coverage'] ?? array() );
 		$sender_id_out     = sanitize_text_field( $raw['sender_id'] ?? '' );
 
 		// Auto-verify when credentials are new or changed.
@@ -726,15 +742,20 @@ class KwtSMS_Admin {
 		$se_html = str_replace( "class='notice ", "class='notice inline ", $se_html );
 		echo $se_html; // phpcs:ignore WordPress.Security.EscapeOutput
 
-		// Notice: site is not HTTPS.
+		// Notice: site is not HTTPS — suppressed on localhost/127.0.0.1 dev environments.
 		// The 'inline' class prevents WP admin JS from relocating the notice
 		// to after the first <h1> (which is inside our flex header row).
 		if ( ! is_ssl() ) {
-			printf(
-				'<div class="notice notice-warning inline"><p><strong>%s</strong> %s</p></div>',
-				esc_html__( 'kwtSMS Warning:', 'wp-kwtsms-otp' ),
-				esc_html__( 'Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security.', 'wp-kwtsms-otp' )
-			);
+			$home_host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+			$is_local  = ( 'localhost' === $home_host || '127.0.0.1' === $home_host || '::1' === $home_host
+							|| 0 === strpos( $home_host, 'localhost' ) );
+			if ( ! $is_local ) {
+				printf(
+					'<div class="notice notice-warning inline"><p><strong>%s</strong> %s</p></div>',
+					esc_html__( 'kwtSMS Warning:', 'wp-kwtsms-otp' ),
+					esc_html__( 'Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security.', 'wp-kwtsms-otp' )
+				);
+			}
 		}
 
 		// Notice: API credentials not configured.
