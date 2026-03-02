@@ -298,9 +298,9 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 	</form>
 
 	<?php
-	// Recent SMS Activity — last 20 entries from full SMS history log.
+	// Recent SMS Activity — last 7 entries from full SMS history log.
 	$sms_log = get_option( 'kwtsms_otp_sms_history', array() );
-	$sms_log = array_slice( (array) $sms_log, 0, 20 );
+	$sms_log = array_slice( (array) $sms_log, 0, 7 );
 	if ( ! empty( $sms_log ) ) :
 	?>
 	<hr style="margin:30px 0;" />

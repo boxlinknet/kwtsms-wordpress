@@ -964,6 +964,8 @@ class KwtSMS_Admin {
 
 		$gw                         = get_option( 'kwtsms_otp_gateway', array() );
 		$gw['credentials_verified'] = 0;
+		$gw['api_username']         = '';
+		$gw['api_password']         = '';
 		$gw['sender_ids']           = array();
 		$gw['sender_id']            = '';
 		$gw['coverage']             = array();

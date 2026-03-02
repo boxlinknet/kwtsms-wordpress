@@ -527,6 +527,7 @@ class KwtSMS_Plugin {
 		$gw['credentials_verified'] = 1;
 		$gw['api_username']         = $username;
 		$gw['api_password']         = $password;
+		$gw['test_mode']            = 1; // Always default to Test Mode ON after login.
 		$gw['sender_ids']           = (array) $sender_ids;
 		$gw['coverage']             = $coverage_arr;
 		if ( ! is_wp_error( $balance ) ) {
