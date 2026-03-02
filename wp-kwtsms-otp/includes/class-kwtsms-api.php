@@ -689,9 +689,9 @@ class KwtSMS_API {
 
 		$url = self::BASE_URL . ltrim( $endpoint, '/' );
 
-		// Log request (mask password in log).
-		$log_payload = $payload;
-		$this->write_debug_log( "request({$endpoint})", 'POST ' . $url . ' payload=' . wp_json_encode( $log_payload ) );
+		// Log the endpoint-specific payload only — credentials are in $body, never in $payload,
+		// so username and password are never written to the log file.
+		$this->write_debug_log( "request({$endpoint})", 'POST ' . $url . ' payload=' . wp_json_encode( $payload ) );
 
 		$response = wp_remote_post(
 			$url,
