@@ -179,6 +179,32 @@ class KwtSMS_API {
 			return $err;
 		}
 
+		// ── Country allow-list check ──────────────────────────────────────────
+		// If the admin has restricted sending to specific countries, verify the
+		// destination phone belongs to one of those countries BEFORE making any
+		// API call. An empty allowed_countries array means "no restriction".
+		$general          = get_option( 'kwtsms_otp_general', array() );
+		$allowed_countries = isset( $general['allowed_countries'] ) && is_array( $general['allowed_countries'] )
+			? $general['allowed_countries']
+			: array();
+
+		if ( ! empty( $allowed_countries ) ) {
+			$phone_iso2 = self::get_iso2_from_phone( $phone );
+			if ( '' === $phone_iso2 || ! in_array( $phone_iso2, $allowed_countries, true ) ) {
+				$err = new WP_Error(
+					'country_not_allowed',
+					__( 'SMS to this country is not enabled.', 'wp-kwtsms-otp' )
+				);
+				$this->write_debug_log(
+					'send_sms()',
+					"ABORT: country not allowed — phone={$phone} iso2={$phone_iso2} allowed=" . implode( ',', $allowed_countries )
+				);
+				self::append_send_log( $phone, 'failed', $type );
+				self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ), $this->username );
+				return $err;
+			}
+		}
+
 		// ── Balance check ─────────────────────────────────────────────────────
 		// Only run in live mode — test mode never consumes credits.
 		if ( ! $this->test_mode ) {
@@ -554,6 +580,45 @@ class KwtSMS_API {
 	// =========================================================================
 	// Country-code helpers
 	// =========================================================================
+
+	/**
+	 * Resolve the ISO2 country code for a normalised phone number.
+	 *
+	 * Algorithm: try the longest matching dial-code prefix first (up to 4 digits),
+	 * falling back to shorter prefixes. Uses the local country-codes data file as
+	 * the authoritative dial → ISO2 map.
+	 *
+	 * @param string $phone Normalised phone number (digits only, with country code).
+	 * @return string ISO2 code (e.g. 'KW'), or empty string if unresolvable.
+	 */
+	public static function get_iso2_from_phone( string $phone ): string {
+		if ( '' === $phone || ! defined( 'KWTSMS_OTP_DIR' ) ) {
+			return '';
+		}
+
+		// Build a dial → ISO2 lookup map from the local data file.
+		$countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+		$dial_map  = array(); // dial_code (string) => ISO2 (string)
+		foreach ( $countries as $cc ) {
+			if ( isset( $cc['dial'], $cc['iso2'] ) && '' !== $cc['dial'] ) {
+				$dial_map[ (string) $cc['dial'] ] = $cc['iso2'];
+			}
+		}
+
+		// Try longest prefix first (up to 4 digits) to handle e.g. '1268' (Antigua)
+		// before '1' (US/Canada).
+		for ( $len = 4; $len >= 1; $len-- ) {
+			if ( strlen( $phone ) < $len ) {
+				continue;
+			}
+			$prefix = substr( $phone, 0, $len );
+			if ( isset( $dial_map[ $prefix ] ) ) {
+				return $dial_map[ $prefix ];
+			}
+		}
+
+		return '';
+	}
 
 	/**
 	 * Auto-prepend the default country dial code to a local (short) number.

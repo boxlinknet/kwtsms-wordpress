@@ -165,32 +165,145 @@ class Test_Balance_And_Validation extends TestCase {
 	// =========================================================================
 
 	/**
-	 * When a phone's country code (966 = Saudi Arabia) is not in the allowed
-	 * list, send_sms() should return WP_Error.
+	 * When a phone's country code (966 = Saudi Arabia) is NOT in the allowed
+	 * list (only KW permitted), send_sms() must return WP_Error with code
+	 * 'country_not_allowed' before making any API call.
 	 *
-	 * NOTE: As of the current implementation, country allow-list filtering is
-	 * stored in kwtsms_otp_general['allowed_countries'] (sanitized by
-	 * sanitize_general_settings) but is NOT enforced inside send_sms() in
-	 * class-kwtsms-api.php. These tests are skipped until that enforcement is
-	 * added to the API client.
+	 * @covers KwtSMS_API::send_sms
+	 * @covers KwtSMS_API::get_iso2_from_phone
 	 */
 	public function test_send_blocked_when_country_not_in_allowed_list() {
-		$this->markTestSkipped(
-			'Country allow-list enforcement in send_sms() — not yet implemented in class-kwtsms-api.php. ' .
-			'Allowed countries are stored in kwtsms_otp_general[allowed_countries] but send_sms() does not check them.'
+		// General settings: only Kuwait (KW) is allowed.
+		Functions\when( 'get_option' )->alias( function ( $key, $default = null ) {
+			if ( 'kwtsms_otp_general' === $key ) {
+				return array( 'allowed_countries' => array( 'KW' ) );
+			}
+			// send_log and sms_history both read and write via get/update_option.
+			return is_array( $default ) ? $default : array();
+		} );
+		Functions\when( 'update_option' )->justReturn( true );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) {
+			return $v instanceof WP_Error;
+		} );
+
+		$api    = new KwtSMS_API( 'testuser', 'testpass', false );
+		// 96698765432 → prefix 966 → Saudi Arabia (SA) — not in allowed list.
+		$result = $api->send_sms( '96698765432', 'KWTSMS', 'Hello', 'login' );
+
+		$this->assertInstanceOf(
+			WP_Error::class,
+			$result,
+			'send_sms must return WP_Error when destination country is not in the allowed list.'
+		);
+		$this->assertSame(
+			'country_not_allowed',
+			$result->get_error_code(),
+			'WP_Error code must be country_not_allowed.'
 		);
 	}
 
+	/**
+	 * When a phone's country code (965 = Kuwait) IS in the allowed list,
+	 * send_sms() must NOT return a country_not_allowed error.
+	 *
+	 * @covers KwtSMS_API::send_sms
+	 * @covers KwtSMS_API::get_iso2_from_phone
+	 */
 	public function test_send_allowed_when_country_in_allowed_list() {
-		$this->markTestSkipped(
-			'Pending: country allow-list enforcement in send_sms() not yet implemented.'
+		// General settings: Kuwait (KW) and Saudi Arabia (SA) are allowed.
+		Functions\when( 'get_option' )->alias( function ( $key, $default = null ) {
+			if ( 'kwtsms_otp_general' === $key ) {
+				return array( 'allowed_countries' => array( 'KW', 'SA' ) );
+			}
+			if ( 'kwtsms_otp_gateway' === $key ) {
+				// Positive balance so the live-mode balance check passes immediately.
+				return array( 'balance_available' => 10.0 );
+			}
+			return is_array( $default ) ? $default : array();
+		} );
+		Functions\when( 'update_option' )->justReturn( true );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) {
+			return $v instanceof WP_Error;
+		} );
+		Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
+		// Stub wp_remote_post to return a successful API response.
+		Functions\when( 'wp_remote_post' )->justReturn(
+			array(
+				'response' => array( 'code' => 200 ),
+				'body'     => '{"result":"SUCCESS","msg-id":"test123","balance-after":9}',
+			)
 		);
+		Functions\when( 'wp_remote_retrieve_response_code' )->justReturn( 200 );
+		Functions\when( 'wp_remote_retrieve_body' )->justReturn(
+			'{"result":"SUCCESS","msg-id":"test123","balance-after":9}'
+		);
+
+		$api    = new KwtSMS_API( 'testuser', 'testpass', false );
+		// 96598765432 → prefix 965 → Kuwait (KW) — in allowed list.
+		$result = $api->send_sms( '96598765432', 'KWTSMS', 'Hello', 'login' );
+
+		// The result must not be a country_not_allowed error.
+		if ( $result instanceof WP_Error ) {
+			$this->assertNotSame(
+				'country_not_allowed',
+				$result->get_error_code(),
+				'send_sms must NOT return country_not_allowed when the country is in the allowed list.'
+			);
+		} else {
+			// Successful send returns an array with msg_id.
+			$this->assertIsArray( $result );
+			$this->assertArrayHasKey( 'msg_id', $result );
+		}
 	}
 
+	/**
+	 * When allowed_countries is an empty array (no restriction configured),
+	 * send_sms() must not block any country.
+	 *
+	 * @covers KwtSMS_API::send_sms
+	 */
 	public function test_send_allowed_when_allowed_list_empty() {
-		$this->markTestSkipped(
-			'Pending: country allow-list enforcement in send_sms() not yet implemented.'
+		// General settings: empty allowed_countries → no country restriction.
+		Functions\when( 'get_option' )->alias( function ( $key, $default = null ) {
+			if ( 'kwtsms_otp_general' === $key ) {
+				return array( 'allowed_countries' => array() );
+			}
+			if ( 'kwtsms_otp_gateway' === $key ) {
+				return array( 'balance_available' => 10.0 );
+			}
+			return is_array( $default ) ? $default : array();
+		} );
+		Functions\when( 'update_option' )->justReturn( true );
+		Functions\when( 'is_wp_error' )->alias( function ( $v ) {
+			return $v instanceof WP_Error;
+		} );
+		Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
+		// A US number: 1 = US — would be blocked if country restriction were active.
+		Functions\when( 'wp_remote_post' )->justReturn(
+			array(
+				'response' => array( 'code' => 200 ),
+				'body'     => '{"result":"SUCCESS","msg-id":"us123","balance-after":9}',
+			)
 		);
+		Functions\when( 'wp_remote_retrieve_response_code' )->justReturn( 200 );
+		Functions\when( 'wp_remote_retrieve_body' )->justReturn(
+			'{"result":"SUCCESS","msg-id":"us123","balance-after":9}'
+		);
+
+		$api    = new KwtSMS_API( 'testuser', 'testpass', false );
+		// 12025550100 → prefix 1 → USA — should NOT be blocked when list is empty.
+		$result = $api->send_sms( '12025550100', 'KWTSMS', 'Hello', 'login' );
+
+		// Must not be a country_not_allowed error.
+		if ( $result instanceof WP_Error ) {
+			$this->assertNotSame(
+				'country_not_allowed',
+				$result->get_error_code(),
+				'send_sms must NOT return country_not_allowed when allowed_countries list is empty.'
+			);
+		} else {
+			$this->assertIsArray( $result );
+		}
 	}
 
 	// =========================================================================
