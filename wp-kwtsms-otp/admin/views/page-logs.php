@@ -232,7 +232,13 @@ function kwtsms_attempt_result_label( $result ) {
 				(int) $total_lines
 			); ?>
 		</span>
-		<span style="color:#888;font-size:13px;margin-left:auto;"><?php echo esc_html( $debug_log_path ); ?></span>
+		<span style="color:#888;font-size:13px;margin-left:auto;"><?php
+			// Show relative path so it reads the same on any server layout.
+			$debug_log_display = ( defined( 'ABSPATH' ) && $debug_log_path )
+				? str_replace( trailingslashit( ABSPATH ), '', $debug_log_path )
+				: $debug_log_path;
+			echo esc_html( $debug_log_display );
+		?></span>
 	</div>
 
 	<?php if ( empty( $page_lines ) ) : ?>

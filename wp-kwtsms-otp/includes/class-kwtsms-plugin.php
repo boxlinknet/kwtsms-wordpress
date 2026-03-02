@@ -629,6 +629,7 @@ class KwtSMS_Plugin {
 
 		// Anti-enumeration: silently succeed for blocked phones without sending SMS.
 		if ( $this->otp->is_phone_blocked( $phone ) ) {
+			$this->api->write_debug_log( 'form_otp', 'Blocked phone attempted OTP: ' . $phone );
 			wp_send_json_success(
 				array(
 					'message'  => __( 'A new code has been sent to your phone.', 'wp-kwtsms-otp' ),

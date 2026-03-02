@@ -771,7 +771,7 @@ class KwtSMS_API {
 	 */
 	const DEBUG_LOG_MAX_BYTES = 1048576;
 
-	private function write_debug_log( $context, $message ) {
+	public function write_debug_log( $context, $message ) {
 		if ( ! $this->debug_mode ) {
 			return;
 		}

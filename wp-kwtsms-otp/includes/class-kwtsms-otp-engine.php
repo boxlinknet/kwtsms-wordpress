@@ -359,10 +359,6 @@ class KwtSMS_OTP_Engine {
 	public function request_otp( $normalized_phone, $identifier, $template_id, $action, $sender_id ) {
 		// Blocked phone: silently pretend success — no SMS sent, no error exposed.
 		if ( $this->is_phone_blocked( $normalized_phone ) ) {
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				error_log( '[kwtsms-otp] Blocked phone attempted OTP: ' . $normalized_phone );
-			}
 			return true; // pretend success, no SMS sent
 		}
 
