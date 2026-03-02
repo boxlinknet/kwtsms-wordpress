@@ -292,6 +292,7 @@ class KwtSMS_Admin {
 			'debug_logging'        => ! empty( $raw['debug_logging'] ) ? 1 : 0,
 			'blocked_phones'       => sanitize_textarea_field( wp_unslash( $raw['blocked_phones'] ?? '' ) ),
 			'otp_required_roles'   => $otp_required_roles,
+			'welcome_sms_enabled'  => ! empty( $raw['welcome_sms_enabled'] ) ? 1 : 0,
 		);
 	}
 
@@ -673,6 +674,19 @@ class KwtSMS_Admin {
 					'updated_at' => (int) $this->plugin->settings->get( 'gateway.balance_updated_at', 0 ),
 				),
 				'savedCoverage'       => array_values( (array) $this->plugin->settings->get( 'gateway.coverage', array() ) ),
+				'template_defaults'      => $this->plugin->settings->get_template_defaults_for_js(),
+				'placeholder_estimates'  => array(
+					'{otp}'            => str_repeat( '0', (int) $this->plugin->settings->get( 'general.otp_length', 6 ) ),
+					'{site_name}'      => get_bloginfo( 'name' ),
+					'{expiry_minutes}' => (string) (int) $this->plugin->settings->get( 'general.otp_expiry', 10 ),
+					'{name}'           => 'User',
+					'{customer_name}'  => 'User',
+					'{order_id}'       => '12345',
+					'{total}'          => '10.000 KWD',
+					'{tracking}'       => 'TRK123456',
+					'{form_name}'      => 'Contact Form',
+					'{phone}'          => '96599220000',
+				),
 				'strings'              => array(
 					'verifying'          => __( 'Verifying...', 'wp-kwtsms-otp' ),
 					'verified'           => __( 'Credentials verified!', 'wp-kwtsms-otp' ),

@@ -337,19 +337,30 @@
 	// SMS character counter + page count
 	// =========================================================================
 
+	function estimateText( text ) {
+		var est = data.placeholder_estimates || {};
+		var result = text;
+		Object.keys( est ).forEach( function ( ph ) {
+			result = result.split( ph ).join( est[ ph ] );
+		} );
+		return result;
+	}
+
 	function updateCharCounter( $textarea ) {
-		const text = $textarea.val();
-		const lang = $textarea.data( 'lang' ) || 'en';
-		const len  = text.length;
+		const text      = $textarea.val();
+		const estimated = estimateText( text );
+		const lang      = $textarea.data( 'lang' ) || 'en';
+		const rawLen    = text.length;
+		const estLen    = estimated.length;
 
 		// GSM-7 encoding limits: 160 single-page, 153 per page multi.
 		// Arabic (Unicode): 70 single-page, 67 per page multi.
 		const singleLimit = ( lang === 'ar' ) ? 70  : 160;
 		const multiLimit  = ( lang === 'ar' ) ? 67  : 153;
-		const pages       = len <= singleLimit ? 1 : Math.ceil( len / multiLimit );
+		const pages       = estLen <= singleLimit ? 1 : Math.ceil( estLen / multiLimit );
 
 		const $counter = $textarea.closest( '.kwtsms-textarea-wrap' ).find( '.kwtsms-char-counter' );
-		$counter.find( '.kwtsms-char-count' ).text( len );
+		$counter.find( '.kwtsms-char-count' ).text( rawLen + ' (' + estLen + ' est.)' );
 		$counter.find( '.kwtsms-page-count' ).text( pages );
 		$counter.toggleClass( 'is-warning', pages > 1 );
 	}
@@ -360,6 +371,21 @@
 
 	$( document ).on( 'input', '.kwtsms-sms-textarea', function () {
 		updateCharCounter( $( this ) );
+	} );
+
+	// =========================================================================
+	// Reset template to default
+	// =========================================================================
+
+	$( document ).on( 'click', '.kwtsms-reset-template', function () {
+		var key      = $( this ).data( 'key' );
+		var defaults = ( data.template_defaults || {} )[ key ];
+		if ( ! defaults ) {
+			return;
+		}
+		var $card = $( this ).closest( '.kwtsms-template-card' );
+		$card.find( 'textarea[data-lang="en"]' ).val( defaults.en ).trigger( 'input' );
+		$card.find( 'textarea[data-lang="ar"]' ).val( defaults.ar ).trigger( 'input' );
 	} );
 
 	// =========================================================================

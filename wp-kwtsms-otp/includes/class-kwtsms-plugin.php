@@ -96,6 +96,9 @@ class KwtSMS_Plugin {
 		// Third-party plugin integrations (WooCommerce, CF7, WPForms, Elementor).
 		new KwtSMS_Integrations( $this );
 
+		// Welcome SMS: fires for all registrations — WC checkout, WC My Account, standard WP.
+		add_action( 'user_register', array( $this, 'maybe_send_welcome_on_register' ), 20 );
+
 		// AJAX handlers.
 		$this->register_ajax_handlers();
 
@@ -123,6 +126,53 @@ class KwtSMS_Plugin {
 			'</a></p>',
 			esc_url( $ref_url ),
 			esc_html__( 'SMS by kwtSMS.com', 'wp-kwtsms-otp' )
+		);
+	}
+
+	/**
+	 * Send welcome SMS after any user registration.
+	 *
+	 * Fires on `user_register` with priority 20 (after WC saves phone meta at 10).
+	 * Phone resolution order:
+	 *   1. $_POST['kwtsms_phone_reg'] — WC My Account registration field.
+	 *   2. $_POST['billing_phone']    — WC checkout registration.
+	 *   3. kwtsms_phone user meta     — set before user_register fires (some custom forms).
+	 *
+	 * @param int $user_id Newly created user ID.
+	 */
+	public function maybe_send_welcome_on_register( $user_id ) {
+		if ( ! $this->settings->get( 'general.welcome_sms_enabled', 0 ) ) {
+			return;
+		}
+
+		// Resolve phone from POST first (available during registration requests).
+		$phone = trim( sanitize_text_field( wp_unslash(
+			$_POST['kwtsms_phone_reg'] ?? $_POST['billing_phone'] ?? ''
+		) ) );
+
+		// Fall back to user meta (may be set by custom registration hooks before user_register).
+		if ( '' === $phone ) {
+			$phone = (string) get_user_meta( $user_id, 'kwtsms_phone', true );
+		}
+
+		if ( '' === $phone ) {
+			return;
+		}
+
+		$phone = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
+		$phone = KwtSMS_API::normalize_phone( $phone );
+		if ( is_wp_error( $phone ) ) {
+			return;
+		}
+
+		$user = get_userdata( $user_id );
+		$name = $user ? $user->display_name : '';
+		$message = $this->otp->build_message( '', 'welcome_sms', array( '{name}' => $name ) );
+		$this->api->send_sms(
+			$phone,
+			$this->settings->get( 'gateway.sender_id', '' ),
+			$message,
+			'welcome'
 		);
 	}
 

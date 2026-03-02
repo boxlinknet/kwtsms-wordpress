@@ -180,13 +180,6 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms-otp' ), $label );
 		<div class="kwtsms-template-card">
 			<div class="kwtsms-template-card-header">
 				<h3><?php esc_html_e( 'Form Submission Confirmation', 'wp-kwtsms-otp' ); ?></h3>
-				<label class="kwtsms-toggle">
-					<input type="checkbox"
-						name="kwtsms_otp_integrations[<?php echo esc_attr( $tpl_key ); ?>][enabled]"
-						value="1"
-						<?php checked( $tpl['enabled'], 1 ); ?> />
-					<span><?php esc_html_e( 'Enabled', 'wp-kwtsms-otp' ); ?></span>
-				</label>
 			</div>
 			<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful form submission.', 'wp-kwtsms-otp' ); ?></p>
 			<p class="description" style="margin-top:4px;">
@@ -238,6 +231,12 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms-otp' ), $label );
 						</div>
 					</div>
 				</div>
+			</div>
+			<div class="kwtsms-reset-wrap" style="margin-top:8px;">
+				<button type="button" class="button kwtsms-reset-template"
+					data-key="<?php echo esc_attr( $tpl_key ); ?>">
+					&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms-otp' ); ?>
+				</button>
 			</div>
 		</div>
 

@@ -60,11 +60,6 @@ $placeholders_info = array(
 		<div class="kwtsms-template-card">
 			<div class="kwtsms-template-card-header">
 				<h3><?php echo esc_html( $label ); ?></h3>
-				<label class="kwtsms-toggle">
-					<input type="checkbox" name="kwtsms_otp_templates[<?php echo esc_attr( $key ); ?>][enabled]"
-						value="1" <?php checked( $tpl['enabled'], 1 ); ?> />
-					<span><?php esc_html_e( 'Enabled', 'wp-kwtsms-otp' ); ?></span>
-				</label>
 			</div>
 			<p class="description"><?php echo esc_html( $template_descriptions[ $key ] ); ?></p>
 
@@ -112,6 +107,12 @@ $placeholders_info = array(
 						</div>
 					</div>
 				</div>
+			</div>
+			<div class="kwtsms-reset-wrap" style="margin-top:8px;">
+				<button type="button" class="button kwtsms-reset-template"
+					data-key="<?php echo esc_attr( $key ); ?>">
+					&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms-otp' ); ?>
+				</button>
 			</div>
 		</div>
 		<?php endforeach; ?>
