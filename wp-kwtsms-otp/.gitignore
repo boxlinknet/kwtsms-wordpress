@@ -3,7 +3,6 @@ node_modules/
 *.log
 .DS_Store
 auth-state.json
-/tests/bootstrap.php
 
 # PHPUnit / Composer generated files
 .phpunit.result.cache
