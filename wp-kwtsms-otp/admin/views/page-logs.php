@@ -224,14 +224,7 @@ function kwtsms_attempt_result_label( $result ) {
 		   class="button">
 			&#11015; <?php esc_html_e( 'Download', 'wp-kwtsms-otp' ); ?>
 		</a>
-		<a href="<?php echo esc_url( add_query_arg( array(
-			'action'   => 'clear_debug_log',
-			'_wpnonce' => wp_create_nonce( 'kwtsms_clear_debug_log' ),
-		), admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ) ); ?>"
-		   class="button" style="color:#dc3232;border-color:#dc3232;"
-		   onclick="return confirm('<?php esc_attr_e( 'Delete the contents of the debug log file?', 'wp-kwtsms-otp' ); ?>');">
-			<?php esc_html_e( 'Clear Log File', 'wp-kwtsms-otp' ); ?>
-		</a>
+
 		<span style="color:#888;font-size:13px;">
 			<?php printf(
 				/* translators: %d: number of log lines */

@@ -49,7 +49,6 @@ class KwtSMS_Admin {
 		add_action( 'admin_notices', array( $this, 'show_admin_notices' ) );
 		add_action( 'wp_dashboard_setup', array( $this, 'register_dashboard_widget' ) );
 		add_action( 'wp_ajax_kwtsms_get_coverage', array( $this, 'ajax_get_coverage' ) );
-		add_action( 'wp_ajax_kwtsms_clear_log', array( $this, 'ajax_clear_log' ) );
 		add_action( 'wp_ajax_kwtsms_logout_gateway', array( $this, 'ajax_logout_gateway' ) );
 	}
 
@@ -1019,16 +1018,6 @@ class KwtSMS_Admin {
 			exit;
 		}
 
-		// ---- Clear debug log ----
-		if ( 'clear_debug_log' === $action && $show_debug_tab &&
-			wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_clear_debug_log' )
-		) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-			file_put_contents( $debug_log_path, '' );
-			wp_safe_redirect( add_query_arg( array( 'page' => 'kwtsms-otp-logs', 'tab' => 'debug_log' ), admin_url( 'admin.php' ) ) );
-			exit;
-		}
-
 		// ---- Export CSV ----
 		if ( 'export_csv' === $action ) {
 			$log_key = sanitize_key( $_GET['log'] ?? '' );
@@ -1080,30 +1069,6 @@ class KwtSMS_Admin {
 				exit;
 			}
 		}
-	}
-
-	/**
-	 * AJAX handler — clear a named log option.
-	 *
-	 * Accepts 'log' param: 'sms_history' | 'attempt_log'.
-	 * Security: nonce + manage_options capability.
-	 */
-	public function ajax_clear_log() {
-		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
-
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms-otp' ) ), 403 );
-		}
-
-		$log_key = sanitize_key( $_POST['log'] ?? '' );
-		$allowed = array( 'sms_history', 'attempt_log' );
-
-		if ( ! in_array( $log_key, $allowed, true ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid log key.', 'wp-kwtsms-otp' ) ) );
-		}
-
-		delete_option( 'kwtsms_otp_' . $log_key );
-		wp_send_json_success();
 	}
 
 	// =========================================================================
