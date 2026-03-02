@@ -219,7 +219,6 @@ function kwtsms_attempt_result_label( $result ) {
 	?>
 
 	<div style="margin-bottom:16px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">
-		<strong style="color:#888;font-size:12px;"><?php echo esc_html( $debug_log_path ); ?></strong>
 		<a href="<?php echo esc_url( add_query_arg( array(
 			'action'   => 'download_debug_log',
 			'_wpnonce' => wp_create_nonce( 'kwtsms_download_debug_log' ),
@@ -242,6 +241,7 @@ function kwtsms_attempt_result_label( $result ) {
 				(int) $total_lines
 			); ?>
 		</span>
+		<strong style="color:#888;font-size:12px;margin-left:auto;"><?php echo esc_html( $debug_log_path ); ?></strong>
 	</div>
 
 	<?php if ( empty( $page_lines ) ) : ?>
