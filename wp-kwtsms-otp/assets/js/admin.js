@@ -497,11 +497,11 @@
 	// dialog so we control the title, body, and button labels (and they are
 	// fully translatable via kwtSmsAdminData.strings).
 	//
-	// Note: browser refresh (F5), back/forward, and tab-close cannot show
-	// a custom popup — modern browsers only allow their own generic "Leave
-	// page?" dialog for beforeunload events and we do not register one.
-	// Those actions will proceed without a warning; only link-click navigation
-	// within the admin triggers this modal.
+	// For browser refresh (F5), back/forward, and tab-close: a beforeunload
+	// listener is registered so the browser shows its own "Leave page?" dialog.
+	// Modern browsers ignore any custom message text and always display their
+	// own generic prompt — the two dialogs cannot look identical, but both
+	// warn the user before discarding their changes.
 	// =========================================================================
 
 	( function () {
@@ -577,6 +577,18 @@
 		// Clear dirty on save (form submit).
 		$forms.on( 'submit', function () {
 			dirty = false;
+		} );
+
+		// ── beforeunload safety net (refresh / back / tab-close) ──────────
+		// Modern browsers show their own generic "Leave page?" dialog and
+		// ignore the custom message text — but the message is preserved here
+		// for any browser that still honours it.
+		window.addEventListener( 'beforeunload', function ( e ) {
+			if ( ! dirty ) { return; }
+			var msg = ( s.unsavedBody || 'You have unsaved changes. Leaving this page will discard them.' );
+			e.preventDefault();
+			e.returnValue = msg; // legacy browsers
+			return msg;          // Safari
 		} );
 
 		// ── Intercept link clicks for in-page navigation ───────────────────
