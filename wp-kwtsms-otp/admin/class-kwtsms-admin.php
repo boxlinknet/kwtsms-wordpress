@@ -767,10 +767,8 @@ class KwtSMS_Admin {
 			}
 		}
 
-		// Notice: API credentials not configured.
-		$username = $this->plugin->settings->get( 'gateway.api_username', '' );
-		$password = $this->plugin->settings->get( 'gateway.api_password', '' );
-		if ( empty( $username ) || empty( $password ) ) {
+		// Notice: API credentials not verified (never logged in, or logged out).
+		if ( ! $this->plugin->settings->get( 'gateway.credentials_verified', false ) ) {
 			printf(
 				'<div class="notice notice-error inline"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
 				esc_html__( 'kwtSMS:', 'wp-kwtsms-otp' ),
