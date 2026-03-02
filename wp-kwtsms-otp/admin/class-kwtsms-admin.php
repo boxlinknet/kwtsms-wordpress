@@ -782,7 +782,7 @@ class KwtSMS_Admin {
 		if ( $this->plugin->settings->get( 'gateway.test_mode', 1 ) ) {
 			printf(
 				'<div class="notice notice-info inline"><p>%s</p></div>',
-				esc_html__( 'kwtSMS is in Test Mode. SMS messages will be queued but not delivered. Enable Debug Logging (General → Developer Tools) to see OTP codes in wp-content/kwtsms-debug.log.', 'wp-kwtsms-otp' )
+				esc_html__( 'kwtSMS is in Test Mode. SMS messages will be queued but not delivered. Delete from kwtSMS queue to recover credits.', 'wp-kwtsms-otp' )
 			);
 		}
 	}
