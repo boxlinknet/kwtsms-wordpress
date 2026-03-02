@@ -135,6 +135,45 @@ $woo_active = class_exists( 'WooCommerce' );
 			</table>
 		</div><!-- /.admin-notification-card -->
 
+		<!-- Customer SMS per Order Status -->
+		<div class="kwtsms-template-card">
+			<div class="kwtsms-template-card-header">
+				<h3><?php esc_html_e( 'Customer SMS per Order Status', 'wp-kwtsms-otp' ); ?></h3>
+			</div>
+			<p class="description">
+				<?php esc_html_e( 'Select which order status changes trigger a customer SMS notification.', 'wp-kwtsms-otp' ); ?>
+			</p>
+			<table class="form-table" style="margin-top:12px;">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Enabled statuses', 'wp-kwtsms-otp' ); ?></th>
+					<td>
+						<?php
+						$customer_status_labels = array(
+							'woo_processing' => __( 'Order Confirmed (Processing)', 'wp-kwtsms-otp' ),
+							'woo_shipped'    => __( 'Order Shipped (On-Hold)', 'wp-kwtsms-otp' ),
+							'woo_completed'  => __( 'Order Completed', 'wp-kwtsms-otp' ),
+							'woo_cancelled'  => __( 'Order Cancelled', 'wp-kwtsms-otp' ),
+							'woo_pending'    => __( 'Order Pending Payment', 'wp-kwtsms-otp' ),
+							'woo_refunded'   => __( 'Order Refunded', 'wp-kwtsms-otp' ),
+							'woo_failed'     => __( 'Order Payment Failed', 'wp-kwtsms-otp' ),
+						);
+						foreach ( $customer_status_labels as $csl_key => $csl_label ) :
+							$csl_tpl = $templates[ $csl_key ] ?? array( 'enabled' => 0 );
+						?>
+						<label style="display:block;margin-bottom:4px;">
+							<input type="checkbox"
+								name="kwtsms_otp_integrations[<?php echo esc_attr( $csl_key ); ?>][enabled]"
+								value="1"
+								<?php checked( $csl_tpl['enabled'], 1 ); ?> />
+							<?php echo esc_html( $csl_label ); ?>
+						</label>
+						<?php endforeach; ?>
+						<p class="description"><?php esc_html_e( 'Edit the message text for each status below.', 'wp-kwtsms-otp' ); ?></p>
+					</td>
+				</tr>
+			</table>
+		</div><!-- /.customer-sms-checklist -->
+
 		<!-- Order status template cards -->
 		<?php
 		$woo_template_defs = array(
@@ -181,13 +220,6 @@ $woo_active = class_exists( 'WooCommerce' );
 		<div class="kwtsms-template-card">
 			<div class="kwtsms-template-card-header">
 				<h3><?php echo esc_html( $def['label'] ); ?></h3>
-				<label class="kwtsms-toggle">
-					<input type="checkbox"
-						name="kwtsms_otp_integrations[<?php echo esc_attr( $key ); ?>][enabled]"
-						value="1"
-						<?php checked( $tpl['enabled'], 1 ); ?> />
-					<span><?php esc_html_e( 'Enabled', 'wp-kwtsms-otp' ); ?></span>
-				</label>
 			</div>
 			<p class="description"><?php echo esc_html( $def['description'] ); ?></p>
 			<p class="description" style="margin-top:4px;">
@@ -239,6 +271,12 @@ $woo_active = class_exists( 'WooCommerce' );
 						</div>
 					</div>
 				</div>
+			</div>
+			<div class="kwtsms-reset-wrap" style="margin-top:8px;">
+				<button type="button" class="button kwtsms-reset-template"
+					data-key="<?php echo esc_attr( $key ); ?>">
+					&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms-otp' ); ?>
+				</button>
 			</div>
 		</div>
 		<?php endforeach; ?>

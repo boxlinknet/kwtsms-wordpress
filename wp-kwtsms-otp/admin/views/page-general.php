@@ -171,6 +171,26 @@ foreach ( $all_countries as $cc ) {
 
 		</table>
 
+		<!-- ===== Notifications ===== -->
+		<h2 class="title"><?php esc_html_e( 'Notifications', 'wp-kwtsms-otp' ); ?></h2>
+		<table class="form-table" role="presentation">
+
+			<tr>
+				<th scope="row"><label for="kwtsms_welcome_sms_enabled"><?php esc_html_e( 'Send Welcome SMS', 'wp-kwtsms-otp' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_general[welcome_sms_enabled]" id="kwtsms_welcome_sms_enabled"
+							value="1" <?php checked( ! empty( $general['welcome_sms_enabled'] ) ); ?> />
+						<?php esc_html_e( 'Send a welcome SMS to every new user when they register.', 'wp-kwtsms-otp' ); ?>
+					</label>
+					<p class="description">
+						<?php esc_html_e( 'Configure the message text on the Templates page.', 'wp-kwtsms-otp' ); ?>
+					</p>
+				</td>
+			</tr>
+
+		</table>
+
 		<!-- ===== Phone & Country Settings ===== -->
 		<h2 class="title"><?php esc_html_e( 'Phone &amp; Country Settings', 'wp-kwtsms-otp' ); ?></h2>
 		<table class="form-table" role="presentation">

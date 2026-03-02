@@ -73,7 +73,7 @@ class KwtSMS_Woo {
 		// Registration: phone field + welcome SMS.
 		add_action( 'woocommerce_register_form',       array( $this, 'render_wc_phone_field' ) );
 		add_filter( 'woocommerce_registration_errors', array( $this, 'validate_wc_phone_field' ), 10, 3 );
-		add_action( 'woocommerce_created_customer',    array( $this, 'save_wc_phone_and_send_welcome' ) );
+		add_action( 'woocommerce_created_customer',    array( $this, 'save_wc_customer_phone' ) );
 
 		// Checkout OTP gate (only when enabled).
 		if ( $this->is_checkout_otp_enabled() ) {
@@ -300,14 +300,17 @@ class KwtSMS_Woo {
 	}
 
 	/**
-	 * Save phone meta and send welcome SMS after WC account creation.
+	 * Save phone meta after WC account creation.
 	 *
 	 * Only runs when a non-empty phone was submitted. The phone is normalised
 	 * before storage. If normalisation fails the whole step is skipped.
 	 *
+	 * Welcome SMS is handled by the `user_register` hook in KwtSMS_Plugin
+	 * (fires for all registration types — WC checkout, WC My Account, standard WP).
+	 *
 	 * @param int $customer_id New customer user ID.
 	 */
-	public function save_wc_phone_and_send_welcome( $customer_id ) {
+	public function save_wc_customer_phone( $customer_id ) {
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		if ( '' === $phone ) {
 			return;
@@ -320,18 +323,6 @@ class KwtSMS_Woo {
 		}
 
 		update_user_meta( $customer_id, 'kwtsms_phone', $normalized );
-
-		// Send welcome SMS if template enabled.
-		$templates = $this->plugin->settings->get_all_templates();
-		if ( ! empty( $templates['welcome_sms']['enabled'] ) ) {
-			$message = $this->plugin->otp->build_message( '', 'welcome_sms' );
-			$this->plugin->api->send_sms(
-				$normalized,
-				$this->plugin->settings->get( 'gateway.sender_id', '' ),
-				$message,
-				'welcome'
-			);
-		}
 	}
 
 	// =========================================================================

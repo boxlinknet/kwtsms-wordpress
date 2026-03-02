@@ -44,6 +44,7 @@ class KwtSMS_Settings {
 			'debug_logging'        => 0,          // write detailed logs to wp-content/kwtsms-debug.log
 			'blocked_phones'       => '',         // newline or comma-separated normalized phone numbers
 			'otp_required_roles'   => array( 'editor', 'author', 'contributor', 'subscriber' ), // administrator excluded by default
+			'welcome_sms_enabled'  => 0,         // send welcome SMS to new registrations
 		),
 		'gateway'   => array(
 			'api_username'         => '',
@@ -62,12 +63,12 @@ class KwtSMS_Settings {
 			'login_otp' => array(
 				'enabled' => 1,
 				'en'      => 'Your {site_name} login code is: {otp}. Valid for {expiry_minutes} minutes. Do not share this code.',
-				'ar'      => 'رمز تسجيل الدخول إلى {site_name} هو: {otp}. صالح لمدة {expiry_minutes} دقائق. لا تشارك هذا الرمز.',
+				'ar'      => 'رمزك: {otp}. صالح {expiry_minutes} دقيقة. {site_name}',
 			),
 			'reset_otp' => array(
 				'enabled' => 1,
 				'en'      => 'Your {site_name} password reset code is: {otp}. Valid for {expiry_minutes} minutes.',
-				'ar'      => 'رمز إعادة تعيين كلمة المرور الخاصة بـ {site_name} هو: {otp}. صالح لمدة {expiry_minutes} دقائق.',
+				'ar'      => 'رمز إعادة التعيين: {otp}. {expiry_minutes} دقيقة. {site_name}',
 			),
 			'welcome_sms' => array(
 				'enabled' => 0,
@@ -276,6 +277,36 @@ class KwtSMS_Settings {
 		}
 
 		return $merged;
+	}
+
+	/**
+	 * Get template default texts for use in admin JavaScript.
+	 *
+	 * Returns an array keyed by template key containing only the 'en' and 'ar'
+	 * default text strings. Used to populate the "Reset to Default" button data.
+	 *
+	 * @return array<string, array{en: string, ar: string}>
+	 */
+	public function get_template_defaults_for_js() {
+		$all = array();
+
+		foreach ( self::DEFAULTS['templates'] as $key => $tpl ) {
+			$all[ $key ] = array(
+				'en' => $tpl['en'],
+				'ar' => $tpl['ar'],
+			);
+		}
+
+		foreach ( self::DEFAULTS['integrations'] as $key => $val ) {
+			if ( is_array( $val ) && isset( $val['en'], $val['ar'] ) ) {
+				$all[ $key ] = array(
+					'en' => $val['en'],
+					'ar' => $val['ar'],
+				);
+			}
+		}
+
+		return $all;
 	}
 
 	/**
