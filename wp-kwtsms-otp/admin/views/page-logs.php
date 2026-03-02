@@ -216,30 +216,30 @@ function kwtsms_attempt_result_label( $result ) {
 	$page_lines      = array_slice( $lines, $offset_dbg, $per_page_dbg );
 	?>
 
-	<div style="margin:16px 0;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">
+	<div class="kwtsms-log-toolbar" style="display:flex;gap:10px;align-items:center;margin:16px 0;">
 		<a href="<?php echo esc_url( add_query_arg( array(
 			'action'   => 'download_debug_log',
 			'_wpnonce' => wp_create_nonce( 'kwtsms_download_debug_log' ),
 		), admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ) ); ?>"
-		   class="button button-small">
+		   class="button">
 			&#11015; <?php esc_html_e( 'Download', 'wp-kwtsms-otp' ); ?>
 		</a>
 		<a href="<?php echo esc_url( add_query_arg( array(
 			'action'   => 'clear_debug_log',
 			'_wpnonce' => wp_create_nonce( 'kwtsms_clear_debug_log' ),
 		), admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ) ); ?>"
-		   class="button button-small" style="color:#dc3232;border-color:#dc3232;"
+		   class="button" style="color:#dc3232;border-color:#dc3232;"
 		   onclick="return confirm('<?php esc_attr_e( 'Delete the contents of the debug log file?', 'wp-kwtsms-otp' ); ?>');">
 			<?php esc_html_e( 'Clear Log File', 'wp-kwtsms-otp' ); ?>
 		</a>
-		<span style="color:#888;font-size:12px;">
+		<span style="color:#888;font-size:13px;">
 			<?php printf(
 				/* translators: %d: number of log lines */
 				esc_html__( '%d lines total', 'wp-kwtsms-otp' ),
 				(int) $total_lines
 			); ?>
 		</span>
-		<strong style="color:#888;font-size:12px;margin-left:auto;"><?php echo esc_html( $debug_log_path ); ?></strong>
+		<span style="color:#888;font-size:13px;margin-left:auto;"><?php echo esc_html( $debug_log_path ); ?></span>
 	</div>
 
 	<?php if ( empty( $page_lines ) ) : ?>
