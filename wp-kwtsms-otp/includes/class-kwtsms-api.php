@@ -153,7 +153,7 @@ class KwtSMS_API {
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: phone missing' );
 			self::append_send_log( '?', 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_code() ), $this->username );
+			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ), $this->username );
 			return $err;
 		}
 
@@ -164,7 +164,7 @@ class KwtSMS_API {
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: message empty' );
 			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_code() ), $this->username );
+			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ), $this->username );
 			return $err;
 		}
 
@@ -175,7 +175,7 @@ class KwtSMS_API {
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty' );
 			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_code() ), $this->username );
+			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ), $this->username );
 			return $err;
 		}
 
@@ -186,7 +186,7 @@ class KwtSMS_API {
 			if ( is_wp_error( $balance_check ) ) {
 				$this->write_debug_log( 'send_sms()', 'ABORT: ' . $balance_check->get_error_message() );
 				self::append_send_log( $phone, 'failed', $type );
-				self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $balance_check->get_error_code(), 'message' => $balance_check->get_error_code() ), $this->username );
+				self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $balance_check->get_error_code(), 'message' => $balance_check->get_error_message() ), $this->username );
 				return $balance_check;
 			}
 		}
