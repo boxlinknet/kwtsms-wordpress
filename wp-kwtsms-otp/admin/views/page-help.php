@@ -142,7 +142,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Send a test SMS', 'wp-kwtsms-otp' ); ?></strong><br>
-				<?php esc_html_e( 'On the Gateway page, enter a test phone number and click "Send Gateway Test SMS". With Test Mode ON, the message is queued in your kwtSMS account but not delivered to the phone. Turn Test Mode OFF for real delivery.', 'wp-kwtsms-otp' ); ?>
+				<?php esc_html_e( 'On the Gateway page, enter a test phone number and click "Send Test SMS". With Test Mode ON, the message is queued in your kwtSMS account but not delivered to the phone. Turn Test Mode OFF for real delivery.', 'wp-kwtsms-otp' ); ?>
 			</li>
 		</ol>
 
@@ -252,7 +252,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Run a Gateway Test SMS.', 'wp-kwtsms-otp' ); ?></strong>
-				<?php esc_html_e( 'On the Gateway page, enter a phone number including country code and click "Send Gateway Test SMS". This isolates whether the issue is the API connection or a specific trigger in the plugin.', 'wp-kwtsms-otp' ); ?>
+				<?php esc_html_e( 'On the Gateway page, enter a phone number including country code and click "Send Test SMS". This isolates whether the issue is the API connection or a specific trigger in the plugin.', 'wp-kwtsms-otp' ); ?>
 			</li>
 		</ol>
 

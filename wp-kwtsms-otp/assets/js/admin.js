@@ -329,7 +329,7 @@
 			$result.text( s.testSmsFailed || 'Network error. Please try again.' ).css( 'color', '#dc3232' );
 		} )
 		.always( function () {
-			$btn.prop( 'disabled', false ).text( s.sendTestSms || 'Send Gateway Test SMS' );
+			$btn.prop( 'disabled', false ).text( s.sendTestSms || 'Send Test SMS' );
 		} );
 	} );
 
