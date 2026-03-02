@@ -139,10 +139,7 @@ class KwtSMS_Reset_OTP {
 		);
 
 		if ( is_wp_error( $result ) ) {
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				// phpcs:ignore WordPress.PHP.DevelopmentFunctions
-				error_log( '[kwtsms-otp] Reset SMS failed for user ' . $resolved_user->ID . ': ' . $result->get_error_message() );
-			}
+			$this->plugin->api->write_debug_log( 'reset_otp', 'SMS failed for user ' . $resolved_user->ID . ': ' . $result->get_error_message() );
 			// Fail gracefully — fall back to email reset.
 			return;
 		}

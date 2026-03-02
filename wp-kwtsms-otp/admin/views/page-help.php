@@ -18,7 +18,10 @@ $has_credentials      = $credentials_verified
 $has_sender      = $credentials_verified && ! empty( $settings->get( 'gateway.sender_id', '' ) );
 $test_mode       = $credentials_verified ? (bool) $settings->get( 'gateway.test_mode', 1 ) : null;
 $debug_logging   = (bool) $settings->get( 'general.debug_logging', 0 );
-$content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
+// Relative content path (e.g. "wp-content") for display — avoids showing full server paths.
+$content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
+	? rtrim( str_replace( trailingslashit( ABSPATH ), '', WP_CONTENT_DIR ), '/' )
+	: 'wp-content';
 ?>
 <div class="wrap kwtsms-admin-wrap">
 

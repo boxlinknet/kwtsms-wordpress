@@ -132,6 +132,7 @@ class KwtSMS_Login_OTP {
 		// Anti-enumeration: silently fail without allocating a session.
 		// User sees the OTP screen but has no valid transient to verify against.
 		if ( $this->plugin->otp->is_phone_blocked( $phone ) ) {
+			$this->plugin->api->write_debug_log( 'login_otp', 'Blocked phone attempted OTP: ' . $phone );
 			return new WP_Error( 'kwtsms_otp_required', '' );
 		}
 
@@ -148,10 +149,7 @@ class KwtSMS_Login_OTP {
 		if ( is_wp_error( $result ) ) {
 			// SMS failed — log error but allow login to proceed (fail-open).
 			// This prevents SMS gateway issues from locking out all users.
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				// phpcs:ignore WordPress.PHP.DevelopmentFunctions
-				error_log( '[kwtsms-otp] SMS send failed for user ' . $user->ID . ': ' . $result->get_error_message() );
-			}
+			$this->plugin->api->write_debug_log( 'login_otp', 'SMS send failed for user ' . $user->ID . ': ' . $result->get_error_message() );
 			return $user;
 		}
 
@@ -504,10 +502,7 @@ class KwtSMS_Login_OTP {
 		);
 
 		if ( is_wp_error( $result ) ) {
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				// phpcs:ignore WordPress.PHP.DevelopmentFunctions
-				error_log( '[kwtsms-otp] Passwordless SMS failed: ' . $result->get_error_message() );
-			}
+			$this->plugin->api->write_debug_log( 'login_otp', 'Passwordless SMS failed: ' . $result->get_error_message() );
 		}
 
 		// Sliding-window counters are recorded inside is_rate_limited(),

@@ -359,7 +359,10 @@ foreach ( $all_countries as $cc ) {
 					<?php endif; ?>
 					<p class="description">
 						<?php
-						$log_path = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/kwtsms-debug.log' : 'wp-content/kwtsms-debug.log';
+						// Show relative path (e.g. wp-content/kwtsms-debug.log) regardless of server layout.
+					$log_path = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
+						? str_replace( trailingslashit( ABSPATH ), '', WP_CONTENT_DIR ) . '/kwtsms-debug.log'
+						: 'wp-content/kwtsms-debug.log';
 						printf(
 							/* translators: %s: path to the debug log file */
 							esc_html__( 'Log file: %s', 'wp-kwtsms-otp' ),
