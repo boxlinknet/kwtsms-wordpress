@@ -323,13 +323,22 @@ class KwtSMS_Admin {
 		}
 
 		// Preserve credentials_verified flag only if the credentials are unchanged.
-		$current_gw          = get_option( 'kwtsms_otp_gateway', array() );
-		$api_password_raw    = sanitize_text_field( $raw['api_password'] ?? '' );
-		$creds_unchanged     = (
+		$current_gw       = get_option( 'kwtsms_otp_gateway', array() );
+		$api_password_raw = sanitize_text_field( $raw['api_password'] ?? '' );
+		$creds_unchanged  = (
 			$api_username_raw === ( $current_gw['api_username'] ?? '' ) &&
 			$api_password_raw === ( $current_gw['api_password'] ?? '' )
 		);
-		$credentials_verified = $creds_unchanged ? (int) ( $current_gw['credentials_verified'] ?? 0 ) : 0;
+
+		if ( $creds_unchanged ) {
+			// Prefer an explicit value in $raw (the logout AJAX handler sets it to 0).
+			// Fall back to the current DB value for plain form POSTs that omit the key.
+			$credentials_verified = array_key_exists( 'credentials_verified', $raw )
+				? (int) $raw['credentials_verified']
+				: (int) ( $current_gw['credentials_verified'] ?? 0 );
+		} else {
+			$credentials_verified = 0;
+		}
 
 		// Carry over previously fetched gateway data.
 		// When called from a form POST, $raw only contains the HTML form fields
@@ -685,6 +694,7 @@ class KwtSMS_Admin {
 					'phoneTooShort'      => __( 'Number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits).', 'wp-kwtsms-otp' ),
 					'testModeResult'     => __( 'Test mode ON — message queued in kwtSMS account queue, will not be delivered. Delete to recover credits.', 'wp-kwtsms-otp' ),
 					'testSmsResult'      => __( 'SMS delivered to %phone%. Check your messages.', 'wp-kwtsms-otp' ),
+					'testSmsFailed'      => __( 'Send failed. Check your API credentials and phone number.', 'wp-kwtsms-otp' ),
 					'unsavedTitle'       => __( 'Unsaved Changes', 'wp-kwtsms-otp' ),
 					'unsavedBody'        => __( 'You have unsaved changes. Leaving this page will discard them.', 'wp-kwtsms-otp' ),
 					'unsavedStay'        => __( 'Stay on Page', 'wp-kwtsms-otp' ),
