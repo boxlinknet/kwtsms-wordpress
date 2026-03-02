@@ -128,7 +128,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Configure Gateway Settings', 'wp-kwtsms-otp' ); ?></strong><br>
-				<?php esc_html_e( 'Go to kwtSMS → Gateway. Enter your API username and password, then click "Save & Verify Credentials" to load your approved Sender IDs. Select a Sender ID and save.', 'wp-kwtsms-otp' ); ?>
+				<?php esc_html_e( 'Go to kwtSMS → Gateway. Enter your API username and password, then click "Login" to verify your credentials and load your approved Sender IDs. Select a Sender ID and save.', 'wp-kwtsms-otp' ); ?>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway →', 'wp-kwtsms-otp' ); ?></a>
 			</li>
 			<li>
@@ -177,16 +177,42 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<h3><?php esc_html_e( 'Password Reset via SMS', 'wp-kwtsms-otp' ); ?></h3>
 		<p><?php esc_html_e( 'Replaces the default email reset link with an SMS OTP. Users receive a code by SMS to verify their identity, then are taken to the reset form. Enable via General Settings → Enable Password Reset OTP.', 'wp-kwtsms-otp' ); ?></p>
 
+		<h3><?php esc_html_e( 'Per-Role OTP Enforcement', 'wp-kwtsms-otp' ); ?></h3>
+		<p><?php esc_html_e( 'Choose which user roles require OTP (e.g. require it for Administrators but skip it for Subscribers). Excluded roles bypass OTP entirely. Configure under General Settings → Authentication.', 'wp-kwtsms-otp' ); ?></p>
+
 		<h3><?php esc_html_e( 'SMS Templates', 'wp-kwtsms-otp' ); ?></h3>
 		<p><?php esc_html_e( 'Customise the message text for each event (login, reset, welcome). Placeholders like {otp}, {site_name}, and {expiry_minutes} are replaced automatically. Separate English and Arabic templates are supported.', 'wp-kwtsms-otp' ); ?></p>
 
+		<h3><?php esc_html_e( 'WooCommerce Integration', 'wp-kwtsms-otp' ); ?></h3>
+		<p><?php esc_html_e( 'When WooCommerce is active, the plugin can send SMS to customers when order status changes. Supported statuses: Processing, Shipped (On-Hold), Completed, Cancelled, Pending Payment, Refunded, and Failed. Each status has its own configurable template (English + Arabic). Additional features:', 'wp-kwtsms-otp' ); ?></p>
+		<ul style="margin-left:20px;font-size:14px;line-height:1.8;">
+			<li><?php esc_html_e( 'Admin SMS notifications — send a copy to a store phone number on any status change.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Per-order custom SMS — send a free-text message from the order edit screen.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Checkout OTP gate — require phone verification before an order is placed.', 'wp-kwtsms-otp' ); ?></li>
+		</ul>
+		<p><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-integrations' ) ); ?>"><?php esc_html_e( 'Integrations Settings →', 'wp-kwtsms-otp' ); ?></a></p>
+
+		<h3><?php esc_html_e( 'Form Integrations (Contact Form 7, WPForms, Elementor Pro, Gravity Forms, Ninja Forms)', 'wp-kwtsms-otp' ); ?></h3>
+		<p><?php esc_html_e( 'Each form plugin integration supports two modes:', 'wp-kwtsms-otp' ); ?></p>
+		<ul style="margin-left:20px;font-size:14px;line-height:1.8;">
+			<li><strong><?php esc_html_e( 'Notification mode', 'wp-kwtsms-otp' ); ?></strong> — <?php esc_html_e( 'Send a confirmation SMS to the customer after a successful form submission.', 'wp-kwtsms-otp' ); ?></li>
+			<li><strong><?php esc_html_e( 'OTP Gate mode', 'wp-kwtsms-otp' ); ?></strong> — <?php esc_html_e( 'Block the form submission until the user verifies their phone number with an OTP. An overlay modal appears on submit, asking the user to enter and confirm their phone.', 'wp-kwtsms-otp' ); ?></li>
+		</ul>
+
+		<h3><?php esc_html_e( 'Security', 'wp-kwtsms-otp' ); ?></h3>
+		<ul style="margin-left:20px;font-size:14px;line-height:1.8;">
+			<li><strong><?php esc_html_e( 'Sliding-window rate limiting', 'wp-kwtsms-otp' ); ?></strong> — <?php esc_html_e( 'OTP requests are limited per phone, per IP, and per account. The sliding-window algorithm prevents gaming at window boundaries.', 'wp-kwtsms-otp' ); ?></li>
+			<li><strong><?php esc_html_e( 'Phone blocking list', 'wp-kwtsms-otp' ); ?></strong> — <?php esc_html_e( 'Block specific numbers from ever receiving an OTP. Blocked numbers receive a silent success response (anti-enumeration).', 'wp-kwtsms-otp' ); ?></li>
+			<li><strong><?php esc_html_e( 'Bot protection', 'wp-kwtsms-otp' ); ?></strong> — <?php esc_html_e( 'Optional Google reCAPTCHA v3 or Cloudflare Turnstile on OTP forms.', 'wp-kwtsms-otp' ); ?></li>
+			<li><strong><?php esc_html_e( 'Emergency bypass', 'wp-kwtsms-otp' ); ?></strong> — <?php esc_html_e( 'Add define( \'KWTSMS_OTP_DISABLED\', true ) to wp-config.php to disable all OTP logic if you are locked out.', 'wp-kwtsms-otp' ); ?></li>
+		</ul>
+
 		<h3><?php esc_html_e( 'Logs', 'wp-kwtsms-otp' ); ?></h3>
-		<p>
-			<?php esc_html_e( 'The Logs page shows two tabs:', 'wp-kwtsms-otp' ); ?>
-		</p>
+		<p><?php esc_html_e( 'The Logs page shows three tabs:', 'wp-kwtsms-otp' ); ?></p>
 		<ul style="margin-left:20px;font-size:14px;">
-			<li><strong><?php esc_html_e( 'SMS History', 'wp-kwtsms-otp' ); ?></strong> — <?php esc_html_e( 'Full unredacted log of all SMS sends (phone, message, status, message ID).', 'wp-kwtsms-otp' ); ?></li>
+			<li><strong><?php esc_html_e( 'SMS History', 'wp-kwtsms-otp' ); ?></strong> — <?php esc_html_e( 'Full unredacted log of all SMS sends (phone, message, status, message ID, gateway result).', 'wp-kwtsms-otp' ); ?></li>
 			<li><strong><?php esc_html_e( 'OTP Attempts', 'wp-kwtsms-otp' ); ?></strong> — <?php esc_html_e( 'Every verification attempt with result, IP address, and user. Useful for detecting brute-force attacks.', 'wp-kwtsms-otp' ); ?></li>
+			<li><strong><?php esc_html_e( 'Debug Log', 'wp-kwtsms-otp' ); ?></strong> — <?php esc_html_e( 'Full API request/response log (visible only when Debug Logging is enabled in General Settings).', 'wp-kwtsms-otp' ); ?></li>
 		</ul>
 
 		<h3><?php esc_html_e( 'Allowed Countries', 'wp-kwtsms-otp' ); ?></h3>
@@ -256,6 +282,46 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			</li>
 		</ol>
 
+		<!-- KWT-SMS promotional sender ID warning -->
+		<div style="background:#fff8e1;border-left:4px solid #FFA200;padding:14px 18px;border-radius:0 4px 4px 0;margin:16px 0 24px;font-size:14px;">
+			<h3 style="margin-top:0;"><?php esc_html_e( '⚠ Using the KWT-SMS Promotional Sender ID', 'wp-kwtsms-otp' ); ?></h3>
+			<p style="margin-top:0;">
+				<?php esc_html_e( 'The shared promotional sender ID "KWT-SMS" is intentionally slow by design — delivery can take 100 seconds or more. It is NOT suitable for OTP verification, where users expect the code within seconds.', 'wp-kwtsms-otp' ); ?>
+			</p>
+			<p>
+				<strong><?php esc_html_e( 'Virgin (Zain-MVNO) subscribers in Kuwait do not receive messages sent via KWT-SMS', 'wp-kwtsms-otp' ); ?></strong> —
+				<?php esc_html_e( 'these customers will never get the OTP.', 'wp-kwtsms-otp' ); ?>
+			</p>
+			<p style="margin-bottom:0;">
+				<strong><?php esc_html_e( 'Recommended:', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'Register a private alphanumeric Sender ID in your kwtSMS account (e.g. your brand name). Private sender IDs have fast delivery and work on all Kuwaiti operators.', 'wp-kwtsms-otp' ); ?>
+				<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener"><?php esc_html_e( 'Contact kwtSMS →', 'wp-kwtsms-otp' ); ?></a>
+			</p>
+		</div>
+
+		<!-- Kuwait DLR note -->
+		<h3><?php esc_html_e( 'Message shows as Sent but was never delivered (Kuwait numbers)', 'wp-kwtsms-otp' ); ?></h3>
+		<p><?php esc_html_e( 'Delivery Reports (DLR) are not available for messages sent to Kuwait mobile numbers. The API returns "OK" (sent) as soon as the message is handed off to the operator, but there is no delivery confirmation for Kuwait. If a customer says they did not receive the SMS and the Logs page shows "Sent", check:', 'wp-kwtsms-otp' ); ?></p>
+		<ul style="margin-left:20px;font-size:14px;line-height:1.8;">
+			<li><?php esc_html_e( 'Is the customer using Virgin (Zain-MVNO)? If so, switch from KWT-SMS to a private sender ID.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Check the kwtSMS API error log in your kwtSMS account dashboard (API → Error Log).', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Use the Debug Log (enable in General → Developer Tools) for the full API request and response.', 'wp-kwtsms-otp' ); ?></li>
+		</ul>
+
+		<!-- International coverage -->
+		<h3><?php esc_html_e( 'Messages not reaching international numbers', 'wp-kwtsms-otp' ); ?></h3>
+		<p>
+			<?php esc_html_e( 'International SMS coverage is disabled by default on all new kwtSMS accounts. To enable coverage for countries outside Kuwait, contact kwtSMS support.', 'wp-kwtsms-otp' ); ?>
+			<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener"><?php esc_html_e( 'kwtSMS Contact →', 'wp-kwtsms-otp' ); ?></a>
+		</p>
+		<p><?php esc_html_e( 'The Gateway page shows your current coverage list. If a destination country is missing, it has not been enabled.', 'wp-kwtsms-otp' ); ?></p>
+
+		<!-- API rate limiting -->
+		<h3><?php esc_html_e( 'API requests being blocked (rate limit)', 'wp-kwtsms-otp' ); ?></h3>
+		<p>
+			<?php esc_html_e( 'The kwtSMS API allows a maximum of 5 requests per second from a single IP address. Exceeding this limit causes your server\'s IP to be temporarily blocked by kwtSMS. Under normal use this limit is never reached — each OTP send is one request. If you are running bulk sends or automated tests, introduce a delay between requests.', 'wp-kwtsms-otp' ); ?>
+		</p>
+
 		<h3><?php esc_html_e( 'Users get "Session expired" error', 'wp-kwtsms-otp' ); ?></h3>
 		<p><?php esc_html_e( 'The OTP session is stored as a 15-minute transient. This can be cleared by object cache flushes or plugin conflicts. Check that no caching plugin is clearing transients too aggressively.', 'wp-kwtsms-otp' ); ?></p>
 
@@ -293,21 +359,33 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			?>
 		</p>
 
-		<h3><?php esc_html_e( 'Common API error codes', 'wp-kwtsms-otp' ); ?></h3>
-		<table class="widefat striped" style="max-width:700px;font-size:13px;">
+		<h3><?php esc_html_e( 'API error codes', 'wp-kwtsms-otp' ); ?></h3>
+		<p style="font-size:13px;"><?php esc_html_e( 'Error codes appear in the SMS History log (Result column) and in the Debug Log. Match them to the table below.', 'wp-kwtsms-otp' ); ?></p>
+		<table class="widefat striped" style="max-width:800px;font-size:13px;">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Code', 'wp-kwtsms-otp' ); ?></th>
+					<th style="width:90px;"><?php esc_html_e( 'Code', 'wp-kwtsms-otp' ); ?></th>
 					<th><?php esc_html_e( 'Meaning', 'wp-kwtsms-otp' ); ?></th>
 					<th><?php esc_html_e( 'Fix', 'wp-kwtsms-otp' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>ERR003</td><td><?php esc_html_e( 'Authentication failed', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Wrong username or password. Verify at kwtsms.com.', 'wp-kwtsms-otp' ); ?></td></tr>
-				<tr><td>ERR008</td><td><?php esc_html_e( 'Sender ID not allowed', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Selected Sender ID is not approved. Choose a different one.', 'wp-kwtsms-otp' ); ?></td></tr>
-				<tr><td>ERR010/011</td><td><?php esc_html_e( 'Insufficient credits', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Top up your kwtSMS account balance.', 'wp-kwtsms-otp' ); ?></td></tr>
-				<tr><td>ERR026</td><td><?php esc_html_e( 'No SMS coverage', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Add coverage for the destination country in your kwtSMS account.', 'wp-kwtsms-otp' ); ?></td></tr>
-				<tr><td>ERR006/025</td><td><?php esc_html_e( 'Invalid phone number', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'The phone number format is wrong. Ensure country code is included.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR001</td><td><?php esc_html_e( 'Service temporarily unavailable', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Retry after a short wait. Check kwtsms.com status if it persists.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR002</td><td><?php esc_html_e( 'Gateway configuration error', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Contact kwtSMS support — account configuration issue.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR003</td><td><?php esc_html_e( 'Authentication failed', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Wrong API username or password. Re-enter credentials on the Gateway page and click Login.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR004</td><td><?php esc_html_e( 'API not enabled on account', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Contact kwtSMS to enable the API on your account.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR005</td><td><?php esc_html_e( 'Account suspended', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Log in to kwtsms.com to check account status.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR006 / ERR025</td><td><?php esc_html_e( 'Invalid phone number', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'The number format is wrong. Ensure country code is included (e.g. 96599220322).', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR008</td><td><?php esc_html_e( 'Sender ID not allowed', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'The selected Sender ID is not approved on your account. Choose a different one on the Gateway page.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR009</td><td><?php esc_html_e( 'Message body is empty', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Check your SMS templates. The OTP or notification template for this event is empty.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR010 / ERR011</td><td><?php esc_html_e( 'Insufficient credits', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Top up your kwtSMS account balance.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR012</td><td><?php esc_html_e( 'Message too long', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Shorten your SMS template. Standard SMS is 160 characters; Arabic is 70 characters per page.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR013</td><td><?php esc_html_e( 'SMS queue is full', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Retry in a few minutes.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR024</td><td><?php esc_html_e( 'Request blocked by security policy', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Your server IP may be rate-limited (max 5 req/sec). Contact kwtSMS support.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR026 / ERR033</td><td><?php esc_html_e( 'No SMS coverage for destination', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Add coverage for this country in your kwtSMS account or contact kwtSMS to enable international coverage.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR027</td><td><?php esc_html_e( 'Unsupported characters in message', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'Remove emoji or special characters from the SMS template.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR028</td><td><?php esc_html_e( 'Resend too fast', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'The API requires at least 15 seconds between OTP sends to the same number.', 'wp-kwtsms-otp' ); ?></td></tr>
+				<tr><td>ERR031 / ERR032</td><td><?php esc_html_e( 'Message rejected (policy/spam)', 'wp-kwtsms-otp' ); ?></td><td><?php esc_html_e( 'The message content was flagged. Review your template text and remove any spam-like content.', 'wp-kwtsms-otp' ); ?></td></tr>
 			</tbody>
 		</table>
 

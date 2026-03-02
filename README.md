@@ -92,7 +92,7 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 2. Upload the `wp-kwtsms-otp/` directory to `/wp-content/plugins/`
 3. Activate from **Plugins → Installed Plugins**
 4. Go to **kwtSMS → Gateway** and enter your API credentials
-5. Click **Save & Verify Credentials**
+5. Click **Login** to verify credentials and load your Sender IDs
 6. Configure OTP behaviour under **kwtSMS → General**
 
 ---
@@ -164,6 +164,20 @@ cd wp-kwtsms-otp/
 composer install
 ./vendor/bin/phpunit --no-coverage
 ```
+
+---
+
+## Important API Notes
+
+| Topic | Detail |
+|---|---|
+| **Promotional sender "KWT-SMS"** | Intentionally slow (100+ second delivery). Not suitable for OTP. Virgin (Zain-MVNO) Kuwait subscribers do not receive it. Use a private Sender ID for OTP. |
+| **Kuwait delivery reports** | DLR is not available for messages to Kuwait numbers. The API returns "OK" once the message is handed off to the operator, but there is no confirmation of receipt. |
+| **International coverage** | Disabled by default on new accounts. Contact kwtSMS support to enable. |
+| **API rate limit** | Max 5 requests/second per IP. Exceeding this temporarily blocks your server IP. |
+| **Test mode credits** | `test=1` still deducts credits. Delete queued messages from your kwtSMS outbox to recover them. |
+| **API error log** | Your kwtSMS account dashboard (API → Error Log) shows all send attempts with error details. |
+| **Server timezone** | The kwtSMS API server operates on Asia/Kuwait (GMT+3). |
 
 ---
 
