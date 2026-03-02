@@ -336,7 +336,7 @@ class KwtSMS_Reset_OTP {
 		$is_reset     = true;
 		$login_url    = wp_login_url();
 		$nonce_resend = wp_create_nonce( 'kwtsms_otp_nonce' );
-		$token        = $this->get_reset_cookie_token() ?? '';
+		$token        = $this->get_reset_cookie_token();
 		$redirect_to  = '';
 		include KWTSMS_OTP_DIR . 'includes/views/page-otp.php';
 	}

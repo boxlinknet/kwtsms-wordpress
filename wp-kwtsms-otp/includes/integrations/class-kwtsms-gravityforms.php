@@ -53,13 +53,12 @@ class KwtSMS_GravityForms {
 	 * If GForms is not installed or the integration is disabled in settings,
 	 * no hook is registered and the class exits immediately.
 	 *
-	 * @param KwtSMS_Plugin   $plugin   The main plugin instance.
-	 * @param KwtSMS_Settings $settings The settings instance (unused directly —
-	 *                                  accessed via $plugin->settings for
-	 *                                  consistency with other integrations, but
-	 *                                  also accepted as a dependency for tests).
+	 * @param KwtSMS_Plugin        $plugin    The main plugin instance.
+	 * @param KwtSMS_Settings|null $_settings Unused — accepted for DI parity with
+	 *                                         other integrations; settings are always
+	 *                                         accessed via $plugin->settings.
 	 */
-	public function __construct( KwtSMS_Plugin $plugin, KwtSMS_Settings $settings = null ) {
+	public function __construct( KwtSMS_Plugin $plugin, KwtSMS_Settings $_settings = null ) {
 		$this->plugin = $plugin;
 
 		// Gravity Forms must be active.

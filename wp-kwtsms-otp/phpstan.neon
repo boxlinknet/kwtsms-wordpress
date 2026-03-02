@@ -1,5 +1,6 @@
 includes:
     - phpstan-baseline.neon
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
 
 parameters:
     level: 5
@@ -14,4 +15,83 @@ parameters:
         - tests/
 
     bootstrapFiles:
+        # WordPress stubs — also loaded by szepeviktor extension.neon, but
+        # explicit here so our bootstrap below can safely depend on them.
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+        # Plugin constants (KWTSMS_OTP_DIR, KWTSMS_OTP_URL, COOKIEHASH, COOKIEPATH).
+        - phpstan-bootstrap.php
+
+    dynamicConstantNames:
+        # Plugin constants — value depends on install path at runtime.
+        - KWTSMS_OTP_DIR
+        - KWTSMS_OTP_URL
+        # COOKIEHASH is derived from siteurl at runtime.
+        - COOKIEHASH
+
+    # Suppress "ignored pattern never matched" noise for optional-dependency rules.
+    reportUnmatchedIgnoredErrors: false
+
+    ignoreErrors:
+        # ── Admin view files (PHP includes in class method scope) ─────────────
+        # PHP allows included files to access protected (and private) instance
+        # properties when the include runs inside a class method. PHPStan
+        # cannot model this correctly, so we suppress it for the admin views.
+        -
+            message: '#^Access to protected property KwtSMS_Admin::\$plugin\.$#'
+            paths:
+                - admin/views/
+
+        # ── Intentional return; after wp_send_json_error / success ────────────
+        # wp_send_json_error() calls wp_die() which never returns. PHPStan
+        # (via szepeviktor extension) marks our guard return; as unreachable.
+        # These returns are intentional: they prevent fallthrough in test
+        # environments where wp_die() may be mocked.
+        -
+            message: '#^Unreachable statement - code above always terminates\.$#'
+            paths:
+                - includes/class-kwtsms-plugin.php
+                - includes/class-kwtsms-woo.php
+                - includes/integrations/class-kwtsms-woo-metabox.php
+                - admin/class-kwtsms-admin.php
+
+        # ── View files: defensive ?? on variables injected by the caller ─────
+        # These variables are set by the caller before include. PHPStan analyses
+        # the view in isolation and incorrectly believes they are always set.
+        -
+            message: '#^Variable \$.+ on left side of \?\? always exists and is not nullable\.$#'
+            paths:
+                - includes/views/
+                - admin/views/
+
+        # ── PHPDoc-driven type narrowing false positives ───────────────────────
+        # PHPStan correctly identifies that the PHPDoc-declared type is already
+        # narrow, but these checks exist as defence-in-depth runtime guards.
+        - '#^Call to function is_wp_error\(\) with WP_Error will always evaluate to true\.$#'
+        - '#^Call to function is_int\(\) with int will always evaluate to true\.$#'
+
+        # ── Unused parameter intentional for DI parity ────────────────────────
+        -
+            message: '#^Constructor of class KwtSMS_(GravityForms|NinjaForms) has an unused parameter \$_settings\.$#'
+
+        # ── WooCommerce (optional dependency) ──────────────────────────────────
+        # WC classes and functions are only available when WooCommerce is active.
+        - '#^(Class|Parameter .+ has invalid type) WC_(Order|Checkout|Session|Cart)\b#'
+        - '#^Call to method .+ on an unknown class WC_(Order|Checkout|Session|Cart)\b#'
+        - '#^Function wc_(get_order|price|add_notice|get_order_status_name) not found\.#'
+
+        # ── Elementor Pro (optional dependency) ────────────────────────────────
+        - '#ElementorPro#'
+
+        # ── CF7 (optional dependency) ──────────────────────────────────────────
+        - '#WPCF7_#'
+        - '#^Call to function is_a\(\) with WPCF7_#'
+
+        # ── WPForms (optional dependency) ──────────────────────────────────────
+        - '#WPForms#'
+        - '#wpforms_#'
+
+        # ── Gravity Forms (optional dependency) ────────────────────────────────
+        - '#GFForms|GFAPI|GF_Fields#'
+
+        # ── Ninja Forms (optional dependency) ──────────────────────────────────
+        - '#Ninja_Forms#'

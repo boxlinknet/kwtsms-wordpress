@@ -87,7 +87,7 @@ class KwtSMS_Login_OTP {
 		// Empty list (default) means all users must pass OTP.
 		$required_roles = $this->plugin->settings->get( 'general.otp_required_roles', array() );
 		if ( ! empty( $required_roles ) ) {
-			$user_roles = $user->roles ?? array();
+			$user_roles = $user->roles;
 			// On multisite, super admins have an empty roles array.
 			// Treat them as 'administrator' so they are subject to the same
 			// OTP enforcement as regular administrators.
@@ -465,7 +465,7 @@ class KwtSMS_Login_OTP {
 		$required_roles = $this->plugin->settings->get( 'general.otp_required_roles', array() );
 		if ( ! empty( $required_roles ) ) {
 			$user_obj   = get_userdata( $user_id );
-			$user_roles = ( $user_obj ? $user_obj->roles : array() ) ?? array();
+			$user_roles = $user_obj ? $user_obj->roles : array();
 			// On multisite, super admins have an empty roles array —
 			// treat them as 'administrator' for the purpose of this check.
 			if ( empty( $user_roles ) && function_exists( 'is_super_admin' ) && is_super_admin( $user_id ) ) {

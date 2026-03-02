@@ -96,7 +96,7 @@ $icons = array(
 			<?php foreach ( $integrations as $key => $int ) : ?>
 			<tr>
 				<td style="text-align:center;font-size:22px;padding:14px 8px;vertical-align:middle;">
-					<?php echo $icons[ $key ] ?? '&#x1F50C;'; // phpcs:ignore WordPress.Security.EscapeOutput ?>
+					<?php echo $icons[ $key ]; // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				</td>
 				<td style="padding:14px 16px;vertical-align:middle;">
 					<strong style="font-size:14px;"><?php echo esc_html( $int['label'] ); ?></strong>

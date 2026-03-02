@@ -53,13 +53,12 @@ class KwtSMS_NinjaForms {
 	 * If Ninja Forms is not installed or the integration is disabled in settings,
 	 * no hook is registered and the class exits immediately.
 	 *
-	 * @param KwtSMS_Plugin   $plugin   The main plugin instance.
-	 * @param KwtSMS_Settings $settings The settings instance (accepted for DI
-	 *                                  parity with the GF class; not used directly
-	 *                                  since settings are always accessed via
-	 *                                  $plugin->settings).
+	 * @param KwtSMS_Plugin        $plugin    The main plugin instance.
+	 * @param KwtSMS_Settings|null $_settings Unused — accepted for DI parity with
+	 *                                         the GF class; settings are always
+	 *                                         accessed via $plugin->settings.
 	 */
-	public function __construct( KwtSMS_Plugin $plugin, KwtSMS_Settings $settings = null ) {
+	public function __construct( KwtSMS_Plugin $plugin, KwtSMS_Settings $_settings = null ) {
 		$this->plugin = $plugin;
 
 		// Ninja Forms must be active.

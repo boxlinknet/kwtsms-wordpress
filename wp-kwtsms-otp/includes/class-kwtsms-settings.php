@@ -176,7 +176,7 @@ class KwtSMS_Settings {
 	 */
 	public function get( $key, $default = null ) {
 		$parts = explode( '.', $key, 3 );
-		$group = $parts[0] ?? '';
+		$group = $parts[0]; // explode() always returns at least one element.
 		$field = $parts[1] ?? null;
 		$sub   = $parts[2] ?? null;
 
@@ -213,7 +213,7 @@ class KwtSMS_Settings {
 	 */
 	public function set( $key, $value ) {
 		$parts = explode( '.', $key, 3 );
-		$group = $parts[0] ?? '';
+		$group = $parts[0]; // explode() always returns at least one element.
 		$field = $parts[1] ?? null;
 		$sub   = $parts[2] ?? null;
 

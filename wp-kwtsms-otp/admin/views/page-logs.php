@@ -12,6 +12,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+/** @var KwtSMS_Admin $this — admin controller, injected via include inside a KwtSMS_Admin method */
+
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms-otp' ) );
 }
@@ -240,9 +242,7 @@ function kwtsms_attempt_result_label( $result ) {
 		</span>
 		<span style="color:#888;font-size:13px;margin-left:auto;"><?php
 			// Show relative path so it reads the same on any server layout.
-			$debug_log_display = ( defined( 'ABSPATH' ) && $debug_log_path )
-				? str_replace( trailingslashit( ABSPATH ), '', $debug_log_path )
-				: $debug_log_path;
+			$debug_log_display = str_replace( trailingslashit( ABSPATH ), '', $debug_log_path );
 			echo esc_html( $debug_log_display );
 		?></span>
 	</div>
