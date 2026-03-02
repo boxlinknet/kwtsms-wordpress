@@ -49,26 +49,31 @@ $woo_active = class_exists( 'WooCommerce' );
 		<?php settings_fields( 'kwtsms_otp_integrations_group' ); ?>
 		<input type="hidden" name="kwtsms_otp_integrations[_save_section]" value="woo" />
 
-		<!-- Enable toggle card -->
+
+		<!-- WooCommerce Integration -->
 		<div class="kwtsms-template-card">
 			<div class="kwtsms-template-card-header">
 				<h3><?php esc_html_e( 'WooCommerce Integration', 'wp-kwtsms-otp' ); ?></h3>
-				<label class="kwtsms-toggle">
-					<input type="checkbox"
-						name="kwtsms_otp_integrations[woo_enabled]"
-						value="1"
-						<?php checked( $int['woo_enabled'], 1 ); ?> />
-					<span><?php esc_html_e( 'Enable WooCommerce SMS Integration', 'wp-kwtsms-otp' ); ?></span>
-				</label>
 			</div>
-			<p class="description">
+			<p class="description" style="margin-top:0;">
 				<?php esc_html_e( 'Send SMS notifications for order status changes and registration events.', 'wp-kwtsms-otp' ); ?>
 			</p>
 
-			<!-- Checkout OTP Gate -->
 			<table class="form-table" style="margin-top:12px;">
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Checkout OTP Gate', 'wp-kwtsms-otp' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Enable Integration', 'wp-kwtsms-otp' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox"
+								name="kwtsms_otp_integrations[woo_enabled]"
+								value="1"
+								<?php checked( $int['woo_enabled'], 1 ); ?> />
+							<?php esc_html_e( 'Enable WooCommerce SMS Integration', 'wp-kwtsms-otp' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Checkout OTP', 'wp-kwtsms-otp' ); ?></th>
 					<td>
 						<label>
 							<input type="checkbox"
@@ -83,7 +88,68 @@ $woo_active = class_exists( 'WooCommerce' );
 					</td>
 				</tr>
 			</table>
-		</div>
+
+			<hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0;">
+
+			<!-- Enabled statuses checklist -->
+			<h4 style="margin:0 0 4px;"><?php esc_html_e( 'Customer SMS per Order Status', 'wp-kwtsms-otp' ); ?></h4>
+			<p class="description">
+				<?php esc_html_e( 'Select which order status changes trigger a customer SMS notification.', 'wp-kwtsms-otp' ); ?>
+			</p>
+			<table class="form-table" style="margin-top:8px;">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Enabled statuses', 'wp-kwtsms-otp' ); ?></th>
+					<td>
+						<?php
+						$customer_status_labels = array(
+							'woo_processing' => array(
+								'label' => __( 'New Order / Order Confirmed', 'wp-kwtsms-otp' ),
+								'hint'  => __( 'Fires immediately when a paid order is placed (credit card, PayPal, COD). This is the main \'new order\' notification.', 'wp-kwtsms-otp' ),
+							),
+							'woo_shipped'    => array(
+								'label' => __( 'Order Shipped', 'wp-kwtsms-otp' ),
+								'hint'  => __( 'Fires when the order status is set to On-Hold, typically used to indicate the order has been shipped.', 'wp-kwtsms-otp' ),
+							),
+							'woo_completed'  => array(
+								'label' => __( 'Order Completed', 'wp-kwtsms-otp' ),
+								'hint'  => __( 'Fires when the order is marked as fully delivered and complete.', 'wp-kwtsms-otp' ),
+							),
+							'woo_cancelled'  => array(
+								'label' => __( 'Order Cancelled', 'wp-kwtsms-otp' ),
+								'hint'  => __( 'Fires when the order is cancelled by the customer or admin.', 'wp-kwtsms-otp' ),
+							),
+							'woo_pending'    => array(
+								'label' => __( 'New Order — Awaiting Payment', 'wp-kwtsms-otp' ),
+								'hint'  => __( 'Fires when an order is placed but payment has not been received yet (e.g. bank transfer). Disabled by default.', 'wp-kwtsms-otp' ),
+							),
+							'woo_refunded'   => array(
+								'label' => __( 'Order Refunded', 'wp-kwtsms-otp' ),
+								'hint'  => __( 'Fires when a refund is issued for the order. Disabled by default.', 'wp-kwtsms-otp' ),
+							),
+							'woo_failed'     => array(
+								'label' => __( 'Payment Failed — Order Not Confirmed', 'wp-kwtsms-otp' ),
+								'hint'  => __( 'Fires when the payment attempt fails and the order is not confirmed. Disabled by default.', 'wp-kwtsms-otp' ),
+							),
+						);
+						foreach ( $customer_status_labels as $csl_key => $csl_def ) :
+							$csl_tpl = $templates[ $csl_key ] ?? array( 'enabled' => 0 );
+						?>
+						<div style="margin-bottom:10px;">
+							<label style="display:block;">
+								<input type="checkbox"
+									name="kwtsms_otp_integrations[<?php echo esc_attr( $csl_key ); ?>][enabled]"
+									value="1"
+									<?php checked( $csl_tpl['enabled'], 1 ); ?> />
+								<strong><?php echo esc_html( $csl_def['label'] ); ?></strong>
+							</label>
+							<p class="description" style="margin:2px 0 0 20px;"><?php echo esc_html( $csl_def['hint'] ); ?></p>
+						</div>
+						<?php endforeach; ?>
+						<p class="description"><?php esc_html_e( 'Edit the message text for each status below.', 'wp-kwtsms-otp' ); ?></p>
+					</td>
+				</tr>
+			</table>
+		</div><!-- /.woo-integration-card -->
 
 		<!-- Admin SMS notification settings -->
 		<div class="kwtsms-template-card">
@@ -111,13 +177,13 @@ $woo_active = class_exists( 'WooCommerce' );
 						<?php
 						$admin_notify_statuses = $int['woo_notify_admin_statuses'] ?? array();
 						$status_options        = array(
-							'processing' => __( 'Processing', 'wp-kwtsms-otp' ),
-							'on-hold'    => __( 'On-Hold (Shipped)', 'wp-kwtsms-otp' ),
-							'completed'  => __( 'Completed', 'wp-kwtsms-otp' ),
-							'cancelled'  => __( 'Cancelled', 'wp-kwtsms-otp' ),
-							'pending'    => __( 'Pending Payment', 'wp-kwtsms-otp' ),
-							'refunded'   => __( 'Refunded', 'wp-kwtsms-otp' ),
-							'failed'     => __( 'Payment Failed', 'wp-kwtsms-otp' ),
+							'processing' => __( 'New Order / Order Confirmed (Processing)', 'wp-kwtsms-otp' ),
+							'on-hold'    => __( 'Order Shipped (On-Hold)', 'wp-kwtsms-otp' ),
+							'completed'  => __( 'Order Completed', 'wp-kwtsms-otp' ),
+							'cancelled'  => __( 'Order Cancelled', 'wp-kwtsms-otp' ),
+							'pending'    => __( 'New Order — Awaiting Payment (Pending)', 'wp-kwtsms-otp' ),
+							'refunded'   => __( 'Order Refunded', 'wp-kwtsms-otp' ),
+							'failed'     => __( 'Payment Failed — Order Not Confirmed', 'wp-kwtsms-otp' ),
 						);
 						foreach ( $status_options as $slug => $label ) :
 						?>
@@ -135,81 +201,43 @@ $woo_active = class_exists( 'WooCommerce' );
 			</table>
 		</div><!-- /.admin-notification-card -->
 
-		<!-- Customer SMS per Order Status -->
-		<div class="kwtsms-template-card">
-			<div class="kwtsms-template-card-header">
-				<h3><?php esc_html_e( 'Customer SMS per Order Status', 'wp-kwtsms-otp' ); ?></h3>
-			</div>
-			<p class="description">
-				<?php esc_html_e( 'Select which order status changes trigger a customer SMS notification.', 'wp-kwtsms-otp' ); ?>
-			</p>
-			<table class="form-table" style="margin-top:12px;">
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Enabled statuses', 'wp-kwtsms-otp' ); ?></th>
-					<td>
-						<?php
-						$customer_status_labels = array(
-							'woo_processing' => __( 'Order Confirmed (Processing)', 'wp-kwtsms-otp' ),
-							'woo_shipped'    => __( 'Order Shipped (On-Hold)', 'wp-kwtsms-otp' ),
-							'woo_completed'  => __( 'Order Completed', 'wp-kwtsms-otp' ),
-							'woo_cancelled'  => __( 'Order Cancelled', 'wp-kwtsms-otp' ),
-							'woo_pending'    => __( 'Order Pending Payment', 'wp-kwtsms-otp' ),
-							'woo_refunded'   => __( 'Order Refunded', 'wp-kwtsms-otp' ),
-							'woo_failed'     => __( 'Order Payment Failed', 'wp-kwtsms-otp' ),
-						);
-						foreach ( $customer_status_labels as $csl_key => $csl_label ) :
-							$csl_tpl = $templates[ $csl_key ] ?? array( 'enabled' => 0 );
-						?>
-						<label style="display:block;margin-bottom:4px;">
-							<input type="checkbox"
-								name="kwtsms_otp_integrations[<?php echo esc_attr( $csl_key ); ?>][enabled]"
-								value="1"
-								<?php checked( $csl_tpl['enabled'], 1 ); ?> />
-							<?php echo esc_html( $csl_label ); ?>
-						</label>
-						<?php endforeach; ?>
-						<p class="description"><?php esc_html_e( 'Edit the message text for each status below.', 'wp-kwtsms-otp' ); ?></p>
-					</td>
-				</tr>
-			</table>
-		</div><!-- /.customer-sms-checklist -->
 
 		<!-- Order status template cards -->
 		<?php
 		$woo_template_defs = array(
 			'woo_processing' => array(
-				'label'        => __( 'Order Confirmed (Processing)', 'wp-kwtsms-otp' ),
-				'description'  => __( 'Sent when an order transitions to Processing status.', 'wp-kwtsms-otp' ),
+				'label'        => __( 'New Order / Order Confirmed', 'wp-kwtsms-otp' ),
+				'description'  => __( 'Sent immediately when a paid order is placed (credit card, PayPal, COD). This is the main \'new order\' notification.', 'wp-kwtsms-otp' ),
 				'placeholders' => '{order_id}, {total}, {site_name}, {customer_name}',
 			),
 			'woo_shipped'    => array(
 				'label'        => __( 'Order Shipped', 'wp-kwtsms-otp' ),
-				'description'  => __( 'Sent when an order transitions to On-Hold / Shipped status.', 'wp-kwtsms-otp' ),
+				'description'  => __( 'Sent when the order status is set to On-Hold, typically used to indicate the order has been shipped.', 'wp-kwtsms-otp' ),
 				'placeholders' => '{order_id}, {site_name}, {customer_name}',
 			),
 			'woo_completed'  => array(
 				'label'        => __( 'Order Completed', 'wp-kwtsms-otp' ),
-				'description'  => __( 'Sent when an order is marked Completed.', 'wp-kwtsms-otp' ),
+				'description'  => __( 'Sent when the order is marked as fully delivered and complete.', 'wp-kwtsms-otp' ),
 				'placeholders' => '{order_id}, {site_name}, {customer_name}',
 			),
 			'woo_cancelled'  => array(
 				'label'        => __( 'Order Cancelled', 'wp-kwtsms-otp' ),
-				'description'  => __( 'Sent when an order is Cancelled.', 'wp-kwtsms-otp' ),
+				'description'  => __( 'Sent when the order is cancelled by the customer or admin.', 'wp-kwtsms-otp' ),
 				'placeholders' => '{order_id}, {site_name}, {customer_name}',
 			),
 			'woo_pending'    => array(
-				'label'        => __( 'Order Pending Payment', 'wp-kwtsms-otp' ),
-				'description'  => __( 'Sent when an order is created with Pending Payment status (disabled by default).', 'wp-kwtsms-otp' ),
+				'label'        => __( 'New Order — Awaiting Payment', 'wp-kwtsms-otp' ),
+				'description'  => __( 'Sent when an order is placed but payment not yet received (e.g. bank transfer). Disabled by default.', 'wp-kwtsms-otp' ),
 				'placeholders' => '{order_id}, {site_name}, {customer_name}',
 			),
 			'woo_refunded'   => array(
 				'label'        => __( 'Order Refunded', 'wp-kwtsms-otp' ),
-				'description'  => __( 'Sent when an order is Refunded (disabled by default).', 'wp-kwtsms-otp' ),
+				'description'  => __( 'Sent when a refund is issued for the order. Disabled by default.', 'wp-kwtsms-otp' ),
 				'placeholders' => '{order_id}, {site_name}, {customer_name}',
 			),
 			'woo_failed'     => array(
-				'label'        => __( 'Order Payment Failed', 'wp-kwtsms-otp' ),
-				'description'  => __( 'Sent when an order payment Fails (disabled by default).', 'wp-kwtsms-otp' ),
+				'label'        => __( 'Payment Failed — Order Not Confirmed', 'wp-kwtsms-otp' ),
+				'description'  => __( 'Sent when the payment attempt fails and the order is not confirmed. Disabled by default.', 'wp-kwtsms-otp' ),
 				'placeholders' => '{order_id}, {site_name}, {customer_name}',
 			),
 		);
@@ -222,18 +250,14 @@ $woo_active = class_exists( 'WooCommerce' );
 				<h3><?php echo esc_html( $def['label'] ); ?></h3>
 			</div>
 			<p class="description"><?php echo esc_html( $def['description'] ); ?></p>
-			<p class="description" style="margin-top:4px;">
-				<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong>
-				<code><?php echo esc_html( $def['placeholders'] ); ?></code>
-			</p>
+			<p class="description" style="margin-top:4px;"><strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong> <code><?php echo esc_html( $def['placeholders'] ); ?></code></p>
 
-			<div class="kwtsms-template-fields">
-				<!-- English -->
-				<div class="kwtsms-template-field">
-					<label for="int_<?php echo esc_attr( $key ); ?>_en">
-						<span class="kwtsms-lang-flag">&#x1F1EC;&#x1F1E7;</span>
-						<?php esc_html_e( 'English (LTR)', 'wp-kwtsms-otp' ); ?>
-					</label>
+			<div class="kwtsms-lang-tabs">
+				<div class="kwtsms-tab-nav">
+					<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms-otp' ); ?></button>
+					<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms-otp' ); ?></button>
+				</div>
+				<div class="kwtsms-tab-pane" data-tab="en">
 					<div class="kwtsms-textarea-wrap">
 						<textarea
 							name="kwtsms_otp_integrations[<?php echo esc_attr( $key ); ?>][en]"
@@ -249,13 +273,7 @@ $woo_active = class_exists( 'WooCommerce' );
 						</div>
 					</div>
 				</div>
-
-				<!-- Arabic -->
-				<div class="kwtsms-template-field">
-					<label for="int_<?php echo esc_attr( $key ); ?>_ar">
-						<span class="kwtsms-lang-flag">&#x1F1F0;&#x1F1FC;</span>
-						<?php esc_html_e( 'Arabic (RTL)', 'wp-kwtsms-otp' ); ?>
-					</label>
+				<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
 					<div class="kwtsms-textarea-wrap">
 						<textarea
 							name="kwtsms_otp_integrations[<?php echo esc_attr( $key ); ?>][ar]"

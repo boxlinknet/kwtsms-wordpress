@@ -389,6 +389,24 @@
 	} );
 
 	// =========================================================================
+	// Language tab switching (EN / AR)
+	// =========================================================================
+
+	$( document ).on( 'click', '.kwtsms-tab-btn', function () {
+		var $btn  = $( this );
+		var tab   = $btn.data( 'tab' );
+		var $tabs = $btn.closest( '.kwtsms-lang-tabs' );
+		$tabs.find( '.kwtsms-tab-btn' ).removeClass( 'is-active' );
+		$btn.addClass( 'is-active' );
+		$tabs.find( '.kwtsms-tab-pane' ).hide();
+		$tabs.find( '.kwtsms-tab-pane[data-tab="' + tab + '"]' ).show();
+		// Trigger counter update for the newly visible textarea
+		$tabs.find( '.kwtsms-tab-pane[data-tab="' + tab + '"] .kwtsms-sms-textarea' ).each( function () {
+			updateCharCounter( $( this ) );
+		} );
+	} );
+
+	// =========================================================================
 	// Coverage rendering helper (used by Reload-All and page load)
 	// =========================================================================
 

@@ -182,18 +182,14 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms-otp' ), $label );
 				<h3><?php esc_html_e( 'Form Submission Confirmation', 'wp-kwtsms-otp' ); ?></h3>
 			</div>
 			<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful form submission.', 'wp-kwtsms-otp' ); ?></p>
-			<p class="description" style="margin-top:4px;">
-				<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong>
-				<code><?php echo esc_html( $cfg['placeholders'] ); ?></code>
-			</p>
+			<p class="description" style="margin-top:4px;"><strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms-otp' ); ?></strong> <code><?php echo esc_html( $cfg['placeholders'] ); ?></code></p>
 
-			<div class="kwtsms-template-fields">
-				<!-- English -->
-				<div class="kwtsms-template-field">
-					<label for="int_<?php echo esc_attr( $tpl_key ); ?>_en">
-						<span class="kwtsms-lang-flag">&#x1F1EC;&#x1F1E7;</span>
-						<?php esc_html_e( 'English (LTR)', 'wp-kwtsms-otp' ); ?>
-					</label>
+			<div class="kwtsms-lang-tabs">
+				<div class="kwtsms-tab-nav">
+					<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms-otp' ); ?></button>
+					<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms-otp' ); ?></button>
+				</div>
+				<div class="kwtsms-tab-pane" data-tab="en">
 					<div class="kwtsms-textarea-wrap">
 						<textarea
 							name="kwtsms_otp_integrations[<?php echo esc_attr( $tpl_key ); ?>][en]"
@@ -209,13 +205,7 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms-otp' ), $label );
 						</div>
 					</div>
 				</div>
-
-				<!-- Arabic -->
-				<div class="kwtsms-template-field">
-					<label for="int_<?php echo esc_attr( $tpl_key ); ?>_ar">
-						<span class="kwtsms-lang-flag">&#x1F1F0;&#x1F1FC;</span>
-						<?php esc_html_e( 'Arabic (RTL)', 'wp-kwtsms-otp' ); ?>
-					</label>
+				<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
 					<div class="kwtsms-textarea-wrap">
 						<textarea
 							name="kwtsms_otp_integrations[<?php echo esc_attr( $tpl_key ); ?>][ar]"

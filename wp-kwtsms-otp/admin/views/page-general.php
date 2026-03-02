@@ -62,6 +62,7 @@ foreach ( $all_countries as $cc ) {
 		&nbsp;&mdash;&nbsp;
 		<?php esc_html_e( 'Total purchased:', 'wp-kwtsms-otp' ); ?>
 		<span id="kwtsms-balance-purchased"><?php echo ( null !== $bal_purchased && $bal_purchased > 0 ) ? esc_html( number_format( (float) $bal_purchased, 2 ) ) : '—'; ?></span>
+		<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="margin-left:auto;font-size:13px;font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits →', 'wp-kwtsms-otp' ); ?></a>
 	</div>
 
 	<form method="post" action="options.php">

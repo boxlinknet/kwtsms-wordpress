@@ -102,15 +102,48 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 						); ?>
 					</span>
 					<?php endif; ?>
-					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Gateway Settings →', 'wp-kwtsms-otp' ); ?></a>
+					&mdash; <a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits →', 'wp-kwtsms-otp' ); ?></a>
 					<?php else : ?>
 					<span style="color:#888;"><?php esc_html_e( 'Not available, login on the Gateway page first.', 'wp-kwtsms-otp' ); ?></span>
 					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms-otp' ); ?></a>
 					<?php endif; ?>
 				</td>
 			</tr>
+			<tr>
+				<td style="padding:6px 0;"><strong><?php esc_html_e( 'Plugin Version', 'wp-kwtsms-otp' ); ?></strong></td>
+				<td><?php echo esc_html( defined( 'KWTSMS_OTP_VERSION' ) ? KWTSMS_OTP_VERSION : '—' ); ?></td>
+			</tr>
 		</table>
 	</div>
+
+		<!-- ===== Support ===== -->
+		<h2><?php esc_html_e( 'Support &amp; Resources', 'wp-kwtsms-otp' ); ?></h2>
+		<ul style="font-size:14px;line-height:2;">
+			<li>
+				<strong><?php esc_html_e( 'kwtSMS FAQ:', 'wp-kwtsms-otp' ); ?></strong>
+				<a href="https://www.kwtsms.com/faq/" target="_blank" rel="noopener">kwtsms.com/faq</a>
+				&mdash; <?php esc_html_e( 'answers to common questions about credits, sender IDs, OTP, and delivery.', 'wp-kwtsms-otp' ); ?>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'kwtSMS Support:', 'wp-kwtsms-otp' ); ?></strong>
+				<a href="https://www.kwtsms.com/support.html" target="_blank" rel="noopener">kwtsms.com/support.html</a>
+				&mdash; <?php esc_html_e( 'open a support ticket or browse help articles.', 'wp-kwtsms-otp' ); ?>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'Contact kwtSMS:', 'wp-kwtsms-otp' ); ?></strong>
+				<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener">kwtsms.com/#contact</a>
+				&mdash; <?php esc_html_e( 'reach the kwtSMS team directly for Sender ID registration and account issues.', 'wp-kwtsms-otp' ); ?>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'kwtSMS API Documentation:', 'wp-kwtsms-otp' ); ?></strong>
+				<a href="https://www.kwtsms.com/doc/KwtSMS.com_API_Documentation_v41.pdf" target="_blank" rel="noopener">KwtSMS API v4.1 (PDF)</a>
+			</li>
+			<li>
+				<strong><?php esc_html_e( 'kwtSMS Dashboard (balance, coverage, sender IDs):', 'wp-kwtsms-otp' ); ?></strong>
+				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener">kwtsms.com/login</a>
+			</li>
+		</ul>
+
 
 	<!-- ===== Getting Started ===== -->
 	<div style="max-width:800px;">
@@ -118,7 +151,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<ol style="font-size:14px;line-height:1.8;">
 			<li>
 				<strong><?php esc_html_e( 'Create a kwtSMS account', 'wp-kwtsms-otp' ); ?></strong><br>
-				<?php esc_html_e( 'Go to kwtsms.com and register for a free account. You will receive your API username and password.', 'wp-kwtsms-otp' ); ?>
+				<?php esc_html_e( 'Go to kwtsms.com, sign up, log in, and request API access. Your API username and password will be provided in your account dashboard.', 'wp-kwtsms-otp' ); ?>
 				<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener"><?php esc_html_e( 'Sign up →', 'wp-kwtsms-otp' ); ?></a>
 			</li>
 			<li>
@@ -138,7 +171,8 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Add phone numbers to user profiles', 'wp-kwtsms-otp' ); ?></strong><br>
-				<?php esc_html_e( 'Each user must have a phone number in their profile (Users → Edit User → Phone Number). Without a phone number, 2FA is skipped for that user.', 'wp-kwtsms-otp' ); ?>
+				<?php esc_html_e( 'Each user must have a phone number in their profile (Users → Edit User → Phone Number).', 'wp-kwtsms-otp' ); ?>
+				<span style="color:#d63638;font-weight:600;"><?php esc_html_e( 'Without a phone number, 2FA is skipped for that user.', 'wp-kwtsms-otp' ); ?></span>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Send a test SMS', 'wp-kwtsms-otp' ); ?></strong><br>
@@ -161,7 +195,6 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			<p style="margin-bottom:0;">
 				<strong><?php esc_html_e( 'How to tell:', 'wp-kwtsms-otp' ); ?></strong>
 				<?php esc_html_e( 'An orange "Test Mode" notice appears at the top of every kwtSMS admin page when active. To disable it, go to Gateway Settings and uncheck Test Mode.', 'wp-kwtsms-otp' ); ?>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Gateway Settings →', 'wp-kwtsms-otp' ); ?></a>
 			</p>
 		</div>
 
@@ -187,7 +220,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<p><?php esc_html_e( 'When WooCommerce is active, the plugin can send SMS to customers when order status changes. Supported statuses: Processing, Shipped (On-Hold), Completed, Cancelled, Pending Payment, Refunded, and Failed. Each status has its own configurable template (English + Arabic). Additional features:', 'wp-kwtsms-otp' ); ?></p>
 		<ul style="margin-left:20px;font-size:14px;line-height:1.8;">
 			<li><?php esc_html_e( 'Admin SMS notifications: send a copy to a store phone number on any status change.', 'wp-kwtsms-otp' ); ?></li>
-			<li><?php esc_html_e( 'Per-order custom SMS: send a free-text message from the order edit screen.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Per-order custom SMS: send a custom message from the order edit screen.', 'wp-kwtsms-otp' ); ?></li>
 			<li><?php esc_html_e( 'Checkout OTP gate: require phone verification before an order is placed.', 'wp-kwtsms-otp' ); ?></li>
 		</ul>
 		<p><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-integrations' ) ); ?>"><?php esc_html_e( 'Integrations Settings →', 'wp-kwtsms-otp' ); ?></a></p>
@@ -218,6 +251,47 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<h3><?php esc_html_e( 'Allowed Countries', 'wp-kwtsms-otp' ); ?></h3>
 		<p><?php esc_html_e( 'In General Settings you can restrict which countries are shown in the dial-code dropdown and accepted for OTP. Default is GCC countries. This prevents OTPs from being sent to unintended regions.', 'wp-kwtsms-otp' ); ?></p>
 
+		<!-- ===== Collecting Phone Numbers ===== -->
+		<h2><?php esc_html_e( 'How to Collect Phone Numbers from Users', 'wp-kwtsms-otp' ); ?></h2>
+		<p>
+			<?php esc_html_e( 'The plugin sends OTP codes and SMS notifications to the phone number stored in each user\'s profile. Without a phone number on file, 2FA is silently bypassed and no SMS is ever sent to that user.', 'wp-kwtsms-otp' ); ?>
+			<span style="color:#d63638;font-weight:600;"><?php esc_html_e( 'Make sure every user has a phone number before enabling 2FA.', 'wp-kwtsms-otp' ); ?></span>
+		</p>
+		<p><?php esc_html_e( 'Choose the collection method that matches how your users join your site:', 'wp-kwtsms-otp' ); ?></p>
+
+		<h3><?php esc_html_e( 'Method 1: WooCommerce Registration (recommended for WooCommerce stores)', 'wp-kwtsms-otp' ); ?></h3>
+		<p><?php esc_html_e( 'When WooCommerce is active, the plugin automatically adds a Phone Number field to the WooCommerce My Account registration form and to checkout. The number is saved to the user profile on account creation — no extra steps needed.', 'wp-kwtsms-otp' ); ?></p>
+		<ol>
+			<li><?php esc_html_e( 'Enable the WooCommerce integration: Integrations → WooCommerce → Enable WooCommerce SMS Integration.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Phone collection is active automatically on the My Account registration form and checkout page.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Test by registering a new account on /my-account and verifying the phone appears under Users → Edit User → Phone Number.', 'wp-kwtsms-otp' ); ?></li>
+		</ol>
+
+		<h3><?php esc_html_e( 'Method 2: Manual entry by the admin', 'wp-kwtsms-otp' ); ?></h3>
+		<p><?php esc_html_e( 'You can add or update a phone number for any existing user directly in the WordPress admin panel.', 'wp-kwtsms-otp' ); ?></p>
+		<ol>
+			<li><?php esc_html_e( 'Go to Users in the WordPress admin menu.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Click Edit under the user\'s name.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Scroll down to the Phone Number field (added by this plugin).', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Enter the number with country code, e.g. 96599123456 for Kuwait.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Click Update User to save.', 'wp-kwtsms-otp' ); ?></li>
+		</ol>
+
+		<h3><?php esc_html_e( 'Method 3: Ask users to update their own profile', 'wp-kwtsms-otp' ); ?></h3>
+		<p><?php esc_html_e( 'Users can add their own phone number from the front-end WordPress profile page.', 'wp-kwtsms-otp' ); ?></p>
+		<ol>
+			<li><?php esc_html_e( 'Direct users to their profile page: /wp-admin/profile.php (or the equivalent front-end profile page if your theme provides one).', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'They will see a Phone Number field. Ask them to enter their number with country code.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'They click Update Profile to save.', 'wp-kwtsms-otp' ); ?></li>
+			<li><?php esc_html_e( 'Once saved, 2FA and SMS notifications will work for that user on their next login.', 'wp-kwtsms-otp' ); ?></li>
+		</ol>
+
+		<div style="background:#e7f5ff;border-left:4px solid #72aee6;padding:14px 18px;border-radius:0 4px 4px 0;margin-bottom:24px;font-size:14px;">
+			<strong><?php esc_html_e( 'Tip: Check who is missing a phone number', 'wp-kwtsms-otp' ); ?></strong><br>
+			<?php esc_html_e( 'Go to Users in the admin, then look for the Phone Number column. Any user showing "—" or a blank value has no phone on file and will bypass 2FA until one is added.', 'wp-kwtsms-otp' ); ?>
+			<a href="<?php echo esc_url( admin_url( 'users.php' ) ); ?>"><?php esc_html_e( 'View all users →', 'wp-kwtsms-otp' ); ?></a>
+		</div>
+
 		<!-- ===== Styling ===== -->
 		<h2><?php esc_html_e( 'Styling &amp; Customisation', 'wp-kwtsms-otp' ); ?></h2>
 		<p>
@@ -246,7 +320,6 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			<li>
 				<strong><?php esc_html_e( 'Check whether Test Mode is ON.', 'wp-kwtsms-otp' ); ?></strong>
 				<?php esc_html_e( 'Look for the orange "kwtSMS is in Test Mode" notice at the top of this page. If it appears, messages are being queued but not delivered. Go to Gateway Settings, uncheck Test Mode, and save. Credits are consumed even in test mode, delete queued messages from the kwtSMS dashboard to recover them.', 'wp-kwtsms-otp' ); ?>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Gateway Settings →', 'wp-kwtsms-otp' ); ?></a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Verify your API credentials.', 'wp-kwtsms-otp' ); ?></strong>
@@ -260,7 +333,6 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			<li>
 				<strong><?php esc_html_e( 'Check your account balance.', 'wp-kwtsms-otp' ); ?></strong>
 				<?php esc_html_e( 'You need at least 1 credit per message. Your current balance is shown on the Gateway page and in the Current Status table above. Insufficient credits cause error ERR010 or ERR011.', 'wp-kwtsms-otp' ); ?>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Gateway Settings →', 'wp-kwtsms-otp' ); ?></a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Check the SMS History log.', 'wp-kwtsms-otp' ); ?></strong>
@@ -283,19 +355,37 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		</ol>
 
 		<!-- KWT-SMS promotional sender ID warning -->
-		<div style="background:#fff8e1;border-left:4px solid #FFA200;padding:14px 18px;border-radius:0 4px 4px 0;margin:16px 0 24px;font-size:14px;">
-			<h3 style="margin-top:0;"><?php esc_html_e( '⚠ Using the KWT-SMS Promotional Sender ID', 'wp-kwtsms-otp' ); ?></h3>
+		<div style="background:#fef0f0;border-left:4px solid #d63638;padding:14px 18px;border-radius:0 4px 4px 0;margin:16px 0 24px;font-size:14px;">
+			<h3 style="margin-top:0;color:#d63638;"><?php esc_html_e( '⛔ KWT-SMS Promotional Sender ID: For Testing Only — Do Not Use in Production', 'wp-kwtsms-otp' ); ?></h3>
 			<p style="margin-top:0;">
-				<?php esc_html_e( 'The shared promotional sender ID "KWT-SMS" is intentionally slow by design, delivery can take 100 seconds or more. It is NOT suitable for OTP verification, where users expect the code within seconds.', 'wp-kwtsms-otp' ); ?>
+				<?php esc_html_e( 'The shared "KWT-SMS" sender ID is a public promotional channel. It is only suitable for initial testing while you are setting up the plugin. It must not be used in a live production site.', 'wp-kwtsms-otp' ); ?>
 			</p>
-			<p>
-				<strong><?php esc_html_e( 'Virgin (Zain-MVNO) subscribers in Kuwait do not receive messages sent via KWT-SMS', 'wp-kwtsms-otp' ); ?></strong>,
-				<?php esc_html_e( 'these customers will never get the OTP.', 'wp-kwtsms-otp' ); ?>
+			<ul style="margin-left:20px;line-height:1.9;margin-bottom:12px;">
+				<li>
+					<strong><?php esc_html_e( 'Severe delivery delays:', 'wp-kwtsms-otp' ); ?></strong>
+					<?php esc_html_e( 'Promotional sender IDs are lower priority by design. Delivery can take 120 seconds or more — far too slow for OTP codes that users expect in seconds.', 'wp-kwtsms-otp' ); ?>
+				</li>
+				<li>
+					<strong><?php esc_html_e( 'Virgin Mobile (Zain-MVNO) numbers never receive the message:', 'wp-kwtsms-otp' ); ?></strong>
+					<?php esc_html_e( 'Kuwait numbers starting with 4 (Virgin subscribers) do not receive messages from promotional sender IDs at all. Those users will never get an OTP.', 'wp-kwtsms-otp' ); ?>
+				</li>
+				<li>
+					<strong><?php esc_html_e( 'Do Not Disturb (DND) filters:', 'wp-kwtsms-otp' ); ?></strong>
+					<?php esc_html_e( 'Promotional messages are blocked for users who have enabled DND on their number, causing lost credits and undelivered OTPs.', 'wp-kwtsms-otp' ); ?>
+				</li>
+				<li>
+					<strong><?php esc_html_e( 'Brand damage:', 'wp-kwtsms-otp' ); ?></strong>
+					<?php esc_html_e( 'Recipients see "KWT-SMS" as the sender, not your business name. This reduces trust and makes messages look like spam.', 'wp-kwtsms-otp' ); ?>
+				</li>
+			</ul>
+			<p style="margin-bottom:4px;">
+				<strong><?php esc_html_e( 'What to do:', 'wp-kwtsms-otp' ); ?></strong>
+				<?php esc_html_e( 'Register a private alphanumeric Sender ID in your kwtSMS account using your brand name (e.g. "MyShop"). Private sender IDs have fast delivery, reach all Kuwaiti operators including Virgin, bypass DND filters, and build customer trust.', 'wp-kwtsms-otp' ); ?>
 			</p>
 			<p style="margin-bottom:0;">
-				<strong><?php esc_html_e( 'Recommended:', 'wp-kwtsms-otp' ); ?></strong>
-				<?php esc_html_e( 'Register a private alphanumeric Sender ID in your kwtSMS account (e.g. your brand name). Private sender IDs have fast delivery and work on all Kuwaiti operators.', 'wp-kwtsms-otp' ); ?>
-				<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener"><?php esc_html_e( 'Contact kwtSMS →', 'wp-kwtsms-otp' ); ?></a>
+				<a href="https://www.kwtsms.com/faq/must-have-senderid-for-otp.html" target="_blank" rel="noopener"><?php esc_html_e( 'Why you need a private Sender ID for OTP →', 'wp-kwtsms-otp' ); ?></a>
+				&nbsp;&middot;&nbsp;
+				<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener"><?php esc_html_e( 'Contact kwtSMS to register your Sender ID →', 'wp-kwtsms-otp' ); ?></a>
 			</p>
 		</div>
 
@@ -389,31 +479,5 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			</tbody>
 		</table>
 
-		<!-- ===== Support ===== -->
-		<h2><?php esc_html_e( 'Support', 'wp-kwtsms-otp' ); ?></h2>
-		<ul style="font-size:14px;line-height:2;">
-			<li>
-				<strong><?php esc_html_e( 'kwtSMS API Documentation:', 'wp-kwtsms-otp' ); ?></strong>
-				<a href="https://www.kwtsms.com/doc/KwtSMS.com_API_Documentation_v41.pdf" target="_blank" rel="noopener">KwtSMS API v4.1 (PDF)</a>
-			</li>
-			<li>
-				<strong><?php esc_html_e( 'kwtSMS Support:', 'wp-kwtsms-otp' ); ?></strong>
-				<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener">kwtsms.com/#contact</a>
-			</li>
-			<li>
-				<strong><?php esc_html_e( 'kwtSMS Dashboard (balance, coverage, sender IDs):', 'wp-kwtsms-otp' ); ?></strong>
-				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener">kwtsms.com/login</a>
-			</li>
-		</ul>
-
-		<p style="color:#757575;font-size:12px;margin-top:24px;">
-			<?php
-			printf(
-				/* translators: %s: plugin version */
-				esc_html__( 'Plugin version: %s', 'wp-kwtsms-otp' ),
-				esc_html( defined( 'KWTSMS_OTP_VERSION' ) ? KWTSMS_OTP_VERSION : '—' )
-			);
-			?>
-		</p>
 	</div>
 </div>
