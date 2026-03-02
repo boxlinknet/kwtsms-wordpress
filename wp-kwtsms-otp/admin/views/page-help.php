@@ -11,7 +11,10 @@ defined( 'ABSPATH' ) || exit;
 
 /** @var KwtSMS_Admin $this */
 $settings        = $this->plugin->settings;
-$has_credentials = ! empty( $settings->get( 'gateway.api_username', '' ) ) && ! empty( $settings->get( 'gateway.api_password', '' ) );
+$credentials_verified = (bool) $settings->get( 'gateway.credentials_verified', false );
+$has_credentials      = $credentials_verified
+	&& ! empty( $settings->get( 'gateway.api_username', '' ) )
+	&& ! empty( $settings->get( 'gateway.api_password', '' ) );
 $has_sender      = ! empty( $settings->get( 'gateway.sender_id', '' ) );
 $test_mode       = (bool) $settings->get( 'gateway.test_mode', 1 );
 $debug_logging   = (bool) $settings->get( 'general.debug_logging', 0 );
@@ -80,7 +83,7 @@ $content_dir     = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : '';
 					<?php
 					$bal_available = $settings->get( 'gateway.balance_available', null );
 					$bal_updated   = (int) $settings->get( 'gateway.balance_updated_at', 0 );
-					if ( null !== $bal_available ) :
+					if ( $credentials_verified && null !== $bal_available ) :
 					?>
 					<span style="color:#46b450;font-weight:600;">
 						<?php echo esc_html( number_format( (float) $bal_available, 2 ) ); ?>

@@ -962,7 +962,13 @@ class KwtSMS_Admin {
 
 		$gw                         = get_option( 'kwtsms_otp_gateway', array() );
 		$gw['credentials_verified'] = 0;
+
+		// Temporarily remove our own sanitize callback so the raw value
+		// (credentials_verified = 0) is written straight to the DB without
+		// the sanitize filter overriding it back to the stale DB value.
+		remove_filter( 'sanitize_option_kwtsms_otp_gateway', array( $this, 'sanitize_gateway_settings' ) );
 		update_option( 'kwtsms_otp_gateway', $gw );
+		add_filter( 'sanitize_option_kwtsms_otp_gateway', array( $this, 'sanitize_gateway_settings' ) );
 
 		wp_send_json_success();
 	}
