@@ -469,52 +469,55 @@ class KwtSMS_Plugin {
 
 		$coverage_enriched = array();
 		foreach ( $coverage_arr as $_cov ) {
+			// Normalise to (name, dial, iso2) regardless of input shape.
 			if ( is_array( $_cov ) ) {
-				$_cname = $_cov['name'] ?? $_cov['country'] ?? $_cov['countryName'] ?? $_cov['CountryName'] ?? '';
-				$_ciso2 = $_cov['cc']   ?? $_cov['iso2'] ?? '';
-				// Skip API status codes stored as country names.
-				if ( in_array( strtoupper( (string) $_cname ), $_cov_api_codes, true ) ) {
-					continue;
-				}
-				// Bare digit string stored as name? Treat as dial code → resolve country.
-				if ( '' !== $_cname && ctype_digit( (string) $_cname ) ) {
-					$_rname = $_name_by_dial[ $_cname ] ?? '';
-					if ( '' === $_rname ) {
-						continue;
-					}
-					$coverage_enriched[] = array( 'name' => $_rname, 'dial' => $_cname );
-					continue;
-				}
-				if ( ! isset( $_cov['dial'] ) ) {
-					$_cdial = $_dial_name[ strtolower( $_cname ) ] ?? ( $_ciso2 ? ( $_dial_iso2[ strtoupper( $_ciso2 ) ] ?? '' ) : '' );
-					if ( '' !== $_cdial ) {
-						$_cov['dial'] = $_cdial;
-					}
-				}
-				$coverage_enriched[] = $_cov;
+				$_cname = (string) ( $_cov['name'] ?? $_cov['country'] ?? $_cov['countryName'] ?? $_cov['CountryName'] ?? '' );
+				$_cdial = (string) ( $_cov['dial'] ?? '' );
+				$_ciso2 = (string) ( $_cov['cc'] ?? $_cov['iso2'] ?? '' );
 			} else {
 				$_cname = trim( (string) $_cov );
-				if ( '' === $_cname ) {
-					continue;
-				}
-				// Skip API status codes.
-				if ( in_array( strtoupper( $_cname ), $_cov_api_codes, true ) ) {
-					continue;
-				}
-				// Bare dial-code digit string? Resolve to country name.
-				if ( ctype_digit( $_cname ) ) {
-					$_rname = $_name_by_dial[ $_cname ] ?? '';
-					if ( '' === $_rname ) {
-						continue;
-					}
-					$coverage_enriched[] = array( 'name' => $_rname, 'dial' => $_cname );
-					continue;
-				}
-				$_cdial              = $_dial_name[ strtolower( $_cname ) ] ?? '';
-				$coverage_enriched[] = array_filter( array( 'name' => $_cname, 'dial' => $_cdial ) );
+				$_cdial = '';
+				$_ciso2 = '';
 			}
+
+			// Clear name if it is an API status string (OK, ERROR, FAIL, …).
+			if ( in_array( strtoupper( $_cname ), $_cov_api_codes, true ) ) {
+				$_cname = '';
+			}
+
+			// Bare digit string in name field → treat it as dial code.
+			if ( '' !== $_cname && ctype_digit( $_cname ) ) {
+				if ( '' === $_cdial ) {
+					$_cdial = $_cname;
+				}
+				$_cname = '';
+			}
+
+			// Name present but not a recognised country → try to resolve from dial.
+			if ( '' !== $_cname && '' !== $_cdial
+				&& ! isset( $_dial_name[ strtolower( $_cname ) ] )
+				&& isset( $_name_by_dial[ $_cdial ] ) ) {
+				$_cname = $_name_by_dial[ $_cdial ];
+			}
+
+			// Resolve name from dial when name is still missing.
+			if ( '' === $_cname && '' !== $_cdial ) {
+				$_cname = $_name_by_dial[ $_cdial ] ?? '';
+			}
+
+			// Resolve dial from name when dial is missing.
+			if ( '' === $_cdial && '' !== $_cname ) {
+				$_cdial = $_dial_name[ strtolower( $_cname ) ] ?? ( '' !== $_ciso2 ? ( $_dial_iso2[ strtoupper( $_ciso2 ) ] ?? '' ) : '' );
+			}
+
+			// Skip entries we couldn't resolve to a real country name.
+			if ( '' === $_cname ) {
+				continue;
+			}
+
+			$coverage_enriched[] = array_filter( array( 'name' => $_cname, 'dial' => $_cdial ) );
 		}
-		unset( $_dial_name, $_dial_iso2, $_name_by_dial, $_cov_api_codes, $_cov, $_cname, $_ciso2, $_cdial, $_rname );
+		unset( $_dial_name, $_dial_iso2, $_name_by_dial, $_cov_api_codes, $_cov, $_cname, $_cdial, $_ciso2 );
 		$coverage_arr = $coverage_enriched;
 
 		// Persist the verified state, credentials, and all fetched gateway data
@@ -728,11 +731,18 @@ class KwtSMS_Plugin {
 
 		$is_test_mode = (bool) $this->settings->get( 'gateway.test_mode', false );
 
+		// Re-read the gateway option to pick up any balance update made by send_sms().
+		$gw_option = get_option( 'kwtsms_otp_gateway', array() );
+
 		wp_send_json_success(
 			array(
 				'phone'     => esc_html( $normalized ),
 				'test_mode' => $is_test_mode,
 				'msg_id'    => esc_html( $result['msg_id'] ?? '' ),
+				'balance'   => array(
+					'available' => isset( $gw_option['balance_available'] ) ? (float) $gw_option['balance_available'] : null,
+					'purchased' => isset( $gw_option['balance_purchased'] ) ? (float) $gw_option['balance_purchased'] : null,
+				),
 			)
 		);
 	}

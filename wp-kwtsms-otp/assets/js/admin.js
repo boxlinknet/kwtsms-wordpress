@@ -311,6 +311,13 @@
 					? ( s.testModeResult || 'Test mode ON — message queued, not delivered.' )
 					: ( s.testSmsResult || 'SMS sent to %phone%. Check your messages.' ).replace( '%phone%', d.phone || '' );
 				$result.text( msg ).css( 'color', '#46b450' );
+				// Update balance display if server returned an updated balance.
+				if ( d.balance && d.balance.available !== null && d.balance.available !== undefined ) {
+					$( '#kwtsms-balance' ).text( parseFloat( d.balance.available ).toFixed( 2 ) );
+					if ( d.balance.purchased !== null && d.balance.purchased !== undefined ) {
+						$( '#kwtsms-balance-purchased' ).text( parseFloat( d.balance.purchased ).toFixed( 2 ) );
+					}
+				}
 			} else {
 				const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Send failed.' );
 				$result.text( msg ).css( 'color', '#dc3232' );
@@ -588,15 +595,6 @@
 			showModal( this.href );
 		} );
 
-		// ── Fallback for browser close / back / forward ────────────────────
-		// Cannot intercept these as link clicks; the browser will show its own
-		// native dialog text (we cannot customise that text).
-		window.addEventListener( 'beforeunload', function ( e ) {
-			if ( dirty ) {
-				e.preventDefault();
-				e.returnValue = '';
-			}
-		} );
-	}() );
+		}() );
 
 } )( jQuery );

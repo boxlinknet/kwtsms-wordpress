@@ -11,8 +11,12 @@
 defined( 'ABSPATH' ) || exit;
 
 /** @var KwtSMS_Plugin $this — plugin manager, injected by KwtSMS_Admin via include */
-$settings         = $this->plugin->settings;
-$general          = $settings->get( 'general' ) + KwtSMS_Settings::DEFAULTS['general'];
+$settings             = $this->plugin->settings;
+$general              = $settings->get( 'general' ) + KwtSMS_Settings::DEFAULTS['general'];
+$gateway              = $settings->get( 'gateway' ) + KwtSMS_Settings::DEFAULTS['gateway'];
+$credentials_verified = ! empty( $gateway['credentials_verified'] );
+$bal_available        = $gateway['balance_available'] ?? null;
+$bal_purchased        = $gateway['balance_purchased'] ?? null;
 $captcha_provider = $general['captcha_provider'] ?? 'none';
 $referral_link    = ! empty( $general['referral_link'] );
 $default_cc       = $general['default_country_code'] ?? 'KW';
@@ -49,6 +53,15 @@ foreach ( $all_countries as $cc ) {
 				🚀 <?php esc_html_e( 'Sign up & test for free in under a minute', 'wp-kwtsms-otp' ); ?>
 			</a>
 		</p>
+	</div>
+
+	<!-- Balance Display (mirrors Gateway page) -->
+	<div class="kwtsms-balance-bar" id="kwtsms-balance-card"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
+		<?php esc_html_e( 'Available balance:', 'wp-kwtsms-otp' ); ?>
+		<strong id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></strong>
+		&nbsp;&mdash;&nbsp;
+		<?php esc_html_e( 'Total purchased:', 'wp-kwtsms-otp' ); ?>
+		<span id="kwtsms-balance-purchased"><?php echo ( null !== $bal_purchased && $bal_purchased > 0 ) ? esc_html( number_format( (float) $bal_purchased, 2 ) ) : '—'; ?></span>
 	</div>
 
 	<form method="post" action="options.php">
