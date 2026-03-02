@@ -185,7 +185,13 @@ foreach ( $all_countries as $cc ) {
 						<?php esc_html_e( 'Send a welcome SMS to every new user when they register.', 'wp-kwtsms-otp' ); ?>
 					</label>
 					<p class="description">
-						<?php esc_html_e( 'Configure the message text on the Templates page.', 'wp-kwtsms-otp' ); ?>
+						<?php
+						printf(
+							/* translators: %s: link to Templates page */
+							esc_html__( 'Configure the message text on the %s.', 'wp-kwtsms-otp' ),
+							'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp-templates' ) ) . '">' . esc_html__( 'Templates page', 'wp-kwtsms-otp' ) . '</a>'
+						);
+						?>
 					</p>
 				</td>
 			</tr>
