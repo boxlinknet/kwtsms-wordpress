@@ -148,7 +148,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					<label>
 						<input type="checkbox" name="kwtsms_otp_gateway[test_mode]" id="kwtsms_test_mode"
 							value="1" <?php checked( $test_mode ); ?> />
-						<?php esc_html_e( 'Messages are queued but not delivered. Sends real API requests with test=1.', 'wp-kwtsms-otp' ); ?>
+						<?php esc_html_e( 'Messages are queued but not delivered. Credits will be deducted and can be recovered.', 'wp-kwtsms-otp' ); ?>
 					</label>
 					<?php if ( $test_mode ) : ?>
 					<p class="description" style="color:#d63638;font-weight:600;">
