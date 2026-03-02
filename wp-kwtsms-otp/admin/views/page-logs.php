@@ -138,7 +138,7 @@ function kwtsms_attempt_result_label( $result ) {
 				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $entry['time'] ?? 0 ) ); ?></td>
 				<td><?php echo esc_html( $entry['sender_id'] ?? '' ); ?></td>
 				<td style="max-width:400px;word-break:break-word;"><?php echo esc_html( $entry['message'] ?? '' ); ?></td>
-				<td><code><?php echo esc_html( $entry['phone'] ?? '' ); ?></code></td>
+				<td><?php echo esc_html( $entry['phone'] ?? '' ); ?></td>
 				<td><?php echo esc_html( $entry['type'] ?? '' ); ?></td>
 				<td style="color:<?php echo 'sent' === ( $entry['status'] ?? '' ) ? '#46b450' : '#dc3232'; ?>;">
 					<?php echo 'sent' === ( $entry['status'] ?? '' ) ? esc_html__( 'Sent', 'wp-kwtsms-otp' ) : esc_html__( 'Failed', 'wp-kwtsms-otp' ); ?>
@@ -197,7 +197,7 @@ function kwtsms_attempt_result_label( $result ) {
 			<tr>
 				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $entry['time'] ?? 0 ) ); ?></td>
 				<td><?php echo $user_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
-				<td><code><?php echo esc_html( $entry['phone'] ?? '' ); ?></code></td>
+				<td><?php echo esc_html( $entry['phone'] ?? '' ); ?></td>
 				<td><?php echo esc_html( $entry['ip'] ?? '' ); ?></td>
 				<td><?php echo esc_html( $entry['action'] ?? '' ); ?></td>
 				<td><?php echo kwtsms_attempt_result_label( $entry['result'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
