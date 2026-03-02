@@ -55,6 +55,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 		&nbsp;&mdash;&nbsp;
 		<?php esc_html_e( 'Total purchased:', 'wp-kwtsms-otp' ); ?>
 		<span id="kwtsms-balance-purchased"><?php echo ( null !== $bal_purchased && $bal_purchased > 0 ) ? esc_html( number_format( (float) $bal_purchased, 2 ) ) : '—'; ?></span>
+		<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="margin-left:auto;font-size:13px;font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits →', 'wp-kwtsms-otp' ); ?></a>
 	</div>
 
 	<form method="post" action="options.php" id="kwtsms-gateway-form">
@@ -113,7 +114,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 								<span style="color:#46b450;">&#x2713; <?php printf( esc_html__( 'Connected as %s', 'wp-kwtsms-otp' ), esc_html( $gateway['api_username'] ) ); ?></span>
 							</span>
 						</div>
-						<p class="description kwtsms-reload-hint"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from kwtSMS.', 'wp-kwtsms-otp' ); ?></p>
+						<p class="description kwtsms-reload-hint"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from your kwtSMS account.', 'wp-kwtsms-otp' ); ?></p>
 						<?php else : ?>
 						<button type="button" id="kwtsms-login-btn" class="button button-primary">
 							<?php esc_html_e( 'Login', 'wp-kwtsms-otp' ); ?>
@@ -127,7 +128,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 							</button>
 							<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite"></span>
 						</div>
-						<p class="description kwtsms-reload-hint" style="display:none;"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from kwtSMS.', 'wp-kwtsms-otp' ); ?></p>
+						<p class="description kwtsms-reload-hint" style="display:none;"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from your kwtSMS account.', 'wp-kwtsms-otp' ); ?></p>
 						<?php endif; ?>
 					</div>
 					</td>
