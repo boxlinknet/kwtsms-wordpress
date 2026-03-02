@@ -584,8 +584,8 @@ class KwtSMS_Plugin {
 		$gw['sender_ids']           = (array) $sender_ids;
 		$gw['coverage']             = $coverage_arr;
 		if ( ! is_wp_error( $balance ) ) {
-			$gw['balance_available']  = $balance['available']  ?? null;
-			$gw['balance_purchased']  = $balance['purchased']  ?? null;
+			$gw['balance_available']  = $balance['available'];
+			$gw['balance_purchased']  = $balance['purchased'];
 			$gw['balance_updated_at'] = time();
 		}
 		update_option( 'kwtsms_otp_gateway', $gw );
@@ -793,7 +793,7 @@ class KwtSMS_Plugin {
 			array(
 				'phone'     => esc_html( $normalized ),
 				'test_mode' => $is_test_mode,
-				'msg_id'    => esc_html( $result['msg_id'] ?? '' ),
+				'msg_id'    => esc_html( $result['msg_id'] ),
 				'balance'   => array(
 					'available' => isset( $gw_option['balance_available'] ) ? (float) $gw_option['balance_available'] : null,
 					'purchased' => isset( $gw_option['balance_purchased'] ) ? (float) $gw_option['balance_purchased'] : null,

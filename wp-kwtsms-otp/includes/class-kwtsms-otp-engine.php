@@ -299,24 +299,12 @@ class KwtSMS_OTP_Engine {
 	// =========================================================================
 
 	/**
-	 * Build a translated SMS message from the template for a given event.
-	 *
-	 * Picks English or Arabic template based on current WordPress locale.
-	 * Replaces {placeholders} with live values.
-	 * Sanitises output: strips HTML tags, emoji, and unsupported characters.
-	 *
-	 * @param string $otp_code     The generated OTP code.
-	 * @param string $template_id  Template key: 'login_otp' | 'reset_otp'.
-	 *
-	 * @return string Ready-to-send SMS message text.
-	 */
-	/**
 	 * Build an SMS message from a template, replacing standard and extra placeholders.
 	 *
 	 * @param string $otp_code    OTP code to substitute for {otp} (pass '' for non-OTP templates).
 	 * @param string $template_id Template key: 'login_otp' | 'reset_otp' | 'welcome_sms'.
-	 * @param array  $extra_vars  Optional map of placeholder → value for template-specific vars,
-	 *                            e.g. array( '{name}' => 'Ahmad' ) for the welcome SMS.
+	 * @param array<string, string> $extra_vars Optional map of placeholder → value for template-specific
+	 *                                          vars, e.g. array( '{name}' => 'Ahmad' ) for welcome SMS.
 	 *
 	 * @return string The fully rendered, sanitised SMS message.
 	 */
@@ -335,7 +323,7 @@ class KwtSMS_OTP_Engine {
 
 		$message = str_replace(
 			array( '{otp}', '{site_name}', '{expiry_minutes}' ),
-			array( $otp_code, $site_name, $expiry ),
+			array( $otp_code, $site_name, (string) $expiry ),
 			$message
 		);
 

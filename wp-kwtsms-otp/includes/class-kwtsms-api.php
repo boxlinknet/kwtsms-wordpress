@@ -284,7 +284,7 @@ class KwtSMS_API {
 			$result = array();
 			foreach ( $response['prefixes'] as $prefix ) {
 				$prefix = (string) $prefix;
-				if ( ctype_digit( $prefix ) && '' !== $prefix ) {
+				if ( ctype_digit( $prefix ) ) { // ctype_digit() returns false for empty strings.
 					$result[] = array( 'dial' => $prefix );
 				}
 			}
@@ -386,7 +386,7 @@ class KwtSMS_API {
 	 *
 	 * @param string $phone Normalised phone number.
 	 *
-	 * @return string 'OK'|'ER'|'NR' or WP_Error on HTTP failure.
+	 * @return string|WP_Error 'OK'|'ER'|'NR' on success, WP_Error on HTTP failure.
 	 */
 	public function validate_number( $phone ) {
 		$response = $this->request( 'validate/', array( 'mobile' => $phone ) );

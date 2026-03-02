@@ -10,7 +10,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** @var KwtSMS_Plugin $this — plugin manager, injected by KwtSMS_Admin via include */
+/** @var KwtSMS_Admin $this — admin controller, injected via include inside a KwtSMS_Admin method */
 $settings             = $this->plugin->settings;
 $general              = $settings->get( 'general' ) + KwtSMS_Settings::DEFAULTS['general'];
 $gateway              = $settings->get( 'gateway' ) + KwtSMS_Settings::DEFAULTS['gateway'];

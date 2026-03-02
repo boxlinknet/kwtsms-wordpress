@@ -23,9 +23,11 @@ class KwtSMS_Admin {
 	/**
 	 * Plugin manager.
 	 *
+	 * Protected so admin view files included inside methods can access it via $this.
+	 *
 	 * @var KwtSMS_Plugin
 	 */
-	private $plugin;
+	protected $plugin;
 
 	/**
 	 * Admin page hook suffixes (used to scope asset enqueuing).
@@ -416,8 +418,8 @@ class KwtSMS_Admin {
 				$coverage_result   = $api->get_coverage();
 
 				if ( ! is_wp_error( $balance_result ) ) {
-					$balance_available = $balance_result['available'] ?? null;
-					$balance_purchased = $balance_result['purchased'] ?? null;
+					$balance_available = $balance_result['available'];
+					$balance_purchased = $balance_result['purchased'];
 					$balance_updated   = time();
 				}
 				if ( ! is_wp_error( $coverage_result ) ) {
