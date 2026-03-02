@@ -319,12 +319,14 @@
 					}
 				}
 			} else {
-				const msg = resp.data && resp.data.message ? resp.data.message : ( s.error || 'Send failed.' );
+				const msg = resp.data && resp.data.message
+					? resp.data.message
+					: ( s.testSmsFailed || 'Send failed. Check your API credentials and phone number.' );
 				$result.text( msg ).css( 'color', '#dc3232' );
 			}
 		} )
 		.fail( function () {
-			$result.text( s.error || 'Network error.' ).css( 'color', '#dc3232' );
+			$result.text( s.testSmsFailed || 'Network error. Please try again.' ).css( 'color', '#dc3232' );
 		} )
 		.always( function () {
 			$btn.prop( 'disabled', false ).text( s.sendTestSms || 'Send Gateway Test SMS' );
@@ -495,9 +497,11 @@
 	// dialog so we control the title, body, and button labels (and they are
 	// fully translatable via kwtSmsAdminData.strings).
 	//
-	// For browser close / back / forward (where we cannot intercept the click):
-	// a beforeunload listener is still registered as a safety net; browsers
-	// always show their own native text there regardless of what we set.
+	// Note: browser refresh (F5), back/forward, and tab-close cannot show
+	// a custom popup — modern browsers only allow their own generic "Leave
+	// page?" dialog for beforeunload events and we do not register one.
+	// Those actions will proceed without a warning; only link-click navigation
+	// within the admin triggers this modal.
 	// =========================================================================
 
 	( function () {
