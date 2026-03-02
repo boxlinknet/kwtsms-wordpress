@@ -171,7 +171,7 @@ class KwtSMS_API {
 		if ( empty( $sender_id ) ) {
 			$err = new WP_Error(
 				'kwtsms_missing_sender_id',
-				__( 'Cannot send SMS: no Sender ID configured. Go to Settings → kwtSMS → Gateway, save your credentials, then choose a Sender ID from the dropdown.', 'wp-kwtsms-otp' )
+				__( 'Cannot send SMS: no Sender ID configured. Go to kwtSMS → Gateway, save your API credentials, then choose a Sender ID from the dropdown. Click Save Settings.', 'wp-kwtsms-otp' )
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty' );
 			self::append_send_log( $phone, 'failed', $type );
