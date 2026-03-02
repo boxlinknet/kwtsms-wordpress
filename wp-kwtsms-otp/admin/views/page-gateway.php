@@ -193,6 +193,11 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 
 		</table>
 
+		<div style="margin-top:20px;">
+			<?php submit_button( __( 'Save Settings', 'wp-kwtsms-otp' ), 'primary kwtsms-save-btn', 'submit', false ); ?>
+		</div>
+		<hr style="margin:20px 0;" />
+
 		<!-- ===== SMS Coverage ===== -->
 		<h2 class="title"><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms-otp' ); ?></h2>
 		<table class="form-table" role="presentation">
@@ -287,10 +292,6 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 			</tr>
 
 		</table>
-
-		<div style="margin-top:20px;">
-			<?php submit_button( __( 'Save Settings', 'wp-kwtsms-otp' ), 'primary kwtsms-save-btn', 'submit', false ); ?>
-		</div>
 
 		</div><!-- #kwtsms-verified-sections -->
 
