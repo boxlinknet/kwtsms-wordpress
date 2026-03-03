@@ -17,60 +17,23 @@
       }
     },
     {
-      "step": "installTheme",
-      "themeZipFile": {
-        "resource": "wordpress.org/themes",
-        "slug": "twentytwentyfour"
-      }
+      "step": "activatePlugin",
+      "pluginPath": "wp-kwtsms-otp/wp-kwtsms-otp.php"
     },
     {
-      "step": "activateTheme",
-      "themeFolderName": "twentytwentyfour"
-    },
-    {
-      "step": "installPlugin",
-      "pluginZipFile": {
-        "resource": "wordpress.org/plugins",
-        "slug": "woocommerce"
-      }
-    },
-    {
-      "step": "installPlugin",
-      "pluginZipFile": {
-        "resource": "wordpress.org/plugins",
-        "slug": "contact-form-7"
-      }
-    },
-    {
-      "step": "installPlugin",
-      "pluginZipFile": {
-        "resource": "wordpress.org/plugins",
-        "slug": "wpforms-lite"
-      }
-    },
-    {
-      "step": "installPlugin",
-      "pluginZipFile": {
-        "resource": "wordpress.org/plugins",
-        "slug": "elementor"
+      "step": "setSiteOptions",
+      "options": {
+        "users_can_register": "1"
       }
     },
     {
       "step": "runPHP",
-      "code": "<?php require '/wordpress/wp-load.php'; update_option('users_can_register', '1'); echo 'Registration enabled'; ?>"
+      "code": "<?php require '/wordpress/wp-load.php'; $u = get_user_by('login','testuser'); if (!$u) { $id = wp_create_user('testuser','Test@12345','test@example.com'); update_user_meta($id,'kwtsms_phone','96598765432'); } echo 'done'; ?>"
     },
     {
       "step": "login",
       "username": "admin",
       "password": "password"
-    },
-    {
-      "step": "activatePlugin",
-      "pluginPath": "wp-kwtsms-otp/wp-kwtsms-otp.php"
-    },
-    {
-      "step": "runPHP",
-      "code": "<?php require '/wordpress/wp-load.php'; $u1 = get_user_by('login','testuser'); if (!$u1) { $id1 = wp_create_user('testuser','Test@12345','test@example.com'); } else { $id1 = $u1->ID; } update_user_meta($id1,'kwtsms_phone','96598765432'); $u2 = get_user_by('login','testuser2'); if (!$u2) { $id2 = wp_create_user('testuser2','Test@12345','test2@example.com'); } else { $id2 = $u2->ID; } update_user_meta($id2,'kwtsms_phone','96599220323'); $u3 = get_user_by('login','testuser_nophone'); if (!$u3) { wp_create_user('testuser_nophone','Test@12345','test3@example.com'); } echo 'Setup complete'; ?>"
     }
   ]
 }

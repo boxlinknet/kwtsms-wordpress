@@ -38,7 +38,7 @@ class KwtSMS_Settings {
 			'recaptcha_secret_key' => '',
 			'turnstile_site_key'   => '',
 			'turnstile_secret_key' => '',
-			'referral_link'        => 1,          // show "SMS service by kwtSMS.com" on login pages
+			'referral_link'        => 0,          // show "SMS service by kwtSMS.com" on login pages (opt-in)
 			'default_country_code' => 'KW',       // ISO2 default for phone dropdown
 			'allowed_countries'    => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ), // GCC default
 			'debug_logging'        => 0,          // write detailed logs to wp-content/kwtsms-debug.log

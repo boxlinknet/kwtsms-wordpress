@@ -156,20 +156,23 @@ function kwtsms_int_form_tab_url( $slug, $tab ) {
 
 			<div class="kwtsms-template-card">
 				<div class="kwtsms-template-card-header">
-					<!-- translators: %s: integration label -->
-					<h3><?php echo esc_html( sprintf( __( '%s Integration', 'wp-kwtsms-otp' ), $label ) ); ?></h3>
+					<h3><?php
+					/* translators: %s: integration name (e.g. WooCommerce) */
+					echo esc_html( sprintf( __( '%s Integration', 'wp-kwtsms-otp' ), $label ) ); ?></h3>
 					<label class="kwtsms-toggle">
 						<input type="checkbox"
 							name="kwtsms_otp_integrations[<?php echo esc_attr( $enabled_key ); ?>]"
 							value="1"
 							<?php checked( $is_enabled ); ?> />
-						<!-- translators: %s: integration label -->
-						<span><?php echo esc_html( sprintf( __( 'Enable %s SMS Integration', 'wp-kwtsms-otp' ), $label ) ); ?></span>
+						<span><?php
+						/* translators: %s: integration name (e.g. WooCommerce) */
+						echo esc_html( sprintf( __( 'Enable %s SMS Integration', 'wp-kwtsms-otp' ), $label ) ); ?></span>
 					</label>
 				</div>
 				<p class="description">
-					<!-- translators: %s: integration label -->
-					<?php echo esc_html( sprintf( __( 'Send a confirmation SMS after a %s form is submitted successfully.', 'wp-kwtsms-otp' ), $label ) ); ?>
+					<?php
+					/* translators: %s: integration name (e.g. WooCommerce) */
+					echo esc_html( sprintf( __( 'Send a confirmation SMS after a %s form is submitted successfully.', 'wp-kwtsms-otp' ), $label ) ); ?>
 				</p>
 
 				<table class="form-table" style="margin-top:12px;">

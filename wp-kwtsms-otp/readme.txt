@@ -1,8 +1,8 @@
-=== kwtSMS OTP — SMS Login, Password Reset & Notifications ===
+=== kwtSMS OTP Login and SMS Notifications ===
 Contributors: kwtsms
 Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 6.9
 Requires PHP: 7.4
 Stable tag: 2.8.0
 License: GPL-2.0-or-later
@@ -12,7 +12,7 @@ SMS OTP login, password reset, and WooCommerce order notifications via the kwtSM
 
 == Description ==
 
-**kwtSMS OTP** replaces or supplements WordPress passwords with SMS one-time codes, sends WooCommerce order updates automatically, and lets you verify phone numbers on any contact form — all powered by the [kwtSMS](https://www.kwtsms.com) SMS gateway.
+**kwtSMS OTP** replaces or supplements WordPress passwords with SMS one-time codes, sends WooCommerce order updates automatically, and lets you verify phone numbers on any contact form, all powered by the [kwtSMS](https://www.kwtsms.com) SMS gateway.
 
 Built for Arabic-speaking markets (Kuwait, Saudi Arabia, UAE, Bahrain, Qatar, Oman) with full RTL admin support and bilingual SMS templates in English and Arabic.
 
@@ -67,8 +67,8 @@ This plugin connects to the **kwtSMS API** to deliver SMS messages.
 
 * Service website: [https://www.kwtsms.com](https://www.kwtsms.com)
 * API endpoint: `https://www.kwtsms.com/API/`
-* Terms of Service: [https://www.kwtsms.com/terms](https://www.kwtsms.com/terms)
-* Privacy Policy: [https://www.kwtsms.com/privacy](https://www.kwtsms.com/privacy)
+* Terms of Service: [https://www.kwtsms.com/policy.html](https://www.kwtsms.com/policy.html)
+* Privacy Policy: [https://www.kwtsms.com/privacy.html](https://www.kwtsms.com/privacy.html)
 
 A kwtSMS account with SMS credits is required. All SMS messages are sent through the kwtSMS infrastructure. No data is sent to any other third-party service.
 
@@ -84,19 +84,19 @@ Ships with English (default) and Arabic translations. The plugin admin UI and al
 
 1. Upload the `wp-kwtsms-otp` folder to `/wp-content/plugins/`, or install via **Plugins > Add New Plugin** in your WordPress dashboard.
 2. Activate the plugin through the **Plugins** screen.
-3. Go to **Settings > kwtSMS OTP > Gateway** and enter your kwtSMS API username and password.
+3. Go to **kwtSMS OTP > Gateway** and enter your kwtSMS API username and password.
 4. Click **Save & Verify Credentials**. The Sender ID dropdown will populate automatically.
 5. Select your Sender ID and save.
-6. Go to **Settings > kwtSMS OTP > General** and choose your OTP mode (2FA, Passwordless, or Both).
-7. Customise your SMS templates under **Settings > kwtSMS OTP > Templates**.
+6. Go to **kwtSMS OTP > General** and choose your OTP mode (2FA, Passwordless, or Both).
+7. Customize your SMS templates under **kwtSMS OTP > Templates**.
 
-For WooCommerce notifications, visit **Settings > kwtSMS OTP > Integrations > WooCommerce** and enable the order statuses you want.
+For WooCommerce notifications, visit **kwtSMS OTP > Integrations > WooCommerce** and enable the order statuses you want.
 
 == Frequently Asked Questions ==
 
 = Do I need a kwtSMS account? =
 
-Yes. You need an active kwtSMS account with SMS credits. Sign up at [kwtsms.com](https://www.kwtsms.com). API credentials (username and password) are entered in the Gateway settings page.
+Yes. You need an active kwtSMS account with API access. Sign up at [kwtsms.com](https://www.kwtsms.com). API credentials (username and password) are entered in the Gateway settings page.
 
 = Does the plugin work without WooCommerce? =
 
@@ -112,7 +112,7 @@ International format with country code, no leading + or 00. For example, a Kuwai
 
 = Can I restrict OTP to specific user roles? =
 
-Yes. In General Settings > OTP Required Roles, select which roles must pass OTP. Administrators are excluded by default.
+Yes. In General > OTP Required Roles, select which roles must pass OTP. Administrators are excluded by default.
 
 = What happens if a user does not have a phone number on their account? =
 
@@ -130,9 +130,9 @@ Enable **Test Mode** in Gateway Settings. With test mode on, the API receives `t
 
 In OTP Gate mode, the form submission is blocked until the user verifies their phone number via SMS. The verification token is validated server-side before the form data is processed — it cannot be bypassed by manipulating the front end.
 
-= Can I customise the SMS message? =
+= Can I customize the SMS message? =
 
-Yes. Go to **Settings > kwtSMS OTP > Templates**. Each template has a separate English and Arabic textarea. Supported placeholders (like `{otp}`, `{site_name}`, `{expiry_minutes}`) are listed below each field. A live character counter shows how many SMS pages the message will use.
+Yes. Go to **kwtSMS OTP > Templates**. Each template has a separate English and Arabic textarea. Supported placeholders (like `{otp}`, `{site_name}`, `{expiry_minutes}`) are listed below each field. A live character counter shows how many SMS pages the message will use.
 
 = Does the plugin support Arabic SMS? =
 

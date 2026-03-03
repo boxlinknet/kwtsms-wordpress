@@ -1,0 +1,14 @@
+/.distignore
+/.gitignore
+/.phpunit.result.cache
+/blueprint.json
+/composer.json
+/composer.lock
+/patchwork.json
+/phpstan-baseline.neon
+/phpstan-bootstrap.php
+/phpstan.neon
+/phpunit.xml
+/phpunit-integration.xml
+/tests
+/vendor

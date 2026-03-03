@@ -103,7 +103,7 @@ class KwtSMS_Plugin {
 		$this->register_ajax_handlers();
 
 		// Referral link on standard WP login page.
-		if ( $this->settings->get( 'general.referral_link', 1 ) ) {
+		if ( $this->settings->get( 'general.referral_link', 0 ) ) {
 			add_action( 'login_footer', array( $this, 'render_login_referral' ) );
 		}
 	}

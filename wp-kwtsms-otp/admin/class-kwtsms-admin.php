@@ -142,6 +142,7 @@ class KwtSMS_Admin {
 			}
 			$this->page_hooks[] = add_submenu_page(
 				'kwtsms-otp',
+				/* translators: %s: integration name (e.g. WooCommerce) */
 				sprintf( __( '%s Settings', 'wp-kwtsms-otp' ), $int_labels[ $key ] ),
 				'&#8627; ' . $int_labels[ $key ],
 				'manage_options',
@@ -724,10 +725,12 @@ class KwtSMS_Admin {
 					'loadingCoverage'    => __( 'Loading coverage...', 'wp-kwtsms-otp' ),
 					'coverageError'      => __( 'Could not load coverage data.', 'wp-kwtsms-otp' ),
 					'credentialsMissing' => __( 'Please enter your API username and password, then click "Save Settings" before performing this action.', 'wp-kwtsms-otp' ),
-					'connectedAs'        => __( 'Connected as %s', 'wp-kwtsms-otp' ),
+					/* translators: %s: API username */
+				'connectedAs'        => __( 'Connected as %s', 'wp-kwtsms-otp' ),
 					'reload'             => __( 'Reload', 'wp-kwtsms-otp' ),
 					'reloading'          => __( 'Reloading...', 'wp-kwtsms-otp' ),
-					'ofPurchased'        => __( '· of %s purchased', 'wp-kwtsms-otp' ),
+					/* translators: %s: total purchased SMS credits */
+				'ofPurchased'        => __( '· of %s purchased', 'wp-kwtsms-otp' ),
 					'testPhoneMissing'   => __( 'Please enter a test phone number first.', 'wp-kwtsms-otp' ),
 					'phoneTooShort'      => __( 'Number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits).', 'wp-kwtsms-otp' ),
 					'testModeResult'     => __( 'Test mode ON — message queued in kwtSMS account queue, will not be delivered. Delete to recover credits.', 'wp-kwtsms-otp' ),
@@ -1060,7 +1063,7 @@ class KwtSMS_Admin {
 			header( 'Content-Type: text/plain; charset=UTF-8' );
 			header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
 			header( 'Pragma: no-cache' );
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents,WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo file_get_contents( $debug_log_path );
 			exit;
 		}

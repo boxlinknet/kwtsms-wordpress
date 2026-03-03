@@ -185,7 +185,7 @@ class KwtSMS_Woo {
 	 */
 	private function build_order_message( $status, WC_Order $order ) {
 		$order_id       = $order->get_order_number();
-		$total          = strip_tags( wc_price( $order->get_total() ) );
+		$total          = wp_strip_all_tags( wc_price( $order->get_total() ) );
 		$site_name      = get_bloginfo( 'name' );
 		$customer_name  = trim(
 			$order->get_billing_first_name() . ' ' . $order->get_billing_last_name()

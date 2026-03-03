@@ -175,9 +175,82 @@ composer install
 | **Kuwait delivery reports** | DLR is not available for messages to Kuwait numbers. The API returns "OK" once the message is handed off to the operator, but there is no confirmation of receipt. |
 | **International coverage** | Disabled by default on new accounts. Contact kwtSMS support to enable. |
 | **API rate limit** | Max 5 requests/second per IP. Exceeding this temporarily blocks your server IP. |
-| **Test mode credits** | `test=1` still deducts credits. Delete queued messages from your kwtSMS outbox to recover them. |
+| **Test mode credits** | `test=1` — messages queued but not delivered, no credits consumed. Delete queued messages from your kwtSMS outbox to release any tentatively held credits. |
 | **API error log** | Your kwtSMS account dashboard (API → Error Log) shows all send attempts with error details. |
 | **Server timezone** | The kwtSMS API server operates on Asia/Kuwait (GMT+3). |
+
+---
+
+## OTP Authentication Flows
+
+### 2FA Login
+```
+1. User submits username + password → WordPress validates credentials
+2. Plugin intercepts via authenticate filter (priority 30)
+3. OTP generated and sent by SMS to the user's registered phone
+4. Partial auth session stored in transient (15-minute TTL)
+5. User redirected to OTP entry page
+6. User enters code → verified → auth cookies issued → redirect to dashboard
+```
+
+### Passwordless Login
+```
+1. User clicks "Login with SMS OTP" on wp-login.php
+2. User enters their phone number (with country code)
+3. Plugin looks up user by kwtsms_phone meta
+4. Same generic message shown whether phone is found or not (anti-enumeration)
+5. If found: OTP sent → user enters code → logged in
+```
+
+### Password Reset via OTP
+```
+1. User clicks "Lost your password?"
+2. Custom form: enter username, email, or phone number
+3. If user found and has a phone: OTP sent via SMS
+4. User enters OTP → redirected to WP password reset form
+5. User sets new password → automatically logged in
+6. If no phone on file: fallback to email reset with notice
+```
+
+### WooCommerce Checkout OTP Gate (optional)
+```
+1. Customer enters phone at checkout
+2. On first "Place Order" click: OTP sent to phone
+3. OTP entry field appears on checkout page
+4. On second submission: OTP verified → order placed
+```
+
+### Emergency Bypass (Lockout Recovery)
+
+**Option 1 — wp-config.php constant (easiest)**
+```php
+define( 'KWTSMS_OTP_DISABLED', true );
+```
+Skips the entire OTP system until removed.
+
+**Option 2 — WP-CLI**
+```bash
+wp user update admin --user_pass="NewSecurePassword!" --allow-root
+```
+
+**Option 3 — SFTP / cPanel**
+Rename `wp-kwtsms-otp/wp-kwtsms-otp.php` to `wp-kwtsms-otp.php.disabled` — WP deactivates the plugin automatically.
+
+---
+
+## Error Reference
+
+| Code | Meaning | Fix |
+|------|---------|-----|
+| ERR003 | Wrong credentials | Verify username/password at kwtsms.com |
+| ERR008 | Sender ID not allowed | Choose an approved Sender ID |
+| ERR010/011 | Insufficient credits | Top up your kwtSMS balance |
+| ERR026 | No SMS coverage | Enable coverage for this country in your kwtSMS account |
+| ERR006/025 | Invalid phone number | Ensure country code is included, digits only |
+| ERR028 | Resend too fast | Wait 15 seconds between resend requests |
+| ERR031/032 | Content rejected | Check template for spam-flagged content or bad language |
+
+Full error code reference: [kwtSMS API Documentation (PDF)](https://www.kwtsms.com/doc/KwtSMS.com_API_Documentation_v41.pdf)
 
 ---
 

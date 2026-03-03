@@ -78,7 +78,7 @@ class KwtSMS_GeoIP {
 	 */
 	private static function get_client_ip() {
 		// REMOTE_ADDR is always set and cannot be spoofed at the TCP level.
-		$ip = $_SERVER['REMOTE_ADDR'] ?? '';
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 
 		// Try proxy headers only if REMOTE_ADDR is a known private/loopback range,
 		// which typically means we're behind a trusted reverse proxy.

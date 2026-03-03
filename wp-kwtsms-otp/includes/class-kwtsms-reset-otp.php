@@ -233,7 +233,8 @@ class KwtSMS_Reset_OTP {
 		$raw_code        = sanitize_text_field( wp_unslash( $_POST['kwtsms_code'] ?? '' ) );
 		$submitted       = preg_replace( '/\D/', '', $raw_code ); // Digits only.
 		$expected_length = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
-		$ip              = filter_var( $_SERVER['REMOTE_ADDR'] ?? '', FILTER_VALIDATE_IP ) ? ( $_SERVER['REMOTE_ADDR'] ?? '' ) : '';
+		$raw_ip          = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+		$ip              = filter_var( $raw_ip, FILTER_VALIDATE_IP ) ? $raw_ip : '';
 
 		// Detect and log suspicious input.
 		$is_suspicious = ( strlen( $raw_code ) > 0 && strlen( $raw_code ) !== strlen( $submitted ) )
@@ -331,6 +332,12 @@ class KwtSMS_Reset_OTP {
 	 */
 	private function render_reset_otp_page( $error_message = '' ) {
 		nocache_headers();
+		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), null );
+		wp_enqueue_style( 'kwtsms-login', KWTSMS_OTP_URL . 'assets/css/login.css', array( 'login' ), KWTSMS_OTP_VERSION );
+		if ( is_rtl() ) {
+			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
+		}
+		wp_enqueue_script( 'kwtsms-login-js', KWTSMS_OTP_URL . 'assets/js/login.js', array(), KWTSMS_OTP_VERSION, true );
 		$otp_length   = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
 		$cooldown     = (int) $this->plugin->settings->get( 'general.resend_cooldown', 60 );
 		$is_reset     = true;
@@ -414,7 +421,7 @@ class KwtSMS_Reset_OTP {
 	 * @return string
 	 */
 	private function get_reset_cookie_token() {
-		return sanitize_text_field( $_COOKIE[ $this->cookie_name ] ?? '' );
+		return sanitize_text_field( wp_unslash( $_COOKIE[ $this->cookie_name ] ?? '' ) );
 	}
 
 	/**

@@ -80,7 +80,7 @@ function kwtsms_otp_activate() {
 				'login_otp'            => 1,
 				'reset_otp'            => 1,
 				'captcha_provider'     => 'none',
-				'referral_link'        => 1,
+				'referral_link'        => 0,
 				'default_country_code' => 'KW',
 				'allowed_countries'    => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ),
 			)
@@ -111,13 +111,6 @@ function kwtsms_otp_init() {
 	if ( defined( 'KWTSMS_OTP_DISABLED' ) && KWTSMS_OTP_DISABLED ) {
 		return;
 	}
-
-	// Load translations first so all subsequent strings are translatable.
-	load_plugin_textdomain(
-		'wp-kwtsms-otp',
-		false,
-		dirname( KWTSMS_OTP_BASENAME ) . '/languages'
-	);
 
 	// Boot the main plugin manager.
 	KwtSMS_Plugin::get_instance();

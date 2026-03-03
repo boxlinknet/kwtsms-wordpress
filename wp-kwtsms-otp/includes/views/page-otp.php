@@ -35,7 +35,7 @@ if ( $custom_logo_id ) {
 }
 
 // Referral link settings.
-$referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 1 ) : true;
+$referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 0 ) : false;
 $page_title = $is_reset
 	? __( 'Verify Your Identity — Password Reset', 'wp-kwtsms-otp' )
 	: __( 'Enter Your Verification Code', 'wp-kwtsms-otp' );
@@ -60,11 +60,7 @@ if ( ! empty( $token ) ) {
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title><?php echo esc_html( $page_title . ' — ' . $site_name ); ?></title>
-	<link rel="stylesheet" href="<?php echo esc_url( admin_url( '../wp-login.php' ) ); ?>" />
-	<link rel="stylesheet" href="<?php echo esc_url( KWTSMS_OTP_URL . 'assets/css/login.css?v=' . KWTSMS_OTP_VERSION ); ?>" />
-	<?php if ( is_rtl() ) : ?>
-	<link rel="stylesheet" href="<?php echo esc_url( KWTSMS_OTP_URL . 'assets/css/login-rtl.css?v=' . KWTSMS_OTP_VERSION ); ?>" />
-	<?php endif; ?>
+	<?php wp_head(); ?>
 </head>
 <body class="login wp-core-ui">
 <div id="login">
@@ -85,7 +81,7 @@ if ( ! empty( $token ) ) {
 			<?php
 			printf(
 				/* translators: %s: partially masked phone number */
-				esc_html__( 'We sent a %d-digit code to %s', 'wp-kwtsms-otp' ),
+				esc_html__( 'We sent a %1$d-digit code to %2$s', 'wp-kwtsms-otp' ),
 				(int) $otp_length,
 				'<strong>' . esc_html( $masked_phone ) . '</strong>'
 			);
@@ -180,7 +176,7 @@ if ( ! empty( $token ) ) {
 	</div>
 </div>
 
-<script src="<?php echo esc_url( KWTSMS_OTP_URL . 'assets/js/login.js?v=' . KWTSMS_OTP_VERSION ); ?>"></script>
+<?php wp_footer(); ?>
 
 <?php if ( $referral_link_enabled ) :
 	$ref_url = add_query_arg( 'ref', wp_parse_url( home_url(), PHP_URL_HOST ), 'https://www.kwtsms.com/' );
