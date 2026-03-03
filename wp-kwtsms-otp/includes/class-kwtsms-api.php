@@ -566,8 +566,8 @@ class KwtSMS_API {
 		if ( ! preg_match( '/^\d{8,15}$/', $phone ) ) {
 			return new WP_Error(
 				'invalid_phone',
-				/* translators: %s: the entered phone number */
 				sprintf(
+					/* translators: %s: the entered phone number */
 					__( 'Please enter a valid phone number with country code (e.g. 96598765432). Got: %s', 'wp-kwtsms-otp' ),
 					esc_html( $phone )
 				)

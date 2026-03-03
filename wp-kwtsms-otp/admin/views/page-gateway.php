@@ -112,7 +112,9 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 								<?php esc_html_e( 'Logout', 'wp-kwtsms-otp' ); ?>
 							</button>
 							<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite">
-								<span style="color:#46b450;">&#x2713; <?php printf( esc_html__( 'Connected as %s', 'wp-kwtsms-otp' ), esc_html( $gateway['api_username'] ) ); ?></span>
+								<span style="color:#46b450;">&#x2713; <?php
+								/* translators: %s: API username */
+								printf( esc_html__( 'Connected as %s', 'wp-kwtsms-otp' ), esc_html( $gateway['api_username'] ) ); ?></span>
 							</span>
 						</div>
 						<p class="description kwtsms-reload-hint"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from your kwtSMS account.', 'wp-kwtsms-otp' ); ?></p>

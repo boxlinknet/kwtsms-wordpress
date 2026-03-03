@@ -33,7 +33,7 @@ if ( $custom_logo_id ) {
 }
 
 // Referral link settings.
-$referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 1 ) : true;
+$referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 0 ) : false;
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -41,11 +41,7 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title><?php echo esc_html( __( 'Login with SMS — ', 'wp-kwtsms-otp' ) . $site_name ); ?></title>
-	<link rel="stylesheet" href="<?php echo esc_url( admin_url( '../wp-login.php' ) ); ?>" />
-	<link rel="stylesheet" href="<?php echo esc_url( KWTSMS_OTP_URL . 'assets/css/login.css?v=' . KWTSMS_OTP_VERSION ); ?>" />
-	<?php if ( is_rtl() ) : ?>
-	<link rel="stylesheet" href="<?php echo esc_url( KWTSMS_OTP_URL . 'assets/css/login-rtl.css?v=' . KWTSMS_OTP_VERSION ); ?>" />
-	<?php endif; ?>
+	<?php wp_head(); ?>
 </head>
 <body class="login wp-core-ui">
 <div id="login">
@@ -162,6 +158,6 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 	</a>
 </p>
 <?php endif; ?>
-<script src="<?php echo esc_url( KWTSMS_OTP_URL . 'assets/js/login.js?v=' . KWTSMS_OTP_VERSION ); ?>"></script>
+<?php wp_footer(); ?>
 </body>
 </html>
