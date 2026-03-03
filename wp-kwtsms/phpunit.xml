@@ -19,7 +19,7 @@
         <include>
             <directory>includes/</directory>
             <directory>admin/</directory>
-            <file>wp-kwtsms-otp.php</file>
+            <file>wp-kwtsms.php</file>
         </include>
         <exclude>
             <directory>tests/</directory>

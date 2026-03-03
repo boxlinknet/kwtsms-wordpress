@@ -1,6 +1,6 @@
 # WordPress.org Plugin Submission Guide
 
-> Reference document for submitting `wp-kwtsms-otp` to the WordPress.org plugin directory.
+> Reference document for submitting `wp-kwtsms` to the WordPress.org plugin directory.
 > Created: 2026-03-03
 
 ---
@@ -22,7 +22,7 @@ WordPress.org uses **SVN** (not Git) as its distribution system. You submit a ZI
 ### Step 2 — Run Plugin Check Locally
 Install the **Plugin Check (PCP)** plugin on a local WordPress site:
 ```bash
-wp plugin check wp-kwtsms-otp
+wp plugin check wp-kwtsms
 ```
 All **error-level** items must be zero. The submission portal auto-runs this on upload and blocks if there are errors.
 
@@ -35,7 +35,7 @@ Must be **under 10MB** and must **exclude**:
 - Any `var_dump()`, `print_r()`, or debug output
 
 ### Step 4 — readme.txt
-Already created at `wp-kwtsms-otp/readme.txt`. Validate it before submitting:
+Already created at `wp-kwtsms/readme.txt`. Validate it before submitting:
 [https://wordpress.org/plugins/developers/readme-validator/](https://wordpress.org/plugins/developers/readme-validator/)
 
 ### Step 5 — Submit
@@ -53,11 +53,11 @@ You receive an email with your SVN repo URL, then:
 
 ```bash
 # Check out your empty SVN repo
-svn co https://plugins.svn.wordpress.org/wp-kwtsms-otp my-plugin-svn
+svn co https://plugins.svn.wordpress.org/wp-kwtsms my-plugin-svn
 cd my-plugin-svn
 
 # Copy plugin files into trunk/ (production files only, no dev files)
-cp -r /path/to/wp-kwtsms-otp/* trunk/
+cp -r /path/to/wp-kwtsms/* trunk/
 
 # Stage all files
 svn add trunk/*
@@ -141,7 +141,7 @@ svn ci -m "Add plugin assets"
 svn up
 
 # Edit files in trunk/ — bump version in:
-#   - wp-kwtsms-otp.php (Version: X.Y.Z)
+#   - wp-kwtsms.php (Version: X.Y.Z)
 #   - readme.txt (Stable tag: X.Y.Z)
 #   - any internal VERSION constant
 
@@ -164,7 +164,7 @@ svn ci -m "Update tested up to 6.7"
 
 ---
 
-## Pre-Submission Checklist for wp-kwtsms-otp
+## Pre-Submission Checklist for wp-kwtsms
 
 - [ ] 2FA enabled on WordPress.org account
 - [ ] Plugin Check (PCP) runs clean — zero error-level items
@@ -173,7 +173,7 @@ svn ci -m "Update tested up to 6.7"
 - [ ] External API (kwtSMS) documented in readme.txt with service URL and privacy policy link ✅
 - [ ] Version consistent across plugin header, readme.txt Stable tag, and SVN tag
 - [ ] License declared as GPL-2.0-or-later in plugin header and readme.txt ✅
-- [ ] Text domain `wp-kwtsms-otp` used in all i18n functions ✅
+- [ ] Text domain `wp-kwtsms` used in all i18n functions ✅
 - [ ] All outputs escaped ✅
 - [ ] All inputs sanitized ✅
 - [ ] All forms have nonce verification ✅

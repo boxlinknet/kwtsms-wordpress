@@ -1,5 +1,5 @@
 /**
- * kwtSMS OTP — Admin JavaScript
+ * kwtSMS — Admin JavaScript
  *
  * Handles:
  *   - CAPTCHA provider field show/hide

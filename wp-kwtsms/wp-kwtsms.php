@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       kwtSMS OTP Login and SMS Notifications
+ * Plugin Name:       kwtSMS — OTP & SMS Notifications
  * Plugin URI:        https://www.kwtsms.com
  * Description:       Replace passwords with SMS codes, send WooCommerce order updates automatically, and verify phone numbers on any contact form — all in one plugin. Supports 2FA, passwordless login, 7 WooCommerce order statuses, and OTP-gated forms for CF7, WPForms, Elementor, Gravity Forms &amp; Ninja Forms. Arabic RTL included. Powered by kwtSMS.
  * Version:           2.8.0
