@@ -1,4 +1,4 @@
-# kwtSMS OTP Login and SMS Notifications — WordPress Plugin
+# kwtSMS — OTP & SMS Notifications — WordPress Plugin
 
 Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress — powered by the [kwtSMS](https://www.kwtsms.com) gateway.
 
@@ -89,7 +89,7 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 ## Installation
 
 1. Clone or download this repository
-2. Upload the `wp-kwtsms-otp/` directory to `/wp-content/plugins/`
+2. Upload the `wp-kwtsms/` directory to `/wp-content/plugins/`
 3. Activate from **Plugins → Installed Plugins**
 4. Go to **kwtSMS → Gateway** and enter your API credentials
 5. Click **Login** to verify credentials and load your Sender IDs
@@ -100,8 +100,8 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 ## Plugin Structure
 
 ```
-wp-kwtsms-otp/
-├── wp-kwtsms-otp.php
+wp-kwtsms/
+├── wp-kwtsms.php
 ├── includes/
 │   ├── class-kwtsms-plugin.php       # Main service locator (singleton)
 │   ├── class-kwtsms-api.php          # kwtSMS HTTP API client
@@ -136,9 +136,9 @@ wp-kwtsms-otp/
 │   ├── js/login.js
 │   └── js/form-otp.js   # OTP gate modal for form integrations
 ├── languages/
-│   ├── wp-kwtsms-otp.pot
-│   ├── wp-kwtsms-otp-ar.po / .mo
-│   └── wp-kwtsms-otp-en_US.po / .mo
+│   ├── wp-kwtsms.pot
+│   ├── wp-kwtsms-ar.po / .mo
+│   └── wp-kwtsms-en_US.po / .mo
 ├── tests/                # PHPUnit 9 + Brain\Monkey (191 tests)
 └── uninstall.php
 ```
@@ -150,7 +150,7 @@ wp-kwtsms-otp/
 No Docker required:
 
 ```bash
-cd wp-kwtsms-otp/
+cd wp-kwtsms/
 npx @wp-playground/cli@latest server --auto-mount
 # Opens at http://localhost:9400
 ```
@@ -160,7 +160,7 @@ Enable **Test Mode** in Gateway settings — the OTP code is written to `wp-cont
 ### Running the Test Suite
 
 ```bash
-cd wp-kwtsms-otp/
+cd wp-kwtsms/
 composer install
 ./vendor/bin/phpunit --no-coverage
 ```
@@ -234,7 +234,7 @@ wp user update admin --user_pass="NewSecurePassword!" --allow-root
 ```
 
 **Option 3 — SFTP / cPanel**
-Rename `wp-kwtsms-otp/wp-kwtsms-otp.php` to `wp-kwtsms-otp.php.disabled` — WP deactivates the plugin automatically.
+Rename `wp-kwtsms/wp-kwtsms.php` to `wp-kwtsms.php.disabled` — WP deactivates the plugin automatically.
 
 ---
 
@@ -288,8 +288,8 @@ Full error code reference: [kwtSMS API Documentation (PDF)](https://www.kwtsms.c
 - Test phone field now validates country code before sending
 
 ### 2.1.0
-- Plugin renamed to **kwtSMS OTP Login and SMS Notifications**
-- Admin menu updated from "kwtSMS OTP" to "kwtSMS"
+- Plugin renamed to **kwtSMS — OTP & SMS Notifications**
+- Admin menu updated from "kwtSMS" to "kwtSMS"
 - WooCommerce HPOS compatibility declaration
 
 ### 2.0.0

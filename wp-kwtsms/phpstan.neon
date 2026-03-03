@@ -7,7 +7,7 @@ parameters:
     paths:
         - includes/
         - admin/
-        - wp-kwtsms-otp.php
+        - wp-kwtsms.php
         - uninstall.php
 
     excludePaths:

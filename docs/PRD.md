@@ -8,7 +8,7 @@
 ## 1. Overview
 
 ### 1.1 Product Name
-`wp-kwtsms-otp` — WordPress OTP Authentication Plugin powered by kwtsms SMS Gateway
+`wp-kwtsms` — WordPress OTP Authentication Plugin powered by kwtsms SMS Gateway
 
 ### 1.2 Purpose
 Replace or augment WordPress's default login and password reset flows with SMS-based One-Time Password (OTP) verification, delivered via the kwtsms JSON REST API. The plugin must be secure, accessible to Arabic-speaking users, extensible for the WordPress ecosystem (WooCommerce, third-party plugins), and compliant with kwtsms API best practices.
@@ -272,12 +272,12 @@ Rules:
 
 ## 9. Multilingual Requirements
 
-- Text domain: `wp-kwtsms-otp`
+- Text domain: `wp-kwtsms`
 - All user-facing strings wrapped in `__()` / `_e()` / `esc_html__()`
 - All JS strings localized via `wp_localize_script()`
 - Languages delivered:
-  - `wp-kwtsms-otp-en_US.po/.mo`
-  - `wp-kwtsms-otp-ar.po/.mo`
+  - `wp-kwtsms-en_US.po/.mo`
+  - `wp-kwtsms-ar.po/.mo`
 - RTL CSS loaded when `is_rtl()` returns true
 - Arabic SMS templates stored separately; plugin detects `get_locale()` to choose template
 - Admin SMS template editor: Arabic textarea has `dir="rtl"` and Arabic font stack

@@ -1,4 +1,4 @@
-# Implementation Plan — wp-kwtsms-otp WordPress Plugin
+# Implementation Plan — wp-kwtsms WordPress Plugin
 **Version:** 1.0
 **Date:** 2026-02-28
 **References:**
@@ -48,13 +48,13 @@ docker-compose up -d
 # phpMyAdmin: http://localhost:8081
 
 # Activate plugin via WP-CLI
-docker exec <wp-container> wp plugin activate wp-kwtsms-otp --allow-root
+docker exec <wp-container> wp plugin activate wp-kwtsms --allow-root
 
 # Run PHPUnit tests
 docker exec <wp-container> composer test --allow-root
 
 # Update translations POT
-docker exec <wp-container> wp i18n make-pot wp-content/plugins/wp-kwtsms-otp languages/wp-kwtsms-otp.pot --allow-root
+docker exec <wp-container> wp i18n make-pot wp-content/plugins/wp-kwtsms languages/wp-kwtsms.pot --allow-root
 ```
 
 ### Test Credentials
@@ -74,8 +74,8 @@ docker exec <wp-container> wp i18n make-pot wp-content/plugins/wp-kwtsms-otp lan
 **Goal:** Create a runnable WordPress environment with the plugin skeleton installed.
 
 **Steps:**
-1. Create plugin directory: `wp-kwtsms-otp/`
-2. Create main plugin file `wp-kwtsms-otp.php` with WordPress plugin headers
+1. Create plugin directory: `wp-kwtsms/`
+2. Create main plugin file `wp-kwtsms.php` with WordPress plugin headers
 3. Create `composer.json` (WPCS, PHPStan, PHPUnit)
 4. Create `docker-compose.yml` (WordPress 6.x + MySQL + phpMyAdmin)
 5. Create `uninstall.php` (stub — removes all options on uninstall)
@@ -85,8 +85,8 @@ docker exec <wp-container> wp i18n make-pot wp-content/plugins/wp-kwtsms-otp lan
 
 **Files created:**
 ```
-wp-kwtsms-otp/
-├── wp-kwtsms-otp.php
+wp-kwtsms/
+├── wp-kwtsms.php
 ├── uninstall.php
 ├── composer.json
 ├── .gitignore
@@ -642,9 +642,9 @@ Test 3.4.3 — Wrong OTP during reset:
 3. Ensure Arabic numerals note in phone field is translatable
 4. Generate POT:
    ```bash
-   wp i18n make-pot . languages/wp-kwtsms-otp.pot --domain=wp-kwtsms-otp
+   wp i18n make-pot . languages/wp-kwtsms.pot --domain=wp-kwtsms
    ```
-5. Create `wp-kwtsms-otp-ar.po` with Arabic translations for all strings
+5. Create `wp-kwtsms-ar.po` with Arabic translations for all strings
 6. Compile to `.mo`:
    ```bash
    wp i18n make-mo languages/
