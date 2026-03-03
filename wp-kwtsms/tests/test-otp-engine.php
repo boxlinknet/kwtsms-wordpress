@@ -62,6 +62,7 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 		Functions\when( 'sanitize_key' )->alias( function ( $v ) {
 			return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $v ) );
 		} );
+		Functions\when( 'wp_unslash' )->alias( function ( $v ) { return $v; } );
 
 		// Mock WP functions used in build_message.
 		Functions\when( 'get_locale' )->justReturn( 'en_US' );
