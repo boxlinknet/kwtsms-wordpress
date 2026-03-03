@@ -1,0 +1,804 @@
+<?php
+/**
+ * Main plugin manager / service locator.
+ *
+ * Bootstraps and wires all plugin modules. Uses a singleton pattern so only
+ * one instance is created per request. Each module is responsible for
+ * registering its own hooks in its constructor.
+ *
+ * @package KwtSMS_OTP
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class KwtSMS_Plugin
+ *
+ * Central manager that initialises all plugin components.
+ */
+class KwtSMS_Plugin {
+
+	/**
+	 * Singleton instance.
+	 *
+	 * @var KwtSMS_Plugin|null
+	 */
+	private static $instance = null;
+
+	/**
+	 * Settings helper.
+	 *
+	 * @var KwtSMS_Settings
+	 */
+	public $settings;
+
+	/**
+	 * kwtsms API client.
+	 *
+	 * @var KwtSMS_API
+	 */
+	public $api;
+
+	/**
+	 * OTP engine.
+	 *
+	 * @var KwtSMS_OTP_Engine
+	 */
+	public $otp;
+
+	/**
+	 * Get or create the singleton instance.
+	 *
+	 * @return KwtSMS_Plugin
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * Constructor — private to enforce singleton.
+	 *
+	 * Instantiates all modules. Module constructors register their own hooks,
+	 * keeping this class thin.
+	 */
+	private function __construct() {
+		$this->settings = new KwtSMS_Settings();
+		$this->api      = new KwtSMS_API(
+			$this->settings->get( 'gateway.api_username', '' ),
+			$this->settings->get( 'gateway.api_password', '' ),
+			(bool) $this->settings->get( 'gateway.test_mode', true ),
+			(bool) $this->settings->get( 'general.debug_logging', 0 )
+		);
+		$this->otp = new KwtSMS_OTP_Engine( $this->settings );
+
+		// Admin-only modules — only load on admin requests to keep frontend lean.
+		if ( is_admin() ) {
+			new KwtSMS_Admin( $this );
+		}
+
+		// Frontend / login modules — load on all requests.
+		new KwtSMS_User_Meta();
+
+		// Load login/reset OTP only when enabled in settings.
+		if ( $this->settings->get( 'general.login_otp', 1 ) ) {
+			new KwtSMS_Login_OTP( $this );
+		}
+		if ( $this->settings->get( 'general.reset_otp', 1 ) ) {
+			new KwtSMS_Reset_OTP( $this );
+		}
+
+		// CAPTCHA module — always loaded so it can enqueue on login page.
+		new KwtSMS_Captcha( $this->settings );
+
+		// Third-party plugin integrations (WooCommerce, CF7, WPForms, Elementor).
+		new KwtSMS_Integrations( $this );
+
+		// Welcome SMS: fires for all registrations — WC checkout, WC My Account, standard WP.
+		add_action( 'user_register', array( $this, 'maybe_send_welcome_on_register' ), 20 );
+
+		// AJAX handlers.
+		$this->register_ajax_handlers();
+
+		// Referral link on standard WP login page.
+		if ( $this->settings->get( 'general.referral_link', 0 ) ) {
+			add_action( 'login_footer', array( $this, 'render_login_referral' ) );
+		}
+	}
+
+	/**
+	 * Output the "SMS by kwtSMS.com" credit on the standard WP login page footer.
+	 *
+	 * Hooked to `login_footer` when the referral_link setting is enabled.
+	 */
+	public function render_login_referral() {
+		$ref_url = add_query_arg(
+			'ref',
+			wp_parse_url( home_url(), PHP_URL_HOST ),
+			'https://www.kwtsms.com/'
+		);
+		printf(
+			'<p class="kwtsms-powered-by" style="text-align:center;color:#aaa;font-size:12px;margin-top:16px;">' .
+			'<a href="%s" target="_blank" rel="noopener" style="color:#aaa;">' .
+			'%s' .
+			'</a></p>',
+			esc_url( $ref_url ),
+			esc_html__( 'SMS by kwtSMS.com', 'wp-kwtsms' )
+		);
+	}
+
+	/**
+	 * Send welcome SMS after any user registration.
+	 *
+	 * Fires on `user_register` with priority 20 (after WC saves phone meta at 10).
+	 * Phone resolution order:
+	 *   1. $_POST['kwtsms_phone_reg'] — WC My Account registration field.
+	 *   2. $_POST['billing_phone']    — WC checkout registration.
+	 *   3. kwtsms_phone user meta     — set before user_register fires (some custom forms).
+	 *
+	 * @param int $user_id Newly created user ID.
+	 */
+	public function maybe_send_welcome_on_register( $user_id ) {
+		if ( ! $this->settings->get( 'general.welcome_sms_enabled', 0 ) ) {
+			return;
+		}
+
+		// Resolve phone from POST first (available during registration requests).
+		$phone = trim( sanitize_text_field( wp_unslash(
+			$_POST['kwtsms_phone_reg'] ?? $_POST['billing_phone'] ?? ''
+		) ) );
+
+		// Fall back to user meta (may be set by custom registration hooks before user_register).
+		if ( '' === $phone ) {
+			$phone = (string) get_user_meta( $user_id, 'kwtsms_phone', true );
+		}
+
+		if ( '' === $phone ) {
+			return;
+		}
+
+		$phone = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
+		$phone = KwtSMS_API::normalize_phone( $phone );
+		if ( is_wp_error( $phone ) ) {
+			return;
+		}
+
+		$user = get_userdata( $user_id );
+		$name = $user ? $user->display_name : '';
+		$message = $this->otp->build_message( '', 'welcome_sms', array( '{name}' => $name ) );
+		$this->api->send_sms(
+			$phone,
+			$this->settings->get( 'gateway.sender_id', '' ),
+			$message,
+			'welcome'
+		);
+	}
+
+	/**
+	 * Register wp_ajax_* handlers used across modules.
+	 *
+	 * Keeping registrations here avoids scattering add_action calls.
+	 */
+	private function register_ajax_handlers() {
+		// Credential verification (admin only).
+		add_action( 'wp_ajax_kwtsms_verify_credentials', array( $this, 'ajax_verify_credentials' ) );
+
+		// OTP resend (guests — not yet logged in).
+		add_action( 'wp_ajax_nopriv_kwtsms_resend_otp', array( $this, 'ajax_resend_otp' ) );
+		add_action( 'wp_ajax_kwtsms_resend_otp', array( $this, 'ajax_resend_otp' ) );
+
+		// Test SMS send (admin only).
+		add_action( 'wp_ajax_kwtsms_send_test_sms', array( $this, 'ajax_send_test_sms' ) );
+
+		// Form OTP gate — send OTP to phone before form submission (guests).
+		add_action( 'wp_ajax_nopriv_kwtsms_form_send_otp', array( $this, 'ajax_form_send_otp' ) );
+		add_action( 'wp_ajax_kwtsms_form_send_otp', array( $this, 'ajax_form_send_otp' ) );
+
+		// Form OTP gate — verify code and mark transient as verified (guests).
+		add_action( 'wp_ajax_nopriv_kwtsms_form_verify_otp', array( $this, 'ajax_form_verify_otp' ) );
+		add_action( 'wp_ajax_kwtsms_form_verify_otp', array( $this, 'ajax_form_verify_otp' ) );
+
+		// Enqueue form-otp.js on frontend when gate mode is active.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_form_otp_assets' ) );
+	}
+
+	// =========================================================================
+	// Form OTP Gate helpers
+	// =========================================================================
+
+	/**
+	 * Generate a 32-character hex token for form OTP gate sessions.
+	 *
+	 * @return string 32-char lowercase hex string.
+	 */
+	public function generate_form_token() {
+		return bin2hex( random_bytes( 16 ) );
+	}
+
+	/**
+	 * Check whether a form OTP gate token has been successfully verified.
+	 *
+	 * Looks up the transient `kwtsms_form_otp_{token}` and returns whether
+	 * the `verified` flag is set to true.
+	 *
+	 * @param string $token The 32-char hex token from the hidden form input.
+	 *
+	 * @return bool True if the token exists and is verified; false otherwise.
+	 */
+	public function verify_form_token( $token ) {
+		$token = sanitize_text_field( $token );
+		if ( empty( $token ) || ! preg_match( '/^[0-9a-f]{32}$/', $token ) ) {
+			return false;
+		}
+
+		$data = get_transient( 'kwtsms_form_otp_' . $token );
+		if ( ! is_array( $data ) ) {
+			return false;
+		}
+
+		return ! empty( $data['verified'] );
+	}
+
+	// =========================================================================
+	// AJAX: Form OTP gate — send OTP
+	// =========================================================================
+
+	/**
+	 * AJAX: normalise a phone number, send an OTP, and store the transient.
+	 *
+	 * Expected POST params:
+	 *   nonce  — kwtsms_form_otp_nonce
+	 *   phone  — raw phone number entered by the visitor
+	 *
+	 * Returns JSON success with { token } on success so the JS can store the
+	 * token in a hidden input, or JSON error with { message } on failure.
+	 *
+	 * Security: nonce verified; no capability check (nopriv endpoint — used by
+	 * logged-out visitors filling in public forms).
+	 */
+	public function ajax_form_send_otp() {
+		check_ajax_referer( 'kwtsms_form_otp_nonce', 'nonce' );
+
+		$raw_phone = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
+		$form_id   = absint( $_POST['form_id'] ?? 0 );
+		if ( empty( $raw_phone ) ) {
+			wp_send_json_error( array( 'message' => __( 'Phone number is required.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		$raw_phone  = KwtSMS_API::prepend_country_code_if_local( $raw_phone, KwtSMS_API::get_default_dial_code() );
+		$normalized = KwtSMS_API::normalize_phone( $raw_phone );
+		if ( is_wp_error( $normalized ) ) {
+			wp_send_json_error( array( 'message' => $normalized->get_error_message() ) );
+			return;
+		}
+
+		// Rate limit: per-phone and per-IP to prevent SMS credit exhaustion.
+		// user_id = 0 because form gate is used by guests (not logged-in users).
+		if ( $this->otp->is_rate_limited( $normalized, 'form_otp', 0 ) ) {
+			wp_send_json_error( array( 'message' => __( 'Too many requests. Please try again later.', 'wp-kwtsms' ) ) );
+			return;
+		}
+		if ( $this->otp->is_ip_rate_limited( 'form_otp', 0, $normalized ) ) {
+			wp_send_json_error( array( 'message' => __( 'Too many requests. Please try again later.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		// Generate a 6-digit OTP code using a CSPRNG (PHP 7+ standard library).
+		// random_int() is cryptographically secure; wp_rand() uses mt_rand which is predictable.
+		$otp_code = (string) random_int( 100000, 999999 );
+		$otp_hash = wp_hash_password( $otp_code );
+
+		// Generate a fresh session token for this verification attempt.
+		$token = $this->generate_form_token();
+
+		// Store in a 15-minute transient.
+		set_transient(
+			'kwtsms_form_otp_' . $token,
+			array(
+				'phone'    => $normalized,
+				'form_id'  => $form_id,
+				'otp_hash' => $otp_hash,
+				'verified' => false,
+			),
+			900 // 15 minutes.
+		);
+
+		// Build and send the OTP SMS.
+		$site_name = get_bloginfo( 'name' );
+		/* translators: 1: site name, 2: OTP code */
+		$message = sprintf(
+			/* translators: 1: site name, 2: OTP code */
+			__( '%1$s: Your verification code is %2$s. Valid for 15 minutes.', 'wp-kwtsms' ),
+			$site_name,
+			$otp_code
+		);
+
+		$result = $this->api->send_sms(
+			$normalized,
+			$this->settings->get( 'gateway.sender_id', '' ),
+			$message,
+			'form_otp'
+		);
+
+		if ( is_wp_error( $result ) ) {
+			// Clean up the transient to avoid orphaned records.
+			delete_transient( 'kwtsms_form_otp_' . $token );
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
+		}
+
+		wp_send_json_success( array( 'token' => $token ) );
+	}
+
+	// =========================================================================
+	// AJAX: Form OTP gate — verify OTP
+	// =========================================================================
+
+	/**
+	 * AJAX: verify the submitted OTP code against the stored hash.
+	 *
+	 * Expected POST params:
+	 *   nonce  — kwtsms_form_otp_nonce
+	 *   token  — 32-char hex session token (from hidden input)
+	 *   code   — OTP code entered by the visitor
+	 *
+	 * On success, updates the transient to set verified=true and returns
+	 * JSON success. On failure returns JSON error with { message }.
+	 *
+	 * Security: nonce verified; no capability check (nopriv endpoint).
+	 */
+	public function ajax_form_verify_otp() {
+		check_ajax_referer( 'kwtsms_form_otp_nonce', 'nonce' );
+
+		$token = sanitize_text_field( wp_unslash( $_POST['token'] ?? '' ) );
+		$code  = sanitize_text_field( wp_unslash( $_POST['code'] ?? '' ) );
+
+		if ( empty( $token ) || empty( $code ) ) {
+			wp_send_json_error( array( 'message' => __( 'Token and code are required.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		// Validate token format (must be 32 lowercase hex chars).
+		if ( ! preg_match( '/^[0-9a-f]{32}$/', $token ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid token.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		$transient_key = 'kwtsms_form_otp_' . $token;
+		$data          = get_transient( $transient_key );
+
+		if ( ! is_array( $data ) ) {
+			wp_send_json_error( array( 'message' => __( 'Session expired. Please request a new code.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		// Enforce max 5 attempts per token.
+		$attempts = (int) ( $data['attempts'] ?? 0 );
+		if ( $attempts >= 5 ) {
+			delete_transient( $transient_key );
+			wp_send_json_error( array( 'message' => __( 'Too many incorrect attempts. Please request a new code.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		// Verify the submitted code against the stored bcrypt hash.
+		if ( ! wp_check_password( $code, $data['otp_hash'] ) ) {
+			// Wrong code — increment attempt counter and persist.
+			$data['attempts'] = $attempts + 1;
+			set_transient( $transient_key, $data, 900 );
+			wp_send_json_error( array( 'message' => __( 'Incorrect code. Please try again.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		// Mark as verified; keep the transient alive for the form submission check.
+		$data['verified'] = true;
+		set_transient( $transient_key, $data, 900 );
+
+		wp_send_json_success( array( 'message' => __( 'Phone number verified successfully.', 'wp-kwtsms' ) ) );
+	}
+
+	// =========================================================================
+	// Frontend: enqueue form-otp.js
+	// =========================================================================
+
+	/**
+	 * Enqueue form-otp.js on the frontend only when at least one integration
+	 * is configured in gate mode and its integration is enabled.
+	 *
+	 * Hooked to wp_enqueue_scripts so it only runs on public pages.
+	 */
+	public function enqueue_form_otp_assets() {
+		$cf7_gate      = ( 'gate' === $this->settings->get( 'integrations.cf7_mode', 'notification' ) )
+			&& $this->settings->get( 'integrations.cf7_enabled', 1 );
+		$wpforms_gate  = ( 'gate' === $this->settings->get( 'integrations.wpforms_mode', 'notification' ) )
+			&& $this->settings->get( 'integrations.wpforms_enabled', 1 );
+		$elementor_gate = ( 'gate' === $this->settings->get( 'integrations.elementor_mode', 'notification' ) )
+			&& $this->settings->get( 'integrations.elementor_enabled', 1 );
+		$gf_gate = ( 'gate' === $this->settings->get( 'integrations.gf_mode', 'notification' ) )
+			&& $this->settings->get( 'integrations.gf_enabled', 1 );
+		$nf_gate = ( 'gate' === $this->settings->get( 'integrations.nf_mode', 'notification' ) )
+			&& $this->settings->get( 'integrations.nf_enabled', 1 );
+
+		if ( ! $cf7_gate && ! $wpforms_gate && ! $elementor_gate && ! $gf_gate && ! $nf_gate ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'kwtsms-form-otp',
+			KWTSMS_OTP_URL . 'assets/js/form-otp.js',
+			array( 'jquery' ),
+			KWTSMS_OTP_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'kwtsms-form-otp',
+			'kwtSmsFormData',
+			array(
+				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+				'nonce'          => wp_create_nonce( 'kwtsms_form_otp_nonce' ),
+				'defaultDialCode' => KwtSMS_API::get_default_dial_code(),
+				'strings' => array(
+					'enterPhone'     => __( 'Enter your phone number to verify', 'wp-kwtsms' ),
+					'sendCode'       => __( 'Send Code', 'wp-kwtsms' ),
+					'sending'        => __( 'Sending...', 'wp-kwtsms' ),
+					'enterCode'      => __( 'Enter the code sent to your phone', 'wp-kwtsms' ),
+					'verifyCode'     => __( 'Verify', 'wp-kwtsms' ),
+					'verifying'      => __( 'Verifying...', 'wp-kwtsms' ),
+					'verified'       => __( 'Phone verified!', 'wp-kwtsms' ),
+					'resend'         => __( 'Resend Code', 'wp-kwtsms' ),
+					'close'          => __( 'Cancel', 'wp-kwtsms' ),
+					'phonePlaceholder' => __( 'e.g. 96598765432', 'wp-kwtsms' ),
+					'codePlaceholder'  => __( '6-digit code', 'wp-kwtsms' ),
+					'modalTitle'     => __( 'Phone Verification Required', 'wp-kwtsms' ),
+					'verifiedMsg'    => __( 'Your phone has been verified. Submitting form...', 'wp-kwtsms' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * AJAX: verify API credentials and return sender IDs + balance.
+	 *
+	 * Called from the Gateway Settings page when the admin clicks
+	 * "Save & Verify Credentials".
+	 *
+	 * Security: nonce + manage_options capability check.
+	 */
+	public function ajax_verify_credentials() {
+		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			return;
+		}
+
+		$username = sanitize_text_field( wp_unslash( $_POST['username'] ?? '' ) );
+		$password = sanitize_text_field( wp_unslash( $_POST['password'] ?? '' ) );
+
+		if ( empty( $username ) || empty( $password ) ) {
+			wp_send_json_error( array( 'message' => __( 'Username and password are required.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		// Use a temporary API instance with the submitted (not yet saved) credentials.
+		$api        = new KwtSMS_API( $username, $password, false );
+		$sender_ids = $api->get_sender_ids();
+		$balance    = $api->get_balance();
+
+		if ( is_wp_error( $sender_ids ) ) {
+			// Clear saved verified state so dependent features stay locked.
+			$gw = get_option( 'kwtsms_otp_gateway', array() );
+			if ( ! empty( $gw['credentials_verified'] ) ) {
+				$gw['credentials_verified'] = 0;
+				update_option( 'kwtsms_otp_gateway', $gw );
+			}
+			wp_send_json_error(
+				array( 'message' => $sender_ids->get_error_message() )
+			);
+			return;
+		}
+
+		// Also fetch coverage to persist alongside sender IDs and balance.
+		$coverage     = $api->get_coverage();
+		$coverage_arr = ( ! is_wp_error( $coverage ) ) ? (array) $coverage : array();
+
+		// Enrich coverage items with dial codes from the local country-codes data.
+		$_countries    = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+		$_dial_name    = array(); // lowercase name → dial
+		$_dial_iso2    = array(); // ISO2            → dial
+		$_name_by_dial = array(); // dial            → name
+		foreach ( $_countries as $_cc ) {
+			$_dial_name[ strtolower( $_cc['name'] ) ] = $_cc['dial'];
+			$_dial_iso2[ $_cc['iso2'] ]                = $_cc['dial'];
+			$_name_by_dial[ $_cc['dial'] ]             = $_cc['name'];
+		}
+		unset( $_countries, $_cc );
+
+		// API status strings that should never be treated as country names.
+		$_cov_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/A', 'NA', 'TRUE', 'FALSE' );
+
+		$coverage_enriched = array();
+		foreach ( $coverage_arr as $_cov ) {
+			// Normalise to (name, dial, iso2) regardless of input shape.
+			if ( is_array( $_cov ) ) {
+				$_cname = (string) ( $_cov['name'] ?? $_cov['country'] ?? $_cov['countryName'] ?? $_cov['CountryName'] ?? '' );
+				$_cdial = (string) ( $_cov['dial'] ?? '' );
+				$_ciso2 = (string) ( $_cov['cc'] ?? $_cov['iso2'] ?? '' );
+			} else {
+				$_cname = trim( (string) $_cov );
+				$_cdial = '';
+				$_ciso2 = '';
+			}
+
+			// Clear name if it is an API status string (OK, ERROR, FAIL, …).
+			if ( in_array( strtoupper( $_cname ), $_cov_api_codes, true ) ) {
+				$_cname = '';
+			}
+
+			// Bare digit string in name field → treat it as dial code.
+			if ( '' !== $_cname && ctype_digit( $_cname ) ) {
+				if ( '' === $_cdial ) {
+					$_cdial = $_cname;
+				}
+				$_cname = '';
+			}
+
+			// Name present but not a recognised country → try to resolve from dial.
+			if ( '' !== $_cname && '' !== $_cdial
+				&& ! isset( $_dial_name[ strtolower( $_cname ) ] )
+				&& isset( $_name_by_dial[ $_cdial ] ) ) {
+				$_cname = $_name_by_dial[ $_cdial ];
+			}
+
+			// Resolve name from dial when name is still missing.
+			if ( '' === $_cname && '' !== $_cdial ) {
+				$_cname = $_name_by_dial[ $_cdial ] ?? '';
+			}
+
+			// Resolve dial from name when dial is missing.
+			if ( '' === $_cdial && '' !== $_cname ) {
+				$_cdial = $_dial_name[ strtolower( $_cname ) ] ?? ( '' !== $_ciso2 ? ( $_dial_iso2[ strtoupper( $_ciso2 ) ] ?? '' ) : '' );
+			}
+
+			// Skip entries we couldn't resolve to a real country name.
+			if ( '' === $_cname ) {
+				continue;
+			}
+
+			$coverage_enriched[] = array_filter( array( 'name' => $_cname, 'dial' => $_cdial ) );
+		}
+		unset( $_dial_name, $_dial_iso2, $_name_by_dial, $_cov_api_codes, $_cov, $_cname, $_cdial, $_ciso2 );
+		$coverage_arr = $coverage_enriched;
+
+		// Persist the verified state, credentials, and all fetched gateway data
+		// so that page reloads (and multi-worker SQLite in WP Playground) do not
+		// lose the sender ID list, balance, or coverage between AJAX and form-save.
+		$gw                         = get_option( 'kwtsms_otp_gateway', array() );
+		$gw['credentials_verified'] = 1;
+		$gw['api_username']         = $username;
+		$gw['api_password']         = $password;
+		$gw['test_mode']            = 1; // Always default to Test Mode ON after login.
+		$gw['sender_ids']           = (array) $sender_ids;
+		$gw['coverage']             = $coverage_arr;
+		if ( ! is_wp_error( $balance ) ) {
+			$gw['balance_available']  = $balance['available'];
+			$gw['balance_purchased']  = $balance['purchased'];
+			$gw['balance_updated_at'] = time();
+		}
+		update_option( 'kwtsms_otp_gateway', $gw );
+
+		$balance_data = is_wp_error( $balance ) ? null : $balance;
+
+		wp_send_json_success(
+			array(
+				'sender_ids' => $sender_ids,
+				'balance'    => $balance_data,
+				'coverage'   => $coverage_arr,
+			)
+		);
+	}
+
+	/**
+	 * AJAX: resend OTP to the user's phone.
+	 *
+	 * Called from the OTP entry page when the user clicks "Resend".
+	 * Supports both login 2FA and password-reset flows by reading the
+	 * `context` POST param ('login' or 'reset') and resolving the correct
+	 * transient prefix accordingly.
+	 *
+	 * Rate limiting is enforced inside KwtSMS_OTP_Engine.
+	 */
+	public function ajax_resend_otp() {
+		check_ajax_referer( 'kwtsms_otp_nonce', 'nonce' );
+
+		$session_token = sanitize_text_field( wp_unslash( $_POST['token'] ?? '' ) );
+		$context       = sanitize_key( wp_unslash( $_POST['context'] ?? 'login' ) );
+
+		// Normalise context to either 'reset' or 'login'.
+		if ( 'reset' !== $context ) {
+			$context = 'login';
+		}
+
+		if ( empty( $session_token ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid session.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		// Resolve transient prefix, template ID, and SMS action by context.
+		if ( 'reset' === $context ) {
+			$transient_key = KwtSMS_Reset_OTP::RESET_TRANSIENT_PREFIX . $session_token;
+			$template_id   = 'reset_otp';
+			$sms_action    = 'reset';
+			$otp_action    = 'reset';
+			$expired_msg   = __( 'Session expired. Please start the password reset process again.', 'wp-kwtsms' );
+		} else {
+			$transient_key = 'kwtsms_partial_auth_' . $session_token;
+			$template_id   = 'login_otp';
+			$sms_action    = 'login';
+			$otp_action    = 'login';
+			$expired_msg   = __( 'Session expired. Please log in again.', 'wp-kwtsms' );
+		}
+
+		// Retrieve session to find the user.
+		$partial = get_transient( $transient_key );
+		if ( ! $partial ) {
+			wp_send_json_error( array( 'message' => $expired_msg ) );
+			return;
+		}
+
+		$user_id = absint( $partial['user_id'] );
+		$phone   = get_user_meta( $user_id, 'kwtsms_phone', true );
+
+		if ( empty( $phone ) ) {
+			wp_send_json_error( array( 'message' => __( 'No phone number on this account.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		// Rate limit checks: per-phone, per-IP, per-account.
+		if ( $this->otp->is_rate_limited( $phone ) ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'Too many requests. Please wait before trying again.', 'wp-kwtsms' ),
+					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
+				)
+			);
+			return;
+		}
+		if ( $this->otp->is_ip_rate_limited( $otp_action, $user_id, $phone ) ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'Too many requests from this location. Please wait before trying again.', 'wp-kwtsms' ),
+					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
+				)
+			);
+			return;
+		}
+		if ( $this->otp->is_user_rate_limited( $user_id, $otp_action, $phone ) ) {
+			wp_send_json_error(
+				array(
+					'message'  => __( 'Too many requests for this account. Please wait before trying again.', 'wp-kwtsms' ),
+					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
+				)
+			);
+			return;
+		}
+
+		// Anti-enumeration: silently succeed for blocked phones without sending SMS.
+		if ( $this->otp->is_phone_blocked( $phone ) ) {
+			$this->api->write_debug_log( 'form_otp', 'Blocked phone attempted OTP: ' . $phone );
+			wp_send_json_success(
+				array(
+					'message'  => __( 'A new code has been sent to your phone.', 'wp-kwtsms' ),
+					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
+				)
+			);
+			return;
+		}
+
+		// Generate and send new OTP.
+		$otp_code = $this->otp->generate( $user_id, $otp_action );
+		$message  = $this->otp->build_message( $otp_code, $template_id );
+		$result   = $this->api->send_sms(
+			$phone,
+			$this->settings->get( 'gateway.sender_id', '' ),
+			$message,
+			$sms_action
+		);
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
+		}
+
+		// Sliding-window counters are recorded inside is_rate_limited(),
+		// is_ip_rate_limited(), and is_user_rate_limited() — no separate
+		// increment calls needed.
+
+		wp_send_json_success(
+			array(
+				'message'  => __( 'A new code has been sent to your phone.', 'wp-kwtsms' ),
+				'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
+			)
+		);
+	}
+
+	/**
+	 * AJAX: send a test SMS to the configured test phone.
+	 *
+	 * Security: nonce + manage_options.
+	 */
+	public function ajax_send_test_sms() {
+		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			return;
+		}
+
+		$phone = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
+		if ( empty( $phone ) ) {
+			$phone = $this->settings->get( 'gateway.test_phone', '' );
+		}
+
+		// Auto-prepend default country code for short (local) numbers.
+		$phone = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
+
+		$normalized = KwtSMS_API::normalize_phone( $phone );
+		if ( is_wp_error( $normalized ) ) {
+			wp_send_json_error( array( 'message' => $normalized->get_error_message() ) );
+			return;
+		}
+
+		// Reject numbers that are too short — country code + local number must be at least 10 digits.
+		// e.g. Kuwait: 965 (3) + 8 local = 11 total. Anything under 10 is clearly incomplete.
+		if ( strlen( $normalized ) < 10 ) {
+			wp_send_json_error( array(
+				'message' => __( 'Phone number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits, 11 digits total).', 'wp-kwtsms' ),
+			) );
+			return;
+		}
+
+		// Build the test message: site name + timestamp in Gulf/Kuwait time (GMT+3).
+		try {
+			$tz_obj = new DateTimeZone( 'Asia/Kuwait' );
+			$dt     = new DateTime( 'now', $tz_obj );
+			$stamp  = $dt->format( 'Y-m-d H:i' ) . ' GMT+3';
+		} catch ( Exception $e ) {
+			$stamp = gmdate( 'Y-m-d H:i' ) . ' GMT+3';
+		}
+		$site_name = get_bloginfo( 'name' );
+		$message   = "Test SMS message from {$site_name}\nStamp: {$stamp}";
+
+		$result    = $this->api->send_sms(
+			$normalized,
+			$this->settings->get( 'gateway.sender_id', '' ),
+			$message,
+			'test'
+		);
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
+		}
+
+		$is_test_mode = (bool) $this->settings->get( 'gateway.test_mode', false );
+
+		// Re-read the gateway option to pick up any balance update made by send_sms().
+		$gw_option = get_option( 'kwtsms_otp_gateway', array() );
+
+		wp_send_json_success(
+			array(
+				'phone'     => esc_html( $normalized ),
+				'test_mode' => $is_test_mode,
+				'msg_id'    => esc_html( $result['msg_id'] ),
+				'balance'   => array(
+					'available' => isset( $gw_option['balance_available'] ) ? (float) $gw_option['balance_available'] : null,
+					'purchased' => isset( $gw_option['balance_purchased'] ) ? (float) $gw_option['balance_purchased'] : null,
+				),
+			)
+		);
+	}
+}

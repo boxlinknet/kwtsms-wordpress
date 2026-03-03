@@ -1,0 +1,39 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "preferredVersions": {
+    "wp": "6.7",
+    "php": "8.3"
+  },
+  "features": {
+    "networking": true
+  },
+  "steps": [
+    {
+      "step": "defineWpConfigConsts",
+      "consts": {
+        "WP_DEBUG": true,
+        "WP_DEBUG_LOG": true,
+        "WP_DEBUG_DISPLAY": false
+      }
+    },
+    {
+      "step": "activatePlugin",
+      "pluginPath": "wp-kwtsms/wp-kwtsms.php"
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "users_can_register": "1"
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php require '/wordpress/wp-load.php'; $u = get_user_by('login','testuser'); if (!$u) { $id = wp_create_user('testuser','Test@12345','test@example.com'); update_user_meta($id,'kwtsms_phone','96598765432'); } echo 'done'; ?>"
+    },
+    {
+      "step": "login",
+      "username": "admin",
+      "password": "password"
+    }
+  ]
+}
