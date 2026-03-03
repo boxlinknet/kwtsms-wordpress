@@ -44,14 +44,9 @@ foreach ( $all_countries as $cc ) {
 	</div>
 
 	<div class="kwtsms-intro-box" style="background:#fff8ed;border:1px solid #FFA200;border-radius:4px;padding:16px 20px;margin-bottom:20px;">
-		<p style="margin:0 0 8px;font-size:14px;line-height:1.6;">
-			<?php esc_html_e( 'kwtSMS is a Kuwaiti SMS gateway with global coverage, trusted by businesses across the GCC. Key features include: global SMS delivery to 200+ countries, credits that never expire, private Sender ID registration, free API testing, competitive rates, and a simple REST API. Create a free account to get started. Enter your kwtSMS API credentials in the', 'wp-kwtsms' ); ?>
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>" style="color:#FFA200;font-weight:600;"><?php esc_html_e( 'Gateway Settings', 'wp-kwtsms' ); ?></a>.
-		</p>
-		<p style="margin:0;">
-			<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener noreferrer" style="color:#FFA200;font-weight:600;">
-				🚀 <?php esc_html_e( 'Sign up & test for free in under a minute', 'wp-kwtsms' ); ?>
-			</a>
+		<p style="margin:0;font-size:14px;line-height:1.6;">
+			<?php esc_html_e( 'kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages anywhere in the world, with private Sender ID, free API testing, non-expiring credits, and competitive flat-rate pricing. Secure, simple to integrate, built to last. Open a free account easily under 1 minute, no papers or payment required.', 'wp-kwtsms' ); ?>
+			<a href="https://www.kwtsms.com/signup/" target="_blank" rel="noopener noreferrer" style="color:#FFA200;font-weight:600;"><?php esc_html_e( '🚀 Click here →', 'wp-kwtsms' ); ?></a>
 		</p>
 	</div>
 
