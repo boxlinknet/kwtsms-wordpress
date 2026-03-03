@@ -882,6 +882,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 
 		// Stub WC functions used inside on_order_status_changed.
 		Functions\when( 'wc_price' )->alias( function ( $amount ) { return (string) $amount; } );
+		Functions\when( 'wp_strip_all_tags' )->alias( 'strip_tags' );
 
 		$woo->on_order_status_changed( 42, 'pending', 'processing', $order );
 
