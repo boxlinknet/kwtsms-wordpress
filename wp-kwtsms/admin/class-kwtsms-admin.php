@@ -822,7 +822,7 @@ class KwtSMS_Admin {
 		// Notice: test mode is active.
 		if ( $this->plugin->settings->get( 'gateway.test_mode', 1 ) ) {
 			printf(
-				'<div class="notice notice-info inline"><p>%s</p></div>',
+				'<div class="notice notice-error inline"><p>%s</p></div>',
 				esc_html__( 'kwtSMS is in Test Mode. SMS messages will be queued but not delivered. Delete from kwtSMS queue to recover credits.', 'wp-kwtsms' )
 			);
 		}
