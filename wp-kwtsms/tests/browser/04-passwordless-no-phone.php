@@ -17,10 +17,10 @@ return [
     'description' => 'Passwordless login attempt for a user with no phone shows a clear error.',
 
     'preconditions' => [
-        'Passwordless login mode enabled (Admin → General → Login Mode = Passwordless)',
+        'Passwordless login mode enabled (Admin  General  Login Mode = Passwordless)',
         'A test user exists WITHOUT a phone number stored in usermeta (kwtsms_phone)',
         'Suggested: create user "nophone_user" via WP admin with no phone number',
-        'test_mode = 1  (Admin → Gateway → Test Mode ON)',
+        'test_mode = 1  (Admin  Gateway  Test Mode ON)',
         'API credentials configured',
     ],
 

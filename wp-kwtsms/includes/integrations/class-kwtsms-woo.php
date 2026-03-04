@@ -91,10 +91,10 @@ class KwtSMS_Woo {
 	 * Send an SMS notification when an order status changes.
 	 *
 	 * Supported transitions:
-	 *   pending|on-hold → processing  (order confirmed / payment received)
-	 *   processing      → on-hold     (order shipped — labelled "Shipped")
-	 *   *               → completed   (order completed)
-	 *   *               → cancelled   (order cancelled)
+	 *   pending|on-hold  processing  (order confirmed / payment received)
+	 *   processing       on-hold     (order shipped — labelled "Shipped")
+	 *   *                completed   (order completed)
+	 *   *                cancelled   (order cancelled)
 	 *
 	 * Phone resolution priority:
 	 *   1. kwtsms_phone user meta (normalised at save time)

@@ -19,8 +19,8 @@ return [
     'description' => 'Welcome SMS is sent to a new user after registration and the entry appears in the debug log.',
 
     'preconditions' => [
-        'User registration enabled in WordPress  (Settings → General → Anyone can register)',
-        'test_mode     = 1  (Admin → Gateway → Test Mode ON)',
+        'User registration enabled in WordPress  (Settings  General  Anyone can register)',
+        'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
         'API credentials configured',
     ],
 

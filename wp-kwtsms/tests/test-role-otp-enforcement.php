@@ -260,7 +260,7 @@ class Test_Role_OTP_Enforcement extends TestCase {
 		$required_roles = array( 'administrator' );
 		$user_roles     = array( 'subscriber' );
 
-		// The bypass condition: intersection is empty → bypass OTP.
+		// The bypass condition: intersection is empty  bypass OTP.
 		$intersect = array_intersect( $user_roles, $required_roles );
 		$this->assertEmpty(
 			$intersect,

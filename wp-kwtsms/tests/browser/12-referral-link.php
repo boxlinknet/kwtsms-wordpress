@@ -18,7 +18,7 @@ return [
     'description' => '"SMS by kwtSMS.com" footer link is visible on all OTP-related pages when referral_link = 1.',
 
     'preconditions' => [
-        'Referral link setting enabled  (Admin → General → Show referral link = ON)',
+        'Referral link setting enabled  (Admin  General  Show referral link = ON)',
         'Passwordless login or 2FA enabled (so OTP pages are accessible)',
         'Admin credentials: admin / admin',
     ],

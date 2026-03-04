@@ -21,8 +21,8 @@ return [
         'Admin access to kwtsms OTP settings',
         'Passwordless login mode enabled  (so OTP can be triggered easily)',
         'Test user exists with kwtsms_phone = 96598765432',
-        'test_mode     = 1  (Admin → Gateway → Test Mode ON)',
-        'debug_logging = 1  (Admin → General → Developer Tools → Debug Logging)',
+        'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
+        'debug_logging = 1  (Admin  General  Developer Tools  Debug Logging)',
         'API credentials configured',
     ],
 

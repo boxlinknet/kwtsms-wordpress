@@ -816,7 +816,7 @@ class KwtSMS_Admin {
 				esc_html__( 'kwtSMS:', 'wp-kwtsms' ),
 				esc_html__( 'API credentials are not configured. The plugin will not be able to send SMS messages.', 'wp-kwtsms' ),
 				esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ),
-				esc_html__( 'Configure now →', 'wp-kwtsms' )
+				esc_html__( 'Configure now ', 'wp-kwtsms' )
 			);
 		}
 
@@ -1199,7 +1199,7 @@ class KwtSMS_Admin {
 					<?php endforeach; ?>
 				</tbody>
 			</table>
-			<p style="margin:6px 0 0;"><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'View full log →', 'wp-kwtsms' ); ?></a></p>
+			<p style="margin:6px 0 0;"><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'View full log ', 'wp-kwtsms' ); ?></a></p>
 			<?php endif; ?>
 		</div>
 		<?php

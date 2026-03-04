@@ -347,7 +347,7 @@ msgstr "اسم المستخدم وكلمة المرور مطلوبان."
 msgid "API credentials are not configured. The plugin will not be able to send SMS messages."
 msgstr "لم يتم تهيئة بيانات اعتماد API. لن تتمكن الإضافة من إرسال رسائل SMS."
 
-msgid "kwtSMS API credentials are not configured. Please go to Settings → kwtSMS → Gateway and enter your API username and password."
+msgid "kwtSMS API credentials are not configured. Please go to Settings  kwtSMS  Gateway and enter your API username and password."
 msgstr "لم يتم تهيئة بيانات اعتماد kwtSMS API. يرجى الانتقال إلى الإعدادات ← kwtSMS ← البوابة وإدخال اسم المستخدم وكلمة المرور."
 
 msgid "Your site is not served over HTTPS. OTP codes may be intercepted in transit. Enable SSL for security."
@@ -362,7 +362,7 @@ msgstr "تحذير kwtSMS:"
 msgid "kwtSMS:"
 msgstr "kwtSMS:"
 
-msgid "Configure now →"
+msgid "Configure now "
 msgstr "تهيئة الآن ←"
 
 msgid "Test SMS sent to %s. Code: %s (check debug.log if in test mode)"
@@ -392,10 +392,10 @@ msgstr "مفاتيح Turnstile"
 msgid "Site Key"
 msgstr "مفتاح الموقع"
 
-msgid "Get keys from Google reCAPTCHA Admin Console →"
+msgid "Get keys from Google reCAPTCHA Admin Console "
 msgstr "احصل على المفاتيح من وحدة تحكم Google reCAPTCHA ←"
 
-msgid "Get keys from Cloudflare Dashboard →"
+msgid "Get keys from Cloudflare Dashboard "
 msgstr "احصل على المفاتيح من لوحة تحكم Cloudflare ←"
 
 msgid "Enable Password Reset OTP"
@@ -434,10 +434,10 @@ msgstr "خدمة الرسائل بواسطة kwtSMS.com"
 msgid "Don't have a kwtSMS account?"
 msgstr "ليس لديك حساب في kwtSMS؟"
 
-msgid "Sign up for free →"
+msgid "Sign up for free "
 msgstr "سجّل مجاناً ←"
 
-msgid "Register or request a Sender ID at kwtSMS →"
+msgid "Register or request a Sender ID at kwtSMS "
 msgstr "سجّل أو اطلب معرّف المرسل في kwtSMS ←"
 
 msgid "API Username appears to be a phone number. Please enter your kwtSMS API username, not your phone number. Sign up at kwtsms.com to obtain API access."
@@ -488,7 +488,7 @@ msgstr "التغطية"
 msgid "Load Active Coverage"
 msgstr "تحميل التغطية النشطة"
 
-msgid "Add more countries to your coverage →"
+msgid "Add more countries to your coverage "
 msgstr "أضف المزيد من الدول إلى تغطيتك ←"
 
 msgid "Phone & Country Settings"

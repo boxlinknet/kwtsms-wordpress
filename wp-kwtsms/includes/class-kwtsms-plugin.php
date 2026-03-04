@@ -507,9 +507,9 @@ class KwtSMS_Plugin {
 
 		// Enrich coverage items with dial codes from the local country-codes data.
 		$_countries    = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
-		$_dial_name    = array(); // lowercase name → dial
-		$_dial_iso2    = array(); // ISO2            → dial
-		$_name_by_dial = array(); // dial            → name
+		$_dial_name    = array(); // lowercase name  dial
+		$_dial_iso2    = array(); // ISO2             dial
+		$_name_by_dial = array(); // dial             name
 		foreach ( $_countries as $_cc ) {
 			$_dial_name[ strtolower( $_cc['name'] ) ] = $_cc['dial'];
 			$_dial_iso2[ $_cc['iso2'] ]                = $_cc['dial'];
@@ -538,7 +538,7 @@ class KwtSMS_Plugin {
 				$_cname = '';
 			}
 
-			// Bare digit string in name field → treat it as dial code.
+			// Bare digit string in name field  treat it as dial code.
 			if ( '' !== $_cname && ctype_digit( $_cname ) ) {
 				if ( '' === $_cdial ) {
 					$_cdial = $_cname;
@@ -546,7 +546,7 @@ class KwtSMS_Plugin {
 				$_cname = '';
 			}
 
-			// Name present but not a recognised country → try to resolve from dial.
+			// Name present but not a recognised country  try to resolve from dial.
 			if ( '' !== $_cname && '' !== $_cdial
 				&& ! isset( $_dial_name[ strtolower( $_cname ) ] )
 				&& isset( $_name_by_dial[ $_cdial ] ) ) {

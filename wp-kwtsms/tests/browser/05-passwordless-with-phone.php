@@ -17,11 +17,11 @@ return [
     'description' => 'Passwordless login happy path — user with phone receives OTP and logs in.',
 
     'preconditions' => [
-        'Passwordless login mode enabled (Admin → General → Login Mode = Passwordless OTP)',
+        'Passwordless login mode enabled (Admin  General  Login Mode = Passwordless OTP)',
         'Test user exists with usermeta kwtsms_phone = 96598765432',
         'Suggested username: testuser  (created via WP admin or blueprint)',
-        'test_mode     = 1  (Admin → Gateway → Test Mode ON)',
-        'debug_logging = 1  (Admin → General → Developer Tools → Debug Logging)',
+        'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
+        'debug_logging = 1  (Admin  General  Developer Tools  Debug Logging)',
         'API credentials configured',
     ],
 

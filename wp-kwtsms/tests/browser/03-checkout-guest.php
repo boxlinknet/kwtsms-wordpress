@@ -19,9 +19,9 @@ return [
     'preconditions' => [
         'WooCommerce plugin active',
         'At least one published product in the shop',
-        'Guest checkout allowed (WooCommerce → Settings → Accounts & Privacy)',
-        'test_mode     = 1  (Admin → Gateway → Test Mode ON)',
-        'debug_logging = 1  (Admin → General → Developer Tools)',
+        'Guest checkout allowed (WooCommerce  Settings  Accounts & Privacy)',
+        'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
+        'debug_logging = 1  (Admin  General  Developer Tools)',
         'API credentials configured',
         'Checkout OTP gate: optional — test handles both enabled and disabled',
     ],

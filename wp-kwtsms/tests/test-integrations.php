@@ -210,7 +210,7 @@ class Test_KwtSMS_Woo extends TestCase {
 	 * creates a proper KwtSMS_Plugin instance without executing the real
 	 * private constructor (which requires a full WordPress environment).
 	 *
-	 * @param array $settings_map Key (dot-notation) → value overrides.
+	 * @param array $settings_map Key (dot-notation)  value overrides.
 	 *
 	 * @return KwtSMS_Plugin
 	 */
@@ -1217,7 +1217,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 	 *
 	 * Optionally accepts a pre-built API mock; otherwise creates a no-op stub.
 	 *
-	 * @param array       $settings_map          Dot-notation key → value map.
+	 * @param array       $settings_map          Dot-notation key  value map.
 	 * @param array       $integration_templates Return value for get_all_integration_templates().
 	 * @param object|null $api_mock              Optional API mock (stdClass with send_sms method).
 	 *
@@ -2144,7 +2144,7 @@ class Test_KwtSMS_GravityForms extends TestCase {
 	/**
 	 * Build a KwtSMS_Plugin mock with configurable settings and optional API.
 	 *
-	 * @param array       $settings_map          Dot-notation key → value map.
+	 * @param array       $settings_map          Dot-notation key  value map.
 	 * @param array       $integration_templates Return value for get_all_integration_templates().
 	 * @param object|null $api_mock              Optional API mock.
 	 *
@@ -2489,7 +2489,7 @@ class Test_KwtSMS_NinjaForms extends TestCase {
 	/**
 	 * Build a KwtSMS_Plugin mock with configurable settings and optional API.
 	 *
-	 * @param array       $settings_map          Dot-notation key → value map.
+	 * @param array       $settings_map          Dot-notation key  value map.
 	 * @param array       $integration_templates Return value for get_all_integration_templates().
 	 * @param object|null $api_mock              Optional API mock.
 	 *

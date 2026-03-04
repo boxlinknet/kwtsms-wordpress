@@ -26,11 +26,11 @@ return [
     'description' => 'Custom OTP template with {otp} and {site_name} placeholders is substituted correctly before sending.',
 
     'preconditions' => [
-        'Admin access to kwtsms OTP → SMS Templates page',
+        'Admin access to kwtsms OTP  SMS Templates page',
         'Passwordless login or 2FA mode enabled (so an OTP can be triggered)',
         'Test user exists with kwtsms_phone = 96598765432',
-        'test_mode     = 1  (Admin → Gateway → Test Mode ON)',
-        'debug_logging = 1  (Admin → General → Developer Tools → Debug Logging)',
+        'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
+        'debug_logging = 1  (Admin  General  Developer Tools  Debug Logging)',
         'API credentials configured',
     ],
 

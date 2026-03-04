@@ -20,10 +20,10 @@ return [
 
     'preconditions' => [
         'WooCommerce plugin active',
-        'WooCommerce → Settings → Accounts & Privacy → Allow customers to create an account on the "My account" page = checked',
-        'kwtsms phone field enabled for WC registration (Admin → General)',
-        'test_mode  = 1  (Admin → Gateway → Test Mode ON)',
-        'debug_logging = 1  (Admin → General → Developer Tools)',
+        'WooCommerce  Settings  Accounts & Privacy  Allow customers to create an account on the "My account" page = checked',
+        'kwtsms phone field enabled for WC registration (Admin  General)',
+        'test_mode  = 1  (Admin  Gateway  Test Mode ON)',
+        'debug_logging = 1  (Admin  General  Developer Tools)',
         'API credentials configured',
     ],
 

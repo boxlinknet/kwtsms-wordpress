@@ -303,7 +303,7 @@ class KwtSMS_OTP_Engine {
 	 *
 	 * @param string $otp_code    OTP code to substitute for {otp} (pass '' for non-OTP templates).
 	 * @param string $template_id Template key: 'login_otp' | 'reset_otp' | 'welcome_sms'.
-	 * @param array<string, string> $extra_vars Optional map of placeholder → value for template-specific
+	 * @param array<string, string> $extra_vars Optional map of placeholder  value for template-specific
 	 *                                          vars, e.g. array( '{name}' => 'Ahmad' ) for welcome SMS.
 	 *
 	 * @return string The fully rendered, sanitised SMS message.
