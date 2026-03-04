@@ -209,15 +209,14 @@ class KwtSMS_API {
 		}
 
 		// ── Balance check ─────────────────────────────────────────────────────
-		// Only run in live mode — test mode never consumes credits.
-		if ( ! $this->test_mode ) {
-			$balance_check = $this->check_balance_before_send();
-			if ( is_wp_error( $balance_check ) ) {
-				$this->write_debug_log( 'send_sms()', 'ABORT: ' . $balance_check->get_error_message() );
-				self::append_send_log( $phone, 'failed', $type );
-				self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $balance_check->get_error_code(), 'message' => $balance_check->get_error_message() ), $this->username );
-				return $balance_check;
-			}
+		// Run in both live and test mode — test mode still consumes no credits
+		// but we still want to surface a zero-balance condition early.
+		$balance_check = $this->check_balance_before_send();
+		if ( is_wp_error( $balance_check ) ) {
+			$this->write_debug_log( 'send_sms()', 'ABORT: ' . $balance_check->get_error_message() );
+			self::append_send_log( $phone, 'failed', $type );
+			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $balance_check->get_error_code(), 'message' => $balance_check->get_error_message() ), $this->username );
+			return $balance_check;
 		}
 
 		$payload = array(
@@ -348,6 +347,17 @@ class KwtSMS_API {
 		}
 
 		// Saved balance is 0 or negative — double-check via a live API call.
+		// Throttle re-checks to once every minute so a burst of simultaneous
+		// login attempts does not fan out into dozens of /balance/ calls.
+		$recheck_key = 'kwtsms_balance_recheck_blocked';
+		if ( get_transient( $recheck_key ) ) {
+			// A re-check already confirmed zero balance recently — block immediately.
+			return new WP_Error(
+				'no_balance',
+				__( 'Insufficient SMS credits. Please top up your kwtsms account.', 'wp-kwtsms' )
+			);
+		}
+
 		$live = $this->get_balance();
 
 		// API unreachable — allow the attempt (fail gracefully at API level).
@@ -359,12 +369,18 @@ class KwtSMS_API {
 		self::update_saved_balance( $live['available'], $live['purchased'] );
 
 		if ( $live['available'] <= 0 ) {
+			// Cache the confirmed-zero result so subsequent attempts within the
+			// next 2 minutes skip the live check entirely.
+			set_transient( $recheck_key, 1, MINUTE_IN_SECONDS );
 			return new WP_Error(
 				'no_balance',
 				__( 'Insufficient SMS credits. Please top up your kwtsms account.', 'wp-kwtsms' )
 			);
 		}
 
+		// Balance is positive — delete any stale "confirmed zero" transient so
+		// future checks don't incorrectly skip sends.
+		delete_transient( $recheck_key );
 		return true;
 	}
 
