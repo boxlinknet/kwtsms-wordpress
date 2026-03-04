@@ -332,9 +332,8 @@ class KwtSMS_OTP_Engine {
 			$message = str_replace( array_keys( $extra_vars ), array_values( $extra_vars ), $message );
 		}
 
-		// Sanitise: strip HTML, remove emoji and unsupported Unicode.
-		$message = wp_strip_all_tags( $message );
-		$message = $this->strip_emoji( $message );
+		// Sanitise: delegate to the canonical cleaner in KwtSMS_API.
+		$message = KwtSMS_API::clean_message( $message );
 
 		return $message;
 	}
@@ -570,22 +569,4 @@ class KwtSMS_OTP_Engine {
 		return filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : '';
 	}
 
-	/**
-	 * Strip emoji and non-SMS-compatible Unicode characters from a string.
-	 *
-	 * The kwtsms API rejects messages containing emoji — they cause the message
-	 * to be stuck in the queue without delivery.
-	 *
-	 * @param string $text Input text.
-	 *
-	 * @return string Cleaned text.
-	 */
-	private function strip_emoji( $text ) {
-		// Remove emoji and supplementary Unicode characters (U+1F000 and above).
-		return preg_replace(
-			'/[\x{1F000}-\x{1FFFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u',
-			'',
-			$text
-		) ?? $text;
-	}
 }

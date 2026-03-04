@@ -73,7 +73,7 @@ $icons = array(
 	<?php $this->render_page_notices(); ?>
 
 	<div class="kwtsms-admin-header">
-		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
+		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'Integrations', 'wp-kwtsms' ); ?></h1>
 	</div>
 
@@ -108,7 +108,7 @@ $icons = array(
 					<?php if ( $int['active'] ) : ?>
 						<span style="color:#00a32a;font-weight:600;">&#10003; <?php esc_html_e( 'Installed', 'wp-kwtsms' ); ?></span>
 					<?php else : ?>
-						<span style="color:#999;">&#8212; <?php esc_html_e( 'Not installed', 'wp-kwtsms' ); ?></span>
+						<span style="color:#999;">&#10007; <?php esc_html_e( 'Not installed', 'wp-kwtsms' ); ?></span>
 					<?php endif; ?>
 				</td>
 				<td style="padding:14px 16px;vertical-align:middle;">

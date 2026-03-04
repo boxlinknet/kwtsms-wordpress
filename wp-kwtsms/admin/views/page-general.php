@@ -22,6 +22,7 @@ $referral_link    = ! empty( $general['referral_link'] );
 $default_cc       = $general['default_country_code'] ?? 'KW';
 $allowed_iso2     = $general['allowed_countries'] ?? array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' );
 $debug_logging        = ! empty( $general['debug_logging'] );
+$balance_failure_mode = $general['balance_failure_mode'] ?? 'block';
 $blocked_phones       = $general['blocked_phones'] ?? '';
 $otp_required_roles   = $general['otp_required_roles'] ?? array();
 $all_wp_roles         = wp_roles()->get_names();
@@ -39,14 +40,17 @@ foreach ( $all_countries as $cc ) {
 	<?php $this->render_page_notices(); ?>
 
 	<div class="kwtsms-admin-header">
-		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
+		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'General Settings', 'wp-kwtsms' ); ?></h1>
 	</div>
 
 	<div class="kwtsms-intro-box" style="background:#fff8ed;border:1px solid #FFA200;border-radius:4px;padding:16px 20px;margin-bottom:20px;">
 		<p style="margin:0;font-size:14px;line-height:1.6;">
-			<?php esc_html_e( 'kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages anywhere in the world, with private Sender ID, free API testing, non-expiring credits, and competitive flat-rate pricing. Secure, simple to integrate, built to last. Open a free account easily under 1 minute, no papers or payment required.', 'wp-kwtsms' ); ?>
-			<a href="https://www.kwtsms.com/signup/" target="_blank" rel="noopener noreferrer" style="color:#FFA200;font-weight:600;"><?php esc_html_e( '🚀 Click here →', 'wp-kwtsms' ); ?></a>
+			<?php esc_html_e( 'kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages anywhere in the world, with private Sender ID, free API testing, non-expiring credits, and competitive flat-rate pricing. Secure, simple to integrate, built to last.', 'wp-kwtsms' ); ?>
+		</p>
+		<p style="margin:8px 0 0;font-size:14px;line-height:1.6;">
+			<?php esc_html_e( 'Open a free account easily under 1 minute, no papers or payment required.', 'wp-kwtsms' ); ?>
+			<a href="https://www.kwtsms.com/signup/" target="_blank" rel="noopener noreferrer" style="color:#FFA200;font-weight:600;"><?php esc_html_e( '🚀 Click here to get started →', 'wp-kwtsms' ); ?></a>
 		</p>
 	</div>
 
@@ -391,7 +395,6 @@ foreach ( $all_countries as $cc ) {
 							'<code>' . esc_html( $log_path ) . '</code>'
 						);
 						?>
-						&mdash;
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-help' ) ); ?>">
 							<?php esc_html_e( 'See Help page for troubleshooting guide →', 'wp-kwtsms' ); ?>
 						</a>
@@ -400,6 +403,39 @@ foreach ( $all_countries as $cc ) {
 			</tr>
 
 		</table>
+
+	<!-- ===== On Balance Failure ===== -->
+	<h2 class="title"><?php esc_html_e( 'On Balance Failure', 'wp-kwtsms' ); ?></h2>
+	<p style="margin-top:-8px;color:#555;font-size:13px;">
+		<?php esc_html_e( 'Decides what happens when kwtSMS cannot send an OTP because your SMS credit balance is zero. An admin email is always sent when this condition is first detected.', 'wp-kwtsms' ); ?>
+	</p>
+	<table class="form-table" role="presentation">
+
+		<tr>
+			<th scope="row"><?php esc_html_e( 'When credits run out', 'wp-kwtsms' ); ?></th>
+			<td>
+				<fieldset>
+					<label style="display:block;margin-bottom:10px;">
+						<input type="radio" name="kwtsms_otp_general[balance_failure_mode]" value="block"
+							<?php checked( $balance_failure_mode, 'block' ); ?> />
+						<strong><?php esc_html_e( 'Block logins (Recommended)', 'wp-kwtsms' ); ?></strong>
+						<p class="description" style="margin-left:24px;">
+							<?php esc_html_e( 'Users who require OTP cannot log in until the account is recharged. This keeps OTP enforcement intact and makes the outage visible.', 'wp-kwtsms' ); ?>
+						</p>
+					</label>
+					<label style="display:block;">
+						<input type="radio" name="kwtsms_otp_general[balance_failure_mode]" value="allow"
+							<?php checked( $balance_failure_mode, 'allow' ); ?> />
+						<?php esc_html_e( 'Allow login without OTP (password only)', 'wp-kwtsms' ); ?>
+						<p class="description" style="margin-left:24px;color:#d63638;">
+							<?php esc_html_e( 'Users bypass OTP and log in with password alone until credits are restored. Choose this only if uninterrupted access is more important than 2FA enforcement.', 'wp-kwtsms' ); ?>
+						</p>
+					</label>
+				</fieldset>
+			</td>
+		</tr>
+
+	</table>
 
 		<?php submit_button( __( 'Save Settings', 'wp-kwtsms' ), 'primary kwtsms-save-btn' ); ?>
 	</form>

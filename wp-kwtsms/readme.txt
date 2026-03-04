@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.8.0
+Stable tag: 2.9.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,23 +18,23 @@ Built for Arabic-speaking markets (Kuwait, Saudi Arabia, UAE, Bahrain, Qatar, Om
 
 = Authentication =
 
-* **2FA Mode** — users log in with username + password, then confirm with a 6-digit SMS code
-* **Passwordless Mode** — users enter their phone number and receive an OTP to log in directly, no password needed
-* **Both Modes** — let each user choose their preferred method
-* **Password Reset via SMS** — replace the email link with an SMS OTP verification flow
-* **Role-Based Enforcement** — configure which user roles must pass OTP (exclude administrators, apply only to customers, etc.)
-* **Welcome SMS** — send a customisable welcome message when a new user registers
+* **2FA Mode:** users log in with username + password, then confirm with a 6-digit SMS code
+* **Passwordless Mode:** users enter their phone number and receive an OTP to log in directly, no password needed
+* **Both Modes:** let each user choose their preferred method
+* **Password Reset via SMS:** replace the email link with an SMS OTP verification flow
+* **Role-Based Enforcement:** configure which user roles must pass OTP (exclude administrators, apply only to customers, etc.)
+* **Welcome SMS:** send a customisable welcome message when a new user registers
 
 = WooCommerce Integration =
 
-* **7 order status notifications** — Processing, On-Hold (Shipped), Completed, Cancelled, Pending Payment, Refunded, Failed
-* **Checkout OTP Gate** — require phone verification before the customer can place an order
-* **Per-status templates** — independent English + Arabic SMS template for every order status
-* **Admin SMS panel** — send a custom SMS to any order's phone number directly from the WooCommerce order screen
+* **7 order status notifications:** Processing, On-Hold (Shipped), Completed, Cancelled, Pending Payment, Refunded, Failed
+* **Checkout OTP Gate:** require phone verification before the customer can place an order
+* **Per-status templates:** independent English + Arabic SMS template for every order status
+* **Admin SMS panel:** send a custom SMS to any order's phone number directly from the WooCommerce order screen
 
 = Contact Form Integrations =
 
-Each integration supports two modes — **Notification** (send a confirmation SMS on submit) and **OTP Gate** (block submission until the phone number is verified):
+Each integration supports two modes: **Notification** (send a confirmation SMS on submit) and **OTP Gate** (block submission until the phone number is verified):
 
 * Contact Form 7
 * WPForms
@@ -47,7 +47,7 @@ Each integration supports two modes — **Notification** (send a confirmation SM
 * Per-phone and per-IP rate limiting to prevent OTP flooding
 * Attempt lockout after configurable max failures
 * Google reCAPTCHA v3 and Cloudflare Turnstile support
-* All credentials stored server-side — never output to HTML
+* All credentials stored server-side, never output to HTML
 * Nonces on every form and AJAX action
 * Anti-enumeration: password reset never reveals whether an account exists
 
@@ -55,11 +55,11 @@ Each integration supports two modes — **Notification** (send a confirmation SM
 
 Hooks for custom workflows:
 
-* `kwtsms_otp_before_send` — filter OTP data before sending
-* `kwtsms_otp_message` — filter the SMS text
-* `kwtsms_otp_phone_number` — filter the normalised phone number
-* `kwtsms_otp_verified` — action fired on successful verification
-* `kwtsms_otp_send_failed` — action fired on send failure
+* `kwtsms_otp_before_send`: filter OTP data before sending
+* `kwtsms_otp_message`: filter the SMS text
+* `kwtsms_otp_phone_number`: filter the normalised phone number
+* `kwtsms_otp_verified`: action fired on successful verification
+* `kwtsms_otp_send_failed`: action fired on send failure
 
 = External Service =
 
@@ -74,7 +74,7 @@ A kwtSMS account with SMS credits is required. All SMS messages are sent through
 
 = Test Mode =
 
-Enable **Test Mode** in the Gateway settings to develop and test without consuming SMS credits. In test mode the API call is made with the `test=1` flag — OTP codes are generated and stored normally, and the code is written to the WordPress debug log so you can complete flows during development.
+Enable **Test Mode** in the Gateway settings to develop and test without consuming SMS credits. In test mode the API call is made with the `test=1` flag. OTP codes are generated and stored normally, and the code is written to the WordPress debug log so you can complete flows during development.
 
 = Languages =
 
@@ -124,11 +124,11 @@ The plugin works over HTTP, but sends an admin notice recommending HTTPS for sec
 
 = How do I test without sending real SMS messages? =
 
-Enable **Test Mode** in Gateway Settings. With test mode on, the API receives `test=1` and does not deliver the message — no SMS credits are consumed. The OTP code is written to the WordPress debug log (`wp-content/debug.log`) so you can complete the flow.
+Enable **Test Mode** in Gateway Settings. With test mode on, the API receives `test=1` and does not deliver the message. No SMS credits are consumed. The OTP code is written to the WordPress debug log (`wp-content/debug.log`) so you can complete the flow.
 
 = What is the OTP Gate mode for contact forms? =
 
-In OTP Gate mode, the form submission is blocked until the user verifies their phone number via SMS. The verification token is validated server-side before the form data is processed — it cannot be bypassed by manipulating the front end.
+In OTP Gate mode, the form submission is blocked until the user verifies their phone number via SMS. The verification token is validated server-side before the form data is processed. It cannot be bypassed by manipulating the front end.
 
 = Can I customize the SMS message? =
 
@@ -156,16 +156,24 @@ All settings are in `wp_options`. Phone numbers are in `wp_usermeta`. OTP tokens
 
 == Screenshots ==
 
-1. Gateway settings page — enter API credentials, select Sender ID, and view account balance.
-2. General settings — choose OTP mode, configure code length, expiry, rate limits, and CAPTCHA.
-3. SMS Templates — English and Arabic templates with live character counter and page indicator.
+1. Gateway settings page: enter API credentials, select Sender ID, and view account balance.
+2. General settings: choose OTP mode, configure code length, expiry, rate limits, and CAPTCHA.
+3. SMS Templates: English and Arabic templates with live character counter and page indicator.
 4. OTP verification screen shown to users during login.
-5. Passwordless login — users enter their phone number to receive an OTP.
-6. WooCommerce integration — per-status SMS templates and checkout OTP gate settings.
-7. Integrations overview page — enable and configure CF7, WPForms, Elementor, Gravity Forms, and Ninja Forms.
-8. SMS Logs — full send history with phone number, message, and status.
+5. Passwordless login: users enter their phone number to receive an OTP.
+6. WooCommerce integration: per-status SMS templates and checkout OTP gate settings.
+7. Integrations overview page: enable and configure CF7, WPForms, Elementor, Gravity Forms, and Ninja Forms.
+8. SMS Logs: full send history with phone number, message, and status.
 
 == Changelog ==
+
+= 2.9.0 =
+* Security: added `KwtSMS_API::clean_message()` — comprehensive SMS message sanitisation covering HTML tags, non-breaking spaces, invisible/directional Unicode (ZWS, ZWJ, BOM, RTL/LTR marks, variation selectors), and all known Unicode 15 emoji ranges. Applied in `send_sms()` to cover all callers automatically.
+* Security: templates are now sanitised through the same cleaner on save — previously only 3 emoji ranges were stripped.
+* Feature: "On Balance Failure" setting on the General page — admin can choose between blocking logins (default) or allowing password-only login when SMS credits run out.
+* Fix: admin email sent on zero-balance condition now describes the actual behaviour based on the configured setting.
+* Fix: removed stray `&mdash;` HTML entity in the Developer Tools section of the General settings page.
+* Fix: double country-code prepend bug on user profile page when a full international number was entered in the local number field.
 
 = 2.8.0 =
 * Initial public release.

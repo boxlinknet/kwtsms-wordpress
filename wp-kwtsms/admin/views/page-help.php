@@ -16,7 +16,7 @@ $has_credentials      = $credentials_verified
 	&& ! empty( $settings->get( 'gateway.api_username', '' ) )
 	&& ! empty( $settings->get( 'gateway.api_password', '' ) );
 $has_sender      = $credentials_verified && ! empty( $settings->get( 'gateway.sender_id', '' ) );
-$test_mode       = $credentials_verified ? (bool) $settings->get( 'gateway.test_mode', 1 ) : null;
+$test_mode       = (bool) $settings->get( 'gateway.test_mode', 1 );
 $debug_logging   = (bool) $settings->get( 'general.debug_logging', 0 );
 // Relative content path (e.g. "wp-content") for display — avoids showing full server paths.
 $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
@@ -28,7 +28,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 	<?php $this->render_page_notices(); ?>
 
 	<div class="kwtsms-admin-header">
-		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
+		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'Help &amp; Support', 'wp-kwtsms' ); ?></h1>
 	</div>
 
@@ -42,8 +42,8 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 					<?php if ( $has_credentials ) : ?>
 					<span style="color:#46b450;">&#10003; <?php esc_html_e( 'Configured', 'wp-kwtsms' ); ?></span>
 					<?php else : ?>
-					<span style="color:#dc3232;">&#10007; <?php esc_html_e( 'Not configured', 'wp-kwtsms' ); ?></span>
-					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms' ); ?></a>
+					<span style="color:#dc3232;">&#10007; <?php esc_html_e( 'Not configured', 'wp-kwtsms' ); ?></span>,
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms' ); ?></a>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -53,17 +53,15 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 					<?php if ( $has_sender ) : ?>
 					<span style="color:#46b450;">&#10003; <?php echo esc_html( $settings->get( 'gateway.sender_id', '' ) ); ?></span>
 					<?php else : ?>
-					<span style="color:#dc3232;">&#10007; <?php esc_html_e( 'Not selected', 'wp-kwtsms' ); ?></span>
-					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms' ); ?></a>
+					<span style="color:#dc3232;">&#10007; <?php esc_html_e( 'Not selected', 'wp-kwtsms' ); ?></span>,
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms' ); ?></a>
 					<?php endif; ?>
 				</td>
 			</tr>
 			<tr>
 				<td style="padding:6px 0;"><strong><?php esc_html_e( 'Test Mode', 'wp-kwtsms' ); ?></strong></td>
 				<td>
-					<?php if ( null === $test_mode ) : ?>
-					<span style="color:#888;">—</span>
-					<?php elseif ( $test_mode ) : ?>
+					<?php if ( $test_mode ) : ?>
 					<span style="color:#FFA200;font-weight:600;"><?php esc_html_e( 'ON, no real SMS is sent', 'wp-kwtsms' ); ?></span>
 					<?php else : ?>
 					<span style="color:#46b450;"><?php esc_html_e( 'OFF, live SMS delivery', 'wp-kwtsms' ); ?></span>
@@ -74,11 +72,11 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 				<td style="padding:6px 0;"><strong><?php esc_html_e( 'Debug Logging', 'wp-kwtsms' ); ?></strong></td>
 				<td>
 					<?php if ( $debug_logging ) : ?>
-					<span style="color:#FFA200;font-weight:600;"><?php esc_html_e( 'ON', 'wp-kwtsms' ); ?></span>
-					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ); ?>"><?php echo esc_html( $content_dir . '/kwtsms-debug.log' ); ?></a>
+					<span style="color:#FFA200;font-weight:600;"><?php esc_html_e( 'ON', 'wp-kwtsms' ); ?></span>,
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ); ?>"><?php echo esc_html( $content_dir . '/kwtsms-debug.log' ); ?></a>
 					<?php else : ?>
-					<span style="color:#757575;"><?php esc_html_e( 'OFF', 'wp-kwtsms' ); ?></span>
-					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>"><?php esc_html_e( 'Enable in General Settings →', 'wp-kwtsms' ); ?></a>
+					<span style="color:#757575;"><?php esc_html_e( 'OFF', 'wp-kwtsms' ); ?></span>,
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>"><?php esc_html_e( 'Enable in General Settings →', 'wp-kwtsms' ); ?></a>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -102,10 +100,10 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 						); ?>
 					</span>
 					<?php endif; ?>
-					&mdash; <a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits →', 'wp-kwtsms' ); ?></a>
+					, <a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits →', 'wp-kwtsms' ); ?></a>
 					<?php else : ?>
-					<span style="color:#888;"><?php esc_html_e( 'Not available, login on the Gateway page first.', 'wp-kwtsms' ); ?></span>
-					&mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms' ); ?></a>
+					<span style="color:#888;"><?php esc_html_e( 'Not available, login on the Gateway page first.', 'wp-kwtsms' ); ?></span>,
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms' ); ?></a>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -121,18 +119,18 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<ul style="font-size:14px;line-height:2;">
 			<li>
 				<strong><?php esc_html_e( 'kwtSMS FAQ:', 'wp-kwtsms' ); ?></strong>
-				<a href="https://www.kwtsms.com/faq/" target="_blank" rel="noopener">kwtsms.com/faq</a>
-				&mdash; <?php esc_html_e( 'answers to common questions about credits, sender IDs, OTP, and delivery.', 'wp-kwtsms' ); ?>
+				<a href="https://www.kwtsms.com/faq/" target="_blank" rel="noopener">kwtsms.com/faq/</a>,
+				<?php esc_html_e( 'answers to common questions about credits, sender IDs, OTP, and delivery.', 'wp-kwtsms' ); ?>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'kwtSMS Support:', 'wp-kwtsms' ); ?></strong>
-				<a href="https://www.kwtsms.com/support.html" target="_blank" rel="noopener">kwtsms.com/support.html</a>
-				&mdash; <?php esc_html_e( 'open a support ticket or browse help articles.', 'wp-kwtsms' ); ?>
+				<a href="https://www.kwtsms.com/support.html" target="_blank" rel="noopener">kwtsms.com/support.html</a>,
+				<?php esc_html_e( 'open a support ticket or browse help articles.', 'wp-kwtsms' ); ?>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Contact kwtSMS:', 'wp-kwtsms' ); ?></strong>
-				<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener">kwtsms.com/#contact</a>
-				&mdash; <?php esc_html_e( 'reach the kwtSMS team directly for Sender ID registration and account issues.', 'wp-kwtsms' ); ?>
+				<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener">kwtsms.com/#contact</a>,
+				<?php esc_html_e( 'reach the kwtSMS team directly for Sender ID registration and account issues.', 'wp-kwtsms' ); ?>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'kwtSMS API Documentation:', 'wp-kwtsms' ); ?></strong>
@@ -260,7 +258,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<p><?php esc_html_e( 'Choose the collection method that matches how your users join your site:', 'wp-kwtsms' ); ?></p>
 
 		<h3><?php esc_html_e( 'Method 1: WooCommerce Registration (recommended for WooCommerce stores)', 'wp-kwtsms' ); ?></h3>
-		<p><?php esc_html_e( 'When WooCommerce is active, the plugin automatically adds a Phone Number field to the WooCommerce My Account registration form and to checkout. The number is saved to the user profile on account creation — no extra steps needed.', 'wp-kwtsms' ); ?></p>
+		<p><?php esc_html_e( 'When WooCommerce is active, the plugin automatically adds a Phone Number field to the WooCommerce My Account registration form and to checkout. The number is saved to the user profile on account creation, no extra steps needed.', 'wp-kwtsms' ); ?></p>
 		<ol>
 			<li><?php esc_html_e( 'Enable the WooCommerce integration: Integrations → WooCommerce → Enable WooCommerce SMS Integration.', 'wp-kwtsms' ); ?></li>
 			<li><?php esc_html_e( 'Phone collection is active automatically on the My Account registration form and checkout page.', 'wp-kwtsms' ); ?></li>
@@ -356,14 +354,14 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 
 		<!-- KWT-SMS promotional sender ID warning -->
 		<div style="background:#fef0f0;border-left:4px solid #d63638;padding:14px 18px;border-radius:0 4px 4px 0;margin:16px 0 24px;font-size:14px;">
-			<h3 style="margin-top:0;color:#d63638;"><?php esc_html_e( '⛔ KWT-SMS Promotional Sender ID: For Testing Only — Do Not Use in Production', 'wp-kwtsms' ); ?></h3>
+			<h3 style="margin-top:0;color:#d63638;"><?php esc_html_e( '⛔ KWT-SMS Promotional Sender ID: For Testing Only. Do Not Use in Production', 'wp-kwtsms' ); ?></h3>
 			<p style="margin-top:0;">
 				<?php esc_html_e( 'The shared "KWT-SMS" sender ID is a public promotional channel. It is only suitable for initial testing while you are setting up the plugin. It must not be used in a live production site.', 'wp-kwtsms' ); ?>
 			</p>
 			<ul style="margin-left:20px;line-height:1.9;margin-bottom:12px;">
 				<li>
 					<strong><?php esc_html_e( 'Severe delivery delays:', 'wp-kwtsms' ); ?></strong>
-					<?php esc_html_e( 'Promotional sender IDs are lower priority by design. Delivery can take 120 seconds or more — far too slow for OTP codes that users expect in seconds.', 'wp-kwtsms' ); ?>
+					<?php esc_html_e( 'Promotional sender IDs are lower priority by design. Delivery can take 120 seconds or more, far too slow for OTP codes that users expect in seconds.', 'wp-kwtsms' ); ?>
 				</li>
 				<li>
 					<strong><?php esc_html_e( 'Virgin Mobile (Zain-MVNO) numbers never receive the message:', 'wp-kwtsms' ); ?></strong>
