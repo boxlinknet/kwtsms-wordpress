@@ -1,9 +1,36 @@
+# ============================================================
+# kwtSMS WordPress Plugin — .gitignore
+# Only the pure plugin source is tracked.
+# ============================================================
+
+# Claude Code / AI tools
+CLAUDE.md
+.claude/
 .worktrees/
 
-# Local config / secrets — never commit
-CLAUDE.md
-env.txt
-.gitignore
+# Local docs, notes, screenshots — not for distribution
+docs/
 
-# Planning docs (local only)
-docs/plans/
+# Release zips
+*.zip
+
+# Composer dependencies (install with: composer install)
+vendor/
+composer.lock
+
+# Node
+node_modules/
+
+# Logs
+*.log
+
+# Secrets / local config
+env.txt
+auth-state.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PHPUnit / static analysis artifacts
+.phpunit.result.cache
