@@ -26,6 +26,7 @@ class Test_KwtSMS_API extends TestCase {
 		Functions\when( 'sanitize_key' )->alias( function ( $v ) {
 			return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $v ) );
 		} );
+		Functions\when( 'wp_strip_all_tags' )->alias( 'strip_tags' );
 	}
 
 	protected function tearDown(): void {
