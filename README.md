@@ -1,8 +1,8 @@
-# kwtSMS — OTP & SMS Notifications — WordPress Plugin
+# kwtSMS: OTP & SMS Notifications — WordPress Plugin
 
 Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress — powered by the [kwtSMS](https://www.kwtsms.com) gateway.
 
-**Version:** 2.8.0 | **Requires:** WordPress 6.0+, PHP 7.4+
+**Version:** 2.9.0 | **Requires:** WordPress 6.0+, PHP 7.4+
 
 > Don't have a kwtSMS account? [Sign up at kwtsms.com →](https://www.kwtsms.com/signup)
 
@@ -61,16 +61,8 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 
 ## Screenshots
 
-| | |
-|---|---|
-| ![Login page](docs/screenshots/2.x/v2.x-login-page.png) | ![OTP entry](docs/screenshots/2.x/v2.x-otp-entry-page.png) |
-| Login page | OTP entry page |
-| ![Admin menu](docs/screenshots/2.x/v2.1-admin-menu.png) | ![Gateway](docs/screenshots/2.x/v2.2-gateway-page.png) |
-| Admin menu (kwtSMS) | Gateway settings |
-| ![WooCommerce](docs/screenshots/2.x/v2.3-woo-integrations.png) | ![CF7 gate](docs/screenshots/2.x/v2.7-cf7-gate-mode.png) |
-| WooCommerce order SMS | CF7 OTP gate mode toggle |
-| ![Gravity Forms](docs/screenshots/2.x/v2.8-gravityforms-tab.png) | ![Ninja Forms](docs/screenshots/2.x/v2.8-ninjaforms-tab.png) |
-| Gravity Forms integration | Ninja Forms integration |
+Screenshots are stored in `docs/screenshots/` (local only, not tracked in git).
+WordPress.org plugin page screenshots are in `assets/screenshot-*.png`.
 
 ---
 
@@ -89,7 +81,7 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 ## Installation
 
 1. Clone or download this repository
-2. Upload the `wp-kwtsms/` directory to `/wp-content/plugins/`
+2. The repo root IS the plugin — upload the entire folder as `wp-kwtsms/` inside `/wp-content/plugins/`
 3. Activate from **Plugins → Installed Plugins**
 4. Go to **kwtSMS → Gateway** and enter your API credentials
 5. Click **Login** to verify credentials and load your Sender IDs
@@ -99,8 +91,11 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 
 ## Plugin Structure
 
+The repository root is the plugin directory (no subdirectory).
+Upload the repo as `wp-kwtsms/` when installing manually.
+
 ```
-wp-kwtsms/
+wp-kwtsms/  ← this is the repo root
 ├── wp-kwtsms.php
 ├── includes/
 │   ├── class-kwtsms-plugin.php       # Main service locator (singleton)
@@ -139,7 +134,8 @@ wp-kwtsms/
 │   ├── wp-kwtsms.pot
 │   ├── wp-kwtsms-ar.po / .mo
 │   └── wp-kwtsms-en_US.po / .mo
-├── tests/                # PHPUnit 9 + Brain\Monkey (191 tests)
+├── tests/                # PHPUnit 9 + Brain\Monkey (255 tests)
+├── readme.txt            # WordPress.org readme
 └── uninstall.php
 ```
 
@@ -147,12 +143,18 @@ wp-kwtsms/
 
 ## Testing Locally (WP Playground)
 
-No Docker required:
+No Docker required. The repo root is the plugin, so use a named symlink
+so Playground mounts it as `plugins/wp-kwtsms`:
 
 ```bash
-cd wp-kwtsms/
-npx @wp-playground/cli@latest server --auto-mount
-# Opens at http://localhost:9400
+# One-time setup
+ln -s /path/to/this/repo /tmp/wp-kwtsms
+
+# Start Playground
+npx @wp-playground/cli@latest server \
+  --auto-mount /tmp/wp-kwtsms \
+  --follow-symlinks
+# WordPress at http://127.0.0.1:9400  (admin / password)
 ```
 
 Enable **Test Mode** in Gateway settings — the OTP code is written to `wp-content/debug.log`.
@@ -160,7 +162,6 @@ Enable **Test Mode** in Gateway settings — the OTP code is written to `wp-cont
 ### Running the Test Suite
 
 ```bash
-cd wp-kwtsms/
 composer install
 ./vendor/bin/phpunit --no-coverage
 ```
@@ -234,7 +235,7 @@ wp user update admin --user_pass="NewSecurePassword!" --allow-root
 ```
 
 **Option 3 — SFTP / cPanel**
-Rename `wp-kwtsms/wp-kwtsms.php` to `wp-kwtsms.php.disabled` — WP deactivates the plugin automatically.
+Rename `wp-kwtsms.php` to `wp-kwtsms.php.disabled` inside the `wp-kwtsms/` plugin folder — WP deactivates the plugin automatically.
 
 ---
 
@@ -255,6 +256,13 @@ Full error code reference: [kwtSMS API Documentation (PDF)](https://www.kwtsms.c
 ---
 
 ## Changelog
+
+### 2.9.0
+- SMS message sanitisation via `KwtSMS_API::clean_message()` — strips HTML, invisible Unicode, and all emoji before sending
+- Templates cleaned on save (not just on send)
+- Balance pre-flight check — blocks API calls when credits are zero; self-heals after recharge with 1-minute re-check throttle
+- On Balance Failure setting — choose between blocking logins or allowing password-only login when SMS credits run out
+- Repository restructured: repo root is now the plugin (no `wp-kwtsms/` subdirectory)
 
 ### 2.8.0
 - Gravity Forms integration: notification SMS on submission + OTP gate mode
