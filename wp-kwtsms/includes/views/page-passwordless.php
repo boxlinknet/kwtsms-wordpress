@@ -19,17 +19,23 @@ $login_url       = wp_login_url();
 /* $plugin_settings is passed as a local variable from KwtSMS_Login_OTP::render_passwordless_page() */
 $captcha = new KwtSMS_Captcha( $plugin_settings ?? new KwtSMS_Settings() );
 
-// Build site logo or site name for the header.
+// Build site logo — matches WordPress login page header behaviour.
 $custom_logo_id = get_theme_mod( 'custom_logo' );
 if ( $custom_logo_id ) {
+	// Custom logo set via Customizer.
 	$logo_html = wp_get_attachment_image(
 		$custom_logo_id,
-		'medium',
+		array( 312, 84 ),
 		false,
-		array( 'style' => 'max-height:80px;width:auto;margin-bottom:12px;' )
+		array( 'alt' => $site_name )
 	);
+} elseif ( has_site_icon() ) {
+	// Site icon — WordPress login page uses this as fallback since WP 5.5.
+	$logo_html = '<img src="' . esc_url( get_site_icon_url( 84 ) ) . '" alt="' . esc_attr( $site_name ) . '" style="max-height:84px;width:auto;" />';
 } else {
-	$logo_html = '<span style="font-size:1.4em;font-weight:700;">' . esc_html( $site_name ) . '</span>';
+	// No logo — visually hide the text with screen-reader-text so WordPress login CSS
+	// (#login h1 a background-image) shows the WordPress logo instead.
+	$logo_html = '<span class="screen-reader-text">' . esc_html( $site_name ) . '</span>';
 }
 
 // Referral link settings.

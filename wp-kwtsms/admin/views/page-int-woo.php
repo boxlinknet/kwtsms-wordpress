@@ -125,7 +125,7 @@ $customer_status_labels = array(
 	<?php $this->render_page_notices(); ?>
 
 	<div class="kwtsms-admin-header">
-		<img src="https://www.kwtsms.com/images/kwtsms_logo_60.png" alt="kwtSMS" class="kwtsms-logo" />
+		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'WooCommerce Settings', 'wp-kwtsms' ); ?></h1>
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-integrations' ) ); ?>" class="button" style="margin-left:16px;align-self:center;">
 			&larr; <?php esc_html_e( 'All Integrations', 'wp-kwtsms' ); ?>

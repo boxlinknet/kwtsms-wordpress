@@ -145,6 +145,9 @@ class KwtSMS_API {
 	public function send_sms( $phone, $sender_id, $message, $type = 'login' ) {
 		$this->write_debug_log( 'send_sms()', "type={$type} phone={$phone} sender={$sender_id}" );
 
+		// ── Clean message — strip HTML, emoji, invisible chars (covers all callers)
+		$message = self::clean_message( $message );
+
 		// ── Sanity checks ──────────────────────────────────────────────────────
 		if ( empty( $phone ) ) {
 			$err = new WP_Error(
@@ -523,6 +526,110 @@ class KwtSMS_API {
 		}
 
 		update_option( 'kwtsms_otp_attempt_log', $log, false );
+	}
+
+	// =========================================================================
+	// Message sanitisation (static — used by send_sms and build_message)
+	// =========================================================================
+
+	/**
+	 * Sanitise an SMS message before it is sent to the gateway.
+	 *
+	 * Performs four passes in order:
+	 *
+	 *  1. Strip HTML tags — admin-entered templates or WooCommerce order data can
+	 *     contain markup that looks fine in a browser but breaks SMS encoding.
+	 *
+	 *  2. Replace non-breaking space (U+00A0) with a plain space — copy-pasted
+	 *     content from web pages often contains NBSP which appears identical on
+	 *     screen but is encoded differently and can corrupt UTF-8 SMS messages.
+	 *
+	 *  3. Strip invisible / directional Unicode characters — zero-width spaces,
+	 *     joiners, BOM, RTL/LTR marks, soft hyphen, and emoji variation selectors.
+	 *     These are invisible to the eye but can cause the gateway to reject the
+	 *     message or increase segment count unexpectedly.
+	 *
+	 *  4. Strip emoji and non-SMS-compatible symbols — the kwtsms API silently
+	 *     queues messages that contain emoji without delivering them. Covers all
+	 *     known Unicode emoji blocks as of Unicode 15 (U+00A9–U+1FFFF + Tags).
+	 *
+	 * Arabic and other BMP characters are preserved untouched.
+	 *
+	 * @param string $message Raw message text.
+	 *
+	 * @return string Cleaned message ready for the API.
+	 */
+	public static function clean_message( $message ) {
+		// 1. Strip HTML tags.
+		$message = wp_strip_all_tags( (string) $message );
+
+		// 2. Non-breaking space → regular space.
+		$message = preg_replace( '/\x{00A0}/u', ' ', $message ) ?? $message;
+
+		// 3. Invisible / directional Unicode characters:
+		//    U+00AD  Soft Hyphen
+		//    U+200B  Zero Width Space
+		//    U+200C  Zero Width Non-Joiner
+		//    U+200D  Zero Width Joiner (used in emoji ZWJ sequences)
+		//    U+200E  Left-to-Right Mark
+		//    U+200F  Right-to-Left Mark
+		//    U+202A–U+202E  Directional formatting (LRE, RLE, PDF, LRO, RLO)
+		//    U+2060  Word Joiner
+		//    U+FEFF  BOM / Zero Width No-Break Space
+		//    U+FE0E  Variation Selector-15 (force text presentation)
+		//    U+FE0F  Variation Selector-16 (force emoji presentation)
+		$message = preg_replace(
+			'/[\x{00AD}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}\x{FEFF}\x{FE0E}\x{FE0F}]/u',
+			'',
+			$message
+		) ?? $message;
+
+		// 4. Emoji and non-SMS-compatible symbols (Unicode 15, all known emoji blocks):
+		//    U+00A9–U+00AE   © ®
+		//    U+203C U+2049   ‼ ⁉
+		//    U+2122 U+2139   ™ ℹ
+		//    U+2194–U+2199   Arrow symbols
+		//    U+21A9–U+21AA   Hooking arrows
+		//    U+231A–U+231B   Watch / Hourglass
+		//    U+2328          Keyboard
+		//    U+23CF          Eject
+		//    U+23E9–U+23F3   Media / clock buttons
+		//    U+23F8–U+23FA   Pause / Stop / Record
+		//    U+24C2          Circled M
+		//    U+25AA–U+25AB   Small squares
+		//    U+25B6 U+25C0   Play / Reverse
+		//    U+25FB–U+25FE   Medium squares
+		//    U+2600–U+26FF   Miscellaneous Symbols (sun, phone, etc.)
+		//    U+2702–U+27B0   Dingbats
+		//    U+27BF          Double curly loop
+		//    U+2934–U+2935   Curved arrows
+		//    U+2B05–U+2B07   Arrow buttons
+		//    U+2B1B–U+2B1C   Large squares
+		//    U+2B50 U+2B55   Star / Circle
+		//    U+3030 U+303D   Wavy dash / Part alternation mark
+		//    U+3297 U+3299   Circled CJK ideographs
+		//    U+1F000–U+1FFFF Full supplementary emoji plane
+		//    U+E0000–U+E007F Tags (used in keycap / flag sequences)
+		$message = preg_replace(
+			'/[' .
+			'\x{00A9}\x{00AE}' .
+			'\x{203C}\x{2049}\x{2122}\x{2139}' .
+			'\x{2194}-\x{2199}\x{21A9}-\x{21AA}' .
+			'\x{231A}-\x{231B}\x{2328}\x{23CF}\x{23E9}-\x{23F3}\x{23F8}-\x{23FA}' .
+			'\x{24C2}' .
+			'\x{25AA}-\x{25AB}\x{25B6}\x{25C0}\x{25FB}-\x{25FE}' .
+			'\x{2600}-\x{26FF}' .
+			'\x{2702}-\x{27B0}\x{27BF}' .
+			'\x{2934}-\x{2935}\x{2B05}-\x{2B07}\x{2B1B}-\x{2B1C}\x{2B50}\x{2B55}' .
+			'\x{3030}\x{303D}\x{3297}\x{3299}' .
+			'\x{1F000}-\x{1FFFF}' .
+			'\x{E0000}-\x{E007F}' .
+			']/u',
+			'',
+			$message
+		) ?? $message;
+
+		return trim( $message );
 	}
 
 	// =========================================================================

@@ -302,6 +302,9 @@ class KwtSMS_Admin {
 			'default_country_code' => $default_cc,
 			'allowed_countries'    => $allowed_countries,
 			'debug_logging'        => ! empty( $raw['debug_logging'] ) ? 1 : 0,
+			'balance_failure_mode' => in_array( $raw['balance_failure_mode'] ?? '', array( 'block', 'allow' ), true )
+				? $raw['balance_failure_mode']
+				: 'block',
 			'blocked_phones'       => sanitize_textarea_field( wp_unslash( $raw['blocked_phones'] ?? '' ) ),
 			'otp_required_roles'   => $otp_required_roles,
 			'welcome_sms_enabled'  => ! empty( $raw['welcome_sms_enabled'] ) ? 1 : 0,
@@ -619,21 +622,19 @@ class KwtSMS_Admin {
 	}
 
 	/**
-	 * Strip HTML and emoji from a template string.
+	 * Strip HTML, emoji, and invisible Unicode characters from a template string.
+	 *
+	 * Unslashes WordPress magic-quotes, passes through sanitize_textarea_field
+	 * (invalid UTF-8, basic tag stripping, whitespace normalisation), then
+	 * delegates to KwtSMS_API::clean_message() for comprehensive emoji and
+	 * hidden-character removal.  What is stored is exactly what will be sent.
 	 *
 	 * @param string $content Raw template content.
 	 *
 	 * @return string Clean template.
 	 */
 	private function sanitize_template_content( $content ) {
-		$content = wp_strip_all_tags( sanitize_textarea_field( wp_unslash( $content ) ) );
-		// Strip emoji (U+1F000 and above, common emoji blocks).
-		$content = preg_replace(
-			'/[\x{1F000}-\x{1FFFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u',
-			'',
-			$content
-		);
-		return trim( $content ?? '' );
+		return KwtSMS_API::clean_message( sanitize_textarea_field( wp_unslash( (string) $content ) ) );
 	}
 
 	// =========================================================================

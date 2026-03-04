@@ -129,6 +129,10 @@ class KwtSMS_User_Meta {
 						function update() {
 							var dial  = dialSelect.value.replace(/\D/g, '');
 							var local = localInput.value.replace(/^0+/, '').replace(/\D/g, '');
+							// Strip leading dial code if user typed the full international number.
+							if ( dial && local.indexOf( dial ) === 0 ) {
+								local = local.slice( dial.length );
+							}
 							combined.value = local ? (dial + local) : '';
 						}
 						if (dialSelect && localInput && combined) {

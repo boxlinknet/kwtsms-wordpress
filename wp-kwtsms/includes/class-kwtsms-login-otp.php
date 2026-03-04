@@ -147,9 +147,30 @@ class KwtSMS_Login_OTP {
 		);
 
 		if ( is_wp_error( $result ) ) {
-			// SMS failed — log error but allow login to proceed (fail-open).
-			// This prevents SMS gateway issues from locking out all users.
+			$error_code = $result->get_error_code();
 			$this->plugin->api->write_debug_log( 'login_otp', 'SMS send failed for user ' . $user->ID . ': ' . $result->get_error_message() );
+
+			// Gateway not configured — OTP feature is not active yet. Skip silently.
+			if ( in_array( $error_code, array( 'kwtsms_no_credentials', 'kwtsms_missing_sender_id' ), true ) ) {
+				return $user;
+			}
+
+			// Insufficient credits — OTP was active but can no longer send. Alert the admin.
+			// The admin-configured balance_failure_mode decides whether to block or allow.
+			if ( 'no_balance' === $error_code ) {
+				$this->notify_admin_no_balance();
+				$mode = $this->plugin->settings->get( 'general.balance_failure_mode', 'block' );
+				if ( 'allow' === $mode ) {
+					// Admin opted to keep users accessible — fail-open and let login continue.
+					return $user;
+				}
+				return new WP_Error(
+					'kwtsms_sms_failed',
+					__( 'Your verification code could not be sent. Please contact the site administrator.', 'wp-kwtsms' )
+				);
+			}
+
+			// Temporary failure (network, API down) — fail-open to avoid lockout.
 			return $user;
 		}
 
@@ -503,7 +524,29 @@ class KwtSMS_Login_OTP {
 		);
 
 		if ( is_wp_error( $result ) ) {
+			$error_code = $result->get_error_code();
 			$this->plugin->api->write_debug_log( 'login_otp', 'Passwordless SMS failed: ' . $result->get_error_message() );
+
+			// Gateway not configured — show actionable error on the phone form.
+			if ( in_array( $error_code, array( 'kwtsms_no_credentials', 'kwtsms_missing_sender_id' ), true ) ) {
+				$this->render_passwordless_page( __( 'SMS login is not available. Please contact the site administrator.', 'wp-kwtsms' ) );
+				exit;
+			}
+
+			// Insufficient credits — alert admin; mode decides whether to block or allow.
+			if ( 'no_balance' === $error_code ) {
+				$this->notify_admin_no_balance();
+				$mode = $this->plugin->settings->get( 'general.balance_failure_mode', 'block' );
+				if ( 'allow' !== $mode ) {
+					$this->render_passwordless_page( __( 'Your verification code could not be sent. Please contact the site administrator.', 'wp-kwtsms' ) );
+					exit;
+				}
+				// 'allow' mode — fall through and show OTP screen (user will not receive a code
+				// but is not logged in; this is safer than auto-logging-in without a phone lookup).
+			}
+
+			// Temporary failure — proceed to OTP screen; user cannot complete it
+			// but is not logged in either, which is safer than showing nothing.
 		}
 
 		// Sliding-window counters are recorded inside is_rate_limited(),
@@ -610,6 +653,61 @@ class KwtSMS_Login_OTP {
 		}
 
 		include KWTSMS_OTP_DIR . 'includes/views/page-passwordless.php';
+	}
+
+	// =========================================================================
+	// Admin notifications
+	// =========================================================================
+
+	/**
+	 * Send a one-per-day admin email when SMS cannot be delivered due to zero balance.
+	 *
+	 * Throttled via a transient so the admin receives at most one alert per day,
+	 * regardless of how many login attempts trigger the condition.
+	 */
+	private function notify_admin_no_balance() {
+		$throttle_key = 'kwtsms_balance_alert_sent';
+		if ( get_transient( $throttle_key ) ) {
+			return; // Already alerted today.
+		}
+
+		$admin_email = get_option( 'admin_email' );
+		$site_name   = get_bloginfo( 'name' );
+		$gateway_url = admin_url( 'admin.php?page=kwtsms-otp-gateway' );
+		$recharge_url = 'https://www.kwtsms.com/login/';
+
+		$subject = sprintf(
+			/* translators: %s: site name */
+			__( '[%s] kwtSMS: OTP delivery failed — account balance is zero', 'wp-kwtsms' ),
+			$site_name
+		);
+
+		$mode             = $this->plugin->settings->get( 'general.balance_failure_mode', 'block' );
+		$mode_description = ( 'allow' === $mode )
+			? __( 'Users are currently allowed to log in without OTP (password only) until credits are restored.', 'wp-kwtsms' )
+			: __( 'Users who require OTP cannot log in until the account is recharged.', 'wp-kwtsms' );
+
+		$message = sprintf(
+			/* translators: 1: site name, 2: gateway settings URL, 3: recharge URL, 4: behavior based on balance_failure_mode */
+			__(
+				"Hello,\n\n" .
+				"kwtSMS on %1\$s could not send OTP verification codes because your account has no SMS credits.\n\n" .
+				"%4\$s\n\n" .
+				"To restore OTP, please top up your kwtSMS account:\n%3\$s\n\n" .
+				"Once recharged, OTP will resume automatically. You can also check your current balance on the Gateway settings page:\n%2\$s\n\n" .
+				"This is an automated alert from the kwtSMS WordPress plugin.",
+				'wp-kwtsms'
+			),
+			$site_name,
+			$gateway_url,
+			$recharge_url,
+			$mode_description
+		);
+
+		wp_mail( $admin_email, $subject, $message );
+
+		// Suppress further alerts for 24 hours.
+		set_transient( $throttle_key, 1, DAY_IN_SECONDS );
 	}
 
 	// =========================================================================

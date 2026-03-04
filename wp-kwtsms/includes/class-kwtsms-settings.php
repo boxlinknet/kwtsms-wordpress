@@ -42,6 +42,7 @@ class KwtSMS_Settings {
 			'default_country_code' => 'KW',       // ISO2 default for phone dropdown
 			'allowed_countries'    => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ), // GCC default
 			'debug_logging'        => 0,          // write detailed logs to wp-content/kwtsms-debug.log
+			'balance_failure_mode' => 'block',    // 'block' | 'allow' — what to do when SMS credits run out
 			'blocked_phones'       => '',         // newline or comma-separated normalized phone numbers
 			'otp_required_roles'   => array( 'editor', 'author', 'contributor', 'subscriber' ), // administrator excluded by default
 			'welcome_sms_enabled'  => 0,         // send welcome SMS to new registrations
