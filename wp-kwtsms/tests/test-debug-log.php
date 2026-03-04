@@ -134,7 +134,7 @@ class Test_KwtSMS_DebugLog extends TestCase {
 	}
 
 	// =========================================================================
-	// debug_mode = false → no file write
+	// debug_mode = false  no file write
 	// =========================================================================
 
 	public function test_write_debug_log_does_not_write_when_debug_mode_disabled() {
@@ -149,7 +149,7 @@ class Test_KwtSMS_DebugLog extends TestCase {
 	}
 
 	// =========================================================================
-	// debug_mode = true → file is written
+	// debug_mode = true  file is written
 	// =========================================================================
 
 	public function test_write_debug_log_creates_file_when_debug_mode_enabled() {

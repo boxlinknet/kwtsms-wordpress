@@ -20,10 +20,10 @@ $sender_ids           = $gateway['sender_ids'] ?? array();
 
 // Build dial-code lookups for coverage pills.
 $_cc_data_all  = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
-$_dial_by_name = array(); // lowercase name  → dial
-$_dial_by_iso2 = array(); // ISO2            → dial
-$_name_by_dial = array(); // dial            → name  (for bare-code entries)
-$_iso2_by_dial = array(); // dial            → iso2
+$_dial_by_name = array(); // lowercase name   dial
+$_dial_by_iso2 = array(); // ISO2             dial
+$_name_by_dial = array(); // dial             name  (for bare-code entries)
+$_iso2_by_dial = array(); // dial             iso2
 foreach ( $_cc_data_all as $_cce ) {
 	$_dial_by_name[ strtolower( $_cce['name'] ) ] = $_cce['dial'];
 	$_dial_by_iso2[ $_cce['iso2'] ]                = $_cce['dial'];
@@ -55,7 +55,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 		&nbsp;&mdash;&nbsp;
 		<?php esc_html_e( 'Total purchased:', 'wp-kwtsms' ); ?>
 		<span id="kwtsms-balance-purchased"><?php echo ( null !== $bal_purchased && $bal_purchased > 0 ) ? esc_html( number_format( (float) $bal_purchased, 2 ) ) : '—'; ?></span>
-		<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="margin-left:auto;font-size:13px;font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits →', 'wp-kwtsms' ); ?></a>
+		<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="margin-left:auto;font-size:13px;font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits ', 'wp-kwtsms' ); ?></a>
 	</div>
 
 	<form method="post" action="options.php" id="kwtsms-gateway-form">
@@ -65,7 +65,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 		<div class="kwtsms-api-status is-info kwtsms-signup-note">
 			<?php esc_html_e( "Don't have a kwtSMS account?", 'wp-kwtsms' ); ?>
 			<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener" style="color:#46b450;font-weight:600;">
-				<?php esc_html_e( 'Sign up for free →', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Sign up for free ', 'wp-kwtsms' ); ?>
 			</a>
 		</div>
 		<?php endif; ?>
@@ -189,7 +189,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					<p class="description"><?php esc_html_e( 'This is the name recipients see as the sender of your SMS messages. Choose from the sender IDs registered on your kwtSMS account.', 'wp-kwtsms' ); ?></p>
 					<p class="description">
 						<a href="https://www.kwtsms.com/sender-id-help.html" target="_blank" rel="noopener">
-							<?php esc_html_e( 'Register or request a Sender ID at kwtSMS →', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Register or request a Sender ID at kwtSMS ', 'wp-kwtsms' ); ?>
 						</a>
 					</p>
 				</td>
@@ -260,7 +260,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					</div>
 					<p class="description" style="margin-top:8px;">
 						<?php esc_html_e( 'These are the countries your account can currently send SMS to. To send to additional countries, request coverage from your kwtSMS account.', 'wp-kwtsms' ); ?>
-						&nbsp;<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener"><?php esc_html_e( 'Request more coverage →', 'wp-kwtsms' ); ?></a>
+						&nbsp;<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener"><?php esc_html_e( 'Request more coverage ', 'wp-kwtsms' ); ?></a>
 					</p>
 				</td>
 			</tr>

@@ -113,7 +113,7 @@ class Test_Balance_And_Validation extends TestCase {
 	}
 
 	// =========================================================================
-	// 2b. check_balance_before_send() — saved balance positive → allow
+	// 2b. check_balance_before_send() — saved balance positive  allow
 	// =========================================================================
 
 	/**
@@ -123,7 +123,7 @@ class Test_Balance_And_Validation extends TestCase {
 	 * @covers KwtSMS_API::check_balance_before_send
 	 */
 	public function test_check_balance_before_send_allows_when_api_returns_positive() {
-		// Saved balance: 5.0 → allow immediately without an API call.
+		// Saved balance: 5.0  allow immediately without an API call.
 		Functions\when( 'get_option' )
 			->justReturn( array( 'balance_available' => 5.0 ) );
 
@@ -137,11 +137,11 @@ class Test_Balance_And_Validation extends TestCase {
 	}
 
 	// =========================================================================
-	// 2b. check_balance_before_send() — null saved balance → allow
+	// 2b. check_balance_before_send() — null saved balance  allow
 	// =========================================================================
 
 	/**
-	 * When no balance has ever been fetched (key absent → null via ?? null),
+	 * When no balance has ever been fetched (key absent  null via ?? null),
 	 * the check must allow the send attempt rather than blocking on fresh installs.
 	 *
 	 * @covers KwtSMS_API::check_balance_before_send
@@ -149,7 +149,7 @@ class Test_Balance_And_Validation extends TestCase {
 	public function test_check_balance_before_send_allows_when_balance_null() {
 		// No balance stored yet — gateway option has no balance_available key.
 		Functions\when( 'get_option' )
-			->justReturn( array() ); // balance_available absent → null via ?? null
+			->justReturn( array() ); // balance_available absent  null via ?? null
 
 		$api    = new KwtSMS_API( 'testuser', 'testpass', false );
 		$result = $api->check_balance_before_send();
@@ -187,7 +187,7 @@ class Test_Balance_And_Validation extends TestCase {
 		} );
 
 		$api    = new KwtSMS_API( 'testuser', 'testpass', false );
-		// 96699220322 → prefix 966 → Saudi Arabia (SA) — not in allowed list.
+		// 96699220322  prefix 966  Saudi Arabia (SA) — not in allowed list.
 		$result = $api->send_sms( '96699220322', 'KWTSMS', 'Hello', 'login' );
 
 		$this->assertInstanceOf(
@@ -239,7 +239,7 @@ class Test_Balance_And_Validation extends TestCase {
 		);
 
 		$api    = new KwtSMS_API( 'testuser', 'testpass', false );
-		// 96599220322 → prefix 965 → Kuwait (KW) — in allowed list.
+		// 96599220322  prefix 965  Kuwait (KW) — in allowed list.
 		$result = $api->send_sms( '96599220322', 'KWTSMS', 'Hello', 'login' );
 
 		// The result must not be a country_not_allowed error.
@@ -263,7 +263,7 @@ class Test_Balance_And_Validation extends TestCase {
 	 * @covers KwtSMS_API::send_sms
 	 */
 	public function test_send_allowed_when_allowed_list_empty() {
-		// General settings: empty allowed_countries → no country restriction.
+		// General settings: empty allowed_countries  no country restriction.
 		Functions\when( 'get_option' )->alias( function ( $key, $default = null ) {
 			if ( 'kwtsms_otp_general' === $key ) {
 				return array( 'allowed_countries' => array() );
@@ -291,7 +291,7 @@ class Test_Balance_And_Validation extends TestCase {
 		);
 
 		$api    = new KwtSMS_API( 'testuser', 'testpass', false );
-		// 12025550100 → prefix 1 → USA — should NOT be blocked when list is empty.
+		// 12025550100  prefix 1  USA — should NOT be blocked when list is empty.
 		$result = $api->send_sms( '12025550100', 'KWTSMS', 'Hello', 'login' );
 
 		// Must not be a country_not_allowed error.
@@ -307,7 +307,7 @@ class Test_Balance_And_Validation extends TestCase {
 	}
 
 	// =========================================================================
-	// 2b. check_balance_before_send() — zero saved balance but API unreachable → allow
+	// 2b. check_balance_before_send() — zero saved balance but API unreachable  allow
 	// =========================================================================
 
 	/**

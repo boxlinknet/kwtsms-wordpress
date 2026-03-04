@@ -17,13 +17,13 @@ $new_password = 'NewPass_' . substr( md5( (string) time() ), 0, 8 ) . '!';
 
 return [
     'name'        => '08-password-reset-sms',
-    'description' => 'Full SMS-based password reset: request → OTP verification → new password → login.',
+    'description' => 'Full SMS-based password reset: request  OTP verification  new password  login.',
 
     'preconditions' => [
-        'SMS password reset enabled  (Admin → General → Password Reset = OTP)',
+        'SMS password reset enabled  (Admin  General  Password Reset = OTP)',
         'Test user exists: username = "testuser", with kwtsms_phone = 96599220322',
-        'test_mode     = 1  (Admin → Gateway → Test Mode ON)',
-        'debug_logging = 1  (Admin → General → Developer Tools → Debug Logging)',
+        'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
+        'debug_logging = 1  (Admin  General  Developer Tools  Debug Logging)',
         'API credentials configured',
     ],
 

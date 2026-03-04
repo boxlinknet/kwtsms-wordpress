@@ -3,16 +3,16 @@
  * Tests for KwtSMS_Captcha — provider routing and token verification.
  *
  * Covers:
- *  - provider='none'     → verify() always returns true (no network call)
- *  - provider='recaptcha' → missing token → WP_Error
- *  - provider='recaptcha' → empty secret  → returns true (skip verification)
- *  - provider='recaptcha' → API success:false → WP_Error('kwtsms_captcha_failed')
- *  - provider='recaptcha' → score < 0.5  → WP_Error('kwtsms_captcha_score')
- *  - provider='recaptcha' → score >= 0.5 → true
- *  - provider='turnstile' → missing token → WP_Error
- *  - provider='turnstile' → API success:false → WP_Error('kwtsms_captcha_failed')
- *  - provider='turnstile' → API success:true → true
- *  - render_widget() → returns empty string for provider='none'
+ *  - provider='none'      verify() always returns true (no network call)
+ *  - provider='recaptcha'  missing token  WP_Error
+ *  - provider='recaptcha'  empty secret   returns true (skip verification)
+ *  - provider='recaptcha'  API success:false  WP_Error('kwtsms_captcha_failed')
+ *  - provider='recaptcha'  score < 0.5   WP_Error('kwtsms_captcha_score')
+ *  - provider='recaptcha'  score >= 0.5  true
+ *  - provider='turnstile'  missing token  WP_Error
+ *  - provider='turnstile'  API success:false  WP_Error('kwtsms_captcha_failed')
+ *  - provider='turnstile'  API success:true  true
+ *  - render_widget()  returns empty string for provider='none'
  *
  * @package KwtSMS_OTP
  */
@@ -142,7 +142,7 @@ class Test_KwtSMS_Captcha extends TestCase {
 	// =========================================================================
 
 	public function test_verify_recaptcha_empty_secret_returns_true() {
-		// Secret key is blank → verification is skipped (fail open).
+		// Secret key is blank  verification is skipped (fail open).
 		$this->configure_settings( 'recaptcha', 'site_key_123', '' );
 		$captcha = new KwtSMS_Captcha( $this->settings );
 
@@ -226,7 +226,7 @@ class Test_KwtSMS_Captcha extends TestCase {
 	}
 
 	// =========================================================================
-	// provider = 'recaptcha' — score at or above threshold → true
+	// provider = 'recaptcha' — score at or above threshold  true
 	// =========================================================================
 
 	public function test_verify_recaptcha_score_exactly_at_threshold_returns_true() {

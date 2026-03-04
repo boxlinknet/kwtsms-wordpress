@@ -163,7 +163,7 @@ class KwtSMS_API {
 		if ( empty( $message ) ) {
 			$err = new WP_Error(
 				'kwtsms_missing_message',
-				__( 'Cannot send SMS: message is empty. Please check your SMS templates in Settings → kwtSMS → Templates.', 'wp-kwtsms' )
+				__( 'Cannot send SMS: message is empty. Please check your SMS templates in Settings  kwtSMS  Templates.', 'wp-kwtsms' )
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: message empty' );
 			self::append_send_log( $phone, 'failed', $type );
@@ -174,7 +174,7 @@ class KwtSMS_API {
 		if ( empty( $sender_id ) ) {
 			$err = new WP_Error(
 				'kwtsms_missing_sender_id',
-				__( 'Cannot send SMS: no Sender ID configured. Go to kwtSMS → Gateway, save your API credentials, then choose a Sender ID from the dropdown. Click Save Settings.', 'wp-kwtsms' )
+				__( 'Cannot send SMS: no Sender ID configured. Go to kwtSMS  Gateway, save your API credentials, then choose a Sender ID from the dropdown. Click Save Settings.', 'wp-kwtsms' )
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty' );
 			self::append_send_log( $phone, 'failed', $type );
@@ -579,7 +579,7 @@ class KwtSMS_API {
 		// 1. Strip HTML tags.
 		$message = wp_strip_all_tags( (string) $message );
 
-		// 2. Non-breaking space → regular space.
+		// 2. Non-breaking space  regular space.
 		$message = preg_replace( '/\x{00A0}/u', ' ', $message ) ?? $message;
 
 		// 3. Invisible / directional Unicode characters:
@@ -656,11 +656,11 @@ class KwtSMS_API {
 	 * Normalise a phone number to international format (digits only, no prefix).
 	 *
 	 * Handles all common input variants:
-	 *   +96599220322     → 96599220322
-	 *   0096599220322    → 96599220322
-	 *   965 9922 0322    → 96599220322
-	 *   965-9922-0322    → 96599220322
-	 *   ٩٦٥٩٩٢٢٠٣٢٢      → 96599220322  (Arabic/Hindi numerals)
+	 *   +96599220322      96599220322
+	 *   0096599220322     96599220322
+	 *   965 9922 0322     96599220322
+	 *   965-9922-0322     96599220322
+	 *   ٩٦٥٩٩٢٢٠٣٢٢       96599220322  (Arabic/Hindi numerals)
 	 *
 	 * @param string $phone Raw phone input from user.
 	 *
@@ -709,7 +709,7 @@ class KwtSMS_API {
 	 *
 	 * Algorithm: try the longest matching dial-code prefix first (up to 4 digits),
 	 * falling back to shorter prefixes. Uses the local country-codes data file as
-	 * the authoritative dial → ISO2 map.
+	 * the authoritative dial  ISO2 map.
 	 *
 	 * @param string $phone Normalised phone number (digits only, with country code).
 	 * @return string ISO2 code (e.g. 'KW'), or empty string if unresolvable.
@@ -719,7 +719,7 @@ class KwtSMS_API {
 			return '';
 		}
 
-		// Build a dial → ISO2 lookup map from the local data file.
+		// Build a dial  ISO2 lookup map from the local data file.
 		$countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
 		$dial_map  = array(); // dial_code (string) => ISO2 (string)
 		foreach ( $countries as $cc ) {
@@ -860,7 +860,7 @@ class KwtSMS_API {
 		if ( empty( $this->username ) || empty( $this->password ) ) {
 			$err = new WP_Error(
 				'kwtsms_no_credentials',
-				__( 'kwtSMS API credentials are not configured. Please go to Settings → kwtSMS → Gateway and enter your API username and password.', 'wp-kwtsms' )
+				__( 'kwtSMS API credentials are not configured. Please go to Settings  kwtSMS  Gateway and enter your API username and password.', 'wp-kwtsms' )
 			);
 			$this->write_debug_log( "request({$endpoint})", 'ABORT: credentials missing (username or password empty)' );
 			return $err;
@@ -946,7 +946,7 @@ class KwtSMS_API {
 	/**
 	 * Write a timestamped entry to the kwtsms debug log file.
 	 *
-	 * Only writes if debug_mode is enabled (admin setting: General → Debug Logging).
+	 * Only writes if debug_mode is enabled (admin setting: General  Debug Logging).
 	 * Log file: wp-content/kwtsms-debug.log
 	 *
 	 * @param string $context Short label for the calling function.

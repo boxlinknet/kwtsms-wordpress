@@ -1,4 +1,4 @@
-=== kwtSMS — OTP & SMS Notifications ===
+=== kwtSMS: OTP & SMS Notifications ===
 Contributors: kwtsms
 Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0

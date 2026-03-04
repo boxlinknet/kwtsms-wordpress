@@ -43,7 +43,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 					<span style="color:#46b450;">&#10003; <?php esc_html_e( 'Configured', 'wp-kwtsms' ); ?></span>
 					<?php else : ?>
 					<span style="color:#dc3232;">&#10007; <?php esc_html_e( 'Not configured', 'wp-kwtsms' ); ?></span>,
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings ', 'wp-kwtsms' ); ?></a>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -54,7 +54,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 					<span style="color:#46b450;">&#10003; <?php echo esc_html( $settings->get( 'gateway.sender_id', '' ) ); ?></span>
 					<?php else : ?>
 					<span style="color:#dc3232;">&#10007; <?php esc_html_e( 'Not selected', 'wp-kwtsms' ); ?></span>,
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings ', 'wp-kwtsms' ); ?></a>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -76,7 +76,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ); ?>"><?php echo esc_html( $content_dir . '/kwtsms-debug.log' ); ?></a>
 					<?php else : ?>
 					<span style="color:#757575;"><?php esc_html_e( 'OFF', 'wp-kwtsms' ); ?></span>,
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>"><?php esc_html_e( 'Enable in General Settings →', 'wp-kwtsms' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>"><?php esc_html_e( 'Enable in General Settings ', 'wp-kwtsms' ); ?></a>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -100,10 +100,10 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 						); ?>
 					</span>
 					<?php endif; ?>
-					, <a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits →', 'wp-kwtsms' ); ?></a>
+					, <a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits ', 'wp-kwtsms' ); ?></a>
 					<?php else : ?>
 					<span style="color:#888;"><?php esc_html_e( 'Not available, login on the Gateway page first.', 'wp-kwtsms' ); ?></span>,
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings →', 'wp-kwtsms' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings ', 'wp-kwtsms' ); ?></a>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -150,26 +150,26 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			<li>
 				<strong><?php esc_html_e( 'Create a kwtSMS account', 'wp-kwtsms' ); ?></strong><br>
 				<?php esc_html_e( 'Go to kwtsms.com, sign up, log in, and request API access. Your API username and password will be provided in your account dashboard.', 'wp-kwtsms' ); ?>
-				<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener"><?php esc_html_e( 'Sign up →', 'wp-kwtsms' ); ?></a>
+				<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener"><?php esc_html_e( 'Sign up ', 'wp-kwtsms' ); ?></a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Register a Sender ID', 'wp-kwtsms' ); ?></strong><br>
 				<?php esc_html_e( 'A Sender ID is the name or number your recipients see. Apply for one in your kwtSMS dashboard. This is required before sending.', 'wp-kwtsms' ); ?>
-				<a href="https://www.kwtsms.com/sender-id-help.html" target="_blank" rel="noopener"><?php esc_html_e( 'Learn more →', 'wp-kwtsms' ); ?></a>
+				<a href="https://www.kwtsms.com/sender-id-help.html" target="_blank" rel="noopener"><?php esc_html_e( 'Learn more ', 'wp-kwtsms' ); ?></a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Configure Gateway Settings', 'wp-kwtsms' ); ?></strong><br>
-				<?php esc_html_e( 'Go to kwtSMS → Gateway. Enter your API username and password, then click "Login" to verify your credentials and load your approved Sender IDs. Select a Sender ID and save.', 'wp-kwtsms' ); ?>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway →', 'wp-kwtsms' ); ?></a>
+				<?php esc_html_e( 'Go to kwtSMS  Gateway. Enter your API username and password, then click "Login" to verify your credentials and load your approved Sender IDs. Select a Sender ID and save.', 'wp-kwtsms' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway ', 'wp-kwtsms' ); ?></a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Set up General Settings', 'wp-kwtsms' ); ?></strong><br>
 				<?php esc_html_e( 'Choose your OTP mode (2FA, Passwordless, or Both), code length, expiry, and default country for the dial-code dropdown.', 'wp-kwtsms' ); ?>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>"><?php esc_html_e( 'Go to General →', 'wp-kwtsms' ); ?></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>"><?php esc_html_e( 'Go to General ', 'wp-kwtsms' ); ?></a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Add phone numbers to user profiles', 'wp-kwtsms' ); ?></strong><br>
-				<?php esc_html_e( 'Each user must have a phone number in their profile (Users → Edit User → Phone Number).', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Each user must have a phone number in their profile (Users  Edit User  Phone Number).', 'wp-kwtsms' ); ?>
 				<span style="color:#d63638;font-weight:600;"><?php esc_html_e( 'Without a phone number, 2FA is skipped for that user.', 'wp-kwtsms' ); ?></span>
 			</li>
 			<li>
@@ -188,7 +188,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			</p>
 			<p>
 				<?php esc_html_e( 'To recover credits from test messages, log in to your kwtSMS dashboard and delete the queued messages from the outbox queue.', 'wp-kwtsms' ); ?>
-				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener"><?php esc_html_e( 'kwtSMS Dashboard →', 'wp-kwtsms' ); ?></a>
+				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener"><?php esc_html_e( 'kwtSMS Dashboard ', 'wp-kwtsms' ); ?></a>
 			</p>
 			<p style="margin-bottom:0;">
 				<strong><?php esc_html_e( 'How to tell:', 'wp-kwtsms' ); ?></strong>
@@ -203,13 +203,13 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<p><?php esc_html_e( 'After a user enters their password, an OTP code is sent to their registered phone. They must enter the code to complete login. Configure code length (4 or 6 digits), expiry (1–30 min), and max wrong attempts in General Settings.', 'wp-kwtsms' ); ?></p>
 
 		<h3><?php esc_html_e( 'Passwordless Login', 'wp-kwtsms' ); ?></h3>
-		<p><?php esc_html_e( 'Users can log in with just their phone number, no password needed. An OTP is sent to their phone and they are logged in on success. Enable via OTP Mode → Passwordless or Both. A country-code dropdown with GeoIP pre-selection is shown on the login form.', 'wp-kwtsms' ); ?></p>
+		<p><?php esc_html_e( 'Users can log in with just their phone number, no password needed. An OTP is sent to their phone and they are logged in on success. Enable via OTP Mode  Passwordless or Both. A country-code dropdown with GeoIP pre-selection is shown on the login form.', 'wp-kwtsms' ); ?></p>
 
 		<h3><?php esc_html_e( 'Password Reset via SMS', 'wp-kwtsms' ); ?></h3>
-		<p><?php esc_html_e( 'Replaces the default email reset link with an SMS OTP. Users receive a code by SMS to verify their identity, then are taken to the reset form. Enable via General Settings → Enable Password Reset OTP.', 'wp-kwtsms' ); ?></p>
+		<p><?php esc_html_e( 'Replaces the default email reset link with an SMS OTP. Users receive a code by SMS to verify their identity, then are taken to the reset form. Enable via General Settings  Enable Password Reset OTP.', 'wp-kwtsms' ); ?></p>
 
 		<h3><?php esc_html_e( 'Per-Role OTP Enforcement', 'wp-kwtsms' ); ?></h3>
-		<p><?php esc_html_e( 'Choose which user roles require OTP (e.g. require it for Administrators but skip it for Subscribers). Excluded roles bypass OTP entirely. Configure under General Settings → Authentication.', 'wp-kwtsms' ); ?></p>
+		<p><?php esc_html_e( 'Choose which user roles require OTP (e.g. require it for Administrators but skip it for Subscribers). Excluded roles bypass OTP entirely. Configure under General Settings  Authentication.', 'wp-kwtsms' ); ?></p>
 
 		<h3><?php esc_html_e( 'SMS Templates', 'wp-kwtsms' ); ?></h3>
 		<p><?php esc_html_e( 'Customise the message text for each event (login, reset, welcome). Placeholders like {otp}, {site_name}, and {expiry_minutes} are replaced automatically. Separate English and Arabic templates are supported.', 'wp-kwtsms' ); ?></p>
@@ -221,7 +221,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			<li><?php esc_html_e( 'Per-order custom SMS: send a custom message from the order edit screen.', 'wp-kwtsms' ); ?></li>
 			<li><?php esc_html_e( 'Checkout OTP gate: require phone verification before an order is placed.', 'wp-kwtsms' ); ?></li>
 		</ul>
-		<p><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-integrations' ) ); ?>"><?php esc_html_e( 'Integrations Settings →', 'wp-kwtsms' ); ?></a></p>
+		<p><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-integrations' ) ); ?>"><?php esc_html_e( 'Integrations Settings ', 'wp-kwtsms' ); ?></a></p>
 
 		<h3><?php esc_html_e( 'Form Integrations (Contact Form 7, WPForms, Elementor Pro, Gravity Forms, Ninja Forms)', 'wp-kwtsms' ); ?></h3>
 		<p><?php esc_html_e( 'Each form plugin integration supports two modes:', 'wp-kwtsms' ); ?></p>
@@ -260,9 +260,9 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<h3><?php esc_html_e( 'Method 1: WooCommerce Registration (recommended for WooCommerce stores)', 'wp-kwtsms' ); ?></h3>
 		<p><?php esc_html_e( 'When WooCommerce is active, the plugin automatically adds a Phone Number field to the WooCommerce My Account registration form and to checkout. The number is saved to the user profile on account creation, no extra steps needed.', 'wp-kwtsms' ); ?></p>
 		<ol>
-			<li><?php esc_html_e( 'Enable the WooCommerce integration: Integrations → WooCommerce → Enable WooCommerce SMS Integration.', 'wp-kwtsms' ); ?></li>
+			<li><?php esc_html_e( 'Enable the WooCommerce integration: Integrations  WooCommerce  Enable WooCommerce SMS Integration.', 'wp-kwtsms' ); ?></li>
 			<li><?php esc_html_e( 'Phone collection is active automatically on the My Account registration form and checkout page.', 'wp-kwtsms' ); ?></li>
-			<li><?php esc_html_e( 'Test by registering a new account on /my-account and verifying the phone appears under Users → Edit User → Phone Number.', 'wp-kwtsms' ); ?></li>
+			<li><?php esc_html_e( 'Test by registering a new account on /my-account and verifying the phone appears under Users  Edit User  Phone Number.', 'wp-kwtsms' ); ?></li>
 		</ol>
 
 		<h3><?php esc_html_e( 'Method 2: Manual entry by the admin', 'wp-kwtsms' ); ?></h3>
@@ -287,7 +287,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<div style="background:#e7f5ff;border-left:4px solid #72aee6;padding:14px 18px;border-radius:0 4px 4px 0;margin-bottom:24px;font-size:14px;">
 			<strong><?php esc_html_e( 'Tip: Check who is missing a phone number', 'wp-kwtsms' ); ?></strong><br>
 			<?php esc_html_e( 'Go to Users in the admin, then look for the Phone Number column. Any user showing "—" or a blank value has no phone on file and will bypass 2FA until one is added.', 'wp-kwtsms' ); ?>
-			<a href="<?php echo esc_url( admin_url( 'users.php' ) ); ?>"><?php esc_html_e( 'View all users →', 'wp-kwtsms' ); ?></a>
+			<a href="<?php echo esc_url( admin_url( 'users.php' ) ); ?>"><?php esc_html_e( 'View all users ', 'wp-kwtsms' ); ?></a>
 		</div>
 
 		<!-- ===== Styling ===== -->
@@ -296,7 +296,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			<?php esc_html_e( 'The OTP and passwordless login pages use the plugin\'s own stylesheet (assets/css/login.css). This stylesheet is intentionally minimal, it uses standard WordPress blue (#2271b1) for interactive elements and inherits the base WordPress login page layout. It does NOT override your theme colours or fonts.', 'wp-kwtsms' ); ?>
 		</p>
 		<p>
-			<?php esc_html_e( 'To customise the appearance, you do NOT need a customisation page. Simply add CSS overrides to your theme\'s Additional CSS (Appearance → Customise → Additional CSS) or your child theme\'s style.css. Key selectors:', 'wp-kwtsms' ); ?>
+			<?php esc_html_e( 'To customise the appearance, you do NOT need a customisation page. Simply add CSS overrides to your theme\'s Additional CSS (Appearance  Customise  Additional CSS) or your child theme\'s style.css. Key selectors:', 'wp-kwtsms' ); ?>
 		</p>
 		<ul style="margin-left:20px;font-size:13px;line-height:2;font-family:monospace;background:#f8f8f8;padding:10px 20px;border:1px solid #ddd;border-radius:4px;">
 			<li>.kwtsms-otp-wrap: <?php esc_html_e( 'outer container of OTP entry form', 'wp-kwtsms' ); ?></li>
@@ -321,8 +321,8 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Verify your API credentials.', 'wp-kwtsms' ); ?></strong>
-				<?php esc_html_e( 'On the Gateway page, click Login. If it fails, your API username or password is incorrect. Log in to kwtsms.com → API Settings to get the correct credentials.', 'wp-kwtsms' ); ?>
-				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener"><?php esc_html_e( 'kwtSMS Dashboard →', 'wp-kwtsms' ); ?></a>
+				<?php esc_html_e( 'On the Gateway page, click Login. If it fails, your API username or password is incorrect. Log in to kwtsms.com  API Settings to get the correct credentials.', 'wp-kwtsms' ); ?>
+				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener"><?php esc_html_e( 'kwtSMS Dashboard ', 'wp-kwtsms' ); ?></a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Confirm a Sender ID is selected.', 'wp-kwtsms' ); ?></strong>
@@ -334,13 +334,13 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Check the SMS History log.', 'wp-kwtsms' ); ?></strong>
-				<?php esc_html_e( 'Go to Logs → SMS History. If the send attempt is listed with Status: Failed, the Result column shows the API error code. Match it to the error table below.', 'wp-kwtsms' ); ?>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=sms_history' ) ); ?>"><?php esc_html_e( 'SMS History →', 'wp-kwtsms' ); ?></a>
+				<?php esc_html_e( 'Go to Logs  SMS History. If the send attempt is listed with Status: Failed, the Result column shows the API error code. Match it to the error table below.', 'wp-kwtsms' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=sms_history' ) ); ?>"><?php esc_html_e( 'SMS History ', 'wp-kwtsms' ); ?></a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Enable Debug Logging for full API details.', 'wp-kwtsms' ); ?></strong>
-				<?php esc_html_e( 'Go to General → Developer Tools and turn Debug Logging ON. Trigger a send again. Then view the full request and response (including the exact error from kwtSMS) in the Debug Log.', 'wp-kwtsms' ); ?>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ); ?>"><?php esc_html_e( 'Debug Log →', 'wp-kwtsms' ); ?></a>
+				<?php esc_html_e( 'Go to General  Developer Tools and turn Debug Logging ON. Trigger a send again. Then view the full request and response (including the exact error from kwtSMS) in the Debug Log.', 'wp-kwtsms' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ); ?>"><?php esc_html_e( 'Debug Log ', 'wp-kwtsms' ); ?></a>
 			</li>
 			<li>
 				<strong><?php esc_html_e( 'Check destination coverage.', 'wp-kwtsms' ); ?></strong>
@@ -381,9 +381,9 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 				<?php esc_html_e( 'Register a private alphanumeric Sender ID in your kwtSMS account using your brand name (e.g. "MyShop"). Private sender IDs have fast delivery, reach all Kuwaiti operators including Virgin, bypass DND filters, and build customer trust.', 'wp-kwtsms' ); ?>
 			</p>
 			<p style="margin-bottom:0;">
-				<a href="https://www.kwtsms.com/faq/must-have-senderid-for-otp.html" target="_blank" rel="noopener"><?php esc_html_e( 'Why you need a private Sender ID for OTP →', 'wp-kwtsms' ); ?></a>
+				<a href="https://www.kwtsms.com/faq/must-have-senderid-for-otp.html" target="_blank" rel="noopener"><?php esc_html_e( 'Why you need a private Sender ID for OTP ', 'wp-kwtsms' ); ?></a>
 				&nbsp;&middot;&nbsp;
-				<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener"><?php esc_html_e( 'Contact kwtSMS to register your Sender ID →', 'wp-kwtsms' ); ?></a>
+				<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener"><?php esc_html_e( 'Contact kwtSMS to register your Sender ID ', 'wp-kwtsms' ); ?></a>
 			</p>
 		</div>
 
@@ -392,15 +392,15 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<p><?php esc_html_e( 'Delivery Reports (DLR) are not available for messages sent to Kuwait mobile numbers. The API returns "OK" (sent) as soon as the message is handed off to the operator, but there is no delivery confirmation for Kuwait. If a customer says they did not receive the SMS and the Logs page shows "Sent", check:', 'wp-kwtsms' ); ?></p>
 		<ul style="margin-left:20px;font-size:14px;line-height:1.8;">
 			<li><?php esc_html_e( 'Is the customer using Virgin (Zain-MVNO)? If so, switch from KWT-SMS to a private sender ID.', 'wp-kwtsms' ); ?></li>
-			<li><?php esc_html_e( 'Check the kwtSMS API error log in your kwtSMS account dashboard (API → Error Log).', 'wp-kwtsms' ); ?></li>
-			<li><?php esc_html_e( 'Use the Debug Log (enable in General → Developer Tools) for the full API request and response.', 'wp-kwtsms' ); ?></li>
+			<li><?php esc_html_e( 'Check the kwtSMS API error log in your kwtSMS account dashboard (API  Error Log).', 'wp-kwtsms' ); ?></li>
+			<li><?php esc_html_e( 'Use the Debug Log (enable in General  Developer Tools) for the full API request and response.', 'wp-kwtsms' ); ?></li>
 		</ul>
 
 		<!-- International coverage -->
 		<h3><?php esc_html_e( 'Messages not reaching international numbers', 'wp-kwtsms' ); ?></h3>
 		<p>
 			<?php esc_html_e( 'International SMS coverage is disabled by default on all new kwtSMS accounts. To enable coverage for countries outside Kuwait, contact kwtSMS support.', 'wp-kwtsms' ); ?>
-			<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener"><?php esc_html_e( 'kwtSMS Contact →', 'wp-kwtsms' ); ?></a>
+			<a href="https://www.kwtsms.com/#contact" target="_blank" rel="noopener"><?php esc_html_e( 'kwtSMS Contact ', 'wp-kwtsms' ); ?></a>
 		</p>
 		<p><?php esc_html_e( 'The Gateway page shows your current coverage list. If a destination country is missing, it has not been enabled.', 'wp-kwtsms' ); ?></p>
 
@@ -442,7 +442,7 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 				/* translators: 1: path to debug log file, 2: link to Logs page */
 				esc_html__( 'When Debug Logging is enabled, all API activity is recorded in %1$s. You can view, scroll, and download it directly from %2$s.', 'wp-kwtsms' ),
 				'<code>' . esc_html( $content_dir . '/kwtsms-debug.log' ) . '</code>',
-				'<a href="' . esc_url( $debug_log_url ) . '">' . esc_html__( 'Logs → Debug Log', 'wp-kwtsms' ) . '</a>'
+				'<a href="' . esc_url( $debug_log_url ) . '">' . esc_html__( 'Logs  Debug Log', 'wp-kwtsms' ) . '</a>'
 			);
 			?>
 		</p>

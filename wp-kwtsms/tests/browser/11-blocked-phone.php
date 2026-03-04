@@ -21,7 +21,7 @@ return [
     'preconditions' => [
         'Passwordless login mode enabled (so OTP form is accessible)',
         'Admin access to kwtsms General settings (Blocked Phones list)',
-        'test_mode     = 1  (Admin → Gateway → Test Mode ON)',
+        'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
         'API credentials configured',
     ],
 

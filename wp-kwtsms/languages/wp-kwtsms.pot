@@ -105,7 +105,7 @@ msgid "API credentials are not configured. The plugin will not be able to send S
 msgstr ""
 
 #: admin/class-kwtsms-admin.php:361
-msgid "Configure now →"
+msgid "Configure now "
 msgstr ""
 
 #: admin/class-kwtsms-admin.php:369
@@ -306,7 +306,7 @@ msgid "Secret Key"
 msgstr ""
 
 #: admin/views/page-general.php:150
-msgid "Get keys from Google reCAPTCHA Admin Console →"
+msgid "Get keys from Google reCAPTCHA Admin Console "
 msgstr ""
 
 #: admin/views/page-general.php:157
@@ -314,7 +314,7 @@ msgid "Turnstile Keys"
 msgstr ""
 
 #: admin/views/page-general.php:167
-msgid "Get keys from Cloudflare Dashboard →"
+msgid "Get keys from Cloudflare Dashboard "
 msgstr ""
 
 #: admin/views/page-templates.php:17
@@ -499,7 +499,7 @@ msgid "An unexpected error occurred (%s). Please try again."
 msgstr ""
 
 #: includes/class-kwtsms-api.php:527
-msgid "kwtSMS API credentials are not configured. Please go to Settings → kwtSMS → Gateway and enter your API username and password."
+msgid "kwtSMS API credentials are not configured. Please go to Settings  kwtSMS  Gateway and enter your API username and password."
 msgstr ""
 
 #: includes/class-kwtsms-api.php:348
@@ -727,11 +727,11 @@ msgid "Don't have a kwtSMS account?"
 msgstr ""
 
 #: admin/views/page-gateway.php
-msgid "Sign up for free →"
+msgid "Sign up for free "
 msgstr ""
 
 #: admin/views/page-gateway.php
-msgid "Register or request a Sender ID at kwtSMS →"
+msgid "Register or request a Sender ID at kwtSMS "
 msgstr ""
 
 #: admin/class-kwtsms-admin.php
@@ -811,7 +811,7 @@ msgid "Load Active Coverage"
 msgstr ""
 
 #: admin/views/page-gateway.php
-msgid "Add more countries to your coverage →"
+msgid "Add more countries to your coverage "
 msgstr ""
 
 #: admin/views/page-general.php

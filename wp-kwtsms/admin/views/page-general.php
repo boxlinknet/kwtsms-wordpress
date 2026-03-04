@@ -50,7 +50,7 @@ foreach ( $all_countries as $cc ) {
 		</p>
 		<p style="margin:8px 0 0;font-size:14px;line-height:1.6;">
 			<?php esc_html_e( 'Open a free account easily under 1 minute, no papers or payment required.', 'wp-kwtsms' ); ?>
-			<a href="https://www.kwtsms.com/signup/" target="_blank" rel="noopener noreferrer" style="color:#FFA200;font-weight:600;"><?php esc_html_e( '🚀 Click here to get started →', 'wp-kwtsms' ); ?></a>
+			<a href="https://www.kwtsms.com/signup/" target="_blank" rel="noopener noreferrer" style="color:#FFA200;font-weight:600;"><?php esc_html_e( '🚀 Click here to get started ', 'wp-kwtsms' ); ?></a>
 		</p>
 	</div>
 
@@ -61,7 +61,7 @@ foreach ( $all_countries as $cc ) {
 		&nbsp;&mdash;&nbsp;
 		<?php esc_html_e( 'Total purchased:', 'wp-kwtsms' ); ?>
 		<span id="kwtsms-balance-purchased"><?php echo ( null !== $bal_purchased && $bal_purchased > 0 ) ? esc_html( number_format( (float) $bal_purchased, 2 ) ) : '—'; ?></span>
-		<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="margin-left:auto;font-size:13px;font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits →', 'wp-kwtsms' ); ?></a>
+		<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="margin-left:auto;font-size:13px;font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits ', 'wp-kwtsms' ); ?></a>
 	</div>
 
 	<form method="post" action="options.php">
@@ -303,7 +303,7 @@ foreach ( $all_countries as $cc ) {
 						class="regular-text" placeholder="<?php esc_attr_e( 'Secret Key', 'wp-kwtsms' ); ?>" />
 					<p class="description">
 						<a href="https://www.google.com/recaptcha/admin" target="_blank" rel="noopener noreferrer">
-							<?php esc_html_e( 'Get keys from Google reCAPTCHA Admin Console →', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Get keys from Google reCAPTCHA Admin Console ', 'wp-kwtsms' ); ?>
 						</a>
 					</p>
 				</td>
@@ -320,7 +320,7 @@ foreach ( $all_countries as $cc ) {
 						class="regular-text" placeholder="<?php esc_attr_e( 'Secret Key', 'wp-kwtsms' ); ?>" />
 					<p class="description">
 						<a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">
-							<?php esc_html_e( 'Get keys from Cloudflare Dashboard →', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Get keys from Cloudflare Dashboard ', 'wp-kwtsms' ); ?>
 						</a>
 					</p>
 				</td>
@@ -396,7 +396,7 @@ foreach ( $all_countries as $cc ) {
 						);
 						?>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-help' ) ); ?>">
-							<?php esc_html_e( 'See Help page for troubleshooting guide →', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'See Help page for troubleshooting guide ', 'wp-kwtsms' ); ?>
 						</a>
 					</p>
 				</td>

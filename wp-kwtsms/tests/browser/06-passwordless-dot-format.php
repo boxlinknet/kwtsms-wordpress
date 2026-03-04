@@ -17,10 +17,10 @@ return [
     'description' => 'Phone in +965.99220322 dot format is normalised and resolves the correct user for passwordless login.',
 
     'preconditions' => [
-        'Passwordless login mode enabled (Admin → General → Login Mode = Passwordless OTP)',
+        'Passwordless login mode enabled (Admin  General  Login Mode = Passwordless OTP)',
         'Test user exists with usermeta kwtsms_phone = 96599220322 (plain digits, no plus/dots)',
-        'test_mode     = 1  (Admin → Gateway → Test Mode ON)',
-        'debug_logging = 1  (Admin → General → Developer Tools → Debug Logging)',
+        'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
+        'debug_logging = 1  (Admin  General  Developer Tools  Debug Logging)',
         'API credentials configured',
     ],
 

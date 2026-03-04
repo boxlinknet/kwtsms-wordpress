@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       kwtSMS — OTP & SMS Notifications
+ * Plugin Name:       kwtSMS: OTP & SMS Notifications
  * Plugin URI:        https://www.kwtsms.com/integrations.html
  * Description:       Replace passwords with SMS codes, send WooCommerce order updates automatically, and verify phone numbers on any contact form, all in one plugin. Supports 2FA, passwordless login, WooCommerce order update, and OTP-gated forms for CF7, WPForms, Elementor, Gravity Forms &amp; Ninja Forms. Arabic support included. Powered by kwtSMS.com
  * Version:           2.9.0
@@ -29,7 +29,7 @@ define( 'KWTSMS_OTP_BASENAME', plugin_basename( __FILE__ ) );
  * Autoloader for plugin classes.
  *
  * Maps class names to files in /includes and /admin.
- * Naming convention: KwtSMS_Foo_Bar → includes/class-kwtsms-foo-bar.php
+ * Naming convention: KwtSMS_Foo_Bar  includes/class-kwtsms-foo-bar.php
  *
  * @param string $class_name The fully-qualified class name.
  */
@@ -40,7 +40,7 @@ function kwtsms_otp_autoload( $class_name ) {
 	}
 
 	// Convert class name to file name:
-	// KwtSMS_OTP_Engine → class-kwtsms-otp-engine.php
+	// KwtSMS_OTP_Engine  class-kwtsms-otp-engine.php
 	$file_name = 'class-' . strtolower( str_replace( '_', '-', $class_name ) ) . '.php';
 
 	$locations = array(

@@ -19,11 +19,11 @@ return [
     'description' => 'Register a new WP user with phone number and verify welcome SMS in debug log.',
 
     'preconditions' => [
-        'welcome_sms_enabled = 1   (Admin → General → Welcome SMS)',
-        'test_mode            = 1   (Admin → Gateway → Test Mode ON)',
-        'debug_logging        = 1   (Admin → General → Developer Tools → Debug Logging)',
-        'API credentials configured (Admin → Gateway)',
-        'User registration enabled in WordPress (Settings → General → Anyone can register)',
+        'welcome_sms_enabled = 1   (Admin  General  Welcome SMS)',
+        'test_mode            = 1   (Admin  Gateway  Test Mode ON)',
+        'debug_logging        = 1   (Admin  General  Developer Tools  Debug Logging)',
+        'API credentials configured (Admin  Gateway)',
+        'User registration enabled in WordPress (Settings  General  Anyone can register)',
     ],
 
     'steps' => [
