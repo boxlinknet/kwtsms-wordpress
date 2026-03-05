@@ -253,13 +253,13 @@ class KwtSMS_Admin {
 		$allowed_raw = $raw['allowed_countries'] ?? $defaults['allowed_countries'];
 		if ( ! is_array( $allowed_raw ) ) {
 			// Accept JSON string from hidden input.
-			$decoded = json_decode( stripslashes( (string) $allowed_raw ), true );
+			$decoded     = json_decode( stripslashes( (string) $allowed_raw ), true );
 			$allowed_raw = is_array( $decoded ) ? $decoded : $defaults['allowed_countries'];
 		}
 		$allowed_countries = array_values(
 			array_filter(
 				array_map( 'strtoupper', array_map( 'sanitize_text_field', $allowed_raw ) ),
-				static function( $code ) {
+				static function ( $code ) {
 					return preg_match( '/^[A-Z]{2}$/', $code );
 				}
 			)
@@ -275,8 +275,8 @@ class KwtSMS_Admin {
 		}
 
 		// Sanitize otp_required_roles: allow only role slugs that exist in WP.
-		$all_roles        = array_keys( wp_roles()->get_names() );
-		$raw_roles        = array_map( 'sanitize_text_field', (array) ( $raw['otp_required_roles'] ?? array() ) );
+		$all_roles          = array_keys( wp_roles()->get_names() );
+		$raw_roles          = array_map( 'sanitize_text_field', (array) ( $raw['otp_required_roles'] ?? array() ) );
 		$otp_required_roles = array_values( array_intersect( $raw_roles, $all_roles ) );
 
 		return array(
@@ -354,9 +354,9 @@ class KwtSMS_Admin {
 			$api_password_raw = $current_gw['api_password'] ?? '';
 		}
 
-		$creds_unchanged  = (
-			$api_username_raw === ( $current_gw['api_username'] ?? '' ) &&
-			$api_password_raw === ( $current_gw['api_password'] ?? '' )
+		$creds_unchanged = (
+			( $current_gw['api_username'] ?? '' ) === $api_username_raw &&
+			( $current_gw['api_password'] ?? '' ) === $api_password_raw
 		);
 
 		if ( $creds_unchanged ) {
@@ -418,8 +418,8 @@ class KwtSMS_Admin {
 					$sender_id_out = $sender_ids[0];
 				}
 
-				$balance_result    = $api->get_balance();
-				$coverage_result   = $api->get_coverage();
+				$balance_result  = $api->get_balance();
+				$coverage_result = $api->get_coverage();
 
 				if ( ! is_wp_error( $balance_result ) ) {
 					$balance_available = $balance_result['available'];
@@ -468,7 +468,7 @@ class KwtSMS_Admin {
 			return array();
 		}
 
-		$sanitized = array();
+		$sanitized    = array();
 		$allowed_keys = array( 'login_otp', 'reset_otp', 'welcome_sms' );
 
 		foreach ( $allowed_keys as $key ) {
@@ -476,7 +476,7 @@ class KwtSMS_Admin {
 				continue;
 			}
 
-			$template = $raw[ $key ];
+			$template          = $raw[ $key ];
 			$sanitized[ $key ] = array(
 				'enabled' => ! empty( $template['enabled'] ) ? 1 : 0,
 				'en'      => $this->sanitize_template_content( $template['en'] ?? '' ),
@@ -518,11 +518,19 @@ class KwtSMS_Admin {
 
 		$valid_modes = array( 'notification', 'gate' );
 
-		$allowed_statuses  = array_map( 'sanitize_key', array(
-			'processing', 'on-hold', 'completed', 'cancelled',
-			'pending', 'refunded', 'failed',
-		) );
-		$raw_notify        = $raw['woo_notify_admin_statuses'] ?? array();
+		$allowed_statuses      = array_map(
+			'sanitize_key',
+			array(
+				'processing',
+				'on-hold',
+				'completed',
+				'cancelled',
+				'pending',
+				'refunded',
+				'failed',
+			)
+		);
+		$raw_notify            = $raw['woo_notify_admin_statuses'] ?? array();
 		$notify_admin_statuses = array_values(
 			array_filter(
 				(array) $raw_notify,
@@ -543,9 +551,9 @@ class KwtSMS_Admin {
 		$update_nf        = in_array( $section, array( 'all', 'nf' ), true );
 
 		if ( $update_woo ) {
-			$sanitized['woo_enabled']              = ! empty( $raw['woo_enabled'] ) ? 1 : 0;
-			$sanitized['woo_checkout_otp']         = ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0;
-			$sanitized['woo_admin_phone']          = sanitize_text_field( wp_unslash( $raw['woo_admin_phone'] ?? '' ) );
+			$sanitized['woo_enabled']               = ! empty( $raw['woo_enabled'] ) ? 1 : 0;
+			$sanitized['woo_checkout_otp']          = ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0;
+			$sanitized['woo_admin_phone']           = sanitize_text_field( wp_unslash( $raw['woo_admin_phone'] ?? '' ) );
 			$sanitized['woo_notify_admin_statuses'] = $notify_admin_statuses;
 			foreach ( array( 'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled', 'woo_pending', 'woo_refunded', 'woo_failed' ) as $key ) {
 				if ( isset( $raw[ $key ] ) && is_array( $raw[ $key ] ) ) {
@@ -676,9 +684,9 @@ class KwtSMS_Admin {
 		);
 
 		// Resolve default dial code for auto-prefixing short phone numbers in JS.
-		$default_iso2  = $this->plugin->settings->get( 'general.default_country_code', 'KW' );
-		$all_ccs       = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
-		$default_dial  = '965'; // Kuwait fallback.
+		$default_iso2 = $this->plugin->settings->get( 'general.default_country_code', 'KW' );
+		$all_ccs      = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+		$default_dial = '965'; // Kuwait fallback.
 		foreach ( $all_ccs as $cc_row ) {
 			if ( $cc_row['iso2'] === $default_iso2 ) {
 				$default_dial = $cc_row['dial'];
@@ -690,19 +698,19 @@ class KwtSMS_Admin {
 			'kwtsms-admin',
 			'kwtSmsAdminData',
 			array(
-				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
-				'nonce'                => wp_create_nonce( 'kwtsms_admin_nonce' ),
-				'credentialsVerified'  => (bool) $this->plugin->settings->get( 'gateway.credentials_verified', false ),
-				'defaultDialCode'      => $default_dial,
-				'savedSenderIds'      => array_values( (array) $this->plugin->settings->get( 'gateway.sender_ids', array() ) ),
-				'savedBalance'        => array(
+				'ajaxUrl'               => admin_url( 'admin-ajax.php' ),
+				'nonce'                 => wp_create_nonce( 'kwtsms_admin_nonce' ),
+				'credentialsVerified'   => (bool) $this->plugin->settings->get( 'gateway.credentials_verified', false ),
+				'defaultDialCode'       => $default_dial,
+				'savedSenderIds'        => array_values( (array) $this->plugin->settings->get( 'gateway.sender_ids', array() ) ),
+				'savedBalance'          => array(
 					'available'  => $this->plugin->settings->get( 'gateway.balance_available', null ),
 					'purchased'  => $this->plugin->settings->get( 'gateway.balance_purchased', null ),
 					'updated_at' => (int) $this->plugin->settings->get( 'gateway.balance_updated_at', 0 ),
 				),
-				'savedCoverage'       => array_values( (array) $this->plugin->settings->get( 'gateway.coverage', array() ) ),
-				'template_defaults'      => $this->plugin->settings->get_template_defaults_for_js(),
-				'placeholder_estimates'  => array(
+				'savedCoverage'         => array_values( (array) $this->plugin->settings->get( 'gateway.coverage', array() ) ),
+				'template_defaults'     => $this->plugin->settings->get_template_defaults_for_js(),
+				'placeholder_estimates' => array(
 					'{otp}'            => str_repeat( '0', (int) $this->plugin->settings->get( 'general.otp_length', 6 ) ),
 					'{site_name}'      => get_bloginfo( 'name' ),
 					'{expiry_minutes}' => (string) (int) $this->plugin->settings->get( 'general.otp_expiry', 10 ),
@@ -714,7 +722,7 @@ class KwtSMS_Admin {
 					'{form_name}'      => 'Contact Form',
 					'{phone}'          => '96599220000',
 				),
-				'strings'              => array(
+				'strings'               => array(
 					'verifying'          => __( 'Verifying...', 'wp-kwtsms' ),
 					'verified'           => __( 'Credentials verified!', 'wp-kwtsms' ),
 					'error'              => __( 'Verification failed.', 'wp-kwtsms' ),
@@ -727,11 +735,11 @@ class KwtSMS_Admin {
 					'coverageError'      => __( 'Could not load coverage data.', 'wp-kwtsms' ),
 					'credentialsMissing' => __( 'Please enter your API username and password, then click "Save Settings" before performing this action.', 'wp-kwtsms' ),
 					/* translators: %s: API username */
-				'connectedAs'        => __( 'Connected as %s', 'wp-kwtsms' ),
+					'connectedAs'        => __( 'Connected as %s', 'wp-kwtsms' ),
 					'reload'             => __( 'Reload', 'wp-kwtsms' ),
 					'reloading'          => __( 'Reloading...', 'wp-kwtsms' ),
 					/* translators: %s: total purchased SMS credits */
-				'ofPurchased'        => __( '· of %s purchased', 'wp-kwtsms' ),
+					'ofPurchased'        => __( '· of %s purchased', 'wp-kwtsms' ),
 					'testPhoneMissing'   => __( 'Please enter a test phone number first.', 'wp-kwtsms' ),
 					'phoneTooShort'      => __( 'Number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits).', 'wp-kwtsms' ),
 					'testModeResult'     => __( 'Test mode ON — message queued in kwtSMS account queue, will not be delivered. Delete to recover credits.', 'wp-kwtsms' ),
@@ -1090,29 +1098,35 @@ class KwtSMS_Admin {
 				if ( 'sms_history' === $log_key ) {
 					fputcsv( $out, array( 'Date/Time', 'Type', 'Phone', 'Message', 'Sender ID', 'Status', 'Result Code', 'Result Message' ) );
 					foreach ( $log as $entry ) {
-						fputcsv( $out, array(
-							gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
-							$this->csv_safe( $entry['type']                      ?? '' ),
-							$this->csv_safe( $entry['phone']                     ?? '' ),
-							$this->csv_safe( $entry['message']                   ?? '' ),
-							$this->csv_safe( $entry['sender_id']                 ?? '' ),
-							$this->csv_safe( $entry['status']                    ?? '' ),
-							$this->csv_safe( $entry['gateway_result']['code']    ?? '' ),
-							$this->csv_safe( $entry['gateway_result']['message'] ?? '' ),
-						) );
+						fputcsv(
+							$out,
+							array(
+								gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
+								$this->csv_safe( $entry['type'] ?? '' ),
+								$this->csv_safe( $entry['phone'] ?? '' ),
+								$this->csv_safe( $entry['message'] ?? '' ),
+								$this->csv_safe( $entry['sender_id'] ?? '' ),
+								$this->csv_safe( $entry['status'] ?? '' ),
+								$this->csv_safe( $entry['gateway_result']['code'] ?? '' ),
+								$this->csv_safe( $entry['gateway_result']['message'] ?? '' ),
+							)
+						);
 					}
 				} else {
 					fputcsv( $out, array( 'Date/Time', 'User ID', 'Phone', 'IP Address', 'Action', 'Result' ) );
 					foreach ( $log as $entry ) {
 						$user_id = $entry['user_id'] ?? null;
-						fputcsv( $out, array(
-							gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
-							is_null( $user_id ) ? 'N/A' : (int) $user_id,
-							$this->csv_safe( $entry['phone']  ?? '' ),
-							$this->csv_safe( $entry['ip']     ?? '' ),
-							$this->csv_safe( $entry['action'] ?? '' ),
-							$this->csv_safe( $entry['result'] ?? '' ),
-						) );
+						fputcsv(
+							$out,
+							array(
+								gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
+								is_null( $user_id ) ? 'N/A' : (int) $user_id,
+								$this->csv_safe( $entry['phone'] ?? '' ),
+								$this->csv_safe( $entry['ip'] ?? '' ),
+								$this->csv_safe( $entry['action'] ?? '' ),
+								$this->csv_safe( $entry['result'] ?? '' ),
+							)
+						);
 					}
 				}
 
@@ -1152,9 +1166,9 @@ class KwtSMS_Admin {
 
 		foreach ( $log as $entry ) {
 			if ( isset( $entry['time'] ) && $entry['time'] >= $today_start ) {
-				$today_count++;
+				++$today_count;
 				if ( 'failed' === ( $entry['status'] ?? '' ) ) {
-					$failed_count++;
+					++$failed_count;
 				}
 			}
 		}

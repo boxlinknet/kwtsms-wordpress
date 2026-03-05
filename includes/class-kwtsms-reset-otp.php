@@ -71,6 +71,7 @@ class KwtSMS_Reset_OTP {
 	 * Only acts on POST requests to action=lostpassword.
 	 */
 	public function maybe_intercept_password_reset() {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- REQUEST_METHOD is a server variable, not user input.
 		if ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) {
 			return;
 		}
@@ -80,6 +81,7 @@ class KwtSMS_Reset_OTP {
 		}
 
 		// Try to find user from form input (login, email, or phone).
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress lostpassword form; nonce verified by WP core.
 		$input = sanitize_text_field( wp_unslash( $_POST['user_login'] ?? '' ) );
 
 		if ( empty( $input ) ) {
@@ -194,6 +196,7 @@ class KwtSMS_Reset_OTP {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- REQUEST_METHOD is a server variable.
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			$this->handle_reset_otp_submission();
 		}

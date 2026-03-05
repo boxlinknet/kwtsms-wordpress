@@ -210,6 +210,7 @@ class KwtSMS_Login_OTP {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- reading redirect_to from login POST, no state change.
 		$redirect_to = sanitize_url( wp_unslash( $_POST['redirect_to'] ?? '' ) );
 		$otp_url     = add_query_arg(
 			array(
@@ -236,6 +237,7 @@ class KwtSMS_Login_OTP {
 		$action = isset( $_REQUEST['action'] ) ? sanitize_key( $_REQUEST['action'] ) : 'login';
 
 		if ( 'kwtsms_otp' === $action ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- REQUEST_METHOD is a server variable.
 			if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 				$this->handle_otp_submission();
 			}
@@ -244,6 +246,7 @@ class KwtSMS_Login_OTP {
 		}
 
 		if ( 'kwtsms_passwordless' === $action ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- REQUEST_METHOD is a server variable.
 			if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 				$this->handle_passwordless_submission();
 			}
@@ -315,7 +318,7 @@ class KwtSMS_Login_OTP {
 		$raw_len         = strlen( $raw_code );
 
 		// Log if: raw input had non-digit chars, code is empty, or code length is wrong.
-		$is_suspicious = ( $raw_len > 0 && $raw_len !== strlen( $submitted ) ) // non-digit chars present
+		$is_suspicious = ( $raw_len > 0 && strlen( $submitted ) !== $raw_len ) // non-digit chars present
 			|| ( $raw_len > $expected_length + 4 ) // excessively long — possible injection
 			|| ( $raw_len > 0 && strlen( $submitted ) !== $expected_length && strlen( $submitted ) !== 0 ); // wrong length
 
@@ -430,7 +433,7 @@ class KwtSMS_Login_OTP {
 		}
 
 		// CAPTCHA verification.
-		$captcha = new KwtSMS_Captcha( $this->plugin->settings );
+		$captcha        = new KwtSMS_Captcha( $this->plugin->settings );
 		$captcha_result = $captcha->verify( $_POST );
 		if ( is_wp_error( $captcha_result ) ) {
 			$this->render_passwordless_page( $captcha_result->get_error_message() );
@@ -595,7 +598,7 @@ class KwtSMS_Login_OTP {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
 		}
 		wp_enqueue_script( 'kwtsms-login-js', KWTSMS_OTP_URL . 'assets/js/login.js', array(), KWTSMS_OTP_VERSION, true );
-		$token           = $token ?: $this->get_partial_auth_token();
+		$token           = $token ? $token : $this->get_partial_auth_token();
 		$otp_length      = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
 		$cooldown        = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
 		$redirect_to     = sanitize_url( wp_unslash( $_GET['redirect_to'] ?? '' ) );
@@ -620,12 +623,12 @@ class KwtSMS_Login_OTP {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
 		}
 		wp_enqueue_script( 'kwtsms-login-js', KWTSMS_OTP_URL . 'assets/js/login.js', array(), KWTSMS_OTP_VERSION, true );
-		$plugin_settings  = $this->plugin->settings;
+		$plugin_settings = $this->plugin->settings;
 
 		// Load country data for the dial-code dropdown.
-		$all_countries   = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
-		$allowed_iso2    = (array) $plugin_settings->get( 'general.allowed_countries', array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ) );
-		$default_iso2    = (string) $plugin_settings->get( 'general.default_country_code', 'KW' );
+		$all_countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+		$allowed_iso2  = (array) $plugin_settings->get( 'general.allowed_countries', array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ) );
+		$default_iso2  = (string) $plugin_settings->get( 'general.default_country_code', 'KW' );
 
 		// Filter to only allowed countries, preserving order from allowed_iso2.
 		$cc_by_iso2 = array();
@@ -671,9 +674,9 @@ class KwtSMS_Login_OTP {
 			return; // Already alerted today.
 		}
 
-		$admin_email = get_option( 'admin_email' );
-		$site_name   = get_bloginfo( 'name' );
-		$gateway_url = admin_url( 'admin.php?page=kwtsms-otp-gateway' );
+		$admin_email  = get_option( 'admin_email' );
+		$site_name    = get_bloginfo( 'name' );
+		$gateway_url  = admin_url( 'admin.php?page=kwtsms-otp-gateway' );
 		$recharge_url = 'https://www.kwtsms.com/login/';
 
 		$subject = sprintf(
@@ -688,16 +691,8 @@ class KwtSMS_Login_OTP {
 			: __( 'Users who require OTP cannot log in until the account is recharged.', 'wp-kwtsms' );
 
 		$message = sprintf(
-			/* translators: 1: site name, 2: gateway settings URL, 3: recharge URL, 4: behavior based on balance_failure_mode */
-			__(
-				"Hello,\n\n" .
-				"kwtSMS on %1\$s could not send OTP verification codes because your account has no SMS credits.\n\n" .
-				"%4\$s\n\n" .
-				"To restore OTP, please top up your kwtSMS account:\n%3\$s\n\n" .
-				"Once recharged, OTP will resume automatically. You can also check your current balance on the Gateway settings page:\n%2\$s\n\n" .
-				"This is an automated alert from the kwtSMS WordPress plugin.",
-				'wp-kwtsms'
-			),
+			/* translators: 1: site name, 2: gateway URL, 3: recharge URL, 4: behavior description */
+			__( 'Hello,\n\nkwtSMS on %1$s could not send OTP verification codes because your account has no SMS credits.\n\n%4$s\n\nTo restore OTP, please top up your kwtSMS account:\n%3$s\n\nOnce recharged, OTP will resume automatically. You can also check your current balance on the Gateway settings page:\n%2$s\n\nThis is an automated alert from the kwtSMS WordPress plugin.', 'wp-kwtsms' ),
 			$site_name,
 			$gateway_url,
 			$recharge_url,

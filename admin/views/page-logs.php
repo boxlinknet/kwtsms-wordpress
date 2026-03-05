@@ -18,13 +18,13 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms' ) );
 }
 
-$active_tab    = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_history';
-$per_page      = 20;
-$current_page  = max( 1, absint( $_GET['paged'] ?? 1 ) );
+$active_tab     = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_history';
+$items_per_page = 20;
+$current_page   = max( 1, absint( $_GET['paged'] ?? 1 ) );
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
 // NOTE: download/clear/export handlers are registered on admin_init in KwtSMS_Admin::handle_log_exports()
-//       so that Content-Type headers can be sent before any HTML output.
+// so that Content-Type headers can be sent before any HTML output.
 $debug_log_path   = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/kwtsms-debug.log' : '';
 $debug_logging_on = (bool) $this->plugin->settings->get( 'general.debug_logging', 0 );
 $debug_log_exists = $debug_log_path && file_exists( $debug_log_path );
@@ -33,22 +33,30 @@ $show_debug_tab   = $debug_logging_on && $debug_log_exists;
 // -------------------------------------------------------------------------
 // Load log data for display.
 // -------------------------------------------------------------------------
-$sms_history  = get_option( 'kwtsms_otp_sms_history', array() );
-$attempt_log  = get_option( 'kwtsms_otp_attempt_log', array() );
-if ( ! is_array( $sms_history ) ) { $sms_history = array(); }
-if ( ! is_array( $attempt_log ) ) { $attempt_log = array(); }
+$sms_history = get_option( 'kwtsms_otp_sms_history', array() );
+$attempt_log = get_option( 'kwtsms_otp_attempt_log', array() );
+if ( ! is_array( $sms_history ) ) {
+	$sms_history = array(); }
+if ( ! is_array( $attempt_log ) ) {
+	$attempt_log = array(); }
 
-$active_log        = 'sms_history' === $active_tab ? $sms_history : $attempt_log;
-$total_entries     = count( $active_log );
-$total_pages       = max( 1, (int) ceil( $total_entries / $per_page ) );
-$current_page      = min( $current_page, $total_pages );
-$offset            = ( $current_page - 1 ) * $per_page;
-$page_entries      = array_slice( $active_log, $offset, $per_page );
+$active_log    = 'sms_history' === $active_tab ? $sms_history : $attempt_log;
+$total_entries = count( $active_log );
+$total_pages   = max( 1, (int) ceil( $total_entries / $per_page ) );
+$current_page  = min( $current_page, $total_pages );
+$offset        = ( $current_page - 1 ) * $per_page;
+$page_entries  = array_slice( $active_log, $offset, $per_page );
 
 // Helper: build tab URL.
 function kwtsms_logs_tab_url( $tab, $extra = array() ) {
 	return add_query_arg(
-		array_merge( array( 'page' => 'kwtsms-otp-logs', 'tab' => $tab ), $extra ),
+		array_merge(
+			array(
+				'page' => 'kwtsms-otp-logs',
+				'tab'  => $tab,
+			),
+			$extra
+		),
 		admin_url( 'admin.php' )
 	);
 }
@@ -96,11 +104,20 @@ function kwtsms_attempt_result_label( $result ) {
 
 	<?php if ( 'debug_log' !== $active_tab && $total_entries > 0 ) : ?>
 	<div class="kwtsms-log-toolbar" style="display:flex;gap:10px;align-items:center;margin:16px 0;">
-		<a href="<?php echo esc_url( add_query_arg( array(
-			'action'   => 'export_csv',
-			'log'      => $active_tab,
-			'_wpnonce' => wp_create_nonce( 'kwtsms_export_csv_' . $active_tab ),
-		), admin_url( 'admin.php?page=kwtsms-otp-logs' ) ) ); ?>"
+		<a href="
+		<?php
+		echo esc_url(
+			add_query_arg(
+				array(
+					'action'   => 'export_csv',
+					'log'      => $active_tab,
+					'_wpnonce' => wp_create_nonce( 'kwtsms_export_csv_' . $active_tab ),
+				),
+				admin_url( 'admin.php?page=kwtsms-otp-logs' )
+			)
+		);
+		?>
+		"
 			class="button">
 			⬇ <?php esc_html_e( 'Export CSV', 'wp-kwtsms' ); ?>
 		</a>
@@ -119,7 +136,7 @@ function kwtsms_attempt_result_label( $result ) {
 
 	<?php if ( 'sms_history' === $active_tab ) : ?>
 	<!-- ===== SMS History Tab ===== -->
-	<?php if ( empty( $page_entries ) ) : ?>
+		<?php if ( empty( $page_entries ) ) : ?>
 	<p><?php esc_html_e( 'No SMS history yet.', 'wp-kwtsms' ); ?></p>
 	<?php else : ?>
 	<table class="widefat striped kwtsms-log-table">
@@ -172,7 +189,7 @@ function kwtsms_attempt_result_label( $result ) {
 
 	<?php elseif ( 'attempt_log' === $active_tab ) : ?>
 	<!-- ===== OTP Attempts Tab ===== -->
-	<?php if ( empty( $page_entries ) ) : ?>
+		<?php if ( empty( $page_entries ) ) : ?>
 	<p><?php esc_html_e( 'No OTP attempts logged yet.', 'wp-kwtsms' ); ?></p>
 	<?php else : ?>
 	<table class="widefat striped kwtsms-log-table">
@@ -187,15 +204,16 @@ function kwtsms_attempt_result_label( $result ) {
 			</tr>
 		</thead>
 		<tbody>
-			<?php foreach ( $page_entries as $entry ) :
+			<?php
+			foreach ( $page_entries as $entry ) :
 				$user_id = $entry['user_id'] ?? null;
 				if ( $user_id ) {
-					$user_data = get_userdata( (int) $user_id );
+					$user_data  = get_userdata( (int) $user_id );
 					$user_label = $user_data ? esc_html( $user_data->user_login ) . ' (#' . (int) $user_id . ')' : '#' . (int) $user_id;
 				} else {
 					$user_label = '—';
 				}
-			?>
+				?>
 			<tr>
 				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $entry['time'] ?? 0 ) ); ?></td>
 				<td><?php echo $user_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
@@ -211,61 +229,79 @@ function kwtsms_attempt_result_label( $result ) {
 
 	<?php elseif ( 'debug_log' === $active_tab && $show_debug_tab ) : ?>
 	<!-- ===== Debug Log Tab ===== -->
-	<?php
-	// Read file, reverse lines (newest first), paginate.
-	$lines_raw       = file( $debug_log_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
-	$lines_raw       = $lines_raw ?: array();
-	$lines           = array_reverse( $lines_raw );
-	$total_lines     = count( $lines );
-	$per_page_dbg    = 100;
-	$total_pages_dbg = max( 1, (int) ceil( $total_lines / $per_page_dbg ) );
-	$cur_page_dbg    = min( max( 1, absint( $_GET['paged'] ?? 1 ) ), $total_pages_dbg );
-	$offset_dbg      = ( $cur_page_dbg - 1 ) * $per_page_dbg;
-	$page_lines      = array_slice( $lines, $offset_dbg, $per_page_dbg );
-	?>
+		<?php
+		// Read file, reverse lines (newest first), paginate.
+		$lines_raw       = file( $debug_log_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+		$lines_raw       = $lines_raw ? $lines_raw : array();
+		$lines           = array_reverse( $lines_raw );
+		$total_lines     = count( $lines );
+		$per_page_dbg    = 100;
+		$total_pages_dbg = max( 1, (int) ceil( $total_lines / $per_page_dbg ) );
+		$cur_page_dbg    = min( max( 1, absint( $_GET['paged'] ?? 1 ) ), $total_pages_dbg );
+		$offset_dbg      = ( $cur_page_dbg - 1 ) * $per_page_dbg;
+		$page_lines      = array_slice( $lines, $offset_dbg, $per_page_dbg );
+		?>
 
 	<div class="kwtsms-log-toolbar" style="display:flex;gap:10px;align-items:center;margin:16px 0;">
-		<a href="<?php echo esc_url( add_query_arg( array(
-			'action'   => 'download_debug_log',
-			'_wpnonce' => wp_create_nonce( 'kwtsms_download_debug_log' ),
-		), admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ) ); ?>"
-		   class="button">
+		<a href="
+		<?php
+		echo esc_url(
+			add_query_arg(
+				array(
+					'action'   => 'download_debug_log',
+					'_wpnonce' => wp_create_nonce( 'kwtsms_download_debug_log' ),
+				),
+				admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' )
+			)
+		);
+		?>
+		"
+			class="button">
 			&#11015; <?php esc_html_e( 'Download', 'wp-kwtsms' ); ?>
 		</a>
 
 		<span style="color:#888;font-size:13px;">
-			<?php printf(
+			<?php
+			printf(
 				/* translators: %d: number of log lines */
 				esc_html__( '%d lines total', 'wp-kwtsms' ),
 				(int) $total_lines
-			); ?>
+			);
+			?>
 		</span>
-		<span style="color:#888;font-size:13px;margin-left:auto;"><?php
+		<span style="color:#888;font-size:13px;margin-left:auto;">
+		<?php
 			// Show relative path so it reads the same on any server layout.
 			$debug_log_display = str_replace( trailingslashit( ABSPATH ), '', $debug_log_path );
 			echo esc_html( $debug_log_display );
-		?></span>
+		?>
+		</span>
 	</div>
 
-	<?php if ( empty( $page_lines ) ) : ?>
+		<?php if ( empty( $page_lines ) ) : ?>
 	<p><?php esc_html_e( 'The debug log is empty.', 'wp-kwtsms' ); ?></p>
 	<?php else : ?>
-	<pre style="background:#1e1e1e;color:#d4d4d4;font-size:12px;line-height:1.6;padding:16px;border-radius:4px;overflow:auto;max-height:600px;white-space:pre-wrap;"><?php
-	foreach ( $page_lines as $line ) {
-		echo esc_html( $line ) . "\n";
-	}
-	?></pre>
+	<pre style="background:#1e1e1e;color:#d4d4d4;font-size:12px;line-height:1.6;padding:16px;border-radius:4px;overflow:auto;max-height:600px;white-space:pre-wrap;">
+		<?php
+		foreach ( $page_lines as $line ) {
+			echo esc_html( $line ) . "\n";
+		}
+		?>
+	</pre>
 
-	<?php if ( $total_pages_dbg > 1 ) : ?>
+		<?php if ( $total_pages_dbg > 1 ) : ?>
 	<div class="tablenav" style="margin-top:12px;">
 		<div class="tablenav-pages">
 			<?php
-			echo paginate_links( array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( 'debug_log' ) ),
-				'format'  => '',
-				'current' => $cur_page_dbg,
-				'total'   => $total_pages_dbg,
-			) );
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- paginate_links() returns safe HTML.
+			echo paginate_links(
+				array(
+					'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( 'debug_log' ) ),
+					'format'  => '',
+					'current' => $cur_page_dbg,
+					'total'   => $total_pages_dbg,
+				)
+			);
 			?>
 		</div>
 	</div>
@@ -279,12 +315,15 @@ function kwtsms_attempt_result_label( $result ) {
 	<div class="tablenav" style="margin-top:12px;">
 		<div class="tablenav-pages">
 			<?php
-			echo paginate_links( array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( $active_tab ) ),
-				'format'  => '',
-				'current' => $current_page,
-				'total'   => $total_pages,
-			) );
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- paginate_links() returns safe HTML.
+			echo paginate_links(
+				array(
+					'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( $active_tab ) ),
+					'format'  => '',
+					'current' => $current_page,
+					'total'   => $total_pages,
+				)
+			);
 			?>
 		</div>
 	</div>
