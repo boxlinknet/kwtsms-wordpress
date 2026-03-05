@@ -19,6 +19,27 @@
 	max-width: 900px;
 }
 
+/* WPForms strips #wpcontent padding-left on its admin pages — restore it. */
+body.wpforms-admin-page .kwtsms-admin-wrap {
+	padding-left: 20px;
+}
+
+/* WPForms auto-injects its branded header + flyout on any page whose slug
+   contains "wpforms". Hide them so our integration page looks like ours. */
+body.kwtsms_page_kwtsms-otp-int-wpforms #wpforms-header,
+body.kwtsms_page_kwtsms-otp-int-wpforms [class*="wpforms-flyout"] {
+	display: none !important;
+}
+
+/* Hide the page footer on all kwtSMS admin pages
+   (covers toplevel General page and every sub-page). */
+body.toplevel_page_kwtsms-otp #footer-left,
+body.toplevel_page_kwtsms-otp #footer-upgrade,
+body[class*="kwtsms_page_kwtsms-otp"] #footer-left,
+body[class*="kwtsms_page_kwtsms-otp"] #footer-upgrade {
+	display: none !important;
+}
+
 .kwtsms-admin-wrap .notice {
 	border-radius: 4px;
 }

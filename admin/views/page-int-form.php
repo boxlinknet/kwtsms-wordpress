@@ -5,12 +5,7 @@
  * Used by CF7, WPForms, Elementor, Gravity Forms, and Ninja Forms.
  * The calling render method sets $int_key before including this file.
  *
- * URL-driven tabs matching the Logs page nav style:
- *   Settings tab     — enable toggle, mode, and setup tip.
- *   SMS Template tab — EN + AR textarea with character counter.
- *
- * The form wraps both tabs; hidden tab fields still submit, so Save
- * always persists both sections at once.
+ * Both cards (Settings and SMS Template) are always visible on the same page.
  *
  * Submitting this form only overwrites the fields for the submitted
  * integration section (identified by the hidden _save_section field),
@@ -104,31 +99,6 @@ $tpl          = $templates[ $tpl_key ] ?? array(
 
 /* translators: %s: integration label e.g. "WPForms" */
 $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
-
-// Current page slug — used to build correct tab URLs.
-$page_slug = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : 'kwtsms-otp-int-' . $int_key; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-$valid_tabs = array( 'settings', 'template' );
-$active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	? sanitize_key( $_GET['tab'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	: 'settings';
-
-/**
- * Build a tab URL for this integration sub-page.
- *
- * @param string $slug Current page slug.
- * @param string $tab  Tab key.
- * @return string Admin URL with page + tab query args.
- */
-function kwtsms_int_form_tab_url( $slug, $tab ) {
-	return add_query_arg(
-		array(
-			'page' => $slug,
-			'tab'  => $tab,
-		),
-		admin_url( 'admin.php' )
-	);
-}
 ?>
 <div class="wrap kwtsms-admin-wrap">
 
@@ -142,24 +112,12 @@ function kwtsms_int_form_tab_url( $slug, $tab ) {
 		</a>
 	</div>
 
-	<!-- Tab navigation -->
-	<nav class="nav-tab-wrapper">
-		<a href="<?php echo esc_url( kwtsms_int_form_tab_url( $page_slug, 'settings' ) ); ?>"
-			class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'Settings', 'wp-kwtsms' ); ?>
-		</a>
-		<a href="<?php echo esc_url( kwtsms_int_form_tab_url( $page_slug, 'template' ) ); ?>"
-			class="nav-tab <?php echo 'template' === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'SMS Template', 'wp-kwtsms' ); ?>
-		</a>
-	</nav>
-
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_integrations_group' ); ?>
 		<input type="hidden" name="kwtsms_otp_integrations[_save_section]" value="<?php echo esc_attr( $int_key ); ?>" />
 
-		<!-- ===== Settings Tab ===== -->
-		<div class="kwtsms-tab-section"<?php echo 'settings' === $active_tab ? '' : ' style="display:none;"'; ?>>
+		<!-- ===== Settings Card ===== -->
+		<div class="kwtsms-tab-section" style="margin-top:16px;">
 
 			<div class="kwtsms-template-card">
 				<div class="kwtsms-template-card-header">
@@ -169,18 +127,6 @@ function kwtsms_int_form_tab_url( $slug, $tab ) {
 					echo esc_html( sprintf( __( '%s Integration', 'wp-kwtsms' ), $label ) );
 					?>
 					</h3>
-					<label class="kwtsms-toggle">
-						<input type="checkbox"
-							name="kwtsms_otp_integrations[<?php echo esc_attr( $enabled_key ); ?>]"
-							value="1"
-							<?php checked( $is_enabled ); ?> />
-						<span>
-						<?php
-						/* translators: %s: integration name (e.g. WooCommerce) */
-						echo esc_html( sprintf( __( 'Enable %s SMS Integration', 'wp-kwtsms' ), $label ) );
-						?>
-						</span>
-					</label>
 				</div>
 				<p class="description">
 					<?php
@@ -190,6 +136,23 @@ function kwtsms_int_form_tab_url( $slug, $tab ) {
 				</p>
 
 				<table class="form-table" style="margin-top:12px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Enable Integration', 'wp-kwtsms' ); ?></th>
+						<td>
+							<label class="kwtsms-toggle">
+								<input type="checkbox"
+									name="kwtsms_otp_integrations[<?php echo esc_attr( $enabled_key ); ?>]"
+									value="1"
+									<?php checked( $is_enabled ); ?> />
+								<span>
+								<?php
+								/* translators: %s: integration name (e.g. WooCommerce) */
+								echo esc_html( sprintf( __( 'Enable %s SMS Integration', 'wp-kwtsms' ), $label ) );
+								?>
+								</span>
+							</label>
+						</td>
+					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms' ); ?></th>
 						<td>
@@ -232,8 +195,8 @@ function kwtsms_int_form_tab_url( $slug, $tab ) {
 
 		</div><!-- /.kwtsms-tab-section[settings] -->
 
-		<!-- ===== SMS Template Tab ===== -->
-		<div class="kwtsms-tab-section"<?php echo 'template' === $active_tab ? '' : ' style="display:none;"'; ?>>
+		<!-- ===== SMS Template Card ===== -->
+		<div class="kwtsms-tab-section">
 
 			<div class="kwtsms-template-card">
 				<div class="kwtsms-template-card-header">
