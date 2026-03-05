@@ -65,7 +65,7 @@ Hooks for custom workflows:
 
 This plugin connects to the following external services:
 
-**1. kwtSMS API** (required) — sends SMS messages.
+**1. kwtSMS API** (required): sends SMS messages.
 
 * Service: [https://www.kwtsms.com](https://www.kwtsms.com)
 * API endpoint: `https://www.kwtsms.com/API/`
@@ -76,7 +76,7 @@ This plugin connects to the following external services:
 
 A kwtSMS account with SMS credits is required.
 
-**2. ipapi.co** (optional) — detects the visitor's country to pre-select the dial-code flag on the phone input.
+**2. ipapi.co** (optional): detects the visitor's country to pre-select the dial-code flag on the phone input.
 
 * Service: [https://ipapi.co](https://ipapi.co)
 * Data sent: visitor IP address (no other data)
@@ -86,12 +86,12 @@ A kwtSMS account with SMS credits is required.
 
 If ipapi.co is unavailable, the phone input falls back to the default country configured in General Settings. No personal data is stored by the plugin as a result of this call.
 
-**3. Google reCAPTCHA v3** (optional) — bot protection on OTP forms. Only active if you enter a reCAPTCHA Site Key in General Settings.
+**3. Google reCAPTCHA v3** (optional): bot protection on OTP forms. Only active if you enter a reCAPTCHA Site Key in General Settings.
 
 * Service: [https://www.google.com/recaptcha/](https://www.google.com/recaptcha/)
 * Privacy Policy: [https://policies.google.com/privacy](https://policies.google.com/privacy)
 
-**4. Cloudflare Turnstile** (optional) — alternative bot protection. Only active if you enter a Turnstile Site Key in General Settings.
+**4. Cloudflare Turnstile** (optional): alternative bot protection. Only active if you enter a Turnstile Site Key in General Settings.
 
 * Service: [https://www.cloudflare.com/products/turnstile/](https://www.cloudflare.com/products/turnstile/)
 * Privacy Policy: [https://www.cloudflare.com/privacypolicy/](https://www.cloudflare.com/privacypolicy/)
