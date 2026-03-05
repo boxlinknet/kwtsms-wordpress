@@ -1227,7 +1227,7 @@ class KwtSMS_Admin {
 					<?php endforeach; ?>
 				</tbody>
 			</table>
-			<p style="margin:6px 0 0;"><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'View full log ', 'wp-kwtsms' ); ?></a></p>
+			<p style="margin:6px 0 0;"><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs' ) ); ?>"><?php esc_html_e( 'View full log ', 'wp-kwtsms' ); ?></a></p>
 			<?php endif; ?>
 		</div>
 		<?php
