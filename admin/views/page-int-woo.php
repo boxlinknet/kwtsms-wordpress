@@ -94,6 +94,14 @@ $customer_status_labels = array(
 		'label' => __( 'New Order / Order Confirmed', 'wp-kwtsms' ),
 		'hint'  => __( "Fires immediately when a paid order is placed (credit card, PayPal, COD). This is the main 'new order' notification.", 'wp-kwtsms' ),
 	),
+	'woo_pending'    => array(
+		'label' => __( 'New Order — Awaiting Payment', 'wp-kwtsms' ),
+		'hint'  => __( 'Fires when an order is placed but payment has not been received yet (e.g. bank transfer). Disabled by default.', 'wp-kwtsms' ),
+	),
+	'woo_failed'     => array(
+		'label' => __( 'Payment Failed — Order Not Confirmed', 'wp-kwtsms' ),
+		'hint'  => __( 'Fires when the payment attempt fails and the order is not confirmed. Disabled by default.', 'wp-kwtsms' ),
+	),
 	'woo_shipped'    => array(
 		'label' => __( 'Order Shipped', 'wp-kwtsms' ),
 		'hint'  => __( 'Fires when the order status is set to On-Hold, typically used to indicate the order has been shipped.', 'wp-kwtsms' ),
@@ -106,17 +114,9 @@ $customer_status_labels = array(
 		'label' => __( 'Order Cancelled', 'wp-kwtsms' ),
 		'hint'  => __( 'Fires when the order is cancelled by the customer or admin.', 'wp-kwtsms' ),
 	),
-	'woo_pending'    => array(
-		'label' => __( 'New Order — Awaiting Payment', 'wp-kwtsms' ),
-		'hint'  => __( 'Fires when an order is placed but payment has not been received yet (e.g. bank transfer). Disabled by default.', 'wp-kwtsms' ),
-	),
 	'woo_refunded'   => array(
 		'label' => __( 'Order Refunded', 'wp-kwtsms' ),
 		'hint'  => __( 'Fires when a refund is issued for the order. Disabled by default.', 'wp-kwtsms' ),
-	),
-	'woo_failed'     => array(
-		'label' => __( 'Payment Failed — Order Not Confirmed', 'wp-kwtsms' ),
-		'hint'  => __( 'Fires when the payment attempt fails and the order is not confirmed. Disabled by default.', 'wp-kwtsms' ),
 	),
 );
 ?>
