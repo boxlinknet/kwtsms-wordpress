@@ -136,42 +136,48 @@ class KwtSMS_Login_OTP {
 			return new WP_Error( 'kwtsms_otp_required', '' );
 		}
 
-		// Generate OTP and send SMS.
+		// Generate OTP — reuses existing valid code if one was sent recently.
 		$otp_code = $this->plugin->otp->generate( $user->ID, 'login' );
-		$message  = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
-		$result   = $this->plugin->api->send_sms(
-			$phone,
-			$this->plugin->settings->get( 'gateway.sender_id', '' ),
-			$message,
-			'login'
-		);
 
-		if ( is_wp_error( $result ) ) {
-			$error_code = $result->get_error_code();
-			$this->plugin->api->write_debug_log( 'login_otp', 'SMS send failed for user ' . $user->ID . ': ' . $result->get_error_message() );
+		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
+		if ( ! $this->plugin->otp->is_send_cooldown_active( $user->ID ) ) {
+			$message = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
+			$result  = $this->plugin->api->send_sms(
+				$phone,
+				$this->plugin->settings->get( 'gateway.sender_id', '' ),
+				$message,
+				'login'
+			);
 
-			// Gateway not configured — OTP feature is not active yet. Skip silently.
-			if ( in_array( $error_code, array( 'kwtsms_no_credentials', 'kwtsms_missing_sender_id' ), true ) ) {
+			if ( is_wp_error( $result ) ) {
+				$error_code = $result->get_error_code();
+				$this->plugin->api->write_debug_log( 'login_otp', 'SMS send failed for user ' . $user->ID . ': ' . $result->get_error_message() );
+
+				// Gateway not configured — OTP feature is not active yet. Skip silently.
+				if ( in_array( $error_code, array( 'kwtsms_no_credentials', 'kwtsms_missing_sender_id' ), true ) ) {
+					return $user;
+				}
+
+				// Insufficient credits — OTP was active but can no longer send. Alert the admin.
+				// The admin-configured balance_failure_mode decides whether to block or allow.
+				if ( 'no_balance' === $error_code ) {
+					$this->notify_admin_no_balance();
+					$mode = $this->plugin->settings->get( 'general.balance_failure_mode', 'block' );
+					if ( 'allow' === $mode ) {
+						// Admin opted to keep users accessible — fail-open and let login continue.
+						return $user;
+					}
+					return new WP_Error(
+						'kwtsms_sms_failed',
+						__( 'Your verification code could not be sent. Please contact the site administrator.', 'wp-kwtsms' )
+					);
+				}
+
+				// Temporary failure (network, API down) — fail-open to avoid lockout.
 				return $user;
 			}
 
-			// Insufficient credits — OTP was active but can no longer send. Alert the admin.
-			// The admin-configured balance_failure_mode decides whether to block or allow.
-			if ( 'no_balance' === $error_code ) {
-				$this->notify_admin_no_balance();
-				$mode = $this->plugin->settings->get( 'general.balance_failure_mode', 'block' );
-				if ( 'allow' === $mode ) {
-					// Admin opted to keep users accessible — fail-open and let login continue.
-					return $user;
-				}
-				return new WP_Error(
-					'kwtsms_sms_failed',
-					__( 'Your verification code could not be sent. Please contact the site administrator.', 'wp-kwtsms' )
-				);
-			}
-
-			// Temporary failure (network, API down) — fail-open to avoid lockout.
-			return $user;
+			$this->plugin->otp->set_send_cooldown( $user->ID );
 		}
 
 		// Sliding-window counters are recorded inside is_rate_limited(),
@@ -518,39 +524,46 @@ class KwtSMS_Login_OTP {
 			exit;
 		}
 
+		// Generate OTP — reuses existing valid code if one was sent recently.
 		$otp_code = $this->plugin->otp->generate( $user_id, 'passwordless' );
-		$message  = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
-		$result   = $this->plugin->api->send_sms(
-			$normalized,
-			$this->plugin->settings->get( 'gateway.sender_id', '' ),
-			$message,
-			'passwordless'
-		);
 
-		if ( is_wp_error( $result ) ) {
-			$error_code = $result->get_error_code();
-			$this->plugin->api->write_debug_log( 'login_otp', 'Passwordless SMS failed: ' . $result->get_error_message() );
+		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
+		if ( ! $this->plugin->otp->is_send_cooldown_active( $user_id ) ) {
+			$message = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
+			$result  = $this->plugin->api->send_sms(
+				$normalized,
+				$this->plugin->settings->get( 'gateway.sender_id', '' ),
+				$message,
+				'passwordless'
+			);
 
-			// Gateway not configured — show actionable error on the phone form.
-			if ( in_array( $error_code, array( 'kwtsms_no_credentials', 'kwtsms_missing_sender_id' ), true ) ) {
-				$this->render_passwordless_page( __( 'SMS login is not available. Please contact the site administrator.', 'wp-kwtsms' ) );
-				exit;
-			}
+			if ( is_wp_error( $result ) ) {
+				$error_code = $result->get_error_code();
+				$this->plugin->api->write_debug_log( 'login_otp', 'Passwordless SMS failed: ' . $result->get_error_message() );
 
-			// Insufficient credits — alert admin; mode decides whether to block or allow.
-			if ( 'no_balance' === $error_code ) {
-				$this->notify_admin_no_balance();
-				$mode = $this->plugin->settings->get( 'general.balance_failure_mode', 'block' );
-				if ( 'allow' !== $mode ) {
-					$this->render_passwordless_page( __( 'Your verification code could not be sent. Please contact the site administrator.', 'wp-kwtsms' ) );
+				// Gateway not configured — show actionable error on the phone form.
+				if ( in_array( $error_code, array( 'kwtsms_no_credentials', 'kwtsms_missing_sender_id' ), true ) ) {
+					$this->render_passwordless_page( __( 'SMS login is not available. Please contact the site administrator.', 'wp-kwtsms' ) );
 					exit;
 				}
-				// 'allow' mode — fall through and show OTP screen (user will not receive a code
-				// but is not logged in; this is safer than auto-logging-in without a phone lookup).
-			}
 
-			// Temporary failure — proceed to OTP screen; user cannot complete it
-			// but is not logged in either, which is safer than showing nothing.
+				// Insufficient credits — alert admin; mode decides whether to block or allow.
+				if ( 'no_balance' === $error_code ) {
+					$this->notify_admin_no_balance();
+					$mode = $this->plugin->settings->get( 'general.balance_failure_mode', 'block' );
+					if ( 'allow' !== $mode ) {
+						$this->render_passwordless_page( __( 'Your verification code could not be sent. Please contact the site administrator.', 'wp-kwtsms' ) );
+						exit;
+					}
+					// 'allow' mode — fall through and show OTP screen (user will not receive a code
+					// but is not logged in; this is safer than auto-logging-in without a phone lookup).
+				}
+
+				// Temporary failure — proceed to OTP screen; user cannot complete it
+				// but is not logged in either, which is safer than showing nothing.
+			} else {
+				$this->plugin->otp->set_send_cooldown( $user_id );
+			}
 		}
 
 		// Sliding-window counters are recorded inside is_rate_limited(),
