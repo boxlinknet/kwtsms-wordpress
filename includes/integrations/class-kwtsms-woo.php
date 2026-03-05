@@ -420,19 +420,26 @@ class KwtSMS_Woo {
 		$transient_key = self::CHECKOUT_OTP_PREFIX . $token;
 
 		if ( '' === $otp_code ) {
-			// First submit — generate and send OTP.
-			$otp    = $this->plugin->otp->generate( 'checkout_' . $token, 'checkout' );
-			$msg    = $this->plugin->otp->build_message( $otp, 'login_otp' );
-			$result = $this->plugin->api->send_sms(
-				$normalized,
-				$this->plugin->settings->get( 'gateway.sender_id', '' ),
-				$msg,
-				'checkout'
-			);
-			if ( is_wp_error( $result ) ) {
-				wc_add_notice( $result->get_error_message(), 'error' );
-				return;
+			// First (or repeated) submit — generate (or reuse) OTP.
+			$otp         = $this->plugin->otp->generate( 'checkout_' . $token, 'checkout' );
+			$checkout_id = 'checkout_' . $token;
+
+			// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
+			if ( ! $this->plugin->otp->is_send_cooldown_active( $checkout_id ) ) {
+				$msg    = $this->plugin->otp->build_message( $otp, 'login_otp' );
+				$result = $this->plugin->api->send_sms(
+					$normalized,
+					$this->plugin->settings->get( 'gateway.sender_id', '' ),
+					$msg,
+					'checkout'
+				);
+				if ( is_wp_error( $result ) ) {
+					wc_add_notice( $result->get_error_message(), 'error' );
+					return;
+				}
+				$this->plugin->otp->set_send_cooldown( $checkout_id );
 			}
+
 			// Store the phone so we can verify the same number on the second submit.
 			set_transient( $transient_key . '_pending', $normalized, 15 * MINUTE_IN_SECONDS );
 			wc_add_notice( __( 'An OTP has been sent to your phone. Enter it above and place the order again.', 'wp-kwtsms' ), 'notice' );

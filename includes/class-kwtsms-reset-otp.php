@@ -131,20 +131,26 @@ class KwtSMS_Reset_OTP {
 			exit;
 		}
 
-		// Generate OTP and send SMS.
+		// Generate OTP — reuses existing valid code if one was sent recently.
 		$otp_code = $this->plugin->otp->generate( $resolved_user->ID, 'reset' );
-		$message  = $this->plugin->otp->build_message( $otp_code, 'reset_otp' );
-		$result   = $this->plugin->api->send_sms(
-			$phone,
-			$this->plugin->settings->get( 'gateway.sender_id', '' ),
-			$message,
-			'reset'
-		);
 
-		if ( is_wp_error( $result ) ) {
-			$this->plugin->api->write_debug_log( 'reset_otp', 'SMS failed for user ' . $resolved_user->ID . ': ' . $result->get_error_message() );
-			// Fail gracefully — fall back to email reset.
-			return;
+		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
+		if ( ! $this->plugin->otp->is_send_cooldown_active( $resolved_user->ID ) ) {
+			$message = $this->plugin->otp->build_message( $otp_code, 'reset_otp' );
+			$result  = $this->plugin->api->send_sms(
+				$phone,
+				$this->plugin->settings->get( 'gateway.sender_id', '' ),
+				$message,
+				'reset'
+			);
+
+			if ( is_wp_error( $result ) ) {
+				$this->plugin->api->write_debug_log( 'reset_otp', 'SMS failed for user ' . $resolved_user->ID . ': ' . $result->get_error_message() );
+				// Fail gracefully — fall back to email reset.
+				return;
+			}
+
+			$this->plugin->otp->set_send_cooldown( $resolved_user->ID );
 		}
 
 		// Sliding-window counters are recorded inside is_rate_limited(),

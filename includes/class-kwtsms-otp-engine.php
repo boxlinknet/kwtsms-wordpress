@@ -8,6 +8,7 @@
  *
  * Transient key schema:
  *   kwtsms_otp_{md5(identifier)}         — the OTP record
+ *   kwtsms_otp_cd_{md5(identifier)}      — send-cooldown lock (SEND_COOLDOWN seconds)
  *   kwtsms_otp_rate_{md5(phone)}         — sliding-window timestamp array per phone
  *   kwtsms_otp_ip_{md5(ip)}             — sliding-window timestamp array per IP address
  *   kwtsms_otp_acct_{md5(user_id)}      — sliding-window timestamp array per WordPress user ID
@@ -52,6 +53,15 @@ class KwtSMS_OTP_Engine {
 	const IP_RATE_LIMIT_WINDOW = 600;
 
 	/**
+	 * Minimum seconds that must elapse before another OTP SMS can be sent
+	 * to the same identifier. Prevents rapid double-sends on double-click
+	 * or page-refresh. The existing (reused) OTP remains valid during this window.
+	 *
+	 * @var int
+	 */
+	const SEND_COOLDOWN = 60;
+
+	/**
 	 * Maximum OTP send attempts per WordPress user ID per rate-limit window.
 	 *
 	 * @var int
@@ -86,21 +96,40 @@ class KwtSMS_OTP_Engine {
 	// =========================================================================
 
 	/**
-	 * Generate a new OTP for a user and store it as a transient.
+	 * Return a valid OTP for a user, reusing the existing one when possible.
 	 *
-	 * Any existing OTP for this identifier is overwritten.
+	 * If a non-expired OTP already exists for this identifier and action, it is
+	 * reused and its expiry clock is reset to the full configured window. This
+	 * prevents duplicate codes being issued when a user submits a form twice
+	 * quickly (double-click, page refresh, browser back-button resubmit).
+	 *
+	 * A completely new code is generated only when no valid OTP exists, or when
+	 * the stored OTP belongs to a different action context.
 	 *
 	 * @param int|string $identifier User ID (int) or phone number (string for passwordless).
-	 * @param string     $action     Context: 'login' | 'reset' | 'passwordless'.
+	 * @param string     $action     Context: 'login' | 'reset' | 'passwordless' | 'checkout'.
 	 *
-	 * @return string The generated OTP code.
+	 * @return string The OTP code (existing or freshly generated).
 	 */
 	public function generate( $identifier, $action ) {
+		$key    = $this->transient_key( $identifier );
+		$data   = get_transient( $key );
+		$expiry = (int) $this->settings->get( 'general.otp_expiry', 5 ) * MINUTE_IN_SECONDS;
+
+		// Reuse an existing valid OTP for the same action — reset the expiry clock.
+		if ( is_array( $data )
+			&& isset( $data['code'], $data['action'], $data['created'] )
+			&& $data['action'] === $action
+			&& ( time() - $data['created'] ) < $expiry
+		) {
+			$data['created'] = time();
+			set_transient( $key, $data, $expiry );
+			return $data['code'];
+		}
+
+		// No valid OTP for this action — generate a fresh one.
 		$length = (int) $this->settings->get( 'general.otp_length', 6 );
 		$code   = $this->generate_code( $length );
-
-		$expiry = (int) $this->settings->get( 'general.otp_expiry', 5 ) * MINUTE_IN_SECONDS;
-		$key    = $this->transient_key( $identifier );
 
 		set_transient(
 			$key,
@@ -295,6 +324,38 @@ class KwtSMS_OTP_Engine {
 	}
 
 	// =========================================================================
+	// Send-cooldown
+	// =========================================================================
+
+	/**
+	 * Check whether an OTP SMS was sent to this identifier within the last
+	 * SEND_COOLDOWN seconds.
+	 *
+	 * Used by callers to skip re-sending an SMS when an OTP was just dispatched
+	 * (e.g. double-click or page refresh). The OTP transient itself remains
+	 * valid — the user can still enter the code they already received.
+	 *
+	 * @param int|string $identifier User ID or phone.
+	 *
+	 * @return bool True if within the cooldown window.
+	 */
+	public function is_send_cooldown_active( $identifier ): bool {
+		return (bool) get_transient( $this->cooldown_key( $identifier ) );
+	}
+
+	/**
+	 * Record that an OTP SMS was just sent to this identifier.
+	 *
+	 * Sets a SEND_COOLDOWN-second transient so that is_send_cooldown_active()
+	 * returns true for the next 60 seconds.
+	 *
+	 * @param int|string $identifier User ID or phone.
+	 */
+	public function set_send_cooldown( $identifier ): void {
+		set_transient( $this->cooldown_key( $identifier ), 1, self::SEND_COOLDOWN );
+	}
+
+	// =========================================================================
 	// Message building
 	// =========================================================================
 
@@ -349,14 +410,19 @@ class KwtSMS_OTP_Engine {
 	 * Blocked phones receive a silent success (no SMS sent, no error exposed)
 	 * to prevent enumeration of the block list by attackers.
 	 *
+	 * Returns 'cooldown' (string) when an OTP was already sent within the last
+	 * SEND_COOLDOWN seconds. Callers should silently proceed — the existing OTP
+	 * is still valid and the user can enter the code they already received.
+	 *
 	 * @param string $normalized_phone Normalised E.164-style phone number (digits only).
 	 * @param int    $identifier       User ID or 0 for guest/phone-based identifiers.
 	 * @param string $template_id      Template key: 'login_otp' | 'reset_otp'.
 	 * @param string $action           Context: 'login' | 'reset' | 'passwordless'.
 	 * @param string $sender_id        Sender ID to use for the SMS.
 	 *
-	 * @return true|array True if the phone is blocked (silent success), or an array with
-	 *                     ['otp_code', 'message', 'phone', 'sender', 'action'] if not blocked.
+	 * @return true|string|array true if phone is blocked (silent success),
+	 *                           'cooldown' if within the send-cooldown window,
+	 *                           or array ['otp_code','message','phone','sender','action'].
 	 */
 	public function request_otp( $normalized_phone, $identifier, $template_id, $action, $sender_id ) {
 		// Blocked phone: silently pretend success — no SMS sent, no error exposed.
@@ -364,8 +430,15 @@ class KwtSMS_OTP_Engine {
 			return true; // pretend success, no SMS sent.
 		}
 
+		// Within send-cooldown: OTP was dispatched recently; skip re-send.
+		if ( $this->is_send_cooldown_active( $identifier ) ) {
+			return 'cooldown';
+		}
+
 		$otp_code = $this->generate( $identifier, $action );
 		$message  = $this->build_message( $otp_code, $template_id );
+
+		$this->set_send_cooldown( $identifier );
 
 		return array(
 			'otp_code' => $otp_code,
@@ -523,6 +596,17 @@ class KwtSMS_OTP_Engine {
 	 */
 	private function rate_key( $phone ) {
 		return 'kwtsms_otp_rate_' . md5( $phone );
+	}
+
+	/**
+	 * Get the transient key for the send-cooldown lock of an identifier.
+	 *
+	 * @param int|string $identifier User ID or phone.
+	 *
+	 * @return string Transient key.
+	 */
+	private function cooldown_key( $identifier ) {
+		return 'kwtsms_otp_cd_' . md5( (string) $identifier );
 	}
 
 	/**
