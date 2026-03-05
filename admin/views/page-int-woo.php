@@ -239,12 +239,12 @@ $customer_status_labels = array(
 							$admin_notify_statuses = $int['woo_notify_admin_statuses'] ?? array();
 							$status_options        = array(
 								'processing' => __( 'New Order / Order Confirmed (Processing)', 'wp-kwtsms' ),
+								'pending'    => __( 'New Order — Awaiting Payment (Pending)', 'wp-kwtsms' ),
+								'failed'     => __( 'Payment Failed — Order Not Confirmed', 'wp-kwtsms' ),
 								'on-hold'    => __( 'Order Shipped (On-Hold)', 'wp-kwtsms' ),
 								'completed'  => __( 'Order Completed', 'wp-kwtsms' ),
 								'cancelled'  => __( 'Order Cancelled', 'wp-kwtsms' ),
-								'pending'    => __( 'New Order — Awaiting Payment (Pending)', 'wp-kwtsms' ),
 								'refunded'   => __( 'Order Refunded', 'wp-kwtsms' ),
-								'failed'     => __( 'Payment Failed — Order Not Confirmed', 'wp-kwtsms' ),
 							);
 							foreach ( $status_options as $slug => $label ) :
 							?>
