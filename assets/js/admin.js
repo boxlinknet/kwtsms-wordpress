@@ -236,17 +236,15 @@
 	// =========================================================================
 
 	$( '#kwtsms-reload-all' ).on( 'click', function () {
-		const $btn     = $( this );
-		const username = $( '#kwtsms_api_username' ).val().trim() || data.savedUsername || '';
-		const password = $( '#kwtsms_api_password' ).val().trim() || data.savedPassword || '';
+		const $btn = $( this );
 
 		$btn.prop( 'disabled', true ).text( '↻ ' + ( s.reloading || 'Reloading...' ) );
 
+		// Use the dedicated reload action — it reads stored credentials from the
+		// database so the password never needs to be present in the DOM.
 		$.post( ajaxUrl, {
-			action:   'kwtsms_verify_credentials',
-			nonce:    nonce,
-			username: username,
-			password: password,
+			action: 'kwtsms_reload_all',
+			nonce:  nonce,
 		} )
 		.done( function ( resp ) {
 			handleVerifyResponse( resp, null, $( '#kwtsms-login-status' ) );
@@ -271,7 +269,8 @@
 		const username = $( '#kwtsms_api_username' ).val().trim();
 		const password = $( '#kwtsms_api_password' ).val().trim();
 
-		if ( ! username || ! password ) {
+		// When already connected, the password is not in the DOM — skip this check.
+		if ( ! credentialsVerified && ( ! username || ! password ) ) {
 			$result.text( s.credentialsMissing || 'Please save your API credentials first (Gateway Settings → Save Settings).' ).css( 'color', '#dc3232' );
 			return;
 		}

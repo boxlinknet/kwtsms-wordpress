@@ -184,6 +184,7 @@ class KwtSMS_Plugin {
 	private function register_ajax_handlers() {
 		// Credential verification (admin only).
 		add_action( 'wp_ajax_kwtsms_verify_credentials', array( $this, 'ajax_verify_credentials' ) );
+		add_action( 'wp_ajax_kwtsms_reload_all', array( $this, 'ajax_reload_all' ) );
 
 		// OTP resend (guests — not yet logged in).
 		add_action( 'wp_ajax_nopriv_kwtsms_resend_otp', array( $this, 'ajax_resend_otp' ) );
@@ -596,6 +597,64 @@ class KwtSMS_Plugin {
 			array(
 				'sender_ids' => $sender_ids,
 				'balance'    => $balance_data,
+				'coverage'   => $coverage_arr,
+			)
+		);
+	}
+
+	/**
+	 * AJAX: Reload — refresh sender IDs, balance, and coverage using saved credentials.
+	 *
+	 * Unlike ajax_verify_credentials (which expects credentials in the POST body),
+	 * this handler reads the stored API username and password from the database so
+	 * the Reload button works even when the password field is not visible in the UI.
+	 * Returns the same JSON shape as ajax_verify_credentials so handleVerifyResponse()
+	 * can process both responses identically.
+	 */
+	public function ajax_reload_all() {
+		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			return;
+		}
+
+		$gw       = get_option( 'kwtsms_otp_gateway', array() );
+		$username = $gw['api_username'] ?? '';
+		$password = $gw['api_password'] ?? '';
+
+		if ( empty( $username ) || empty( $password ) ) {
+			wp_send_json_error( array( 'message' => __( 'No API credentials saved. Please save your credentials first.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		$test_mode  = ! empty( $gw['test_mode'] );
+		$api        = new KwtSMS_API( $username, $password, $test_mode );
+		$sender_ids = $api->get_sender_ids();
+
+		if ( is_wp_error( $sender_ids ) ) {
+			wp_send_json_error( array( 'message' => $sender_ids->get_error_message() ) );
+			return;
+		}
+
+		$balance      = $api->get_balance();
+		$coverage     = $api->get_coverage();
+		$coverage_arr = ( ! is_wp_error( $coverage ) ) ? (array) $coverage : array();
+
+		// Persist refreshed data (credentials + verified flag are unchanged).
+		$gw['sender_ids'] = (array) $sender_ids;
+		$gw['coverage']   = $coverage_arr;
+		if ( ! is_wp_error( $balance ) ) {
+			$gw['balance_available']  = $balance['available'];
+			$gw['balance_purchased']  = $balance['purchased'];
+			$gw['balance_updated_at'] = time();
+		}
+		update_option( 'kwtsms_otp_gateway', $gw );
+
+		wp_send_json_success(
+			array(
+				'sender_ids' => $sender_ids,
+				'balance'    => is_wp_error( $balance ) ? null : $balance,
 				'coverage'   => $coverage_arr,
 			)
 		);
