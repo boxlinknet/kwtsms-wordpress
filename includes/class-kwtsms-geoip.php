@@ -2,11 +2,11 @@
 /**
  * GeoIP Detection — detect the visitor's country from their IP address.
  *
- * Uses the ip-api.com free JSON endpoint (no API key required for non-commercial
- * use under 45 requests/minute). Results are cached in a transient for 24 hours
- * to minimise external API calls.
+ * Uses the ipapi.co free endpoint (no API key required, 30 000 req/day limit,
+ * HTTPS). Results are cached in a transient for 24 hours to minimise external
+ * API calls.
  *
- * Only the countryCode field is requested to keep the payload minimal.
+ * Only the country code is requested to keep the payload minimal.
  *
  * @package KwtSMS_OTP
  */
@@ -42,9 +42,9 @@ class KwtSMS_GeoIP {
 			return '' !== $cached ? $cached : null;
 		}
 
-		// Call ip-api.com — only request the countryCode field.
+		// Call ipapi.co — returns plain-text ISO2 country code (HTTPS, free tier).
 		$response = wp_remote_get(
-			'http://ip-api.com/json/' . rawurlencode( $ip ) . '?fields=countryCode',
+			'https://ipapi.co/' . rawurlencode( $ip ) . '/country/',
 			array( 'timeout' => 3 )
 		);
 
@@ -54,10 +54,11 @@ class KwtSMS_GeoIP {
 			return null;
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$body = trim( wp_remote_retrieve_body( $response ) );
 
-		if ( ! empty( $body['countryCode'] ) ) {
-			$iso2 = strtoupper( sanitize_text_field( $body['countryCode'] ) );
+		// ipapi.co returns a 2-letter alpha code on success, or an error string.
+		if ( 2 === strlen( $body ) && ctype_alpha( $body ) ) {
+			$iso2 = strtoupper( sanitize_text_field( $body ) );
 			// Cache the result for 24 hours.
 			set_transient( $cache_key, $iso2, DAY_IN_SECONDS );
 			return $iso2;
