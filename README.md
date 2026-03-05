@@ -1,4 +1,4 @@
-# kwtSMS — OTP & SMS Notifications — WordPress Plugin
+# kwtSMS: OTP & SMS Notifications — WordPress Plugin
 
 Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress — powered by the [kwtSMS](https://www.kwtsms.com) gateway.
 
