@@ -39,8 +39,8 @@ function kwtsms_otp_autoload( $class_name ) {
 		return;
 	}
 
-	// Convert class name to file name:
-	// KwtSMS_OTP_Engine  class-kwtsms-otp-engine.php
+	// Convert class name to file name.
+	// e.g. KwtSMS_OTP_Engine becomes class-kwtsms-otp-engine.php.
 	$file_name = 'class-' . strtolower( str_replace( '_', '-', $class_name ) ) . '.php';
 
 	$locations = array(
@@ -129,7 +129,7 @@ add_action( 'plugins_loaded', 'kwtsms_otp_init' );
  */
 add_action(
 	'before_woocommerce_init',
-	function() {
+	function () {
 		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
 			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
 				'custom_order_tables',

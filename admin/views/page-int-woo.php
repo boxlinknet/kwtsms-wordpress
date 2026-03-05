@@ -14,14 +14,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** @var KwtSMS_Admin $this */
+// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
 
-$settings  = $this->plugin->settings;
-$int       = array_merge(
+$settings   = $this->plugin->settings;
+$int        = array_merge(
 	KwtSMS_Settings::DEFAULTS['integrations'],
 	(array) $settings->get( 'integrations' )
 );
-$templates = $settings->get_all_integration_templates();
+$templates  = $settings->get_all_integration_templates();
 $woo_active = class_exists( 'WooCommerce' );
 
 // WooCommerce order-status template definitions.
@@ -71,8 +71,8 @@ $woo_template_defs = array(
 );
 
 $valid_tabs = array_keys( $woo_template_defs );
-$active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true )
-	? sanitize_key( $_GET['tab'] )
+$active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	? sanitize_key( $_GET['tab'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	: 'woo_processing';
 
 /**
@@ -83,7 +83,10 @@ $active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $
  */
 function kwtsms_woo_tab_url( $tab ) {
 	return add_query_arg(
-		array( 'page' => 'kwtsms-otp-int-woo', 'tab' => $tab ),
+		array(
+			'page' => 'kwtsms-otp-int-woo',
+			'tab'  => $tab,
+		),
 		admin_url( 'admin.php' )
 	);
 }
@@ -191,9 +194,10 @@ $customer_status_labels = array(
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Enabled statuses', 'wp-kwtsms' ); ?></th>
 						<td>
-							<?php foreach ( $customer_status_labels as $csl_key => $csl_def ) :
+							<?php
+							foreach ( $customer_status_labels as $csl_key => $csl_def ) :
 								$csl_tpl = $templates[ $csl_key ] ?? array( 'enabled' => 0 );
-							?>
+								?>
 							<div style="margin-bottom:10px;">
 								<label style="display:block;">
 									<input type="checkbox"
@@ -247,7 +251,7 @@ $customer_status_labels = array(
 								'refunded'   => __( 'Order Refunded', 'wp-kwtsms' ),
 							);
 							foreach ( $status_options as $slug => $label ) :
-							?>
+								?>
 							<label style="display:block;margin-bottom:4px;">
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_notify_admin_statuses][]"
@@ -271,10 +275,15 @@ $customer_status_labels = array(
 			</a>
 			<?php endforeach; ?>
 		</nav>
-		<?php foreach ( $woo_template_defs as $key => $def ) :
-			$tpl       = $templates[ $key ] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
+		<?php
+		foreach ( $woo_template_defs as $key => $def ) :
+			$tpl       = $templates[ $key ] ?? array(
+				'enabled' => 0,
+				'en'      => '',
+				'ar'      => '',
+			);
 			$is_active = ( $key === $active_tab );
-		?>
+			?>
 		<div class="kwtsms-tab-section"<?php echo $is_active ? '' : ' style="display:none;"'; ?>>
 
 			<div class="kwtsms-template-card">

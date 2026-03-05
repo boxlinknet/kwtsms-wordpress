@@ -248,7 +248,7 @@ class KwtSMS_User_Meta {
 	 *
 	 * @return WP_Error
 	 */
-	public function validate_registration_phone( $errors, $sanitized_user_login, $user_email ) {
+	public function validate_registration_phone( $errors, $sanitized_user_login, $user_email ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress registration; nonce verified by WP core.
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 

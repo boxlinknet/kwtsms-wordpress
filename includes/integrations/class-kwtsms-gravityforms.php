@@ -58,7 +58,7 @@ class KwtSMS_GravityForms {
 	 *                                         other integrations; settings are always
 	 *                                         accessed via $plugin->settings.
 	 */
-	public function __construct( KwtSMS_Plugin $plugin, KwtSMS_Settings $_settings = null ) {
+	public function __construct( KwtSMS_Plugin $plugin, KwtSMS_Settings $_settings = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$this->plugin = $plugin;
 
 		// Gravity Forms must be active.
@@ -102,10 +102,7 @@ class KwtSMS_GravityForms {
 	 * mutating field objects inside the form array, we annotate the first phone
 	 * field with `failed_validation` and `validation_message`.
 	 *
-	 * @param array $validation_result {
-	 *     @type bool  $is_valid Whether the form passed validation.
-	 *     @type array $form     The form object (array representation).
-	 * }
+	 * @param array $validation_result Gravity Forms validation result array.
 	 *
 	 * @return array The (possibly mutated) validation result array.
 	 */

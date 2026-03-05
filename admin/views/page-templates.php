@@ -11,7 +11,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** @var KwtSMS_Admin $this */
+// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
 $templates = $this->plugin->settings->get_all_templates();
 
 $template_labels = array(
@@ -44,8 +44,8 @@ $template_placeholders = array(
 );
 
 $valid_tabs = array_keys( $template_labels );
-$active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true )
-	? sanitize_key( $_GET['tab'] )
+$active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	? sanitize_key( $_GET['tab'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	: 'login_otp';
 
 /**
@@ -56,7 +56,10 @@ $active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $
  */
 function kwtsms_templates_tab_url( $tab ) {
 	return add_query_arg(
-		array( 'page' => 'kwtsms-otp-templates', 'tab' => $tab ),
+		array(
+			'page' => 'kwtsms-otp-templates',
+			'tab'  => $tab,
+		),
 		admin_url( 'admin.php' )
 	);
 }
@@ -83,10 +86,15 @@ function kwtsms_templates_tab_url( $tab ) {
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_templates_group' ); ?>
 
-		<?php foreach ( $template_labels as $key => $label ) :
-			$tpl       = $templates[ $key ] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
+		<?php
+		foreach ( $template_labels as $key => $label ) :
+			$tpl       = $templates[ $key ] ?? array(
+				'enabled' => 0,
+				'en'      => '',
+				'ar'      => '',
+			);
 			$is_active = ( $key === $active_tab );
-		?>
+			?>
 		<div class="kwtsms-tab-section"<?php echo $is_active ? ' style="margin-top:16px;"' : ' style="display:none;"'; ?>>
 
 			<div class="kwtsms-placeholder-help">

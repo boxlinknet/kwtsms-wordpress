@@ -24,12 +24,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** @var KwtSMS_Admin $this */
-/** @var string $int_key */
+// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
+// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var string $int_key, set by admin controller before including this view.
 
 // Per-integration configuration.
 $configs = array(
-	'cf7' => array(
+	'cf7'       => array(
 		'label'        => __( 'Contact Form 7', 'wp-kwtsms' ),
 		'enabled_key'  => 'cf7_enabled',
 		'mode_key'     => 'cf7_mode',
@@ -38,7 +38,7 @@ $configs = array(
 		'tip'          => __( 'Setup tip: add a tel field named kwtsms_phone to your CF7 form:', 'wp-kwtsms' ),
 		'tip_code'     => '[tel kwtsms_phone placeholder "e.g. 96598765432"]',
 	),
-	'wpforms' => array(
+	'wpforms'   => array(
 		'label'        => __( 'WPForms', 'wp-kwtsms' ),
 		'enabled_key'  => 'wpforms_enabled',
 		'mode_key'     => 'wpforms_mode',
@@ -56,7 +56,7 @@ $configs = array(
 		'tip'          => __( 'Add a Tel/Phone field to your Elementor Pro form. The field will be auto-detected.', 'wp-kwtsms' ),
 		'tip_code'     => '',
 	),
-	'gf' => array(
+	'gf'        => array(
 		'label'        => __( 'Gravity Forms', 'wp-kwtsms' ),
 		'enabled_key'  => 'gf_enabled',
 		'mode_key'     => 'gf_mode',
@@ -65,7 +65,7 @@ $configs = array(
 		'tip'          => __( 'Add a Phone field (type=phone) to your Gravity Form. kwtSMS will detect it automatically.', 'wp-kwtsms' ),
 		'tip_code'     => '',
 	),
-	'nf' => array(
+	'nf'        => array(
 		'label'        => __( 'Ninja Forms', 'wp-kwtsms' ),
 		'enabled_key'  => 'nf_enabled',
 		'mode_key'     => 'nf_mode',
@@ -89,24 +89,28 @@ $int = array_merge(
 	(array) $settings->get( 'integrations' )
 );
 
-$templates   = $settings->get_all_integration_templates();
-$enabled_key = $cfg['enabled_key'];
-$mode_key    = $cfg['mode_key'];
-$tpl_key     = $cfg['tpl_key'];
-$label       = $cfg['label'];
-$is_enabled  = ! empty( $int[ $enabled_key ] );
+$templates    = $settings->get_all_integration_templates();
+$enabled_key  = $cfg['enabled_key'];
+$mode_key     = $cfg['mode_key'];
+$tpl_key      = $cfg['tpl_key'];
+$label        = $cfg['label'];
+$is_enabled   = ! empty( $int[ $enabled_key ] );
 $current_mode = $int[ $mode_key ] ?? 'notification';
-$tpl         = $templates[ $tpl_key ] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
+$tpl          = $templates[ $tpl_key ] ?? array(
+	'enabled' => 0,
+	'en'      => '',
+	'ar'      => '',
+);
 
 /* translators: %s: integration label e.g. "WPForms" */
 $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 
 // Current page slug — used to build correct tab URLs.
-$page_slug = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : 'kwtsms-otp-int-' . $int_key;
+$page_slug = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : 'kwtsms-otp-int-' . $int_key; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 $valid_tabs = array( 'settings', 'template' );
-$active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true )
-	? sanitize_key( $_GET['tab'] )
+$active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	? sanitize_key( $_GET['tab'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	: 'settings';
 
 /**
@@ -118,7 +122,10 @@ $active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $
  */
 function kwtsms_int_form_tab_url( $slug, $tab ) {
 	return add_query_arg(
-		array( 'page' => $slug, 'tab' => $tab ),
+		array(
+			'page' => $slug,
+			'tab'  => $tab,
+		),
 		admin_url( 'admin.php' )
 	);
 }
@@ -156,23 +163,30 @@ function kwtsms_int_form_tab_url( $slug, $tab ) {
 
 			<div class="kwtsms-template-card">
 				<div class="kwtsms-template-card-header">
-					<h3><?php
+					<h3>
+					<?php
 					/* translators: %s: integration name (e.g. WooCommerce) */
-					echo esc_html( sprintf( __( '%s Integration', 'wp-kwtsms' ), $label ) ); ?></h3>
+					echo esc_html( sprintf( __( '%s Integration', 'wp-kwtsms' ), $label ) );
+					?>
+					</h3>
 					<label class="kwtsms-toggle">
 						<input type="checkbox"
 							name="kwtsms_otp_integrations[<?php echo esc_attr( $enabled_key ); ?>]"
 							value="1"
 							<?php checked( $is_enabled ); ?> />
-						<span><?php
+						<span>
+						<?php
 						/* translators: %s: integration name (e.g. WooCommerce) */
-						echo esc_html( sprintf( __( 'Enable %s SMS Integration', 'wp-kwtsms' ), $label ) ); ?></span>
+						echo esc_html( sprintf( __( 'Enable %s SMS Integration', 'wp-kwtsms' ), $label ) );
+						?>
+						</span>
 					</label>
 				</div>
 				<p class="description">
 					<?php
 					/* translators: %s: integration name (e.g. WooCommerce) */
-					echo esc_html( sprintf( __( 'Send a confirmation SMS after a %s form is submitted successfully.', 'wp-kwtsms' ), $label ) ); ?>
+					echo esc_html( sprintf( __( 'Send a confirmation SMS after a %s form is submitted successfully.', 'wp-kwtsms' ), $label ) );
+					?>
 				</p>
 
 				<table class="form-table" style="margin-top:12px;">

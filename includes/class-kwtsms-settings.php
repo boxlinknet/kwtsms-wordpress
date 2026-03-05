@@ -25,48 +25,48 @@ class KwtSMS_Settings {
 	 * @var array
 	 */
 	const DEFAULTS = array(
-		'general'   => array(
-			'otp_mode'             => '2fa',     // '2fa' | 'passwordless' | 'both'
-			'otp_length'           => 6,          // 4 or 6
-			'otp_expiry'           => 5,          // minutes
+		'general'      => array(
+			'otp_mode'             => '2fa',     // Options: 2fa, passwordless, or both.
+			'otp_length'           => 6,          // 4 or 6.
+			'otp_expiry'           => 5,          // In minutes.
 			'max_attempts'         => 3,
-			'resend_cooldown'      => 120,        // seconds
+			'resend_cooldown'      => 120,        // In seconds.
 			'login_otp'            => 1,
 			'reset_otp'            => 1,
-			'captcha_provider'     => 'none',     // 'none' | 'recaptcha' | 'turnstile'
+			'captcha_provider'     => 'none',     // Options: none, recaptcha, or turnstile.
 			'recaptcha_site_key'   => '',
 			'recaptcha_secret_key' => '',
 			'turnstile_site_key'   => '',
 			'turnstile_secret_key' => '',
-			'referral_link'        => 0,          // show "SMS service by kwtSMS.com" on login pages (opt-in)
-			'default_country_code' => 'KW',       // ISO2 default for phone dropdown
-			'allowed_countries'    => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ), // GCC default
-			'debug_logging'        => 0,          // write detailed logs to wp-content/kwtsms-debug.log
-			'balance_failure_mode' => 'block',    // 'block' | 'allow' — what to do when SMS credits run out
-			'blocked_phones'       => '',         // newline or comma-separated normalized phone numbers
-			'otp_required_roles'   => array( 'editor', 'author', 'contributor', 'subscriber' ), // administrator excluded by default
-			'welcome_sms_enabled'  => 0,         // send welcome SMS to new registrations
+			'referral_link'        => 0,          // Show 'SMS service by kwtSMS.com' on login pages (opt-in).
+			'default_country_code' => 'KW',       // ISO2 default for phone dropdown.
+			'allowed_countries'    => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ), // GCC default.
+			'debug_logging'        => 0,          // Write detailed logs to wp-content/kwtsms-debug.log.
+			'balance_failure_mode' => 'block',    // block or allow — action when SMS credits run out.
+			'blocked_phones'       => '',         // Newline or comma-separated normalized phone numbers.
+			'otp_required_roles'   => array( 'editor', 'author', 'contributor', 'subscriber' ), // Administrator excluded by default.
+			'welcome_sms_enabled'  => 0,         // Send welcome SMS to new registrations.
 		),
-		'gateway'   => array(
+		'gateway'      => array(
 			'api_username'         => '',
 			'api_password'         => '',
 			'sender_id'            => '',
 			'test_mode'            => 1,
 			'test_phone'           => '',
 			'credentials_verified' => 0,
-			'sender_ids'           => array(),    // cached list from last login
-			'balance_available'    => null,       // float|null
-			'balance_purchased'    => null,       // float|null
-			'balance_updated_at'   => 0,          // timestamp of last balance update
-			'coverage'             => array(),    // cached from last login
+			'sender_ids'           => array(),    // Cached list from last login.
+			'balance_available'    => null,       // Float or null.
+			'balance_purchased'    => null,       // Float or null.
+			'balance_updated_at'   => 0,          // Timestamp of last balance update.
+			'coverage'             => array(),    // Cached from last login.
 		),
-		'templates' => array(
-			'login_otp' => array(
+		'templates'    => array(
+			'login_otp'   => array(
 				'enabled' => 1,
 				'en'      => 'Your {site_name} login code is: {otp}. Valid for {expiry_minutes} minutes. Do not share this code.',
 				'ar'      => 'رمزك: {otp}. صالح {expiry_minutes} دقيقة. {site_name}',
 			),
-			'reset_otp' => array(
+			'reset_otp'   => array(
 				'enabled' => 1,
 				'en'      => 'Your {site_name} password reset code is: {otp}. Valid for {expiry_minutes} minutes.',
 				'ar'      => 'رمز إعادة التعيين: {otp}. {expiry_minutes} دقيقة. {site_name}',
@@ -78,76 +78,76 @@ class KwtSMS_Settings {
 			),
 		),
 		'integrations' => array(
-			'woo_enabled'            => 1,
-			'cf7_enabled'            => 1,
-			'wpforms_enabled'        => 1,
-			'elementor_enabled'      => 1,
-			'woo_checkout_otp'       => 0,
-			'cf7_mode'               => 'notification', // 'notification' | 'gate'
-			'wpforms_mode'           => 'notification', // 'notification' | 'gate'
-			'elementor_mode'         => 'notification', // 'notification' | 'gate'
-			'woo_processing'         => array(
+			'woo_enabled'               => 1,
+			'cf7_enabled'               => 1,
+			'wpforms_enabled'           => 1,
+			'elementor_enabled'         => 1,
+			'woo_checkout_otp'          => 0,
+			'cf7_mode'                  => 'notification', // Options: notification or gate.
+			'wpforms_mode'              => 'notification', // Options: notification or gate.
+			'elementor_mode'            => 'notification', // Options: notification or gate.
+			'woo_processing'            => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your order #{order_id} has been confirmed. Total: {total}. Thank you!',
 				'ar'      => '{site_name}: تم تأكيد طلبك رقم #{order_id}. المجموع: {total}. شكرًا لك!',
 			),
-			'woo_shipped'            => array(
+			'woo_shipped'               => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your order #{order_id} has been shipped and is on its way!',
 				'ar'      => '{site_name}: طلبك رقم #{order_id} قيد الشحن وفي طريقه إليك!',
 			),
-			'woo_completed'          => array(
+			'woo_completed'             => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your order #{order_id} is complete. Thank you for shopping with us!',
 				'ar'      => '{site_name}: طلبك رقم #{order_id} مكتمل. شكرًا لتسوقك معنا!',
 			),
-			'woo_cancelled'          => array(
+			'woo_cancelled'             => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your order #{order_id} has been cancelled. Contact us if this was unexpected.',
 				'ar'      => '{site_name}: تم إلغاء طلبك رقم #{order_id}. تواصل معنا إذا لم تطلب ذلك.',
 			),
-			'woo_pending'            => array(
+			'woo_pending'               => array(
 				'enabled' => 0,
 				'en'      => '{site_name}: We received your order #{order_id}. Awaiting payment.',
 				'ar'      => 'موقع {site_name}: استلمنا طلبك رقم #{order_id}. بانتظار الدفع.',
 			),
-			'woo_refunded'           => array(
+			'woo_refunded'              => array(
 				'enabled' => 0,
 				'en'      => '{site_name}: Your order #{order_id} has been refunded. Contact us for details.',
 				'ar'      => 'موقع {site_name}: تم استرداد مبلغ طلبك رقم #{order_id}. تواصل معنا للتفاصيل.',
 			),
-			'woo_failed'             => array(
+			'woo_failed'                => array(
 				'enabled' => 0,
 				'en'      => '{site_name}: Payment for your order #{order_id} failed. Please try again.',
 				'ar'      => 'موقع {site_name}: فشل دفع طلبك رقم #{order_id}. يرجى المحاولة مرة أخرى.',
 			),
 			'woo_admin_phone'           => '',
 			'woo_notify_admin_statuses' => array(),
-			'cf7_confirmation'       => array(
+			'cf7_confirmation'          => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your form "{form_name}" has been submitted successfully. Thank you!',
 				'ar'      => '{site_name}: تم استلام نموذج "{form_name}" بنجاح. شكرًا لك!',
 			),
-			'wpforms_confirmation'   => array(
+			'wpforms_confirmation'      => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your form "{form_name}" was received. Thank you!',
 				'ar'      => '{site_name}: تم استلام نموذج "{form_name}". شكرًا لك!',
 			),
-			'elementor_confirmation' => array(
+			'elementor_confirmation'    => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your form "{form_name}" has been received. Thank you!',
 				'ar'      => '{site_name}: تم استلام نموذج "{form_name}". شكرًا لك!',
 			),
-			'gf_enabled'             => 1,
-			'gf_mode'                => 'notification', // 'notification' | 'gate'
-			'gf_confirmation'        => array(
+			'gf_enabled'                => 1,
+			'gf_mode'                   => 'notification', // Options: notification or gate.
+			'gf_confirmation'           => array(
 				'enabled' => 1,
 				'en'      => '{form_name}: Thank you! Your phone {phone} has been registered.',
 				'ar'      => '{form_name}: شكراً! تم تسجيل رقمك {phone}.',
 			),
-			'nf_enabled'             => 1,
-			'nf_mode'                => 'notification', // 'notification' | 'gate'
-			'nf_confirmation'        => array(
+			'nf_enabled'                => 1,
+			'nf_mode'                   => 'notification', // Options: notification or gate.
+			'nf_confirmation'           => array(
 				'enabled' => 1,
 				'en'      => '{form_name}: Thank you for submitting the form.',
 				'ar'      => '{form_name}: شكراً لإرسال النموذج.',
@@ -171,11 +171,11 @@ class KwtSMS_Settings {
 	 *   get('templates.login_otp.en')
 	 *
 	 * @param string $key     Dot-separated key: group.field or group.subkey.field.
-	 * @param mixed  $default Fallback if key is not found.
+	 * @param mixed  $fallback Fallback value if key is not found.
 	 *
 	 * @return mixed
 	 */
-	public function get( $key, $default = null ) {
+	public function get( $key, $fallback = null ) {
 		$parts = explode( '.', $key, 3 );
 		$group = $parts[0]; // explode() always returns at least one element.
 		$field = $parts[1] ?? null;
@@ -197,9 +197,9 @@ class KwtSMS_Settings {
 			// Fall back to constant defaults.
 			$defaults = self::DEFAULTS[ $group ] ?? array();
 			if ( null === $sub ) {
-				$value = $defaults[ $field ] ?? $default;
+				$value = $defaults[ $field ] ?? $fallback;
 			} else {
-				$value = $defaults[ $field ][ $sub ] ?? $default;
+				$value = $defaults[ $field ][ $sub ] ?? $fallback;
 			}
 		}
 
@@ -267,10 +267,18 @@ class KwtSMS_Settings {
 		$merged   = array();
 
 		$template_keys = array(
-			'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled',
-			'woo_pending', 'woo_refunded', 'woo_failed',
-			'cf7_confirmation', 'wpforms_confirmation', 'elementor_confirmation',
-			'gf_confirmation', 'nf_confirmation',
+			'woo_processing',
+			'woo_shipped',
+			'woo_completed',
+			'woo_cancelled',
+			'woo_pending',
+			'woo_refunded',
+			'woo_failed',
+			'cf7_confirmation',
+			'wpforms_confirmation',
+			'elementor_confirmation',
+			'gf_confirmation',
+			'nf_confirmation',
 		);
 
 		foreach ( $template_keys as $key ) {
@@ -319,7 +327,7 @@ class KwtSMS_Settings {
 	 */
 	private function load_group( $group ) {
 		if ( ! isset( $this->cache[ $group ] ) ) {
-			$data = get_option( 'kwtsms_otp_' . $group, array() );
+			$data                  = get_option( 'kwtsms_otp_' . $group, array() );
 			$this->cache[ $group ] = is_array( $data ) ? $data : array();
 		}
 		return $this->cache[ $group ];

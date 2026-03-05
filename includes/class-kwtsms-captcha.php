@@ -76,7 +76,7 @@ class KwtSMS_Captcha {
 	/**
 	 * Render the CAPTCHA widget HTML for the OTP request forms.
 	 *
-	 * reCAPTCHA v3: renders a hidden input that is populated by JS.
+	 * ReCAPTCHA v3: renders a hidden input that is populated by JS.
 	 * Turnstile: renders a visible widget div.
 	 *
 	 * @return string HTML output.

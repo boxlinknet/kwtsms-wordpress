@@ -9,17 +9,17 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** @var KwtSMS_Admin $this */
-$settings        = $this->plugin->settings;
+// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
+$settings             = $this->plugin->settings;
 $credentials_verified = (bool) $settings->get( 'gateway.credentials_verified', false );
 $has_credentials      = $credentials_verified
 	&& ! empty( $settings->get( 'gateway.api_username', '' ) )
 	&& ! empty( $settings->get( 'gateway.api_password', '' ) );
-$has_sender      = $credentials_verified && ! empty( $settings->get( 'gateway.sender_id', '' ) );
-$test_mode       = (bool) $settings->get( 'gateway.test_mode', 1 );
-$debug_logging   = (bool) $settings->get( 'general.debug_logging', 0 );
+$has_sender           = $credentials_verified && ! empty( $settings->get( 'gateway.sender_id', '' ) );
+$test_mode            = (bool) $settings->get( 'gateway.test_mode', 1 );
+$debug_logging        = (bool) $settings->get( 'general.debug_logging', 0 );
 // Relative content path (e.g. "wp-content") for display — avoids showing full server paths.
-$content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
+$content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 	? rtrim( str_replace( trailingslashit( ABSPATH ), '', WP_CONTENT_DIR ), '/' )
 	: 'wp-content';
 ?>
@@ -87,17 +87,19 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 					$bal_available = $settings->get( 'gateway.balance_available', null );
 					$bal_updated   = (int) $settings->get( 'gateway.balance_updated_at', 0 );
 					if ( $credentials_verified && null !== $bal_available ) :
-					?>
+						?>
 					<span style="color:#46b450;font-weight:600;">
 						<?php echo esc_html( number_format( (float) $bal_available, 2 ) ); ?>
 					</span>
-					<?php if ( $bal_updated > 0 ) : ?>
+						<?php if ( $bal_updated > 0 ) : ?>
 					<span style="color:#888;font-size:12px;">
-						<?php printf(
+							<?php
+							printf(
 							/* translators: %s: human-readable time difference */
-							esc_html__( '(updated %s ago)', 'wp-kwtsms' ),
-							esc_html( human_time_diff( $bal_updated, time() ) )
-						); ?>
+								esc_html__( '(updated %s ago)', 'wp-kwtsms' ),
+								esc_html( human_time_diff( $bal_updated, time() ) )
+							);
+							?>
 					</span>
 					<?php endif; ?>
 					, <a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits ', 'wp-kwtsms' ); ?></a>

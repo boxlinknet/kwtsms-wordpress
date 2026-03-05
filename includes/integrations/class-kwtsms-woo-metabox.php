@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 class KwtSMS_Woo_Metabox {
 
 	/**
-	 * kwtsms API client.
+	 * KwtSMS API client.
 	 *
 	 * @var KwtSMS_API
 	 */
@@ -174,7 +174,7 @@ class KwtSMS_Woo_Metabox {
 	public function ajax_send_custom_sms() {
 		check_ajax_referer( 'kwtsms_woo_custom_sms', 'nonce' );
 
-		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+		if ( ! current_user_can( 'edit_shop_orders' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'wp-kwtsms' ) ) );
 			return;
 		}
