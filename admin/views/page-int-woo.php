@@ -70,10 +70,10 @@ $woo_template_defs = array(
 	),
 );
 
-$valid_tabs = array_merge( array( 'settings' ), array_keys( $woo_template_defs ) );
+$valid_tabs = array_keys( $woo_template_defs );
 $active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true )
 	? sanitize_key( $_GET['tab'] )
-	: 'settings';
+	: 'woo_processing';
 
 /**
  * Build a tab URL for the WooCommerce integration page.
@@ -138,28 +138,12 @@ $customer_status_labels = array(
 	</div>
 	<?php endif; ?>
 
-	<!-- Tab navigation -->
-	<nav class="nav-tab-wrapper">
-		<a href="<?php echo esc_url( kwtsms_woo_tab_url( 'settings' ) ); ?>"
-			class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'Settings', 'wp-kwtsms' ); ?>
-		</a>
-		<?php foreach ( $woo_template_defs as $key => $def ) : ?>
-		<a href="<?php echo esc_url( kwtsms_woo_tab_url( $key ) ); ?>"
-			class="nav-tab <?php echo $key === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php echo esc_html( $def['tab_label'] ); ?>
-		</a>
-		<?php endforeach; ?>
-	</nav>
-
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_integrations_group' ); ?>
 		<input type="hidden" name="kwtsms_otp_integrations[_save_section]" value="woo" />
 
-		<!-- ===== Settings Tab ===== -->
-		<div class="kwtsms-tab-section"<?php echo 'settings' === $active_tab ? '' : ' style="display:none;"'; ?>>
-
-			<div class="kwtsms-template-card">
+		<!-- ===== Settings (always visible) ===== -->
+		<div class="kwtsms-template-card">
 				<div class="kwtsms-template-card-header">
 					<h3><?php esc_html_e( 'WooCommerce Integration', 'wp-kwtsms' ); ?></h3>
 				</div>
@@ -222,12 +206,7 @@ $customer_status_labels = array(
 							</div>
 							<?php endforeach; ?>
 							<p class="description">
-								<?php
-								printf(
-									/* translators: %s: link to a template tab */
-									esc_html__( 'Edit message text on each status tab above.', 'wp-kwtsms' )
-								);
-								?>
+								<?php esc_html_e( 'Edit message text on each status tab below.', 'wp-kwtsms' ); ?>
 							</p>
 						</td>
 					</tr>
@@ -283,9 +262,15 @@ $customer_status_labels = array(
 				</table>
 			</div><!-- /.admin-notification-card -->
 
-		</div><!-- /.kwtsms-tab-section[settings] -->
-
 		<!-- ===== Order Status Template Tabs ===== -->
+		<nav class="nav-tab-wrapper" style="margin-top:24px;">
+			<?php foreach ( $woo_template_defs as $key => $def ) : ?>
+			<a href="<?php echo esc_url( kwtsms_woo_tab_url( $key ) ); ?>"
+				class="nav-tab <?php echo $key === $active_tab ? 'nav-tab-active' : ''; ?>">
+				<?php echo esc_html( $def['tab_label'] ); ?>
+			</a>
+			<?php endforeach; ?>
+		</nav>
 		<?php foreach ( $woo_template_defs as $key => $def ) :
 			$tpl       = $templates[ $key ] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
 			$is_active = ( $key === $active_tab );
