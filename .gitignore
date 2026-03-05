@@ -34,3 +34,6 @@ Thumbs.db
 
 # PHPUnit / static analysis artifacts
 .phpunit.result.cache
+
+# Docker local test environment
+docker/
