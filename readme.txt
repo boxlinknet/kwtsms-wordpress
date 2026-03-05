@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.0.0
+Stable tag: 3.0.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -190,6 +190,11 @@ All settings are in `wp_options`. Phone numbers are in `wp_usermeta`. OTP tokens
 8. SMS Logs: full send history with phone number, message, and status.
 
 == Changelog ==
+
+= 3.0.1 =
+* Fix: resolve all PHP_CodeSniffer WordPress Coding Standards violations.
+* Fix: expand country codes data to full 250-country list.
+* Fix: alignment and spacing in OTP and passwordless login views.
 
 = 3.0.0 =
 * Initial public release.
