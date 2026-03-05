@@ -140,6 +140,11 @@ $content_dir     = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 				<strong><?php esc_html_e( 'kwtSMS Dashboard (balance, coverage, sender IDs):', 'wp-kwtsms' ); ?></strong>
 				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener">kwtsms.com/login</a>
 			</li>
+			<li>
+				<strong><?php esc_html_e( 'kwtSMS Integrations:', 'wp-kwtsms' ); ?></strong>
+				<a href="https://www.kwtsms.com/integrations.html" target="_blank" rel="noopener">kwtsms.com/integrations.html</a>,
+				<?php esc_html_e( 'other platforms and integrations supported by kwtSMS.', 'wp-kwtsms' ); ?>
+			</li>
 		</ul>
 
 
