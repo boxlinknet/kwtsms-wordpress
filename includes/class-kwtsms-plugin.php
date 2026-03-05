@@ -72,7 +72,7 @@ class KwtSMS_Plugin {
 			(bool) $this->settings->get( 'gateway.test_mode', true ),
 			(bool) $this->settings->get( 'general.debug_logging', 0 )
 		);
-		$this->otp = new KwtSMS_OTP_Engine( $this->settings );
+		$this->otp      = new KwtSMS_OTP_Engine( $this->settings );
 
 		// Admin-only modules — only load on admin requests to keep frontend lean.
 		if ( is_admin() ) {
@@ -146,9 +146,15 @@ class KwtSMS_Plugin {
 		}
 
 		// Resolve phone from POST first (available during registration requests).
-		$phone = trim( sanitize_text_field( wp_unslash(
-			$_POST['kwtsms_phone_reg'] ?? $_POST['billing_phone'] ?? ''
-		) ) );
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- reading phone during WP/WC registration; nonce verified by core.
+		$phone = trim(
+			sanitize_text_field(
+				wp_unslash(
+					$_POST['kwtsms_phone_reg'] ?? $_POST['billing_phone'] ?? ''
+				)
+			)
+		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		// Fall back to user meta (may be set by custom registration hooks before user_register).
 		if ( '' === $phone ) {
@@ -165,8 +171,8 @@ class KwtSMS_Plugin {
 			return;
 		}
 
-		$user = get_userdata( $user_id );
-		$name = $user ? $user->display_name : '';
+		$user    = get_userdata( $user_id );
+		$name    = $user ? $user->display_name : '';
 		$message = $this->otp->build_message( '', 'welcome_sms', array( '{name}' => $name ) );
 		$this->api->send_sms(
 			$phone,
@@ -411,15 +417,15 @@ class KwtSMS_Plugin {
 	 * Hooked to wp_enqueue_scripts so it only runs on public pages.
 	 */
 	public function enqueue_form_otp_assets() {
-		$cf7_gate      = ( 'gate' === $this->settings->get( 'integrations.cf7_mode', 'notification' ) )
+		$cf7_gate       = ( 'gate' === $this->settings->get( 'integrations.cf7_mode', 'notification' ) )
 			&& $this->settings->get( 'integrations.cf7_enabled', 1 );
-		$wpforms_gate  = ( 'gate' === $this->settings->get( 'integrations.wpforms_mode', 'notification' ) )
+		$wpforms_gate   = ( 'gate' === $this->settings->get( 'integrations.wpforms_mode', 'notification' ) )
 			&& $this->settings->get( 'integrations.wpforms_enabled', 1 );
 		$elementor_gate = ( 'gate' === $this->settings->get( 'integrations.elementor_mode', 'notification' ) )
 			&& $this->settings->get( 'integrations.elementor_enabled', 1 );
-		$gf_gate = ( 'gate' === $this->settings->get( 'integrations.gf_mode', 'notification' ) )
+		$gf_gate        = ( 'gate' === $this->settings->get( 'integrations.gf_mode', 'notification' ) )
 			&& $this->settings->get( 'integrations.gf_enabled', 1 );
-		$nf_gate = ( 'gate' === $this->settings->get( 'integrations.nf_mode', 'notification' ) )
+		$nf_gate        = ( 'gate' === $this->settings->get( 'integrations.nf_mode', 'notification' ) )
 			&& $this->settings->get( 'integrations.nf_enabled', 1 );
 
 		if ( ! $cf7_gate && ! $wpforms_gate && ! $elementor_gate && ! $gf_gate && ! $nf_gate ) {
@@ -438,23 +444,23 @@ class KwtSMS_Plugin {
 			'kwtsms-form-otp',
 			'kwtSmsFormData',
 			array(
-				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
-				'nonce'          => wp_create_nonce( 'kwtsms_form_otp_nonce' ),
+				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+				'nonce'           => wp_create_nonce( 'kwtsms_form_otp_nonce' ),
 				'defaultDialCode' => KwtSMS_API::get_default_dial_code(),
-				'strings' => array(
-					'enterPhone'     => __( 'Enter your phone number to verify', 'wp-kwtsms' ),
-					'sendCode'       => __( 'Send Code', 'wp-kwtsms' ),
-					'sending'        => __( 'Sending...', 'wp-kwtsms' ),
-					'enterCode'      => __( 'Enter the code sent to your phone', 'wp-kwtsms' ),
-					'verifyCode'     => __( 'Verify', 'wp-kwtsms' ),
-					'verifying'      => __( 'Verifying...', 'wp-kwtsms' ),
-					'verified'       => __( 'Phone verified!', 'wp-kwtsms' ),
-					'resend'         => __( 'Resend Code', 'wp-kwtsms' ),
-					'close'          => __( 'Cancel', 'wp-kwtsms' ),
+				'strings'         => array(
+					'enterPhone'       => __( 'Enter your phone number to verify', 'wp-kwtsms' ),
+					'sendCode'         => __( 'Send Code', 'wp-kwtsms' ),
+					'sending'          => __( 'Sending...', 'wp-kwtsms' ),
+					'enterCode'        => __( 'Enter the code sent to your phone', 'wp-kwtsms' ),
+					'verifyCode'       => __( 'Verify', 'wp-kwtsms' ),
+					'verifying'        => __( 'Verifying...', 'wp-kwtsms' ),
+					'verified'         => __( 'Phone verified!', 'wp-kwtsms' ),
+					'resend'           => __( 'Resend Code', 'wp-kwtsms' ),
+					'close'            => __( 'Cancel', 'wp-kwtsms' ),
 					'phonePlaceholder' => __( 'e.g. 96598765432', 'wp-kwtsms' ),
 					'codePlaceholder'  => __( '6-digit code', 'wp-kwtsms' ),
-					'modalTitle'     => __( 'Phone Verification Required', 'wp-kwtsms' ),
-					'verifiedMsg'    => __( 'Your phone has been verified. Submitting form...', 'wp-kwtsms' ),
+					'modalTitle'       => __( 'Phone Verification Required', 'wp-kwtsms' ),
+					'verifiedMsg'      => __( 'Your phone has been verified. Submitting form...', 'wp-kwtsms' ),
 				),
 			)
 		);
@@ -513,8 +519,8 @@ class KwtSMS_Plugin {
 		$_name_by_dial = array(); // dial             name
 		foreach ( $_countries as $_cc ) {
 			$_dial_name[ strtolower( $_cc['name'] ) ] = $_cc['dial'];
-			$_dial_iso2[ $_cc['iso2'] ]                = $_cc['dial'];
-			$_name_by_dial[ $_cc['dial'] ]             = $_cc['name'];
+			$_dial_iso2[ $_cc['iso2'] ]               = $_cc['dial'];
+			$_name_by_dial[ $_cc['dial'] ]            = $_cc['name'];
 		}
 		unset( $_countries, $_cc );
 
@@ -569,7 +575,12 @@ class KwtSMS_Plugin {
 				continue;
 			}
 
-			$coverage_enriched[] = array_filter( array( 'name' => $_cname, 'dial' => $_cdial ) );
+			$coverage_enriched[] = array_filter(
+				array(
+					'name' => $_cname,
+					'dial' => $_cdial,
+				)
+			);
 		}
 		unset( $_dial_name, $_dial_iso2, $_name_by_dial, $_cov_api_codes, $_cov, $_cname, $_cdial, $_ciso2 );
 		$coverage_arr = $coverage_enriched;
@@ -814,9 +825,11 @@ class KwtSMS_Plugin {
 		// Reject numbers that are too short — country code + local number must be at least 10 digits.
 		// e.g. Kuwait: 965 (3) + 8 local = 11 total. Anything under 10 is clearly incomplete.
 		if ( strlen( $normalized ) < 10 ) {
-			wp_send_json_error( array(
-				'message' => __( 'Phone number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits, 11 digits total).', 'wp-kwtsms' ),
-			) );
+			wp_send_json_error(
+				array(
+					'message' => __( 'Phone number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits, 11 digits total).', 'wp-kwtsms' ),
+				)
+			);
 			return;
 		}
 
@@ -831,7 +844,7 @@ class KwtSMS_Plugin {
 		$site_name = get_bloginfo( 'name' );
 		$message   = "Test SMS message from {$site_name}\nStamp: {$stamp}";
 
-		$result    = $this->api->send_sms(
+		$result = $this->api->send_sms(
 			$normalized,
 			$this->settings->get( 'gateway.sender_id', '' ),
 			$message,

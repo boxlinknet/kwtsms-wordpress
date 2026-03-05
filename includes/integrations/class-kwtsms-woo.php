@@ -71,14 +71,14 @@ class KwtSMS_Woo {
 		add_action( 'woocommerce_order_status_changed', array( $this, 'on_order_status_changed' ), 10, 4 );
 
 		// Registration: phone field + welcome SMS.
-		add_action( 'woocommerce_register_form',       array( $this, 'render_wc_phone_field' ) );
+		add_action( 'woocommerce_register_form', array( $this, 'render_wc_phone_field' ) );
 		add_filter( 'woocommerce_registration_errors', array( $this, 'validate_wc_phone_field' ), 10, 3 );
-		add_action( 'woocommerce_created_customer',    array( $this, 'save_wc_customer_phone' ) );
+		add_action( 'woocommerce_created_customer', array( $this, 'save_wc_customer_phone' ) );
 
 		// Checkout OTP gate (only when enabled).
 		if ( $this->is_checkout_otp_enabled() ) {
-			add_action( 'woocommerce_after_order_notes',      array( $this, 'render_checkout_otp_field' ) );
-			add_action( 'woocommerce_checkout_process',       array( $this, 'process_checkout_otp' ) );
+			add_action( 'woocommerce_after_order_notes', array( $this, 'render_checkout_otp_field' ) );
+			add_action( 'woocommerce_checkout_process', array( $this, 'process_checkout_otp' ) );
 			add_action( 'woocommerce_checkout_order_created', array( $this, 'clear_checkout_otp_session' ) );
 		}
 	}
@@ -184,18 +184,18 @@ class KwtSMS_Woo {
 	 * @return string SMS message, or empty string if status not handled / disabled.
 	 */
 	private function build_order_message( $status, WC_Order $order ) {
-		$order_id       = $order->get_order_number();
-		$total          = wp_strip_all_tags( wc_price( $order->get_total() ) );
-		$site_name      = get_bloginfo( 'name' );
-		$customer_name  = trim(
+		$order_id      = $order->get_order_number();
+		$total         = wp_strip_all_tags( wc_price( $order->get_total() ) );
+		$site_name     = get_bloginfo( 'name' );
+		$customer_name = trim(
 			$order->get_billing_first_name() . ' ' . $order->get_billing_last_name()
 		);
 
 		$vars = array(
-			'{site_name}'      => $site_name,
-			'{order_id}'       => $order_id,
-			'{total}'          => $total,
-			'{customer_name}'  => $customer_name,
+			'{site_name}'     => $site_name,
+			'{order_id}'      => $order_id,
+			'{total}'         => $total,
+			'{customer_name}' => $customer_name,
 		);
 
 		return $this->render_order_template( $status, $vars );
@@ -253,6 +253,7 @@ class KwtSMS_Woo {
 	 * Re-populates the field value from $_POST on validation failure.
 	 */
 	public function render_wc_phone_field() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce registration form; nonce verified by WooCommerce core.
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		?>
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
@@ -288,6 +289,7 @@ class KwtSMS_Woo {
 	 * @return WP_Error The (potentially augmented) errors object.
 	 */
 	public function validate_wc_phone_field( $errors, $username, $email ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce registration validation; nonce verified by WooCommerce core.
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		if ( '' !== $phone ) {
 			$phone      = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
@@ -311,6 +313,7 @@ class KwtSMS_Woo {
 	 * @param int $customer_id New customer user ID.
 	 */
 	public function save_wc_customer_phone( $customer_id ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce created_customer hook; nonce verified by WooCommerce core.
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		if ( '' === $phone ) {
 			return;
@@ -482,7 +485,8 @@ class KwtSMS_Woo {
 	 */
 	private function get_checkout_session_key() {
 		if ( function_exists( 'WC' ) && WC()->session ) {
-			return WC()->session->get_customer_id() ?: null;
+			$cid = WC()->session->get_customer_id();
+			return $cid ? $cid : null;
 		}
 		return null;
 	}

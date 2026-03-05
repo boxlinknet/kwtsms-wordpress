@@ -91,6 +91,7 @@ class KwtSMS_Elementor {
 	 * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $handler The form AJAX handler.
 	 */
 	public function gate_add_error( $record, $handler ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Elementor handles nonce; we only read our own token.
 		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) );
 
 		if ( ! empty( $token ) && $this->plugin->verify_form_token( $token ) ) {
@@ -102,7 +103,7 @@ class KwtSMS_Elementor {
 		}
 
 		// Find the first phone-like field to attach the error to.
-		$fields       = $record->get( 'fields' );
+		$fields         = $record->get( 'fields' );
 		$phone_field_id = null;
 
 		foreach ( $fields as $id => $field ) {
@@ -154,7 +155,7 @@ class KwtSMS_Elementor {
 
 		$form_name = sanitize_text_field( $record->get_form_settings( 'form_name' ) ?? '' );
 
-		$message = $this->render_confirmation_template( $form_name ?: __( 'Contact Form', 'wp-kwtsms' ) );
+		$message = $this->render_confirmation_template( $form_name ? $form_name : __( 'Contact Form', 'wp-kwtsms' ) );
 		if ( empty( $message ) ) {
 			return; // Template disabled or missing.
 		}

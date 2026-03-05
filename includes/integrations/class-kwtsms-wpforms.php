@@ -88,6 +88,7 @@ class KwtSMS_WPForms {
 	 * @return array Possibly augmented errors array.
 	 */
 	public function gate_add_error( $errors, $form_data ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WPForms handles nonce; we only read our own token.
 		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) );
 
 		if ( empty( $token ) || ! $this->plugin->verify_form_token( $token ) ) {

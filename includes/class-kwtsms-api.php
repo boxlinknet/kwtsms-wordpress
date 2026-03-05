@@ -93,8 +93,8 @@ class KwtSMS_API {
 		}
 
 		return array(
-			'available'  => (float) ( $response['available'] ?? 0 ),
-			'purchased'  => (float) ( $response['purchased'] ?? 0 ),
+			'available' => (float) ( $response['available'] ?? 0 ),
+			'purchased' => (float) ( $response['purchased'] ?? 0 ),
 		);
 	}
 
@@ -156,7 +156,20 @@ class KwtSMS_API {
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: phone missing' );
 			self::append_send_log( '?', 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ), $this->username );
+			self::append_sms_history(
+				$phone,
+				$message,
+				'failed',
+				$type,
+				'',
+				'',
+				array(
+					'ok'      => false,
+					'code'    => $err->get_error_code(),
+					'message' => $err->get_error_message(),
+				),
+				$this->username
+			);
 			return $err;
 		}
 
@@ -167,7 +180,20 @@ class KwtSMS_API {
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: message empty' );
 			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ), $this->username );
+			self::append_sms_history(
+				$phone,
+				$message,
+				'failed',
+				$type,
+				'',
+				'',
+				array(
+					'ok'      => false,
+					'code'    => $err->get_error_code(),
+					'message' => $err->get_error_message(),
+				),
+				$this->username
+			);
 			return $err;
 		}
 
@@ -178,7 +204,20 @@ class KwtSMS_API {
 			);
 			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty' );
 			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ), $this->username );
+			self::append_sms_history(
+				$phone,
+				$message,
+				'failed',
+				$type,
+				'',
+				'',
+				array(
+					'ok'      => false,
+					'code'    => $err->get_error_code(),
+					'message' => $err->get_error_message(),
+				),
+				$this->username
+			);
 			return $err;
 		}
 
@@ -186,7 +225,7 @@ class KwtSMS_API {
 		// If the admin has restricted sending to specific countries, verify the
 		// destination phone belongs to one of those countries BEFORE making any
 		// API call. An empty allowed_countries array means "no restriction".
-		$general          = get_option( 'kwtsms_otp_general', array() );
+		$general           = get_option( 'kwtsms_otp_general', array() );
 		$allowed_countries = isset( $general['allowed_countries'] ) && is_array( $general['allowed_countries'] )
 			? $general['allowed_countries']
 			: array();
@@ -203,7 +242,20 @@ class KwtSMS_API {
 					"ABORT: country not allowed — phone={$phone} iso2={$phone_iso2} allowed=" . implode( ',', $allowed_countries )
 				);
 				self::append_send_log( $phone, 'failed', $type );
-				self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $err->get_error_code(), 'message' => $err->get_error_message() ), $this->username );
+				self::append_sms_history(
+					$phone,
+					$message,
+					'failed',
+					$type,
+					'',
+					'',
+					array(
+						'ok'      => false,
+						'code'    => $err->get_error_code(),
+						'message' => $err->get_error_message(),
+					),
+					$this->username
+				);
 				return $err;
 			}
 		}
@@ -215,7 +267,20 @@ class KwtSMS_API {
 		if ( is_wp_error( $balance_check ) ) {
 			$this->write_debug_log( 'send_sms()', 'ABORT: ' . $balance_check->get_error_message() );
 			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history( $phone, $message, 'failed', $type, '', '', array( 'ok' => false, 'code' => $balance_check->get_error_code(), 'message' => $balance_check->get_error_message() ), $this->username );
+			self::append_sms_history(
+				$phone,
+				$message,
+				'failed',
+				$type,
+				'',
+				'',
+				array(
+					'ok'      => false,
+					'code'    => $balance_check->get_error_code(),
+					'message' => $balance_check->get_error_message(),
+				),
+				$this->username
+			);
 			return $balance_check;
 		}
 
@@ -238,14 +303,40 @@ class KwtSMS_API {
 			$_api_data = is_array( $response->get_error_data() ) ? $response->get_error_data() : array();
 			$_api_code = $_api_data['api_code'] ?? '';
 			$_api_desc = $_api_data['description'] ?? '';
-			self::append_sms_history( $phone, $message, 'failed', $type, '', $sender_id, array( 'ok' => false, 'code' => $_api_code ?: $response->get_error_code(), 'message' => $_api_desc ?: $_api_code ?: $response->get_error_code() ), $this->username );
+			self::append_sms_history(
+				$phone,
+				$message,
+				'failed',
+				$type,
+				'',
+				$sender_id,
+				array(
+					'ok'      => false,
+					'code'    => $_api_code ? $_api_code : $response->get_error_code(),
+					'message' => $_api_desc ? $_api_desc : ( $_api_code ? $_api_code : $response->get_error_code() ),
+				),
+				$this->username
+			);
 			return $response;
 		}
 
 		$msg_id = sanitize_text_field( $response['msg-id'] ?? '' );
 		$this->write_debug_log( 'send_sms()', "SUCCESS: msg-id={$msg_id}" );
 		self::append_send_log( $phone, 'sent', $type, $sender_id );
-		self::append_sms_history( $phone, $message, 'sent', $type, $msg_id, $sender_id, array( 'ok' => true, 'code' => '', 'message' => 'OK' ), $this->username );
+		self::append_sms_history(
+			$phone,
+			$message,
+			'sent',
+			$type,
+			$msg_id,
+			$sender_id,
+			array(
+				'ok'      => true,
+				'code'    => '',
+				'message' => 'OK',
+			),
+			$this->username
+		);
 		// Always update the saved balance when the API returns a balance-after value.
 		// The kwtsms API returns balance-after even in test mode (test=1 still charges
 		// 1 credit per send), so the condition must not be gated on $this->test_mode.
@@ -393,7 +484,7 @@ class KwtSMS_API {
 	 * @param float $purchased  Total purchased credits (0 if unknown).
 	 */
 	public static function update_saved_balance( $available, $purchased = 0.0 ) {
-		$gw                      = get_option( 'kwtsms_otp_gateway', array() );
+		$gw                       = get_option( 'kwtsms_otp_gateway', array() );
 		$gw['balance_available']  = (float) $available;
 		$gw['balance_purchased']  = $purchased > 0.0 ? (float) $purchased : ( $gw['balance_purchased'] ?? null );
 		$gw['balance_updated_at'] = time();
@@ -583,17 +674,17 @@ class KwtSMS_API {
 		$message = preg_replace( '/\x{00A0}/u', ' ', $message ) ?? $message;
 
 		// 3. Invisible / directional Unicode characters:
-		//    U+00AD  Soft Hyphen
-		//    U+200B  Zero Width Space
-		//    U+200C  Zero Width Non-Joiner
-		//    U+200D  Zero Width Joiner (used in emoji ZWJ sequences)
-		//    U+200E  Left-to-Right Mark
-		//    U+200F  Right-to-Left Mark
-		//    U+202A–U+202E  Directional formatting (LRE, RLE, PDF, LRO, RLO)
-		//    U+2060  Word Joiner
-		//    U+FEFF  BOM / Zero Width No-Break Space
-		//    U+FE0E  Variation Selector-15 (force text presentation)
-		//    U+FE0F  Variation Selector-16 (force emoji presentation)
+		// U+00AD  Soft Hyphen
+		// U+200B  Zero Width Space
+		// U+200C  Zero Width Non-Joiner
+		// U+200D  Zero Width Joiner (used in emoji ZWJ sequences)
+		// U+200E  Left-to-Right Mark
+		// U+200F  Right-to-Left Mark
+		// U+202A–U+202E  Directional formatting (LRE, RLE, PDF, LRO, RLO)
+		// U+2060  Word Joiner
+		// U+FEFF  BOM / Zero Width No-Break Space
+		// U+FE0E  Variation Selector-15 (force text presentation)
+		// U+FE0F  Variation Selector-16 (force emoji presentation)
 		$message = preg_replace(
 			'/[\x{00AD}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}\x{FEFF}\x{FE0E}\x{FE0F}]/u',
 			'',
@@ -601,31 +692,31 @@ class KwtSMS_API {
 		) ?? $message;
 
 		// 4. Emoji and non-SMS-compatible symbols (Unicode 15, all known emoji blocks):
-		//    U+00A9–U+00AE   © ®
-		//    U+203C U+2049   ‼ ⁉
-		//    U+2122 U+2139   ™ ℹ
-		//    U+2194–U+2199   Arrow symbols
-		//    U+21A9–U+21AA   Hooking arrows
-		//    U+231A–U+231B   Watch / Hourglass
-		//    U+2328          Keyboard
-		//    U+23CF          Eject
-		//    U+23E9–U+23F3   Media / clock buttons
-		//    U+23F8–U+23FA   Pause / Stop / Record
-		//    U+24C2          Circled M
-		//    U+25AA–U+25AB   Small squares
-		//    U+25B6 U+25C0   Play / Reverse
-		//    U+25FB–U+25FE   Medium squares
-		//    U+2600–U+26FF   Miscellaneous Symbols (sun, phone, etc.)
-		//    U+2702–U+27B0   Dingbats
-		//    U+27BF          Double curly loop
-		//    U+2934–U+2935   Curved arrows
-		//    U+2B05–U+2B07   Arrow buttons
-		//    U+2B1B–U+2B1C   Large squares
-		//    U+2B50 U+2B55   Star / Circle
-		//    U+3030 U+303D   Wavy dash / Part alternation mark
-		//    U+3297 U+3299   Circled CJK ideographs
-		//    U+1F000–U+1FFFF Full supplementary emoji plane
-		//    U+E0000–U+E007F Tags (used in keycap / flag sequences)
+		// U+00A9–U+00AE   © ®
+		// U+203C U+2049   ‼ ⁉
+		// U+2122 U+2139   ™ ℹ
+		// U+2194–U+2199   Arrow symbols
+		// U+21A9–U+21AA   Hooking arrows
+		// U+231A–U+231B   Watch / Hourglass
+		// U+2328          Keyboard
+		// U+23CF          Eject
+		// U+23E9–U+23F3   Media / clock buttons
+		// U+23F8–U+23FA   Pause / Stop / Record
+		// U+24C2          Circled M
+		// U+25AA–U+25AB   Small squares
+		// U+25B6 U+25C0   Play / Reverse
+		// U+25FB–U+25FE   Medium squares
+		// U+2600–U+26FF   Miscellaneous Symbols (sun, phone, etc.)
+		// U+2702–U+27B0   Dingbats
+		// U+27BF          Double curly loop
+		// U+2934–U+2935   Curved arrows
+		// U+2B05–U+2B07   Arrow buttons
+		// U+2B1B–U+2B1C   Large squares
+		// U+2B50 U+2B55   Star / Circle
+		// U+3030 U+303D   Wavy dash / Part alternation mark
+		// U+3297 U+3299   Circled CJK ideographs
+		// U+1F000–U+1FFFF Full supplementary emoji plane
+		// U+E0000–U+E007F Tags (used in keycap / flag sequences)
 		$message = preg_replace(
 			'/[' .
 			'\x{00A9}\x{00AE}' .
@@ -777,8 +868,8 @@ class KwtSMS_API {
 		if ( null !== $cache ) {
 			return $cache;
 		}
-		$general  = get_option( 'kwtsms_otp_general', array() );
-		$iso2     = $general['default_country_code'] ?? 'KW';
+		$general   = get_option( 'kwtsms_otp_general', array() );
+		$iso2      = $general['default_country_code'] ?? 'KW';
 		$countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
 		foreach ( $countries as $cc ) {
 			if ( $cc['iso2'] === $iso2 ) {
@@ -884,12 +975,12 @@ class KwtSMS_API {
 		$response = wp_remote_post(
 			$url,
 			array(
-				'timeout' => self::TIMEOUT,
-				'headers' => array(
+				'timeout'   => self::TIMEOUT,
+				'headers'   => array(
 					'Content-Type' => 'application/json',
 					'Accept'       => 'application/json',
 				),
-				'body'    => wp_json_encode( $body ),
+				'body'      => wp_json_encode( $body ),
 				// Enforce SSL verification.
 				'sslverify' => true,
 			)
@@ -922,7 +1013,7 @@ class KwtSMS_API {
 
 		// API returns {"result":"ERROR","code":"ERRxxx","description":"..."} on failure.
 		if ( isset( $data['result'] ) && 'ERROR' === $data['result'] ) {
-			$error_code = $data['code'] ?? 'UNKNOWN';
+			$error_code  = $data['code'] ?? 'UNKNOWN';
 			$description = $data['description'] ?? '';
 			$this->write_debug_log(
 				"request({$endpoint})",
@@ -931,7 +1022,10 @@ class KwtSMS_API {
 			return new WP_Error(
 				'kwtsms_api_error_' . strtolower( $error_code ),
 				self::map_error_code( $error_code ),
-				array( 'api_code' => $error_code, 'description' => $description )
+				array(
+					'api_code'    => $error_code,
+					'description' => $description,
+				)
 			);
 		}
 
@@ -959,6 +1053,12 @@ class KwtSMS_API {
 	 */
 	const DEBUG_LOG_MAX_BYTES = 1048576;
 
+	/**
+	 * Write an entry to the debug log file.
+	 *
+	 * @param string $context Short label for the log entry (e.g. 'send_sms', 'verify').
+	 * @param string $message Log message text.
+	 */
 	public function write_debug_log( $context, $message ) {
 		if ( ! $this->debug_mode ) {
 			return;

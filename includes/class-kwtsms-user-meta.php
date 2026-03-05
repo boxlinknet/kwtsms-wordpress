@@ -25,9 +25,9 @@ class KwtSMS_User_Meta {
 		add_action( 'personal_options_update', array( $this, 'save_phone_field' ) );
 		add_action( 'edit_user_profile_update', array( $this, 'save_phone_field' ) );
 
-		add_action( 'register_form',       array( $this, 'render_registration_phone_field' ) );
+		add_action( 'register_form', array( $this, 'render_registration_phone_field' ) );
 		add_filter( 'registration_errors', array( $this, 'validate_registration_phone' ), 10, 3 );
-		add_action( 'user_register',       array( $this, 'save_registration_phone' ) );
+		add_action( 'user_register', array( $this, 'save_registration_phone' ) );
 	}
 
 	/**
@@ -42,10 +42,10 @@ class KwtSMS_User_Meta {
 		$phone = get_user_meta( $user->ID, 'kwtsms_phone', true );
 
 		// Load country data.
-		$settings       = new KwtSMS_Settings();
-		$allowed_iso2   = (array) $settings->get( 'general.allowed_countries', array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ) );
-		$default_iso2   = (string) $settings->get( 'general.default_country_code', 'KW' );
-		$all_countries  = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+		$settings      = new KwtSMS_Settings();
+		$allowed_iso2  = (array) $settings->get( 'general.allowed_countries', array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ) );
+		$default_iso2  = (string) $settings->get( 'general.default_country_code', 'KW' );
+		$all_countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
 
 		$cc_by_iso2 = array();
 		foreach ( $all_countries as $cc ) {
@@ -195,7 +195,7 @@ class KwtSMS_User_Meta {
 			// Attach error to the profile update errors bag.
 			add_action(
 				'user_profile_update_errors',
-				static function( WP_Error $errors ) use ( $normalized ) {
+				static function ( WP_Error $errors ) use ( $normalized ) {
 					$errors->add( 'kwtsms_invalid_phone', $normalized->get_error_message() );
 				}
 			);
@@ -212,6 +212,7 @@ class KwtSMS_User_Meta {
 	 * Stored as kwtsms_phone user meta after successful registration.
 	 */
 	public function render_registration_phone_field() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WP registration form; nonce verified by WordPress core.
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		?>
 		<p>
@@ -248,6 +249,7 @@ class KwtSMS_User_Meta {
 	 * @return WP_Error
 	 */
 	public function validate_registration_phone( $errors, $sanitized_user_login, $user_email ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress registration; nonce verified by WP core.
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 
 		if ( '' === $phone ) {
@@ -272,6 +274,7 @@ class KwtSMS_User_Meta {
 	 * @param int $user_id Newly created user ID.
 	 */
 	public function save_registration_phone( $user_id ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress registration; nonce verified by WP core.
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 
 		if ( '' === $phone ) {
