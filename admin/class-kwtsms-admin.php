@@ -1159,12 +1159,26 @@ class KwtSMS_Admin {
 			}
 		}
 
-		$test_mode = (bool) $this->plugin->settings->get( 'gateway.test_mode', false );
+		$test_mode       = (bool) $this->plugin->settings->get( 'gateway.test_mode', false );
+		$connected       = (bool) $this->plugin->settings->get( 'gateway.credentials_verified', false );
+		$balance_avail   = $this->plugin->settings->get( 'gateway.balance_available', null );
+		$balance_updated = (int) $this->plugin->settings->get( 'gateway.balance_updated_at', 0 );
 		?>
 		<div style="padding:4px 0;">
 			<?php if ( $test_mode ) : ?>
 			<p style="background:#fff3cd;border-left:3px solid #FFA200;padding:6px 10px;margin:0 0 10px;">
 				<?php esc_html_e( 'Test mode is active.', 'wp-kwtsms' ); ?>
+			</p>
+			<?php endif; ?>
+
+			<?php if ( $connected && null !== $balance_avail ) : ?>
+			<p style="margin:0 0 10px;">
+				<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#46b450;margin-right:5px;vertical-align:middle;"></span>
+				<strong><?php esc_html_e( 'Balance:', 'wp-kwtsms' ); ?></strong>
+				<?php echo esc_html( number_format( (float) $balance_avail, 1 ) ); ?>&nbsp;<?php esc_html_e( 'credits', 'wp-kwtsms' ); ?>
+				<?php if ( $balance_updated > 0 ) : ?>
+				<span style="color:#999;font-size:11px;">&mdash; <?php echo esc_html( sprintf( /* translators: %s: time elapsed since balance was last fetched */ __( 'updated %s ago', 'wp-kwtsms' ), human_time_diff( $balance_updated ) ) ); ?></span>
+				<?php endif; ?>
 			</p>
 			<?php endif; ?>
 
