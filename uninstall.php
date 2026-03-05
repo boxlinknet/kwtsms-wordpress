@@ -43,7 +43,7 @@ delete_metadata( 'user', 0, 'kwtsms_phone', '', true );
 
 // -------------------------------------------------------------------------
 // 3. Remove transients (OTPs, partial auths, rate limiters).
-//    Transients are stored as _transient_* and _transient_timeout_* in options.
+// Transients are stored as _transient_* and _transient_timeout_* in options.
 // -------------------------------------------------------------------------
 // phpcs:disable WordPress.DB.DirectDatabaseQuery
 $wpdb->query(

@@ -3,6 +3,7 @@
  * Passwordless Login Page — phone number entry form.
  *
  * Available variables:
+ *
  * @var string $error_message   Error to display.
  * @var string $success_message Info / success message to display.
  *
@@ -121,7 +122,10 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 								data-dial="<?php echo esc_attr( $c['dial'] ); ?>"
 								data-iso2="<?php echo esc_attr( $c['iso2'] ); ?>"
 								data-name="<?php echo esc_attr( strtolower( $c['name'] ) ); ?>"
-								<?php if ( $c['iso2'] === $detected_iso2 ) : ?>class="is-focused"<?php endif; ?>>
+								<?php
+								if ( $c['iso2'] === $detected_iso2 ) :
+									?>
+									class="is-focused"<?php endif; ?>>
 								<?php echo esc_html( $flag_emoji( $c['iso2'] ) . ' +' . $c['dial'] . ' ' . $c['name'] ); ?>
 							</li>
 							<?php endforeach; ?>
@@ -155,9 +159,10 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 	</div>
 </div>
 
-<?php if ( $referral_link_enabled ) :
+<?php
+if ( $referral_link_enabled ) :
 	$ref_url = add_query_arg( 'ref', wp_parse_url( home_url(), PHP_URL_HOST ), 'https://www.kwtsms.com/' );
-?>
+	?>
 <p class="kwtsms-powered-by" style="text-align:center;font-size:11px;color:#888;margin-top:16px;">
 	<a href="<?php echo esc_url( $ref_url ); ?>" target="_blank" rel="noopener">
 		<?php esc_html_e( 'SMS service by kwtSMS.com', 'wp-kwtsms' ); ?>
