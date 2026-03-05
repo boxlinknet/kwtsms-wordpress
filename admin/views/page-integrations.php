@@ -10,12 +10,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** @var KwtSMS_Admin $this */
+// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
 
 $settings = $this->plugin->settings;
 
 $integrations = array(
-	'woo' => array(
+	'woo'       => array(
 		'label'       => __( 'WooCommerce', 'wp-kwtsms' ),
 		'description' => __( 'Order status SMS notifications (7 statuses), checkout OTP gate, admin alerts, and per-order custom SMS from the order metabox.', 'wp-kwtsms' ),
 		'active'      => class_exists( 'WooCommerce' ),
@@ -23,7 +23,7 @@ $integrations = array(
 		'slug'        => 'kwtsms-otp-int-woo',
 		'wp_slug'     => 'woocommerce',
 	),
-	'cf7' => array(
+	'cf7'       => array(
 		'label'       => __( 'Contact Form 7', 'wp-kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on form submission, or enable OTP gate to verify the phone before the form submits.', 'wp-kwtsms' ),
 		'active'      => class_exists( 'WPCF7' ),
@@ -31,7 +31,7 @@ $integrations = array(
 		'slug'        => 'kwtsms-otp-int-cf7',
 		'wp_slug'     => 'contact-form-7',
 	),
-	'wpforms' => array(
+	'wpforms'   => array(
 		'label'       => __( 'WPForms', 'wp-kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on form submission, or enable OTP gate to verify the phone before the form submits.', 'wp-kwtsms' ),
 		'active'      => function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' ),
@@ -47,7 +47,7 @@ $integrations = array(
 		'slug'        => 'kwtsms-otp-int-elementor',
 		'wp_slug'     => 'elementor',
 	),
-'nf' => array(
+	'nf'        => array(
 		'label'       => __( 'Ninja Forms', 'wp-kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification.', 'wp-kwtsms' ),
 		'active'      => class_exists( 'Ninja_Forms' ),
@@ -92,11 +92,11 @@ $icons = array(
 		</thead>
 		<tbody>
 			<?php foreach ( $integrations as $key => $int ) : ?>
-			<?php
-			$install_url = ! empty( $int['wp_slug'] )
+				<?php
+				$install_url = ! empty( $int['wp_slug'] )
 				? admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . rawurlencode( $int['wp_slug'] ) )
 				: null;
-			?>
+				?>
 			<tr>
 				<td style="text-align:center;font-size:22px;padding:14px 8px;vertical-align:middle;">
 					<?php echo $icons[ $key ]; // phpcs:ignore WordPress.Security.EscapeOutput ?>

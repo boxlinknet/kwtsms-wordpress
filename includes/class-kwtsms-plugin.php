@@ -33,7 +33,7 @@ class KwtSMS_Plugin {
 	public $settings;
 
 	/**
-	 * kwtsms API client.
+	 * KwtSMS API client.
 	 *
 	 * @var KwtSMS_API
 	 */
@@ -514,9 +514,9 @@ class KwtSMS_Plugin {
 
 		// Enrich coverage items with dial codes from the local country-codes data.
 		$_countries    = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
-		$_dial_name    = array(); // lowercase name  dial
-		$_dial_iso2    = array(); // ISO2             dial
-		$_name_by_dial = array(); // dial             name
+		$_dial_name    = array(); // Maps lowercase name to dial code.
+		$_dial_iso2    = array(); // Maps ISO2 country code to dial code.
+		$_name_by_dial = array(); // Maps dial code to country name.
 		foreach ( $_countries as $_cc ) {
 			$_dial_name[ strtolower( $_cc['name'] ) ] = $_cc['dial'];
 			$_dial_iso2[ $_cc['iso2'] ]               = $_cc['dial'];

@@ -139,7 +139,7 @@ class KwtSMS_Elementor {
 	 * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record  Submitted form record.
 	 * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $handler The form AJAX handler.
 	 */
-	public function send_confirmation_sms( $record, $handler ) {
+	public function send_confirmation_sms( $record, $handler ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$fields = $record->get( 'fields' );
 		$phone  = $this->extract_phone( $fields );
 

@@ -10,17 +10,17 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** @var KwtSMS_Admin $this — admin controller, injected via include inside a KwtSMS_Admin method */
+// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
 $settings             = $this->plugin->settings;
 $general              = $settings->get( 'general' ) + KwtSMS_Settings::DEFAULTS['general'];
 $gateway              = $settings->get( 'gateway' ) + KwtSMS_Settings::DEFAULTS['gateway'];
 $credentials_verified = ! empty( $gateway['credentials_verified'] );
 $bal_available        = $gateway['balance_available'] ?? null;
 $bal_purchased        = $gateway['balance_purchased'] ?? null;
-$captcha_provider = $general['captcha_provider'] ?? 'none';
-$referral_link    = ! empty( $general['referral_link'] );
-$default_cc       = $general['default_country_code'] ?? 'KW';
-$allowed_iso2     = $general['allowed_countries'] ?? array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' );
+$captcha_provider     = $general['captcha_provider'] ?? 'none';
+$referral_link        = ! empty( $general['referral_link'] );
+$default_cc           = $general['default_country_code'] ?? 'KW';
+$allowed_iso2         = $general['allowed_countries'] ?? array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' );
 $debug_logging        = ! empty( $general['debug_logging'] );
 $balance_failure_mode = $general['balance_failure_mode'] ?? 'block';
 $blocked_phones       = $general['blocked_phones'] ?? '';
@@ -224,10 +224,10 @@ foreach ( $all_countries as $cc ) {
 					<div id="kwtsms-allowed-countries-wrap">
 						<div id="kwtsms-allowed-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
 							<?php foreach ( $allowed_iso2 as $iso2 ) : ?>
-							<?php $cc_data = $cc_by_iso2[ $iso2 ] ?? null; ?>
-							<?php if ( $cc_data ) : ?>
+								<?php $cc_data = $cc_by_iso2[ $iso2 ] ?? null; ?>
+								<?php if ( $cc_data ) : ?>
 							<span class="kwtsms-country-tag" style="display:inline-flex;align-items:center;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:3px 8px;font-size:13px;">
-								<?php echo esc_html( $cc_data['name'] . ' (+' . $cc_data['dial'] . ')' ); ?>
+									<?php echo esc_html( $cc_data['name'] . ' (+' . $cc_data['dial'] . ')' ); ?>
 								<button type="button" class="kwtsms-remove-country" data-iso2="<?php echo esc_attr( $iso2 ); ?>"
 									style="background:none;border:none;cursor:pointer;margin-left:6px;color:#dc3232;font-weight:bold;font-size:14px;line-height:1;" aria-label="<?php esc_attr_e( 'Remove', 'wp-kwtsms' ); ?>">
 									×
@@ -386,7 +386,7 @@ foreach ( $all_countries as $cc ) {
 					<p class="description">
 						<?php
 						// Show relative path (e.g. wp-content/kwtsms-debug.log) regardless of server layout.
-					$log_path = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
+						$log_path = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 						? str_replace( trailingslashit( ABSPATH ), '', WP_CONTENT_DIR ) . '/kwtsms-debug.log'
 						: 'wp-content/kwtsms-debug.log';
 						printf(

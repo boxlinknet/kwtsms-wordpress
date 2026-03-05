@@ -12,15 +12,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** @var KwtSMS_Admin $this — admin controller, injected via include inside a KwtSMS_Admin method */
+// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
 
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms' ) );
 }
 
-$active_tab     = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_history';
+$active_tab     = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_history'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $items_per_page = 20;
-$current_page   = max( 1, absint( $_GET['paged'] ?? 1 ) );
+$current_page   = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
 // NOTE: download/clear/export handlers are registered on admin_init in KwtSMS_Admin::handle_log_exports()
@@ -42,12 +42,18 @@ if ( ! is_array( $attempt_log ) ) {
 
 $active_log    = 'sms_history' === $active_tab ? $sms_history : $attempt_log;
 $total_entries = count( $active_log );
-$total_pages   = max( 1, (int) ceil( $total_entries / $per_page ) );
+$total_pages   = max( 1, (int) ceil( $total_entries / $items_per_page ) );
 $current_page  = min( $current_page, $total_pages );
-$offset        = ( $current_page - 1 ) * $per_page;
-$page_entries  = array_slice( $active_log, $offset, $per_page );
+$offset        = ( $current_page - 1 ) * $items_per_page;
+$page_entries  = array_slice( $active_log, $offset, $items_per_page );
 
-// Helper: build tab URL.
+/**
+ * Build a tab URL for the Logs page.
+ *
+ * @param string $tab   Tab key.
+ * @param array  $extra Additional query arguments.
+ * @return string Admin URL with page + tab query args.
+ */
 function kwtsms_logs_tab_url( $tab, $extra = array() ) {
 	return add_query_arg(
 		array_merge(
@@ -61,7 +67,12 @@ function kwtsms_logs_tab_url( $tab, $extra = array() ) {
 	);
 }
 
-// Helper: human-readable result label.
+/**
+ * Return an HTML label for an OTP attempt result code.
+ *
+ * @param string $result Attempt result code.
+ * @return string HTML-formatted label string.
+ */
 function kwtsms_attempt_result_label( $result ) {
 	$labels = array(
 		'success'      => '<span style="color:#46b450;">' . esc_html__( 'Success', 'wp-kwtsms' ) . '</span>',
@@ -237,7 +248,7 @@ function kwtsms_attempt_result_label( $result ) {
 		$total_lines     = count( $lines );
 		$per_page_dbg    = 100;
 		$total_pages_dbg = max( 1, (int) ceil( $total_lines / $per_page_dbg ) );
-		$cur_page_dbg    = min( max( 1, absint( $_GET['paged'] ?? 1 ) ), $total_pages_dbg );
+		$cur_page_dbg    = min( max( 1, absint( $_GET['paged'] ?? 1 ) ), $total_pages_dbg ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$offset_dbg      = ( $cur_page_dbg - 1 ) * $per_page_dbg;
 		$page_lines      = array_slice( $lines, $offset_dbg, $per_page_dbg );
 		?>
@@ -308,7 +319,7 @@ function kwtsms_attempt_result_label( $result ) {
 	<?php endif; ?>
 	<?php endif; ?>
 
-	<?php endif; // end three-way tab ?>
+	<?php endif; // end three-way tab. ?>
 
 	<!-- Pagination -->
 	<?php if ( $total_pages > 1 ) : ?>

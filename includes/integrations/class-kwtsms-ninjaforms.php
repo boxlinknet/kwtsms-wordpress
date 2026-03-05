@@ -58,7 +58,7 @@ class KwtSMS_NinjaForms {
 	 *                                         the GF class; settings are always
 	 *                                         accessed via $plugin->settings.
 	 */
-	public function __construct( KwtSMS_Plugin $plugin, KwtSMS_Settings $_settings = null ) {
+	public function __construct( KwtSMS_Plugin $plugin, KwtSMS_Settings $_settings = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$this->plugin = $plugin;
 
 		// Ninja Forms must be active.

@@ -10,7 +10,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** @var KwtSMS_Admin $this */
+// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
 $settings             = $this->plugin->settings;
 $gateway              = $settings->get( 'gateway' ) + KwtSMS_Settings::DEFAULTS['gateway'];
 $sender_id            = $gateway['sender_id'] ?? '';
@@ -20,15 +20,15 @@ $sender_ids           = $gateway['sender_ids'] ?? array();
 
 // Build dial-code lookups for coverage pills.
 $_cc_data_all  = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
-$_dial_by_name = array(); // lowercase name   dial
-$_dial_by_iso2 = array(); // ISO2             dial
-$_name_by_dial = array(); // dial             name  (for bare-code entries)
-$_iso2_by_dial = array(); // dial             iso2
+$_dial_by_name = array(); // Maps lowercase name to dial code.
+$_dial_by_iso2 = array(); // Maps ISO2 to dial code.
+$_name_by_dial = array(); // Maps dial code to country name.
+$_iso2_by_dial = array(); // Maps dial code to ISO2.
 foreach ( $_cc_data_all as $_cce ) {
 	$_dial_by_name[ strtolower( $_cce['name'] ) ] = $_cce['dial'];
-	$_dial_by_iso2[ $_cce['iso2'] ]                = $_cce['dial'];
-	$_name_by_dial[ $_cce['dial'] ]                = $_cce['name'];
-	$_iso2_by_dial[ $_cce['dial'] ]                = $_cce['iso2'];
+	$_dial_by_iso2[ $_cce['iso2'] ]               = $_cce['dial'];
+	$_name_by_dial[ $_cce['dial'] ]               = $_cce['name'];
+	$_iso2_by_dial[ $_cce['dial'] ]               = $_cce['iso2'];
 }
 unset( $_cc_data_all, $_cce );
 
@@ -112,9 +112,12 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 								<?php esc_html_e( 'Logout', 'wp-kwtsms' ); ?>
 							</button>
 							<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite">
-								<span style="color:#46b450;">&#x2713; <?php
+								<span style="color:#46b450;">&#x2713; 
+								<?php
 								/* translators: %s: API username */
-								printf( esc_html__( 'Connected as %s', 'wp-kwtsms' ), esc_html( $gateway['api_username'] ) ); ?></span>
+								printf( esc_html__( 'Connected as %s', 'wp-kwtsms' ), esc_html( $gateway['api_username'] ) );
+								?>
+								</span>
 							</span>
 						</div>
 						<p class="description kwtsms-reload-hint"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from your kwtSMS account.', 'wp-kwtsms' ); ?></p>
@@ -219,16 +222,24 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 									$_cname = $c['name'] ?? $c['country'] ?? $c['countryName'] ?? $c['CountryName'] ?? $c['cc'] ?? '';
 									if ( '' === $_cname ) {
 										foreach ( $c as $v ) {
-											if ( is_string( $v ) && '' !== $v ) { $_cname = $v; break; }
+											if ( is_string( $v ) && '' !== $v ) {
+												$_cname = $v;
+												break; }
 										}
 									}
-									if ( '' === $_cname ) continue;
+									if ( '' === $_cname ) {
+										continue;
+									}
 									// Skip API status codes stored as country names.
-									if ( in_array( strtoupper( $_cname ), $_api_codes, true ) ) continue;
+									if ( in_array( strtoupper( $_cname ), $_api_codes, true ) ) {
+										continue;
+									}
 									// Bare dial-code digit string stored as name? Resolve to country.
 									if ( ctype_digit( $_cname ) ) {
 										$_rname = $_name_by_dial[ $_cname ] ?? '';
-										if ( '' === $_rname ) continue;
+										if ( '' === $_rname ) {
+											continue;
+										}
 										$_cdial = $_cname;
 										$_cname = $_rname;
 									} else {
@@ -239,13 +250,19 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 									}
 								} else {
 									$_cname = trim( (string) $c );
-									if ( '' === $_cname ) continue;
+									if ( '' === $_cname ) {
+										continue;
+									}
 									// Skip API status codes.
-									if ( in_array( strtoupper( $_cname ), $_api_codes, true ) ) continue;
+									if ( in_array( strtoupper( $_cname ), $_api_codes, true ) ) {
+										continue;
+									}
 									// Bare dial-code digit string? Resolve to country name.
 									if ( ctype_digit( $_cname ) ) {
 										$_rname = $_name_by_dial[ $_cname ] ?? '';
-										if ( '' === $_rname ) continue;
+										if ( '' === $_rname ) {
+											continue;
+										}
 										$_cdial = $_cname;
 										$_cname = $_rname;
 									} else {

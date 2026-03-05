@@ -121,7 +121,7 @@ class KwtSMS_WPForms {
 	 * @param array $form_data Form settings array from WPForms.
 	 * @param int   $entry_id  Saved entry ID (0 if entry storage is disabled).
 	 */
-	public function send_confirmation_sms( $fields, $entry, $form_data, $entry_id ) {
+	public function send_confirmation_sms( $fields, $entry, $form_data, $entry_id ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$phone = $this->extract_phone_from_fields( $fields );
 		if ( empty( $phone ) ) {
 			return;

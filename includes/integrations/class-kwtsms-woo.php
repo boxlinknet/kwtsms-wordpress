@@ -288,7 +288,7 @@ class KwtSMS_Woo {
 	 *
 	 * @return WP_Error The (potentially augmented) errors object.
 	 */
-	public function validate_wc_phone_field( $errors, $username, $email ) {
+	public function validate_wc_phone_field( $errors, $username, $email ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce registration validation; nonce verified by WooCommerce core.
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		if ( '' !== $phone ) {
@@ -350,7 +350,7 @@ class KwtSMS_Woo {
 	 *
 	 * @param WC_Checkout $checkout WooCommerce checkout instance.
 	 */
-	public function render_checkout_otp_field( WC_Checkout $checkout ) {
+	public function render_checkout_otp_field( WC_Checkout $checkout ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 		// Check if OTP has already been verified for this session.
 		$session_key = $this->get_checkout_session_key();
 		if ( $session_key && get_transient( self::CHECKOUT_OTP_PREFIX . $session_key ) ) {
@@ -467,7 +467,7 @@ class KwtSMS_Woo {
 	 *
 	 * @param WC_Order $order The newly created order.
 	 */
-	public function clear_checkout_otp_session( WC_Order $order ) {
+	public function clear_checkout_otp_session( WC_Order $order ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 		$session_key = $this->get_checkout_session_key();
 		if ( $session_key ) {
 			delete_transient( self::CHECKOUT_OTP_PREFIX . $session_key );

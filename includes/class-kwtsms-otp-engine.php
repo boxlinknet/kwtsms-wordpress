@@ -158,7 +158,7 @@ class KwtSMS_OTP_Engine {
 
 		// Timing-safe comparison.
 		if ( ! hash_equals( (string) $data['code'], (string) $submitted ) ) {
-			$data['attempts']++;
+			++$data['attempts'];
 			if ( $data['attempts'] >= $max_attempts ) {
 				// Delete OTP on lockout — user must request a new one.
 				delete_transient( $key );
@@ -273,9 +273,9 @@ class KwtSMS_OTP_Engine {
 	 * Combines the former is_user_rate_limited() + increment_user_rate() into
 	 * one call. Callers must NOT call a separate increment method.
 	 *
-	 * @param int      $user_id WordPress user ID.
-	 * @param string   $action  Context: 'login'|'passwordless'|'reset'.
-	 * @param string   $phone   Phone for logging.
+	 * @param int    $user_id WordPress user ID.
+	 * @param string $action  Context: 'login'|'passwordless'|'reset'.
+	 * @param string $phone   Phone for logging.
 	 *
 	 * @return bool True if the account is rate-limited.
 	 */
@@ -301,8 +301,8 @@ class KwtSMS_OTP_Engine {
 	/**
 	 * Build an SMS message from a template, replacing standard and extra placeholders.
 	 *
-	 * @param string $otp_code    OTP code to substitute for {otp} (pass '' for non-OTP templates).
-	 * @param string $template_id Template key: 'login_otp' | 'reset_otp' | 'welcome_sms'.
+	 * @param string                $otp_code    OTP code to substitute for {otp} (pass '' for non-OTP templates).
+	 * @param string                $template_id Template key: 'login_otp' | 'reset_otp' | 'welcome_sms'.
 	 * @param array<string, string> $extra_vars Optional map of placeholder  value for template-specific
 	 *                                          vars, e.g. array( '{name}' => 'Ahmad' ) for welcome SMS.
 	 *
@@ -361,7 +361,7 @@ class KwtSMS_OTP_Engine {
 	public function request_otp( $normalized_phone, $identifier, $template_id, $action, $sender_id ) {
 		// Blocked phone: silently pretend success — no SMS sent, no error exposed.
 		if ( $this->is_phone_blocked( $normalized_phone ) ) {
-			return true; // pretend success, no SMS sent
+			return true; // pretend success, no SMS sent.
 		}
 
 		$otp_code = $this->generate( $identifier, $action );
@@ -568,5 +568,4 @@ class KwtSMS_OTP_Engine {
 
 		return filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : '';
 	}
-
 }

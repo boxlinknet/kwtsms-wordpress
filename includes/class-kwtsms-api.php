@@ -1,6 +1,6 @@
 <?php
 /**
- * kwtsms REST API Client.
+ * KwtSMS REST API Client.
  *
  * Wraps all calls to the kwtsms JSON REST API (v4.1).
  * Always uses HTTPS + POST as required by the API documentation.
@@ -399,7 +399,7 @@ class KwtSMS_API {
 			foreach ( $response as $dial => $value ) {
 				$entry = array( 'dial' => (string) $dial );
 				if ( is_string( $value ) && '' !== $value ) {
-					$entry['name'] = $value; // may be country name or a status string; enrichment resolves
+					$entry['name'] = $value; // may be country name or a status string; enrichment resolves.
 				}
 				$result[] = $entry;
 			}
@@ -524,7 +524,8 @@ class KwtSMS_API {
 	 *
 	 * @param string $phone  Normalised phone number.
 	 * @param string $status 'sent' or 'failed'.
-	 * @param string $type   Context type: 'login'|'reset'|'passwordless'|'welcome'|'test'.
+	 * @param string $type      Context type: 'login'|'reset'|'passwordless'|'welcome'|'test'.
+	 * @param string $sender_id Sender ID used for this SMS.
 	 */
 	public static function append_send_log( $phone, $status, $type = '', $sender_id = '' ) {
 		$log = get_option( 'kwtsms_otp_send_log', array() );
@@ -536,7 +537,7 @@ class KwtSMS_API {
 			$log,
 			array(
 				'time'      => time(),
-				'phone'     => sanitize_text_field( $phone ), // full phone — admin-only view
+				'phone'     => sanitize_text_field( $phone ), // Full phone — admin-only view.
 				'status'    => $status,
 				'type'      => sanitize_key( $type ),
 				'sender_id' => sanitize_text_field( $sender_id ),
@@ -562,7 +563,10 @@ class KwtSMS_API {
 	 * @param string $message The exact message that was sent.
 	 * @param string $status  'sent' or 'failed'.
 	 * @param string $type    Context: 'login'|'reset'|'passwordless'|'welcome'|'test'.
-	 * @param string $msg_id  Message ID returned by API, or empty on failure.
+	 * @param string $msg_id        Message ID returned by API, or empty on failure.
+	 * @param string $sender_id      Sender ID used.
+	 * @param array  $gateway_result Raw gateway API response array.
+	 * @param string $api_username   API username for log attribution.
 	 */
 	public static function append_sms_history( $phone, $message, $status, $type, $msg_id = '', $sender_id = '', $gateway_result = array(), $api_username = '' ) {
 		$log = get_option( 'kwtsms_otp_sms_history', array() );
@@ -812,7 +816,7 @@ class KwtSMS_API {
 
 		// Build a dial  ISO2 lookup map from the local data file.
 		$countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
-		$dial_map  = array(); // dial_code (string) => ISO2 (string)
+		$dial_map  = array(); // Maps dial code string to ISO2 country code string.
 		foreach ( $countries as $cc ) {
 			if ( isset( $cc['dial'], $cc['iso2'] ) && '' !== $cc['dial'] ) {
 				$dial_map[ (string) $cc['dial'] ] = $cc['iso2'];
@@ -1011,7 +1015,7 @@ class KwtSMS_API {
 			return $err;
 		}
 
-		// API returns {"result":"ERROR","code":"ERRxxx","description":"..."} on failure.
+		// API returns an error object on failure, with result, code, and description fields.
 		if ( isset( $data['result'] ) && 'ERROR' === $data['result'] ) {
 			$error_code  = $data['code'] ?? 'UNKNOWN';
 			$description = $data['description'] ?? '';

@@ -75,6 +75,7 @@ class KwtSMS_Reset_OTP {
 		if ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) {
 			return;
 		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading WP action key.
 		$action = isset( $_REQUEST['action'] ) ? sanitize_key( $_REQUEST['action'] ) : '';
 		if ( 'lostpassword' !== $action ) {
 			return;
@@ -190,6 +191,7 @@ class KwtSMS_Reset_OTP {
 	 * Fires on `login_init`. If action matches, handles GET (render) and POST (verify).
 	 */
 	public function handle_reset_otp_action() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading WP action key.
 		$action = isset( $_REQUEST['action'] ) ? sanitize_key( $_REQUEST['action'] ) : 'login';
 
 		if ( 'kwtsms_reset_otp' !== $action ) {
@@ -333,9 +335,9 @@ class KwtSMS_Reset_OTP {
 	 *
 	 * @param string $error_message Optional error message.
 	 */
-	private function render_reset_otp_page( $error_message = '' ) {
+	private function render_reset_otp_page( $error_message = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- used in included view.
 		nocache_headers();
-		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), null );
+		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		wp_enqueue_style( 'kwtsms-login', KWTSMS_OTP_URL . 'assets/css/login.css', array( 'login' ), KWTSMS_OTP_VERSION );
 		if ( is_rtl() ) {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
@@ -380,8 +382,8 @@ class KwtSMS_Reset_OTP {
 		if ( ! is_wp_error( $normalized ) ) {
 			$users = get_users(
 				array(
-					'meta_key'   => 'kwtsms_phone',
-					'meta_value' => $normalized,
+					'meta_key'   => 'kwtsms_phone', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+					'meta_value' => $normalized, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 					'number'     => 1,
 					'fields'     => 'all',
 				)

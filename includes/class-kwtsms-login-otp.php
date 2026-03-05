@@ -70,7 +70,7 @@ class KwtSMS_Login_OTP {
 	 *
 	 * @return WP_User|WP_Error
 	 */
-	public function intercept_login( $user, $username, $password ) {
+	public function intercept_login( $user, $username, $password ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		// 2FA is only active when mode is '2fa' or 'both'.
 		$mode = $this->plugin->settings->get( 'general.otp_mode', '2fa' );
 		if ( 'passwordless' === $mode ) {
@@ -234,6 +234,7 @@ class KwtSMS_Login_OTP {
 	 * Fires on `login_init` at the very top of wp-login.php.
 	 */
 	public function handle_login_actions() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading WP action key, not form data.
 		$action = isset( $_REQUEST['action'] ) ? sanitize_key( $_REQUEST['action'] ) : 'login';
 
 		if ( 'kwtsms_otp' === $action ) {
@@ -318,9 +319,9 @@ class KwtSMS_Login_OTP {
 		$raw_len         = strlen( $raw_code );
 
 		// Log if: raw input had non-digit chars, code is empty, or code length is wrong.
-		$is_suspicious = ( $raw_len > 0 && strlen( $submitted ) !== $raw_len ) // non-digit chars present
-			|| ( $raw_len > $expected_length + 4 ) // excessively long — possible injection
-			|| ( $raw_len > 0 && strlen( $submitted ) !== $expected_length && strlen( $submitted ) !== 0 ); // wrong length
+		$is_suspicious = ( $raw_len > 0 && strlen( $submitted ) !== $raw_len ) // non-digit chars present.
+			|| ( $raw_len > $expected_length + 4 ) // excessively long — possible injection.
+			|| ( $raw_len > 0 && strlen( $submitted ) !== $expected_length && strlen( $submitted ) !== 0 ); // wrong length.
 
 		if ( $is_suspicious ) {
 			KwtSMS_API::append_attempt_log( $user_id, $otp_phone, $ip, $otp_action, 'invalid_input' );
@@ -403,7 +404,7 @@ class KwtSMS_Login_OTP {
 		wp_set_auth_cookie( $user_id, false );
 		do_action( 'wp_login', $user->user_login, $user );
 
-		$redirect_to = sanitize_url( wp_unslash( $_GET['redirect_to'] ?? '' ) );
+		$redirect_to = sanitize_url( wp_unslash( $_GET['redirect_to'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( empty( $redirect_to ) ) {
 			$redirect_to = admin_url();
 		}
@@ -469,8 +470,8 @@ class KwtSMS_Login_OTP {
 		// Look up user by kwtsms_phone meta.
 		$users = get_users(
 			array(
-				'meta_key'   => 'kwtsms_phone',
-				'meta_value' => $normalized,
+				'meta_key'   => 'kwtsms_phone', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value' => $normalized, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'number'     => 1,
 				'fields'     => 'ids',
 			)
@@ -592,7 +593,7 @@ class KwtSMS_Login_OTP {
 	 */
 	private function render_otp_page( $error_message = '', $token = '' ) {
 		nocache_headers();
-		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), null );
+		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		wp_enqueue_style( 'kwtsms-login', KWTSMS_OTP_URL . 'assets/css/login.css', array( 'login' ), KWTSMS_OTP_VERSION );
 		if ( is_rtl() ) {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
@@ -601,7 +602,7 @@ class KwtSMS_Login_OTP {
 		$token           = $token ? $token : $this->get_partial_auth_token();
 		$otp_length      = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
 		$cooldown        = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
-		$redirect_to     = sanitize_url( wp_unslash( $_GET['redirect_to'] ?? '' ) );
+		$redirect_to     = sanitize_url( wp_unslash( $_GET['redirect_to'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$nonce_resend    = wp_create_nonce( 'kwtsms_otp_nonce' );
 		$login_url       = wp_login_url();
 		$plugin_settings = $this->plugin->settings;
@@ -615,9 +616,9 @@ class KwtSMS_Login_OTP {
 	 * @param string $error_message   Optional error.
 	 * @param string $success_message Optional success/info message.
 	 */
-	private function render_passwordless_page( $error_message = '', $success_message = '' ) {
+	private function render_passwordless_page( $error_message = '', $success_message = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- passed to included view.
 		nocache_headers();
-		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), null );
+		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		wp_enqueue_style( 'kwtsms-login', KWTSMS_OTP_URL . 'assets/css/login.css', array( 'login' ), KWTSMS_OTP_VERSION );
 		if ( is_rtl() ) {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
