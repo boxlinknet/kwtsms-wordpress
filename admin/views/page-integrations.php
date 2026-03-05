@@ -22,6 +22,7 @@ $integrations = array(
 		'sms_enabled' => (bool) $settings->get( 'integrations.woo_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-woo',
 		'wp_slug'     => 'woocommerce',
+		'plugin_file' => 'woocommerce/woocommerce.php',
 	),
 	'cf7'       => array(
 		'label'       => __( 'Contact Form 7', 'wp-kwtsms' ),
@@ -30,6 +31,7 @@ $integrations = array(
 		'sms_enabled' => (bool) $settings->get( 'integrations.cf7_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-cf7',
 		'wp_slug'     => 'contact-form-7',
+		'plugin_file' => 'contact-form-7/wp-contact-form-7.php',
 	),
 	'wpforms'   => array(
 		'label'       => __( 'WPForms', 'wp-kwtsms' ),
@@ -38,6 +40,7 @@ $integrations = array(
 		'sms_enabled' => (bool) $settings->get( 'integrations.wpforms_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-wpforms',
 		'wp_slug'     => 'wpforms-lite',
+		'plugin_file' => 'wpforms-lite/wpforms.php',
 	),
 	'elementor' => array(
 		'label'       => __( 'Elementor', 'wp-kwtsms' ),
@@ -46,6 +49,7 @@ $integrations = array(
 		'sms_enabled' => (bool) $settings->get( 'integrations.elementor_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-elementor',
 		'wp_slug'     => 'elementor',
+		'plugin_file' => 'elementor/elementor.php',
 	),
 	'nf'        => array(
 		'label'       => __( 'Ninja Forms', 'wp-kwtsms' ),
@@ -54,6 +58,7 @@ $integrations = array(
 		'sms_enabled' => (bool) $settings->get( 'integrations.nf_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-nf',
 		'wp_slug'     => 'ninja-forms',
+		'plugin_file' => 'ninja-forms/ninja-forms.php',
 	),
 );
 
@@ -93,9 +98,22 @@ $icons = array(
 		<tbody>
 			<?php foreach ( $integrations as $key => $int ) : ?>
 				<?php
-				$install_url = ! empty( $int['wp_slug'] )
-				? admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . rawurlencode( $int['wp_slug'] ) )
-				: null;
+				// Determine plugin install and activation state.
+				$plugin_file  = $int['plugin_file'] ?? '';
+				$is_installed = $plugin_file && file_exists( WP_PLUGIN_DIR . '/' . $plugin_file );
+
+				// Activate URL — only for installed-but-inactive plugins; requires nonce.
+				$activate_url = ( $is_installed && ! $int['active'] && current_user_can( 'activate_plugins' ) )
+					? wp_nonce_url(
+						admin_url( 'plugins.php?action=activate&plugin=' . rawurlencode( $plugin_file ) ),
+						'activate-plugin_' . $plugin_file
+					)
+					: null;
+
+				// Install URL — only when plugin is not on disk at all.
+				$install_url = ( ! $is_installed && ! empty( $int['wp_slug'] ) )
+					? admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . rawurlencode( $int['wp_slug'] ) )
+					: null;
 				?>
 			<tr>
 				<td style="text-align:center;font-size:22px;padding:14px 8px;vertical-align:middle;">
@@ -109,7 +127,9 @@ $icons = array(
 				</td>
 				<td style="padding:14px 16px;vertical-align:middle;">
 					<?php if ( $int['active'] ) : ?>
-						<span style="color:#00a32a;font-weight:600;">&#10003; <?php esc_html_e( 'Installed', 'wp-kwtsms' ); ?></span>
+						<span style="color:#00a32a;font-weight:600;">&#10003; <?php esc_html_e( 'Active', 'wp-kwtsms' ); ?></span>
+					<?php elseif ( $is_installed ) : ?>
+						<span style="color:#b36c00;font-weight:600;">&#9711; <?php esc_html_e( 'Inactive', 'wp-kwtsms' ); ?></span>
 					<?php elseif ( $install_url ) : ?>
 						<a href="<?php echo esc_url( $install_url ); ?>" style="color:#999;text-decoration:none;" title="<?php esc_attr_e( 'View on WordPress.org', 'wp-kwtsms' ); ?>">
 							&#10007; <?php esc_html_e( 'Not installed', 'wp-kwtsms' ); ?>
@@ -131,6 +151,10 @@ $icons = array(
 					<?php if ( $int['active'] ) : ?>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . $int['slug'] ) ); ?>" class="button button-secondary">
 							<?php esc_html_e( 'Configure', 'wp-kwtsms' ); ?> &rarr;
+						</a>
+					<?php elseif ( $activate_url ) : ?>
+						<a href="<?php echo esc_url( $activate_url ); ?>" class="button button-secondary">
+							<?php esc_html_e( 'Activate', 'wp-kwtsms' ); ?> &rarr;
 						</a>
 					<?php elseif ( $install_url ) : ?>
 						<a href="<?php echo esc_url( $install_url ); ?>" class="button button-secondary">
