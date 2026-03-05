@@ -17,9 +17,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$is_reset   = $is_reset ?? false;
-$site_name  = get_bloginfo( 'name' );
-$login_url  = wp_login_url();
+$is_reset  = $is_reset ?? false;
+$site_name = get_bloginfo( 'name' );
+$login_url = wp_login_url();
 
 // Build site logo — matches WordPress login page header behaviour.
 $custom_logo_id = get_theme_mod( 'custom_logo' );
@@ -42,7 +42,7 @@ if ( $custom_logo_id ) {
 
 // Referral link settings.
 $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 0 ) : false;
-$page_title = $is_reset
+$page_title            = $is_reset
 	? __( 'Verify Your Identity: Password Reset', 'wp-kwtsms' )
 	: __( 'Enter Your Verification Code', 'wp-kwtsms' );
 
@@ -52,7 +52,7 @@ if ( ! empty( $token ) ) {
 	$transient_key = $is_reset
 		? KwtSMS_Reset_OTP::RESET_TRANSIENT_PREFIX . $token
 		: 'kwtsms_partial_auth_' . $token;
-	$partial = get_transient( $transient_key );
+	$partial       = get_transient( $transient_key );
 	if ( $partial && ! empty( $partial['phone'] ) ) {
 		$p            = $partial['phone'];
 		$len          = strlen( $p );
@@ -112,7 +112,7 @@ if ( ! empty( $token ) ) {
 		<?php endif; ?>
 
 		<?php
-		$form_action = ! empty( $is_reset )
+		$form_action  = ! empty( $is_reset )
 			? add_query_arg( 'action', 'kwtsms_reset_otp', $login_url )
 			: add_query_arg( 'action', 'kwtsms_otp', $login_url );
 		$nonce_action = ! empty( $is_reset ) ? 'kwtsms_reset_otp_submit' : 'kwtsms_otp_submit';
@@ -184,9 +184,10 @@ if ( ! empty( $token ) ) {
 
 <?php wp_footer(); ?>
 
-<?php if ( $referral_link_enabled ) :
+<?php
+if ( $referral_link_enabled ) :
 	$ref_url = add_query_arg( 'ref', wp_parse_url( home_url(), PHP_URL_HOST ), 'https://www.kwtsms.com/' );
-?>
+	?>
 <p class="kwtsms-powered-by" style="text-align:center;font-size:11px;color:#888;margin-top:16px;">
 	<a href="<?php echo esc_url( $ref_url ); ?>" target="_blank" rel="noopener">
 		<?php esc_html_e( 'SMS service by kwtSMS.com', 'wp-kwtsms' ); ?>
