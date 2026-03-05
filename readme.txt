@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -190,6 +190,14 @@ All settings are in `wp_options`. Phone numbers are in `wp_usermeta`. OTP tokens
 8. SMS Logs: full send history with phone number, message, and status.
 
 == Changelog ==
+
+= 3.0.2 =
+* Fix: remove tab navigation from form integration pages (CF7, WPForms, Elementor, Gravity Forms, Ninja Forms), both cards now always visible.
+* Fix: move Enable Integration toggle into settings table, consistent across all form integrations.
+* Fix: restore left padding on WPForms admin pages stripped by WPForms.
+* Fix: suppress WPForms injected header, flyout, and footer on kwtSMS integration pages.
+* Fix: hide page footer on all kwtSMS admin pages.
+* Docs: remove em dashes and separator hyphens from prose in readme.txt and README.md.
 
 = 3.0.1 =
 * Fix: resolve all PHP_CodeSniffer WordPress Coding Standards violations.
