@@ -61,16 +61,40 @@ Hooks for custom workflows:
 * `kwtsms_otp_verified`: action fired on successful verification
 * `kwtsms_otp_send_failed`: action fired on send failure
 
-= External Service =
+= External Services =
 
-This plugin connects to the **kwtSMS API** to deliver SMS messages.
+This plugin connects to the following external services:
 
-* Service website: [https://www.kwtsms.com](https://www.kwtsms.com)
+**1. kwtSMS API** (required) — sends SMS messages.
+
+* Service: [https://www.kwtsms.com](https://www.kwtsms.com)
 * API endpoint: `https://www.kwtsms.com/API/`
+* Data sent: phone number, message text, API credentials
+* When: every time an OTP or notification SMS is dispatched
 * Terms of Service: [https://www.kwtsms.com/policy.html](https://www.kwtsms.com/policy.html)
 * Privacy Policy: [https://www.kwtsms.com/privacy.html](https://www.kwtsms.com/privacy.html)
 
-A kwtSMS account with SMS credits is required. All SMS messages are sent through the kwtSMS infrastructure. No data is sent to any other third-party service.
+A kwtSMS account with SMS credits is required.
+
+**2. ipapi.co** (optional) — detects the visitor's country to pre-select the dial-code flag on the phone input.
+
+* Service: [https://ipapi.co](https://ipapi.co)
+* Data sent: visitor IP address (no other data)
+* When: on the login page when Passwordless or OTP mode is active; result is cached for 24 hours per IP
+* Terms of Service: [https://ipapi.co/terms/](https://ipapi.co/terms/)
+* Privacy Policy: [https://ipapi.co/privacy/](https://ipapi.co/privacy/)
+
+If ipapi.co is unavailable, the phone input falls back to the default country configured in General Settings. No personal data is stored by the plugin as a result of this call.
+
+**3. Google reCAPTCHA v3** (optional) — bot protection on OTP forms. Only active if you enter a reCAPTCHA Site Key in General Settings.
+
+* Service: [https://www.google.com/recaptcha/](https://www.google.com/recaptcha/)
+* Privacy Policy: [https://policies.google.com/privacy](https://policies.google.com/privacy)
+
+**4. Cloudflare Turnstile** (optional) — alternative bot protection. Only active if you enter a Turnstile Site Key in General Settings.
+
+* Service: [https://www.cloudflare.com/products/turnstile/](https://www.cloudflare.com/products/turnstile/)
+* Privacy Policy: [https://www.cloudflare.com/privacypolicy/](https://www.cloudflare.com/privacypolicy/)
 
 = Test Mode =
 
