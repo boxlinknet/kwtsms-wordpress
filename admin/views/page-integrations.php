@@ -47,15 +47,7 @@ $integrations = array(
 		'slug'        => 'kwtsms-otp-int-elementor',
 		'wp_slug'     => 'elementor',
 	),
-	'gf' => array(
-		'label'       => __( 'Gravity Forms', 'wp-kwtsms' ),
-		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification.', 'wp-kwtsms' ),
-		'active'      => class_exists( 'GFForms' ),
-		'sms_enabled' => (bool) $settings->get( 'integrations.gf_enabled', 1 ),
-		'slug'        => 'kwtsms-otp-int-gf',
-		'wp_slug'     => null, // Commercial plugin — not on WordPress.org.
-	),
-	'nf' => array(
+'nf' => array(
 		'label'       => __( 'Ninja Forms', 'wp-kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification.', 'wp-kwtsms' ),
 		'active'      => class_exists( 'Ninja_Forms' ),
