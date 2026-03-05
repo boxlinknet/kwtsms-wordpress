@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.9.0
+Stable tag: 3.0.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -191,29 +191,10 @@ All settings are in `wp_options`. Phone numbers are in `wp_usermeta`. OTP tokens
 
 == Changelog ==
 
-= 2.9.0 =
-* Security: added `KwtSMS_API::clean_message()` — comprehensive SMS message sanitisation covering HTML tags, non-breaking spaces, invisible/directional Unicode (ZWS, ZWJ, BOM, RTL/LTR marks, variation selectors), and all known Unicode 15 emoji ranges. Applied in `send_sms()` to cover all callers automatically.
-* Security: templates are now sanitised through the same cleaner on save — previously only 3 emoji ranges were stripped.
-* Feature: "On Balance Failure" setting on the General page — admin can choose between blocking logins (default) or allowing password-only login when SMS credits run out.
-* Fix: admin email sent on zero-balance condition now describes the actual behaviour based on the configured setting.
-* Fix: removed stray `&mdash;` HTML entity in the Developer Tools section of the General settings page.
-* Fix: double country-code prepend bug on user profile page when a full international number was entered in the local number field.
-
-= 2.8.0 =
+= 3.0.0 =
 * Initial public release.
-* SMS OTP login: 2FA, Passwordless, and Both modes.
-* SMS password reset flow.
-* Welcome SMS for new user registrations.
-* WooCommerce integration: 7 order status notifications, Checkout OTP Gate, Admin SMS panel.
-* Contact form integrations: Contact Form 7, WPForms, Elementor Pro, Gravity Forms, Ninja Forms.
-* Per-phone and per-IP rate limiting.
-* Google reCAPTCHA v3 and Cloudflare Turnstile support.
-* Bilingual SMS templates (English + Arabic, RTL).
-* Admin SMS log with CSV export.
-* Test mode with debug log output.
-* Emergency bypass constant (`KWTSMS_OTP_DISABLED`) for lockout recovery.
 
 == Upgrade Notice ==
 
-= 2.8.0 =
+= 3.0.0 =
 Initial release. No upgrade required.
