@@ -28,13 +28,13 @@ $woo_active = class_exists( 'WooCommerce' );
 $woo_template_defs = array(
 	'woo_processing' => array(
 		'tab_label'    => __( 'Processing', 'wp-kwtsms' ),
-		'label'        => __( 'New Order / Order Confirmed', 'wp-kwtsms' ),
+		'label'        => __( 'New Order / Order Confirmed (Processing)', 'wp-kwtsms' ),
 		'description'  => __( "Sent immediately when a paid order is placed (credit card, PayPal, COD). This is the main 'new order' notification.", 'wp-kwtsms' ),
 		'placeholders' => '{order_id}, {total}, {site_name}, {customer_name}',
 	),
 	'woo_shipped'    => array(
 		'tab_label'    => __( 'Shipped', 'wp-kwtsms' ),
-		'label'        => __( 'Order Shipped', 'wp-kwtsms' ),
+		'label'        => __( 'Order Shipped (On-Hold)', 'wp-kwtsms' ),
 		'description'  => __( 'Sent when the order status is set to On-Hold, typically used to indicate the order has been shipped.', 'wp-kwtsms' ),
 		'placeholders' => '{order_id}, {site_name}, {customer_name}',
 	),
@@ -52,7 +52,7 @@ $woo_template_defs = array(
 	),
 	'woo_pending'    => array(
 		'tab_label'    => __( 'Pending', 'wp-kwtsms' ),
-		'label'        => __( 'New Order — Awaiting Payment', 'wp-kwtsms' ),
+		'label'        => __( 'New Order — Awaiting Payment (Pending)', 'wp-kwtsms' ),
 		'description'  => __( 'Sent when an order is placed but payment not yet received (e.g. bank transfer). Disabled by default.', 'wp-kwtsms' ),
 		'placeholders' => '{order_id}, {site_name}, {customer_name}',
 	),
@@ -91,11 +91,11 @@ function kwtsms_woo_tab_url( $tab ) {
 // Status enable/disable checklist used in the Settings tab.
 $customer_status_labels = array(
 	'woo_processing' => array(
-		'label' => __( 'New Order / Order Confirmed', 'wp-kwtsms' ),
+		'label' => __( 'New Order / Order Confirmed (Processing)', 'wp-kwtsms' ),
 		'hint'  => __( "Fires immediately when a paid order is placed (credit card, PayPal, COD). This is the main 'new order' notification.", 'wp-kwtsms' ),
 	),
 	'woo_pending'    => array(
-		'label' => __( 'New Order — Awaiting Payment', 'wp-kwtsms' ),
+		'label' => __( 'New Order — Awaiting Payment (Pending)', 'wp-kwtsms' ),
 		'hint'  => __( 'Fires when an order is placed but payment has not been received yet (e.g. bank transfer). Disabled by default.', 'wp-kwtsms' ),
 	),
 	'woo_failed'     => array(
@@ -103,7 +103,7 @@ $customer_status_labels = array(
 		'hint'  => __( 'Fires when the payment attempt fails and the order is not confirmed. Disabled by default.', 'wp-kwtsms' ),
 	),
 	'woo_shipped'    => array(
-		'label' => __( 'Order Shipped', 'wp-kwtsms' ),
+		'label' => __( 'Order Shipped (On-Hold)', 'wp-kwtsms' ),
 		'hint'  => __( 'Fires when the order status is set to On-Hold, typically used to indicate the order has been shipped.', 'wp-kwtsms' ),
 	),
 	'woo_completed'  => array(
