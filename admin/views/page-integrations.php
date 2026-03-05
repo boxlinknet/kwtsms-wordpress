@@ -21,6 +21,7 @@ $integrations = array(
 		'active'      => class_exists( 'WooCommerce' ),
 		'sms_enabled' => (bool) $settings->get( 'integrations.woo_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-woo',
+		'wp_slug'     => 'woocommerce',
 	),
 	'cf7' => array(
 		'label'       => __( 'Contact Form 7', 'wp-kwtsms' ),
@@ -28,6 +29,7 @@ $integrations = array(
 		'active'      => class_exists( 'WPCF7' ),
 		'sms_enabled' => (bool) $settings->get( 'integrations.cf7_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-cf7',
+		'wp_slug'     => 'contact-form-7',
 	),
 	'wpforms' => array(
 		'label'       => __( 'WPForms', 'wp-kwtsms' ),
@@ -35,6 +37,7 @@ $integrations = array(
 		'active'      => function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' ),
 		'sms_enabled' => (bool) $settings->get( 'integrations.wpforms_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-wpforms',
+		'wp_slug'     => 'wpforms-lite',
 	),
 	'elementor' => array(
 		'label'       => __( 'Elementor', 'wp-kwtsms' ),
@@ -42,6 +45,7 @@ $integrations = array(
 		'active'      => did_action( 'elementor/loaded' ) || class_exists( '\Elementor\Plugin' ),
 		'sms_enabled' => (bool) $settings->get( 'integrations.elementor_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-elementor',
+		'wp_slug'     => 'elementor',
 	),
 	'gf' => array(
 		'label'       => __( 'Gravity Forms', 'wp-kwtsms' ),
@@ -49,6 +53,7 @@ $integrations = array(
 		'active'      => class_exists( 'GFForms' ),
 		'sms_enabled' => (bool) $settings->get( 'integrations.gf_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-gf',
+		'wp_slug'     => null, // Commercial plugin — not on WordPress.org.
 	),
 	'nf' => array(
 		'label'       => __( 'Ninja Forms', 'wp-kwtsms' ),
@@ -56,6 +61,7 @@ $integrations = array(
 		'active'      => class_exists( 'Ninja_Forms' ),
 		'sms_enabled' => (bool) $settings->get( 'integrations.nf_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-nf',
+		'wp_slug'     => 'ninja-forms',
 	),
 );
 
@@ -94,6 +100,11 @@ $icons = array(
 		</thead>
 		<tbody>
 			<?php foreach ( $integrations as $key => $int ) : ?>
+			<?php
+			$install_url = ! empty( $int['wp_slug'] )
+				? admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . rawurlencode( $int['wp_slug'] ) )
+				: null;
+			?>
 			<tr>
 				<td style="text-align:center;font-size:22px;padding:14px 8px;vertical-align:middle;">
 					<?php echo $icons[ $key ]; // phpcs:ignore WordPress.Security.EscapeOutput ?>
@@ -107,6 +118,10 @@ $icons = array(
 				<td style="padding:14px 16px;vertical-align:middle;">
 					<?php if ( $int['active'] ) : ?>
 						<span style="color:#00a32a;font-weight:600;">&#10003; <?php esc_html_e( 'Installed', 'wp-kwtsms' ); ?></span>
+					<?php elseif ( $install_url ) : ?>
+						<a href="<?php echo esc_url( $install_url ); ?>" style="color:#999;text-decoration:none;" title="<?php esc_attr_e( 'View on WordPress.org', 'wp-kwtsms' ); ?>">
+							&#10007; <?php esc_html_e( 'Not installed', 'wp-kwtsms' ); ?>
+						</a>
 					<?php else : ?>
 						<span style="color:#999;">&#10007; <?php esc_html_e( 'Not installed', 'wp-kwtsms' ); ?></span>
 					<?php endif; ?>
@@ -124,6 +139,10 @@ $icons = array(
 					<?php if ( $int['active'] ) : ?>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . $int['slug'] ) ); ?>" class="button button-secondary">
 							<?php esc_html_e( 'Configure', 'wp-kwtsms' ); ?> &rarr;
+						</a>
+					<?php elseif ( $install_url ) : ?>
+						<a href="<?php echo esc_url( $install_url ); ?>" class="button button-secondary">
+							<?php esc_html_e( 'Install', 'wp-kwtsms' ); ?> &rarr;
 						</a>
 					<?php endif; ?>
 				</td>
