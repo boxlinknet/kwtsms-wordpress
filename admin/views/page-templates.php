@@ -87,7 +87,7 @@ function kwtsms_templates_tab_url( $tab ) {
 			$tpl       = $templates[ $key ] ?? array( 'enabled' => 0, 'en' => '', 'ar' => '' );
 			$is_active = ( $key === $active_tab );
 		?>
-		<div class="kwtsms-tab-section"<?php echo $is_active ? '' : ' style="display:none;"'; ?>>
+		<div class="kwtsms-tab-section"<?php echo $is_active ? ' style="margin-top:16px;"' : ' style="display:none;"'; ?>>
 
 			<div class="kwtsms-placeholder-help">
 				<strong><?php esc_html_e( 'Available placeholders:', 'wp-kwtsms' ); ?></strong>
