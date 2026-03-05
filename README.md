@@ -1,6 +1,6 @@
-# kwtSMS: OTP & SMS Notifications — WordPress Plugin
+# kwtSMS: OTP & SMS Notifications, WordPress Plugin
 
-Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress — powered by the [kwtSMS](https://www.kwtsms.com) gateway.
+Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress, powered by the [kwtSMS](https://www.kwtsms.com) gateway.
 
 **Version:** 3.0.0 | **Requires:** WordPress 6.0+, PHP 7.4+
 
@@ -11,29 +11,29 @@ Secure SMS-based OTP login, password reset, and WooCommerce / form notifications
 ## Features
 
 ### Authentication
-- **2FA mode** — standard password login followed by a one-time SMS code
-- **Passwordless login** — phone number + OTP only; no password needed
-- **Password reset via OTP** — replaces the default email reset flow with SMS
-- **Per-role enforcement** — choose which user roles require OTP (e.g. skip OTP for subscribers)
+- **2FA mode:** standard password login followed by a one-time SMS code
+- **Passwordless login:** phone number + OTP only, no password needed
+- **Password reset via OTP:** replaces the default email reset flow with SMS
+- **Per-role enforcement:** choose which user roles require OTP (e.g. skip OTP for subscribers)
 - **Google reCAPTCHA v3** and **Cloudflare Turnstile** bot protection
-- **Country code dropdown** on login forms — restrict to GCC or custom country list
+- **Country code dropdown** on login forms: restrict to GCC or custom country list
 
 ### Security
 - Cryptographically secure OTP generation (`random_int()`)
-- **Sliding-window rate limiting** — per-phone, per-IP, per-account (no fixed-window gaming)
-- **Phone blocking list** — silently drop OTP requests from blocked numbers (anti-enumeration)
+- **Sliding-window rate limiting:** per-phone, per-IP, per-account (no fixed-window gaming)
+- **Phone blocking list:** silently drop OTP requests from blocked numbers (anti-enumeration)
 - `hash_equals()` timing-safe OTP verification
 - All cookies `httponly`, `secure`, `SameSite=Strict`
 - Emergency bypass constant `KWTSMS_OTP_DISABLED` for lockout recovery
 
 ### WooCommerce
 - **7 order status SMS**: Processing, Shipped, Completed, Cancelled, Pending, Refunded, Failed
-- **Admin SMS notifications** — notify a configurable phone number on any order status change
-- **Per-order custom SMS** — send a free-text SMS to the customer from the order edit screen
+- **Admin SMS notifications:** notify a configurable phone number on any order status change
+- **Per-order custom SMS:** send a free-text SMS to the customer from the order edit screen
 - OTP gate on WooCommerce checkout (verify phone before placing order)
 - HPOS (High-Performance Order Storage) compatible
 
-### Form Integrations — Notification or OTP Gate
+### Form Integrations: Notification or OTP Gate
 Each integration supports two modes: **Notification** (send confirmation SMS on submit) or **OTP Gate** (block submission until phone is verified via OTP).
 
 | Plugin | Auto-detected | Notification | OTP Gate |
@@ -46,9 +46,9 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 
 ### Balance & Gateway
 - Account balance displayed on Gateway and Help pages without re-verifying credentials
-- Pre-send balance check — warns before sending if credits are zero
+- Pre-send balance check: warns before sending if credits are zero
 - Test phone country code validation with hint text
-- Test Mode — simulates sends without spending credits (OTP written to debug log)
+- Test Mode: simulates sends without spending credits (OTP written to debug log)
 
 ### Admin
 - 6 admin pages under the **kwtSMS** menu: General, Gateway, Templates, Integrations, Logs, Help
@@ -155,7 +155,7 @@ npx @wp-playground/cli@latest server --auto-mount
 # Opens at http://localhost:9400
 ```
 
-Enable **Test Mode** in Gateway settings — the OTP code is written to `wp-content/debug.log`.
+Enable **Test Mode** in Gateway settings. The OTP code is written to `wp-content/debug.log`.
 
 ### Running the Test Suite
 
@@ -175,7 +175,7 @@ composer install
 | **Kuwait delivery reports** | DLR is not available for messages to Kuwait numbers. The API returns "OK" once the message is handed off to the operator, but there is no confirmation of receipt. |
 | **International coverage** | Disabled by default on new accounts. Contact kwtSMS support to enable. |
 | **API rate limit** | Max 5 requests/second per IP. Exceeding this temporarily blocks your server IP. |
-| **Test mode credits** | `test=1` — messages queued but not delivered, no credits consumed. Delete queued messages from your kwtSMS outbox to release any tentatively held credits. |
+| **Test mode credits** | `test=1`: messages queued but not delivered, no credits consumed. Delete queued messages from your kwtSMS outbox to release any tentatively held credits. |
 | **API error log** | Your kwtSMS account dashboard (API → Error Log) shows all send attempts with error details. |
 | **Server timezone** | The kwtSMS API server operates on Asia/Kuwait (GMT+3). |
 
@@ -222,19 +222,19 @@ composer install
 
 ### Emergency Bypass (Lockout Recovery)
 
-**Option 1 — wp-config.php constant (easiest)**
+**Option 1: wp-config.php constant (easiest)**
 ```php
 define( 'KWTSMS_OTP_DISABLED', true );
 ```
 Skips the entire OTP system until removed.
 
-**Option 2 — WP-CLI**
+**Option 2: WP-CLI**
 ```bash
 wp user update admin --user_pass="NewSecurePassword!" --allow-root
 ```
 
-**Option 3 — SFTP / cPanel**
-Rename `wp-kwtsms/wp-kwtsms.php` to `wp-kwtsms.php.disabled` — WP deactivates the plugin automatically.
+**Option 3: SFTP / cPanel**
+Rename `wp-kwtsms/wp-kwtsms.php` to `wp-kwtsms.php.disabled`. WP deactivates the plugin automatically.
 
 ---
 
@@ -263,8 +263,8 @@ Full error code reference: [kwtSMS API Documentation (PDF)](https://www.kwtsms.c
 
 ## License
 
-GPL-2.0-or-later — see [GNU GPL v2.0](https://www.gnu.org/licenses/gpl-2.0.html)
+GPL-2.0-or-later. See [GNU GPL v2.0](https://www.gnu.org/licenses/gpl-2.0.html)
 
 ---
 
-Powered by [kwtSMS.com](https://www.kwtsms.com) — Kuwait's SMS gateway
+Powered by [kwtSMS.com](https://www.kwtsms.com), Kuwait's SMS gateway
