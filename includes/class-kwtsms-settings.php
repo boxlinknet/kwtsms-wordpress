@@ -203,7 +203,7 @@ class KwtSMS_Settings {
 			}
 		}
 
-		return null !== $value ? $value : $default;
+		return null !== $value ? $value : $fallback;
 	}
 
 	/**

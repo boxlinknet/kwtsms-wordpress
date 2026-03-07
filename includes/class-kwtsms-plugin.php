@@ -770,7 +770,7 @@ class KwtSMS_Plugin {
 
 		// Server-side send-cooldown guard — prevents rapid-fire resend requests even
 		// if the client-side countdown is bypassed (e.g. via direct AJAX call).
-		if ( $this->otp->is_send_cooldown_active( $user_id ) ) {
+		if ( $this->otp->is_send_cooldown_active( $user_id, $otp_action ) ) {
 			wp_send_json_error(
 				array(
 					'message'  => __( 'Please wait before requesting another code.', 'wp-kwtsms' ),
@@ -795,7 +795,7 @@ class KwtSMS_Plugin {
 			return;
 		}
 
-		$this->otp->set_send_cooldown( $user_id );
+		$this->otp->set_send_cooldown( $user_id, $otp_action );
 
 		// Sliding-window counters are recorded inside is_rate_limited(),
 		// is_ip_rate_limited(), and is_user_rate_limited() — no separate

@@ -40,17 +40,37 @@ body[class*="kwtsms_page_kwtsms-otp"] #footer-upgrade {
 	display: none !important;
 }
 
+/* All notices — whether rendered by our PHP or relocated by WP admin JS —
+   must break out of the flex header row and stack vertically above it.
+   WP admin JS moves .notice divs to after <h1> inside .kwtsms-admin-header;
+   these rules force them to full-width, clear the flex layout, and add
+   bottom spacing so they sit visually separated from the logo/title. */
 .kwtsms-admin-wrap .notice {
 	border-radius: 4px;
 }
 
+.kwtsms-admin-header .notice,
+.kwtsms-admin-header > .notice {
+	flex: 0 0 100%;
+	width: 100%;
+	margin: 8px 0 0;
+	order: 99;
+}
+
 .kwtsms-admin-header {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	gap: 14px;
 	padding: 16px 0 12px;
 	border-bottom: 2px solid #FFA200;
 	margin-bottom: 24px;
+}
+
+/* Logo and h1 always on the first line — keep them from wrapping around notices. */
+.kwtsms-admin-header .kwtsms-logo,
+.kwtsms-admin-header h1 {
+	flex: 0 0 auto;
 }
 
 .kwtsms-admin-header h1 {

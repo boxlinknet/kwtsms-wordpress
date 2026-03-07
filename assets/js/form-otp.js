@@ -302,10 +302,12 @@
 							.appendTo( pendingForm );
 
 						// Short delay so user sees the success message.
+						// Capture pendingForm before hideModal() clears it via resetModal().
+						var formToSubmit = pendingForm;
 						setTimeout( function () {
 							hideModal();
-							$( pendingForm ).data( 'kwtsms-verified', true );
-							pendingForm.submit();
+							$( formToSubmit ).data( 'kwtsms-verified', true );
+							$( formToSubmit ).trigger( 'submit' );
 						}, 900 );
 					} else {
 						setTimeout( hideModal, 1200 );
@@ -339,11 +341,22 @@
 	 */
 	function formHasPhoneField( form ) {
 		var $form = $( form );
-		return (
+		if (
 			$form.find( '[name="kwtsms_phone"]' ).length > 0 ||
 			$form.find( 'input[type="tel"]' ).length > 0 ||
 			$form.find( 'input[name*="phone"]' ).length > 0
-		);
+		) {
+			return true;
+		}
+		// WPForms names inputs as wpforms[fields][N] — detect phone via label text.
+		var hasPhoneLabel = false;
+		$form.find( 'label' ).each( function () {
+			if ( /phone/i.test( $( this ).text() ) ) {
+				hasPhoneLabel = true;
+				return false; // break each
+			}
+		} );
+		return hasPhoneLabel;
 	}
 
 	/**

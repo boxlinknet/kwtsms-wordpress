@@ -336,11 +336,12 @@ class KwtSMS_OTP_Engine {
 	 * valid — the user can still enter the code they already received.
 	 *
 	 * @param int|string $identifier User ID or phone.
+	 * @param string     $action     Action context ('login'|'reset'|'passwordless'|'checkout'|'').
 	 *
 	 * @return bool True if within the cooldown window.
 	 */
-	public function is_send_cooldown_active( $identifier ): bool {
-		return (bool) get_transient( $this->cooldown_key( $identifier ) );
+	public function is_send_cooldown_active( $identifier, string $action = '' ): bool {
+		return (bool) get_transient( $this->cooldown_key( $identifier, $action ) );
 	}
 
 	/**
@@ -350,9 +351,10 @@ class KwtSMS_OTP_Engine {
 	 * returns true for the next 60 seconds.
 	 *
 	 * @param int|string $identifier User ID or phone.
+	 * @param string     $action     Action context ('login'|'reset'|'passwordless'|'checkout'|'').
 	 */
-	public function set_send_cooldown( $identifier ): void {
-		set_transient( $this->cooldown_key( $identifier ), 1, self::SEND_COOLDOWN );
+	public function set_send_cooldown( $identifier, string $action = '' ): void {
+		set_transient( $this->cooldown_key( $identifier, $action ), 1, self::SEND_COOLDOWN );
 	}
 
 	// =========================================================================
@@ -431,14 +433,14 @@ class KwtSMS_OTP_Engine {
 		}
 
 		// Within send-cooldown: OTP was dispatched recently; skip re-send.
-		if ( $this->is_send_cooldown_active( $identifier ) ) {
+		if ( $this->is_send_cooldown_active( $identifier, $action ) ) {
 			return 'cooldown';
 		}
 
 		$otp_code = $this->generate( $identifier, $action );
 		$message  = $this->build_message( $otp_code, $template_id );
 
-		$this->set_send_cooldown( $identifier );
+		$this->set_send_cooldown( $identifier, $action );
 
 		return array(
 			'otp_code' => $otp_code,
@@ -601,12 +603,18 @@ class KwtSMS_OTP_Engine {
 	/**
 	 * Get the transient key for the send-cooldown lock of an identifier.
 	 *
+	 * Including the action in the key ensures that login, reset, passwordless,
+	 * and form OTP cooldowns are tracked independently per user, preventing a
+	 * recent login OTP from blocking a password reset OTP for the same user.
+	 *
 	 * @param int|string $identifier User ID or phone.
+	 * @param string     $action     Action context (included in key for isolation).
 	 *
 	 * @return string Transient key.
 	 */
-	private function cooldown_key( $identifier ) {
-		return 'kwtsms_otp_cd_' . md5( (string) $identifier );
+	private function cooldown_key( $identifier, string $action = '' ) {
+		$suffix = '' !== $action ? $identifier . '_' . $action : (string) $identifier;
+		return 'kwtsms_otp_cd_' . md5( $suffix );
 	}
 
 	/**

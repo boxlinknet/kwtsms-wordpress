@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.0.2
+Stable tag: 3.0.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -190,6 +190,19 @@ All settings are in `wp_options`. Phone numbers are in `wp_usermeta`. OTP tokens
 8. SMS Logs: full send history with phone number, message, and status.
 
 == Changelog ==
+
+= 3.0.3 =
+* Fix: password reset OTP SMS now sent correctly even when login OTP cooldown is active for the same user (cooldown is now scoped per action type).
+* Fix: WooCommerce order total placeholder {total} no longer contains HTML entities in SMS messages.
+* Fix: CF7 gate mode form auto-submit after OTP verification no longer throws TypeError when pendingForm is null.
+* Fix: WPForms gate mode phone field detection now checks label text (WPForms uses non-standard input names).
+* Fix: Settings get() method now correctly returns $fallback instead of undefined $default variable.
+* Fix: Country code dropdown on SMS login page is now properly sized (constrained width, phone field takes remaining space).
+* Fix: Admin notices and warnings from other plugins (e.g. Action Scheduler) now display above the kwtSMS logo header, not beside it.
+* Enhancement: CF7 notification mode now sends SMS even when SMTP email delivery fails (hooks wpcf7_submit instead of wpcf7_mail_sent).
+* Enhancement: Integrations page notes Elementor Pro requirement for form widgets.
+* Enhancement: Integrations page notes Ninja Forms phone field configuration requirement.
+* Enhancement: Gravity Forms shown on Integrations page as "Coming soon".
 
 = 3.0.2 =
 * Fix: remove tab navigation from form integration pages (CF7, WPForms, Elementor, Gravity Forms, Ninja Forms), both cards now always visible.

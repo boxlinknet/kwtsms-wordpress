@@ -150,11 +150,11 @@ class KwtSMS_Woo {
 		if ( ! empty( $admin_phone ) && in_array( $new_status, (array) $notify_statuses, true ) ) {
 			$admin_msg = sprintf(
 				/* translators: 1: order id 2: customer name 3: status 4: total */
-				__( 'New order #%1$s — %2$s — %3$s — %4$s', 'wp-kwtsms' ),
+				__( 'New order #%1$s, %2$s, %3$s, %4$s', 'wp-kwtsms' ),
 				$order->get_id(),
 				$order->get_formatted_billing_full_name(),
 				wc_get_order_status_name( $new_status ),
-				wp_strip_all_tags( $order->get_formatted_order_total() )
+				html_entity_decode( wp_strip_all_tags( $order->get_formatted_order_total() ), ENT_QUOTES | ENT_HTML5, 'UTF-8' )
 			);
 			foreach ( array_map( 'trim', explode( ',', $admin_phone ) ) as $admin_p ) {
 				$admin_p          = KwtSMS_API::prepend_country_code_if_local( $admin_p, KwtSMS_API::get_default_dial_code() );
@@ -185,7 +185,7 @@ class KwtSMS_Woo {
 	 */
 	private function build_order_message( $status, WC_Order $order ) {
 		$order_id      = $order->get_order_number();
-		$total         = wp_strip_all_tags( wc_price( $order->get_total() ) );
+		$total         = html_entity_decode( wp_strip_all_tags( wc_price( $order->get_total() ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 		$site_name     = get_bloginfo( 'name' );
 		$customer_name = trim(
 			$order->get_billing_first_name() . ' ' . $order->get_billing_last_name()
