@@ -142,6 +142,7 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 					class="input"
 					placeholder="<?php esc_attr_e( 'Local number', 'wp-kwtsms' ); ?>"
 					autocomplete="tel-national"
+					maxlength="15"
 					required
 				/>
 				<!-- Hidden combined field: dial + local, submitted as kwtsms_phone -->

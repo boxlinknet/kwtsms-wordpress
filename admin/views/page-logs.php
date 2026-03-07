@@ -94,6 +94,7 @@ function kwtsms_attempt_result_label( $result ) {
 		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'Logs', 'wp-kwtsms' ); ?></h1>
 	</div>
+	<hr class="wp-header-end">
 
 	<!-- Tabs -->
 	<nav class="nav-tab-wrapper">

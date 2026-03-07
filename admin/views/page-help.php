@@ -31,6 +31,7 @@ $content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'Help &amp; Support', 'wp-kwtsms' ); ?></h1>
 	</div>
+	<hr class="wp-header-end">
 
 	<!-- ===== Plugin Status ===== -->
 	<div style="background:#fff;border:1px solid #ddd;border-radius:4px;padding:16px 20px;margin-bottom:24px;max-width:800px;">

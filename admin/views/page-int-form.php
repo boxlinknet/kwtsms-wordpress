@@ -111,6 +111,7 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 			&larr; <?php esc_html_e( 'All Integrations', 'wp-kwtsms' ); ?>
 		</a>
 	</div>
+	<hr class="wp-header-end">
 
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_integrations_group' ); ?>

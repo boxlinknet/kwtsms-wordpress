@@ -134,6 +134,7 @@ $customer_status_labels = array(
 			&larr; <?php esc_html_e( 'All Integrations', 'wp-kwtsms' ); ?>
 		</a>
 	</div>
+	<hr class="wp-header-end">
 
 	<?php if ( ! $woo_active ) : ?>
 	<div class="notice notice-warning inline" style="margin:16px 0;">

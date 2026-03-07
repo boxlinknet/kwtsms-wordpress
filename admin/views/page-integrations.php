@@ -42,15 +42,6 @@ $integrations = array(
 		'wp_slug'     => 'wpforms-lite',
 		'plugin_file' => 'wpforms-lite/wpforms.php',
 	),
-	'elementor' => array(
-		'label'       => __( 'Elementor', 'wp-kwtsms' ),
-		'description' => __( 'Send a confirmation SMS after an Elementor Pro form submission, or gate the form behind phone OTP verification. Note: Elementor Pro is required for form widgets.', 'wp-kwtsms' ),
-		'active'      => did_action( 'elementor/loaded' ) || class_exists( '\Elementor\Plugin' ),
-		'sms_enabled' => (bool) $settings->get( 'integrations.elementor_enabled', 1 ),
-		'slug'        => 'kwtsms-otp-int-elementor',
-		'wp_slug'     => 'elementor',
-		'plugin_file' => 'elementor/elementor.php',
-	),
 	'nf'        => array(
 		'label'       => __( 'Ninja Forms', 'wp-kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification. Your form must include a phone field for SMS to trigger.', 'wp-kwtsms' ),
@@ -63,9 +54,13 @@ $integrations = array(
 );
 
 $coming_soon = array(
-	'gf' => array(
+	'elementor' => array(
+		'label'       => __( 'Elementor', 'wp-kwtsms' ),
+		'description' => __( 'Send a confirmation SMS after an Elementor Pro form submission, or gate the form behind phone OTP verification. Requires Elementor Pro.', 'wp-kwtsms' ),
+	),
+	'gf'        => array(
 		'label'       => __( 'Gravity Forms', 'wp-kwtsms' ),
-		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification. Coming soon.', 'wp-kwtsms' ),
+		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification.', 'wp-kwtsms' ),
 	),
 );
 
@@ -86,6 +81,7 @@ $icons = array(
 		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php esc_html_e( 'Integrations', 'wp-kwtsms' ); ?></h1>
 	</div>
+	<hr class="wp-header-end">
 
 	<p style="max-width:800px;font-size:14px;color:#555;">
 		<?php esc_html_e( 'Configure SMS for each supported plugin. Settings pages appear for installed and active plugins only.', 'wp-kwtsms' ); ?>
