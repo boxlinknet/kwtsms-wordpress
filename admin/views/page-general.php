@@ -260,7 +260,17 @@ foreach ( $all_countries as $cc ) {
 							value="<?php echo esc_attr( wp_json_encode( $allowed_iso2 ) ); ?>" />
 					</div>
 					<p class="description">
-						<?php esc_html_e( 'Only phone numbers from these countries will be accepted for OTP. GCC countries are the default.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Controls which countries appear in the OTP login dial-code dropdown and which phone numbers this plugin will accept.', 'wp-kwtsms' ); ?>
+					</p>
+					<p class="description" style="margin-top:6px;background:#fff8ed;border-left:3px solid #FFA200;padding:8px 12px;border-radius:0 3px 3px 0;">
+						<strong><?php esc_html_e( 'Important:', 'wp-kwtsms' ); ?></strong>
+						<?php
+						printf(
+							/* translators: %s: link to the Gateway page */
+							esc_html__( 'Adding a country here does NOT enable SMS delivery to that country. Delivery depends on which countries are active in your kwtSMS account coverage. Check your %s to see which countries you can currently send to. If a country is listed here but not covered in your account, SMS will silently fail.', 'wp-kwtsms' ),
+							'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ) . '">' . esc_html__( 'Gateway page (SMS Coverage section)', 'wp-kwtsms' ) . '</a>'
+						);
+						?>
 					</p>
 				</td>
 			</tr>
