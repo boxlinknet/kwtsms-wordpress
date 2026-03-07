@@ -44,7 +44,7 @@ $integrations = array(
 	),
 	'elementor' => array(
 		'label'       => __( 'Elementor', 'wp-kwtsms' ),
-		'description' => __( 'Send a confirmation SMS after an Elementor Pro form submission, or gate the form behind phone OTP verification.', 'wp-kwtsms' ),
+		'description' => __( 'Send a confirmation SMS after an Elementor Pro form submission, or gate the form behind phone OTP verification. Note: Elementor Pro is required for form widgets.', 'wp-kwtsms' ),
 		'active'      => did_action( 'elementor/loaded' ) || class_exists( '\Elementor\Plugin' ),
 		'sms_enabled' => (bool) $settings->get( 'integrations.elementor_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-elementor',
@@ -53,12 +53,19 @@ $integrations = array(
 	),
 	'nf'        => array(
 		'label'       => __( 'Ninja Forms', 'wp-kwtsms' ),
-		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification.', 'wp-kwtsms' ),
+		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification. Your form must include a phone field for SMS to trigger.', 'wp-kwtsms' ),
 		'active'      => class_exists( 'Ninja_Forms' ),
 		'sms_enabled' => (bool) $settings->get( 'integrations.nf_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-nf',
 		'wp_slug'     => 'ninja-forms',
 		'plugin_file' => 'ninja-forms/ninja-forms.php',
+	),
+);
+
+$coming_soon = array(
+	'gf' => array(
+		'label'       => __( 'Gravity Forms', 'wp-kwtsms' ),
+		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification. Coming soon.', 'wp-kwtsms' ),
 	),
 );
 
@@ -164,6 +171,28 @@ $icons = array(
 				</td>
 			</tr>
 			<?php endforeach; ?>
+		<?php foreach ( $coming_soon as $key => $int ) : ?>
+		<tr style="opacity:0.6;">
+			<td style="text-align:center;font-size:22px;padding:14px 8px;vertical-align:middle;">
+				<?php echo $icons[ $key ]; // phpcs:ignore WordPress.Security.EscapeOutput ?>
+			</td>
+			<td style="padding:14px 16px;vertical-align:middle;">
+				<strong style="font-size:14px;"><?php echo esc_html( $int['label'] ); ?></strong>
+			</td>
+			<td style="color:#555;font-size:13px;padding:14px 16px;vertical-align:middle;line-height:1.5;">
+				<?php echo esc_html( $int['description'] ); ?>
+			</td>
+			<td style="padding:14px 16px;vertical-align:middle;">
+				<span style="color:#999;">&#8212;</span>
+			</td>
+			<td style="padding:14px 16px;vertical-align:middle;">
+				<span style="color:#bbb;font-size:12px;"><?php esc_html_e( 'N/A', 'wp-kwtsms' ); ?></span>
+			</td>
+			<td style="padding:14px 16px;vertical-align:middle;">
+				<span style="color:#999;font-size:12px;font-style:italic;"><?php esc_html_e( 'Coming soon', 'wp-kwtsms' ); ?></span>
+			</td>
+		</tr>
+		<?php endforeach; ?>
 		</tbody>
 	</table>
 

@@ -140,7 +140,7 @@ class KwtSMS_Login_OTP {
 		$otp_code = $this->plugin->otp->generate( $user->ID, 'login' );
 
 		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
-		if ( ! $this->plugin->otp->is_send_cooldown_active( $user->ID ) ) {
+		if ( ! $this->plugin->otp->is_send_cooldown_active( $user->ID, 'login' ) ) {
 			$message = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
 			$result  = $this->plugin->api->send_sms(
 				$phone,
@@ -177,7 +177,7 @@ class KwtSMS_Login_OTP {
 				return $user;
 			}
 
-			$this->plugin->otp->set_send_cooldown( $user->ID );
+			$this->plugin->otp->set_send_cooldown( $user->ID, 'login' );
 		}
 
 		// Sliding-window counters are recorded inside is_rate_limited(),
@@ -528,7 +528,7 @@ class KwtSMS_Login_OTP {
 		$otp_code = $this->plugin->otp->generate( $user_id, 'passwordless' );
 
 		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
-		if ( ! $this->plugin->otp->is_send_cooldown_active( $user_id ) ) {
+		if ( ! $this->plugin->otp->is_send_cooldown_active( $user_id, 'passwordless' ) ) {
 			$message = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
 			$result  = $this->plugin->api->send_sms(
 				$normalized,
@@ -562,7 +562,7 @@ class KwtSMS_Login_OTP {
 				// Temporary failure — proceed to OTP screen; user cannot complete it
 				// but is not logged in either, which is safer than showing nothing.
 			} else {
-				$this->plugin->otp->set_send_cooldown( $user_id );
+				$this->plugin->otp->set_send_cooldown( $user_id, 'passwordless' );
 			}
 		}
 

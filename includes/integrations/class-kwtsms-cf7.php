@@ -68,8 +68,11 @@ class KwtSMS_CF7 {
 			// and causes it to respond with a validation failure message.
 			add_filter( 'wpcf7_before_send_mail', array( $this, 'gate_verify_token' ), 10, 3 );
 		} else {
-			// Notification mode: send SMS after CF7 validation succeeds and mail is sent.
-			add_action( 'wpcf7_mail_sent', array( $this, 'send_confirmation_sms' ) );
+			// Notification mode: send SMS after a valid CF7 form submission.
+			// wpcf7_submit fires regardless of SMTP status — SMS is delivered even
+			// when no email server is configured. Status is checked to exclude
+			// validation failures, spam, and aborted (gate-blocked) submissions.
+			add_action( 'wpcf7_submit', array( $this, 'send_confirmation_sms_on_submit' ), 10, 2 );
 		}
 	}
 
@@ -121,6 +124,24 @@ class KwtSMS_CF7 {
 	// =========================================================================
 	// Notification mode
 	// =========================================================================
+
+	/**
+	 * Send a confirmation SMS after a CF7 form submission, regardless of email delivery.
+	 *
+	 * Hooked to `wpcf7_submit` which fires for every submission. Skips invalid
+	 * submissions (validation_failed, spam, aborted) and only sends SMS when the
+	 * form passed validation (mail_sent or mail_failed).
+	 *
+	 * @param WPCF7_ContactForm $cf7    The contact form instance.
+	 * @param array             $result Submission result array with 'status' key.
+	 */
+	public function send_confirmation_sms_on_submit( $cf7, $result ) {
+		$skip_statuses = array( 'validation_failed', 'spam', 'aborted' );
+		if ( in_array( $result['status'] ?? '', $skip_statuses, true ) ) {
+			return;
+		}
+		$this->send_confirmation_sms( $cf7 );
+	}
 
 	/**
 	 * Send a confirmation SMS after a CF7 form is successfully submitted.
