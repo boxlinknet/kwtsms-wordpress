@@ -49,7 +49,7 @@
 					/* Step 1: phone entry */
 					'<div id="kwtsms-step-phone">' +
 						'<p>' + escHtml( s.enterPhone || 'Enter your phone number to verify' ) + '</p>' +
-						'<input type="tel" id="kwtsms-phone-input" placeholder="' + escAttr( s.phonePlaceholder || 'e.g. 96598765432' ) + '" autocomplete="tel" />' +
+						'<input type="tel" id="kwtsms-phone-input" placeholder="' + escAttr( s.phonePlaceholder || 'e.g. 96598765432' ) + '" autocomplete="tel" maxlength="15" />' +
 						'<div id="kwtsms-phone-error" class="kwtsms-otp-error" role="alert"></div>' +
 						'<div class="kwtsms-otp-actions">' +
 							'<button type="button" id="kwtsms-send-btn">' + escHtml( s.sendCode || 'Send Code' ) + '</button>' +
