@@ -156,7 +156,13 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					<label>
 						<input type="checkbox" name="kwtsms_otp_gateway[test_mode]" id="kwtsms_test_mode"
 							value="1" <?php checked( $test_mode ); ?> />
-						<?php esc_html_e( 'Messages are queued but not delivered. Delete from kwtSMS queue to recover credits.', 'wp-kwtsms' ); ?>
+						<?php
+						printf(
+							/* translators: %s: link to kwtSMS account dashboard */
+							esc_html__( 'Messages are queued but not delivered. Delete from %s queue to recover credits.', 'wp-kwtsms' ),
+							'<a href="https://www.kwtsms.com/Dashboard/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'kwtSMS account', 'wp-kwtsms' ) . '</a>'
+						);
+						?>
 					</label>
 					<?php if ( $test_mode ) : ?>
 					<p class="description" style="color:#d63638;font-weight:600;">

@@ -844,8 +844,9 @@ class KwtSMS_Admin {
 		// Notice: test mode is active.
 		if ( $this->plugin->settings->get( 'gateway.test_mode', 1 ) ) {
 			printf(
-				'<div class="notice notice-error inline"><p>%s</p></div>',
-				esc_html__( 'kwtSMS is in Test Mode. SMS messages will be queued but not delivered. Delete from kwtSMS queue to recover credits.', 'wp-kwtsms' )
+				/* translators: %s: link to kwtSMS account dashboard */
+				'<div class="notice notice-error inline"><p>' . esc_html__( 'kwtSMS is in Test Mode. SMS messages will be queued but not delivered. Delete from %s queue to recover credits.', 'wp-kwtsms' ) . '</p></div>',
+				'<a href="https://www.kwtsms.com/Dashboard/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'kwtSMS account', 'wp-kwtsms' ) . '</a>'
 			);
 		}
 	}
