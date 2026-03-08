@@ -76,16 +76,48 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 
 ## Screenshots
 
-| | |
-|---|---|
-| ![Gateway settings](assets/screenshot-1.png) | ![General settings](assets/screenshot-2.png) |
-| Gateway settings: credentials, Sender ID, balance | General settings: OTP mode, rate limits, CAPTCHA |
-| ![SMS Templates](assets/screenshot-3.png) | ![OTP verification](assets/screenshot-4.png) |
-| SMS Templates: bilingual with character counter | OTP verification screen during login |
-| ![Passwordless login](assets/screenshot-5.png) | ![WooCommerce](assets/screenshot-6.png) |
-| Passwordless login: phone number entry | WooCommerce: per-status SMS templates |
-| ![Integrations](assets/screenshot-7.png) | ![SMS Logs](assets/screenshot-8.png) |
-| Integrations overview: CF7, WPForms, Elementor, and more | SMS Logs: full send history with status |
+<table>
+<tr>
+<td width="50%">
+<a href="assets/screenshot-1.png"><img src="assets/screenshot-1.png" width="100%" alt="Gateway settings"></a><br>
+<sub>Gateway: live balance, Sender ID dropdown, Test Mode toggle</sub>
+</td>
+<td width="50%">
+<a href="assets/screenshot-2.png"><img src="assets/screenshot-2.png" width="100%" alt="Arabic RTL templates"></a><br>
+<sub>SMS Templates: Arabic RTL with character counter and page indicator</sub>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<a href="assets/screenshot-3.png"><img src="assets/screenshot-3.png" width="100%" alt="2FA OTP verification"></a><br>
+<sub>2FA: OTP verification step after password login</sub>
+</td>
+<td width="50%">
+<a href="assets/screenshot-4.png"><img src="assets/screenshot-4.png" width="100%" alt="Passwordless login"></a><br>
+<sub>Passwordless login: phone number entry with country code selector</sub>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<a href="assets/screenshot-5.png"><img src="assets/screenshot-5.png" width="100%" alt="Password reset via OTP"></a><br>
+<sub>Password reset: OTP verification replaces email link</sub>
+</td>
+<td width="50%">
+<a href="assets/screenshot-6.png"><img src="assets/screenshot-6.png" width="100%" alt="WooCommerce integration"></a><br>
+<sub>WooCommerce: per-status SMS templates and checkout OTP gate</sub>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<a href="assets/screenshot-7.png"><img src="assets/screenshot-7.png" width="100%" alt="Integrations overview"></a><br>
+<sub>Integrations: WooCommerce, Contact Form 7, WPForms, and more</sub>
+</td>
+<td width="50%">
+<a href="assets/screenshot-8.png"><img src="assets/screenshot-8.png" width="100%" alt="SMS Logs"></a><br>
+<sub>SMS Logs: full send history with type, status, and API response</sub>
+</td>
+</tr>
+</table>
 
 ---
 
