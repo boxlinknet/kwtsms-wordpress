@@ -2,7 +2,7 @@
 
 Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress, powered by the [kwtSMS](https://www.kwtsms.com) gateway.
 
-**Version:** 3.0.0 | **Requires:** WordPress 6.0+, PHP 7.4+
+**Version:** 3.0.3 | **Requires:** WordPress 6.0+, PHP 7.4+
 
 > Don't have a kwtSMS account? [Sign up at kwtsms.com →](https://www.kwtsms.com/signup)
 
@@ -63,13 +63,13 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 
 | | |
 |---|---|
-| ![Login page](docs/screenshots/2.x/v2.x-login-page.png) | ![OTP entry](docs/screenshots/2.x/v2.x-otp-entry-page.png) |
+| ![Login page](assets/screenshots/login-page.png) | ![OTP entry](assets/screenshots/otp-entry-page.png) |
 | Login page | OTP entry page |
-| ![Admin menu](docs/screenshots/2.x/v2.1-admin-menu.png) | ![Gateway](docs/screenshots/2.x/v2.2-gateway-page.png) |
+| ![Admin menu](assets/screenshots/admin-menu.png) | ![Gateway](assets/screenshots/gateway-page.png) |
 | Admin menu (kwtSMS) | Gateway settings |
-| ![WooCommerce](docs/screenshots/2.x/v2.3-woo-integrations.png) | ![CF7 gate](docs/screenshots/2.x/v2.7-cf7-gate-mode.png) |
+| ![WooCommerce](assets/screenshots/woo-integrations.png) | ![CF7 gate](assets/screenshots/cf7-gate-mode.png) |
 | WooCommerce order SMS | CF7 OTP gate mode toggle |
-| ![Gravity Forms](docs/screenshots/2.x/v2.8-gravityforms-tab.png) | ![Ninja Forms](docs/screenshots/2.x/v2.8-ninjaforms-tab.png) |
+| ![Gravity Forms](assets/screenshots/gravityforms-tab.png) | ![Ninja Forms](assets/screenshots/ninjaforms-tab.png) |
 | Gravity Forms integration | Ninja Forms integration |
 
 ---
@@ -173,7 +173,7 @@ composer install
 |---|---|
 | **Promotional sender "KWT-SMS"** | Intentionally slow (100+ second delivery). Not suitable for OTP. Virgin (Zain-MVNO) Kuwait subscribers do not receive it. Use a private Sender ID for OTP. |
 | **Kuwait delivery reports** | DLR is not available for messages to Kuwait numbers. The API returns "OK" once the message is handed off to the operator, but there is no confirmation of receipt. |
-| **International coverage** | Disabled by default on new accounts. Contact kwtSMS support to enable. |
+| **International coverage** | Disabled by default on all accounts. Log in to your kwtSMS account and activate coverage for the countries you need. |
 | **API rate limit** | Max 5 requests/second per IP. Exceeding this temporarily blocks your server IP. |
 | **Test mode credits** | `test=1`: messages queued but not delivered, no credits consumed. Delete queued messages from your kwtSMS outbox to release any tentatively held credits. |
 | **API error log** | Your kwtSMS account dashboard (API → Error Log) shows all send attempts with error details. |
@@ -256,8 +256,7 @@ Full error code reference: [kwtSMS API Documentation (PDF)](https://www.kwtsms.c
 
 ## Changelog
 
-### 3.0.0
-- Initial public release.
+See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ---
 
