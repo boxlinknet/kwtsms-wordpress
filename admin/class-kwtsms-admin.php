@@ -161,14 +161,62 @@ class KwtSMS_Admin {
 			array( $this, 'render_logs_page' )
 		);
 
+		// ── Users Without Phone: dynamic menu entry ───────────────────────────
+		// Query is cached in a 5-minute transient to avoid a meta_query on every
+		// admin page load. The transient is cleared whenever a phone is saved
+		// (ajax_save_user_phone) or OTP roles are changed (sanitize_general_settings).
+		$nophone_count = get_transient( 'kwtsms_nophone_count' );
+		if ( false === $nophone_count ) {
+			$required_roles   = (array) $this->plugin->settings->get( 'general.otp_required_roles', array() );
+			$nophone_query    = array(
+				'number' => -1,
+				'fields' => 'ids',
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'relation' => 'OR',
+					array(
+						'key'     => 'kwtsms_phone', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+						'compare' => 'NOT EXISTS',
+					),
+					array(
+						'key'     => 'kwtsms_phone', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+						'value'   => '',
+						'compare' => '=',
+					),
+				),
+			);
+			if ( ! empty( $required_roles ) ) {
+				$nophone_query['role__in'] = $required_roles;
+			}
+			$nophone_count = count( get_users( $nophone_query ) );
+			set_transient( 'kwtsms_nophone_count', $nophone_count, 5 * MINUTE_IN_SECONDS );
+		}
+
+		// Add count badge to the menu label when there are users needing phones.
+		if ( $nophone_count > 0 ) {
+			$users_menu_label = sprintf(
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- count is int; HTML is safe.
+				__( 'Users %s', 'wp-kwtsms' ),
+				'<span class="update-plugins"><span class="plugin-count">' . (int) $nophone_count . '</span></span>'
+			);
+		} else {
+			$users_menu_label = __( 'Users', 'wp-kwtsms' );
+		}
+
+		// Always register the page so its URL stays accessible (e.g. the General
+		// Settings notice links here). When count = 0, hide it from the sidebar.
 		$this->page_hooks[] = add_submenu_page(
 			'kwtsms-otp',
 			__( 'Users Without Phone', 'wp-kwtsms' ),
-			__( 'Users', 'wp-kwtsms' ),
+			$users_menu_label,
 			'manage_options',
 			'kwtsms-otp-users',
 			array( $this, 'render_users_no_phone_page' )
 		);
+
+		if ( 0 === (int) $nophone_count ) {
+			remove_submenu_page( 'kwtsms-otp', 'kwtsms-otp-users' );
+		}
+		// ── End Users Without Phone ────────────────────────────────────────────
 
 		$this->page_hooks[] = add_submenu_page(
 			'kwtsms-otp',
@@ -288,6 +336,9 @@ class KwtSMS_Admin {
 		$all_roles          = array_keys( wp_roles()->get_names() );
 		$raw_roles          = array_map( 'sanitize_text_field', (array) ( $raw['otp_required_roles'] ?? array() ) );
 		$otp_required_roles = array_values( array_intersect( $raw_roles, $all_roles ) );
+
+		// Changing roles changes which users need phones. Bust the menu count cache.
+		delete_transient( 'kwtsms_nophone_count' );
 
 		return array(
 			'otp_mode'             => in_array( $raw['otp_mode'] ?? '', array( '2fa', 'passwordless', 'both' ), true )
@@ -1071,6 +1122,7 @@ class KwtSMS_Admin {
 	 * Security: nonce + manage_options capability.
 	 */
 	public function ajax_save_user_phone() {
+		// --- Access control ---
 		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -1078,21 +1130,42 @@ class KwtSMS_Admin {
 			return;
 		}
 
-		$user_id = absint( wp_unslash( $_POST['user_id'] ?? 0 ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$phone   = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		// --- Input sanitization ---
+
+		// user_id: must be a positive integer; absint() rejects negatives and zero.
+		$user_id = absint( isset( $_POST['user_id'] ) ? wp_unslash( $_POST['user_id'] ) : 0 ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		// phone: cap raw length before any processing to prevent DoS; then sanitize.
+		$raw_phone = isset( $_POST['phone'] ) ? wp_unslash( $_POST['phone'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( strlen( $raw_phone ) > 25 ) {
+			wp_send_json_error( array( 'message' => __( 'Phone number is too long.', 'wp-kwtsms' ) ) );
+			return;
+		}
+		$phone = sanitize_text_field( $raw_phone );
+
+		// --- Validation ---
 
 		if ( ! $user_id || ! get_user_by( 'id', $user_id ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid user.', 'wp-kwtsms' ) ) );
 			return;
 		}
 
-		if ( empty( $phone ) ) {
+		if ( '' === $phone ) {
 			wp_send_json_error( array( 'message' => __( 'Phone number is required.', 'wp-kwtsms' ) ) );
 			return;
 		}
 
-		// Prepend default dial code if a local number was submitted, then normalize.
-		$full_phone = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
+		// Strip everything except digits (and a leading +) before further processing.
+		// This is defense-in-depth: the AJAX pipeline must not depend solely on
+		// client-side validation, which can be bypassed.
+		$phone_digits = preg_replace( '/[^0-9+]/', '', $phone );
+		if ( '' === $phone_digits || ! preg_match( '/[0-9]/', $phone_digits ) ) {
+			wp_send_json_error( array( 'message' => __( 'Phone number must contain digits.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		// Prepend default dial code for local numbers, then normalize and validate.
+		$full_phone = KwtSMS_API::prepend_country_code_if_local( $phone_digits, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $full_phone );
 
 		if ( is_wp_error( $normalized ) ) {
@@ -1100,7 +1173,12 @@ class KwtSMS_Admin {
 			return;
 		}
 
+		// --- Persist ---
+		// update_user_meta() uses $wpdb->prepare() internally; no SQL injection risk.
 		update_user_meta( $user_id, 'kwtsms_phone', $normalized );
+
+		// Bust the menu count cache so the sidebar badge updates on the next page load.
+		delete_transient( 'kwtsms_nophone_count' );
 
 		wp_send_json_success(
 			array(
