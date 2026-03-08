@@ -1,10 +1,23 @@
 # kwtSMS: OTP & SMS Notifications, WordPress Plugin
 
+[![CodeQL](https://github.com/boxlinknet/kwtsms-wordpress/actions/workflows/codeql.yml/badge.svg)](https://github.com/boxlinknet/kwtsms-wordpress/actions/workflows/codeql.yml)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL_v2-blue.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
+[![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
+[![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
+[![Release](https://img.shields.io/github/v/release/boxlinknet/kwtsms-wordpress)](https://github.com/boxlinknet/kwtsms-wordpress/releases)
+[![WooCommerce](https://img.shields.io/badge/WooCommerce-optional-96588a.svg?logo=woocommerce&logoColor=white)](https://woocommerce.com)
+
 Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress, powered by the [kwtSMS](https://www.kwtsms.com) gateway.
 
 **Version:** 3.0.3 | **Requires:** WordPress 6.0+, PHP 7.4+
 
 > Don't have a kwtSMS account? [Sign up at kwtsms.com →](https://www.kwtsms.com/signup)
+
+---
+
+## About kwtSMS
+
+kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages anywhere in the world, with private Sender ID, free API testing, non-expiring credits, and competitive flat-rate pricing. Secure, simple to integrate, built to last. Open a free account in under 1 minute, no paperwork or payment required. [Get started →](https://www.kwtsms.com/signup/)
 
 ---
 
@@ -15,6 +28,7 @@ Secure SMS-based OTP login, password reset, and WooCommerce / form notifications
 - **Passwordless login:** phone number + OTP only, no password needed
 - **Password reset via OTP:** replaces the default email reset flow with SMS
 - **Per-role enforcement:** choose which user roles require OTP (e.g. skip OTP for subscribers)
+- **Welcome SMS:** send a customisable welcome message when a new user registers
 - **Google reCAPTCHA v3** and **Cloudflare Turnstile** bot protection
 - **Country code dropdown** on login forms: restrict to GCC or custom country list
 
@@ -167,6 +181,44 @@ composer install
 
 ---
 
+## Developer Hooks
+
+Filter and action hooks for custom workflows:
+
+| Hook | Type | Description |
+|------|------|-------------|
+| `kwtsms_otp_before_send` | filter | Modify OTP data (code, phone, message) before the API call |
+| `kwtsms_otp_message` | filter | Override the SMS message text |
+| `kwtsms_otp_phone_number` | filter | Override the normalised phone number before sending |
+| `kwtsms_otp_verified` | action | Fires immediately after successful OTP verification |
+| `kwtsms_otp_send_failed` | action | Fires when an OTP send attempt fails |
+
+---
+
+## External Services
+
+This plugin connects to the following external services:
+
+**1. kwtSMS API** (required): sends all SMS messages.
+- Endpoint: `https://www.kwtsms.com/API/`
+- Data sent: phone number, message text, API credentials
+- When: every time an OTP or notification SMS is dispatched
+- [Terms of Service](https://www.kwtsms.com/policy.html) | [Privacy Policy](https://www.kwtsms.com/privacy.html)
+
+**2. ipapi.co** (optional): detects the visitor's country to pre-select the dial-code flag on the phone input.
+- Data sent: visitor IP address only
+- When: on the login page when Passwordless or 2FA mode is active; result cached 24 hours per IP
+- Falls back to the default country in General Settings if unavailable
+- [Terms of Service](https://ipapi.co/terms/) | [Privacy Policy](https://ipapi.co/privacy/)
+
+**3. Google reCAPTCHA v3** (optional): bot protection on OTP forms. Only active when a reCAPTCHA Site Key is entered in General Settings.
+- [Privacy Policy](https://policies.google.com/privacy)
+
+**4. Cloudflare Turnstile** (optional): alternative bot protection. Only active when a Turnstile Site Key is entered in General Settings.
+- [Privacy Policy](https://www.cloudflare.com/privacypolicy/)
+
+---
+
 ## Important API Notes
 
 | Topic | Detail |
@@ -283,6 +335,46 @@ International sending is disabled by default on all kwtSMS accounts. Log in to y
 **Does the plugin work without WooCommerce?**
 
 Yes. WooCommerce is fully optional. All login, password reset, and contact form features work on any WordPress site.
+
+**Which contact form plugins are supported?**
+
+Contact Form 7, WPForms, Elementor Pro (Forms widget), Gravity Forms, and Ninja Forms. Each has its own settings page with independent enable/mode controls and SMS templates.
+
+**What phone number format should users enter?**
+
+International format with country code, no leading `+` or `00`. For example, a Kuwaiti number is `96598765432`. The plugin automatically strips `+`/`00`, removes spaces and dashes, and converts Arabic/Hindi numerals to Latin digits.
+
+**Can I restrict OTP to specific user roles?**
+
+Yes. In General > OTP Required Roles, select which roles must pass OTP. Administrators are excluded by default.
+
+**What happens if a user does not have a phone number on their account?**
+
+The admin sees a notice in the user profile. The user is prompted to add a phone number before SMS features activate. Password reset falls back to the standard email flow.
+
+**What is the OTP Gate mode for contact forms?**
+
+In OTP Gate mode, form submission is blocked until the user verifies their phone number via SMS. The verification token is validated server-side before the form data is processed and cannot be bypassed by manipulating the front end.
+
+**Can I customize the SMS message?**
+
+Yes. Go to kwtSMS > Templates. Each template has a separate English and Arabic textarea. Supported placeholders (`{otp}`, `{site_name}`, `{expiry_minutes}`, etc.) are listed below each field. A live character counter shows how many SMS pages the message will use.
+
+**Does the plugin support Arabic SMS?**
+
+Yes. Arabic templates are stored separately. The plugin detects the WordPress site language via `get_locale()` and sends the Arabic template when the locale starts with `ar_`. The admin template editor has a right-to-left textarea for Arabic input.
+
+**How does rate limiting work?**
+
+The plugin tracks OTP requests per phone number and per IP address using WordPress transients. By default, a phone can request a maximum of 3 OTPs per 10-minute window. Failed verification attempts are counted separately and trigger a timed lockout after the configured maximum (default: 3 attempts).
+
+**Is the plugin HTTPS-only?**
+
+The plugin works over HTTP but shows an admin notice recommending HTTPS. The kwtSMS API endpoint is always called over HTTPS regardless of your site configuration.
+
+**Where is plugin data stored?**
+
+All settings are in `wp_options`. Phone numbers are in `wp_usermeta`. OTP tokens and rate-limit counters use WordPress transients (stored in `wp_options` or object cache). `uninstall.php` removes all plugin data on deletion.
 
 **How do I recover if I am locked out due to OTP?**
 
