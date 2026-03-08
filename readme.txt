@@ -122,6 +122,10 @@ For WooCommerce notifications, visit **kwtSMS > Integrations > WooCommerce** and
 
 Yes. You need an active kwtSMS account with API access. Sign up at [kwtsms.com](https://www.kwtsms.com). API credentials (username and password) are entered in the Gateway settings page.
 
+= What is the difference between Test Mode and Live Mode? =
+
+In **Test Mode** (enabled in Gateway Settings), the plugin calls the kwtSMS API with the `test=1` flag. The SMS is queued on the kwtSMS server but never delivered to the handset, and no credits are consumed. The OTP code is written to `wp-content/debug.log` so you can complete authentication flows during development without a real phone. In **Live Mode** (test mode off), the SMS is delivered to the recipient's phone and credits are deducted. Always develop with Test Mode on, then disable it before going live.
+
 = Does the plugin work without WooCommerce? =
 
 Yes. WooCommerce is fully optional. All login, password reset, and contact form features work on any WordPress site.
@@ -177,6 +181,35 @@ This bypasses all OTP checks and restores the standard WordPress login. Remove t
 = Where is plugin data stored? =
 
 All settings are in `wp_options`. Phone numbers are in `wp_usermeta`. OTP tokens and rate-limit counters use WordPress transients (stored in `wp_options` or object cache). The plugin has an `uninstall.php` that removes all data on deletion.
+
+= My SMS status shows OK but the recipient did not receive the message. What happened? =
+
+Check the Sending Queue at [kwtsms.com](https://www.kwtsms.com/login/). If your message is stuck there, it was accepted by the API but not dispatched. Common causes are emoji in the message, hidden characters from copy-pasting (from Word, PDF, or rich editors), or spam filter triggers. Delete the stuck message from the queue to recover your credits. Also verify that Test Mode is off in Gateway Settings: in test mode, messages are queued but never delivered to the handset.
+
+= What is a Sender ID and why should I not use the shared KWT-SMS sender? =
+
+A Sender ID is the name that appears as the sender on the recipient's phone (for example, MY-APP instead of a random number). `KWT-SMS` is a shared test sender. It causes delivery delays and is blocked on Virgin Kuwait. Register a private Sender ID through your kwtSMS account. For OTP and authentication messages, you need a **Transactional** Sender ID, which bypasses DND (Do Not Disturb) filtering on Zain and Ooredoo. Promotional Sender IDs are filtered, meaning OTP messages can silently fail while credits are still deducted.
+
+= I am getting an authentication error when I save my credentials. What should I check? =
+
+The plugin requires your **API username and API password**, not your account mobile number or your login password. Log in to [kwtsms.com](https://www.kwtsms.com/login/), go to Account > API settings, and verify your API credentials. Credentials are case-sensitive. Make sure there are no extra spaces when copying and pasting.
+
+= Can I send SMS to numbers outside Kuwait? =
+
+International sending is disabled by default on kwtSMS accounts. Log in to your kwtSMS account and activate coverage for the countries you need. Visit the kwtSMS dashboard to view and manage your active country coverage. Note that enabling international coverage increases exposure to automated abuse, so rate limiting is strongly recommended before enabling it.
+
+== Help & Support ==
+
+* **[kwtSMS FAQ](https://www.kwtsms.com/faq/)**: Answers to common questions about credits, sender IDs, OTP, and delivery.
+* **[kwtSMS Support](https://www.kwtsms.com/support.html)**: Open a support ticket or browse help articles.
+* **[Contact kwtSMS](https://www.kwtsms.com/#contact)**: Reach the kwtSMS team directly for Sender ID registration and account issues.
+* **[API Documentation (PDF)](https://www.kwtsms.com/doc/KwtSMS.com_API_Documentation_v41.pdf)**: kwtSMS REST API v4.1 full reference.
+* **[Best Practices](https://www.kwtsms.com/articles/sms-api-implementation-best-practices.html)**: SMS API implementation best practices.
+* **[Integration Test Checklist](https://www.kwtsms.com/articles/sms-api-integration-test-checklist.html)**: Pre-launch testing checklist.
+* **[Sender ID Help](https://www.kwtsms.com/sender-id-help.html)**: Sender ID registration and guidelines.
+* **[kwtSMS Dashboard](https://www.kwtsms.com/login/)**: Recharge credits, buy Sender IDs, view message logs, and manage coverage.
+* **[Other Integrations](https://www.kwtsms.com/integrations.html)**: Plugins and integrations for other platforms and languages.
+* **[Plugin Issues](https://github.com/boxlinknet/wp-kwtsms/issues)**: Report bugs or request features for this WordPress plugin.
 
 == Screenshots ==
 
