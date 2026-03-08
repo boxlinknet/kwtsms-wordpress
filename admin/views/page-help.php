@@ -190,7 +190,7 @@ $content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<div style="background:#fff8e1;border-left:4px solid #FFA200;padding:14px 18px;border-radius:0 4px 4px 0;margin-bottom:24px;font-size:14px;">
 			<h3 style="margin-top:0;"><?php esc_html_e( 'Test Mode and Credits: Important', 'wp-kwtsms' ); ?></h3>
 			<p style="margin-top:0;">
-				<?php esc_html_e( 'When Test Mode is ON, every message is sent to the kwtSMS API with a test=1 flag. The kwtSMS servers receive and queue the message, but it is never delivered to the recipient\'s phone.', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'When Test Mode is ON, messages are queued on the kwtSMS servers but never delivered to the recipient\'s phone.', 'wp-kwtsms' ); ?>
 				<strong><?php esc_html_e( ' Credits are still deducted', 'wp-kwtsms' ); ?></strong>,
 				<?php esc_html_e( 'kwtSMS charges for queued messages even in test mode.', 'wp-kwtsms' ); ?>
 			</p>
