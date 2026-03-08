@@ -30,7 +30,7 @@ $all_wp_roles         = wp_roles()->get_names();
 // Count users in OTP-required roles who have no phone number saved.
 $no_phone_count = 0;
 if ( ! empty( $otp_required_roles ) ) {
-	$no_phone_args = array(
+	$no_phone_args  = array(
 		'number'     => -1,
 		'fields'     => 'ids',
 		'role__in'   => (array) $otp_required_roles,
