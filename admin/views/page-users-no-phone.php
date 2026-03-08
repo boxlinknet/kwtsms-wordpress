@@ -58,13 +58,34 @@ $all_wp_roles = wp_roles()->get_names();
 
 // Color scheme per role slug.
 $role_colors = array(
-	'administrator' => array( 'bg' => '#1d2327', 'fg' => '#ffffff' ),
-	'editor'        => array( 'bg' => '#2271b1', 'fg' => '#ffffff' ),
-	'author'        => array( 'bg' => '#00a32a', 'fg' => '#ffffff' ),
-	'contributor'   => array( 'bg' => '#787c82', 'fg' => '#ffffff' ),
-	'subscriber'    => array( 'bg' => '#e8e8e8', 'fg' => '#3c434a' ),
-	'customer'      => array( 'bg' => '#8f5fb4', 'fg' => '#ffffff' ),
-	'shop_manager'  => array( 'bg' => '#7f54b3', 'fg' => '#ffffff' ),
+	'administrator' => array(
+		'bg' => '#1d2327',
+		'fg' => '#ffffff',
+	),
+	'editor'        => array(
+		'bg' => '#2271b1',
+		'fg' => '#ffffff',
+	),
+	'author'        => array(
+		'bg' => '#00a32a',
+		'fg' => '#ffffff',
+	),
+	'contributor'   => array(
+		'bg' => '#787c82',
+		'fg' => '#ffffff',
+	),
+	'subscriber'    => array(
+		'bg' => '#e8e8e8',
+		'fg' => '#3c434a',
+	),
+	'customer'      => array(
+		'bg' => '#8f5fb4',
+		'fg' => '#ffffff',
+	),
+	'shop_manager'  => array(
+		'bg' => '#7f54b3',
+		'fg' => '#ffffff',
+	),
 );
 ?>
 
@@ -135,13 +156,16 @@ $role_colors = array(
 		<tbody id="kwtsms-unphone-tbody">
 			<?php foreach ( $users as $user ) : ?>
 				<?php
-				$roles         = (array) $user->roles;
-				$primary_role  = $roles[0] ?? '';
-				$role_label    = isset( $all_wp_roles[ $primary_role ] )
+				$roles        = (array) $user->roles;
+				$primary_role = $roles[0] ?? '';
+				$role_label   = isset( $all_wp_roles[ $primary_role ] )
 					? translate_user_role( $all_wp_roles[ $primary_role ] )
 					: ucfirst( $primary_role );
-				$chip          = $role_colors[ $primary_role ] ?? array( 'bg' => '#e8e8e8', 'fg' => '#3c434a' );
-				$chip_style    = 'background:' . $chip['bg'] . ';color:' . $chip['fg'];
+				$chip         = $role_colors[ $primary_role ] ?? array(
+					'bg' => '#e8e8e8',
+					'fg' => '#3c434a',
+				);
+				$chip_style   = 'background:' . $chip['bg'] . ';color:' . $chip['fg'];
 				?>
 				<tr id="kwtsms-urow-<?php echo (int) $user->ID; ?>" class="kwtsms-unphone-row">
 					<td style="padding:10px 8px;vertical-align:middle;text-align:center;">

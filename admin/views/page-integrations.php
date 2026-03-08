@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 $settings = $this->plugin->settings;
 
 $integrations = array(
-	'woo'       => array(
+	'woo'     => array(
 		'label'       => __( 'WooCommerce', 'wp-kwtsms' ),
 		'description' => __( 'Order status SMS notifications (7 statuses), checkout OTP gate, admin alerts, and per-order custom SMS from the order metabox.', 'wp-kwtsms' ),
 		'active'      => class_exists( 'WooCommerce' ),
@@ -24,7 +24,7 @@ $integrations = array(
 		'wp_slug'     => 'woocommerce',
 		'plugin_file' => 'woocommerce/woocommerce.php',
 	),
-	'cf7'       => array(
+	'cf7'     => array(
 		'label'       => __( 'Contact Form 7', 'wp-kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on form submission, or enable OTP gate to verify the phone before the form submits.', 'wp-kwtsms' ),
 		'active'      => class_exists( 'WPCF7' ),
@@ -33,7 +33,7 @@ $integrations = array(
 		'wp_slug'     => 'contact-form-7',
 		'plugin_file' => 'contact-form-7/wp-contact-form-7.php',
 	),
-	'wpforms'   => array(
+	'wpforms' => array(
 		'label'       => __( 'WPForms', 'wp-kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on form submission, or enable OTP gate to verify the phone before the form submits.', 'wp-kwtsms' ),
 		'active'      => function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' ),
@@ -42,7 +42,7 @@ $integrations = array(
 		'wp_slug'     => 'wpforms-lite',
 		'plugin_file' => 'wpforms-lite/wpforms.php',
 	),
-	'nf'        => array(
+	'nf'      => array(
 		'label'       => __( 'Ninja Forms', 'wp-kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification. Your form must include a phone field for SMS to trigger.', 'wp-kwtsms' ),
 		'active'      => class_exists( 'Ninja_Forms' ),

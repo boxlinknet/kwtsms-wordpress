@@ -167,10 +167,10 @@ class KwtSMS_Admin {
 		// (ajax_save_user_phone) or OTP roles are changed (sanitize_general_settings).
 		$nophone_count = get_transient( 'kwtsms_nophone_count' );
 		if ( false === $nophone_count ) {
-			$required_roles   = (array) $this->plugin->settings->get( 'general.otp_required_roles', array() );
-			$nophone_query    = array(
-				'number' => -1,
-				'fields' => 'ids',
+			$required_roles = (array) $this->plugin->settings->get( 'general.otp_required_roles', array() );
+			$nophone_query  = array(
+				'number'     => -1,
+				'fields'     => 'ids',
 				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					'relation' => 'OR',
 					array(
@@ -193,8 +193,9 @@ class KwtSMS_Admin {
 
 		// Add count badge to the menu label when there are users needing phones.
 		if ( $nophone_count > 0 ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- count is int; HTML is safe.
 			$users_menu_label = sprintf(
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- count is int; HTML is safe.
+				/* translators: %s: HTML span element containing the count of users missing a phone number. */
 				__( 'Users %s', 'wp-kwtsms' ),
 				'<span class="update-plugins"><span class="plugin-count">' . (int) $nophone_count . '</span></span>'
 			);
