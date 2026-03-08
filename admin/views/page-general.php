@@ -468,6 +468,7 @@ foreach ( $all_countries as $cc ) {
 
 	function setIso2List(list) {
 		input.value = JSON.stringify(list);
+		input.dispatchEvent(new Event('change', { bubbles: true }));
 	}
 
 	const removeLabel = '<?php echo esc_js( __( 'Remove', 'wp-kwtsms' ) ); ?>';
