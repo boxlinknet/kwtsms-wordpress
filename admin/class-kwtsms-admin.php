@@ -1448,6 +1448,9 @@ class KwtSMS_Admin {
 			</table>
 			<p style="margin:6px 0 0;"><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs' ) ); ?>"><?php esc_html_e( 'View full log ', 'wp-kwtsms' ); ?></a></p>
 			<?php endif; ?>
+			<p style="margin:8px 0 0;text-align:right;">
+				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener noreferrer" style="font-size:12px;"><?php esc_html_e( 'kwtSMS Dashboard &rsaquo;', 'wp-kwtsms' ); ?></a>
+			</p>
 		</div>
 		<?php
 	}
