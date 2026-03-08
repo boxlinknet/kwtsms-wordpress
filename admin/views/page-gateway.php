@@ -160,7 +160,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 						printf(
 							/* translators: %s: link to kwtSMS account dashboard */
 							esc_html__( 'Messages are queued but not delivered. Delete from %s queue to recover credits.', 'wp-kwtsms' ),
-							'<a href="https://www.kwtsms.com/Dashboard/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'kwtSMS account', 'wp-kwtsms' ) . '</a>'
+							'<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'kwtSMS account', 'wp-kwtsms' ) . '</a>'
 						);
 						?>
 					</label>
