@@ -439,3 +439,231 @@ body[class*="kwtsms_page_kwtsms-otp"] #footer-upgrade {
 .kwtsms-tab-pane {
 	padding-top: 10px;
 }
+
+/* =========================================================================
+   Users Without Phone page
+   ========================================================================= */
+
+/* Summary bar */
+.kwtsms-unphone-summary {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 14px 20px;
+	border-radius: 4px;
+	margin-bottom: 8px;
+	border-left: 4px solid #ccc;
+}
+
+.kwtsms-unphone-summary.is-warning {
+	background: #fff8ed;
+	border-left-color: #FFA200;
+}
+
+.kwtsms-unphone-summary.is-ok {
+	background: #f0faf0;
+	border-left-color: #00a32a;
+}
+
+.kwtsms-unphone-count {
+	font-family: Montserrat, sans-serif;
+	font-size: 36px;
+	font-weight: 700;
+	line-height: 1;
+	min-width: 44px;
+	text-align: center;
+}
+
+.kwtsms-unphone-summary.is-warning .kwtsms-unphone-count {
+	color: #FFA200;
+}
+
+.kwtsms-unphone-summary.is-ok .kwtsms-unphone-count {
+	color: #00a32a;
+}
+
+.kwtsms-unphone-summary-text {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.kwtsms-unphone-summary-text strong {
+	font-size: 14px;
+	color: #434345;
+}
+
+.kwtsms-unphone-summary-text span {
+	font-size: 13px;
+	color: #666;
+}
+
+/* Scope note */
+.kwtsms-unphone-scope {
+	font-size: 13px;
+	color: #666;
+	margin: 0 0 16px;
+}
+
+/* Table */
+.kwtsms-unphone-table {
+	margin-top: 0;
+	border-collapse: collapse;
+	max-width: 960px;
+}
+
+.kwtsms-unphone-table thead th {
+	font-size: 12px;
+	font-weight: 600;
+	color: #777;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	padding: 10px 12px;
+	border-bottom: 2px solid #e0e0e0;
+	background: #fafafa;
+}
+
+.kwtsms-unphone-row {
+	transition: background 0.3s, opacity 0.4s;
+}
+
+.kwtsms-unphone-row:hover {
+	background: #fafcff !important;
+}
+
+/* Avatar */
+.kwtsms-unphone-avatar {
+	border-radius: 50%;
+	vertical-align: middle;
+}
+
+/* Username sub-label */
+.kwtsms-unphone-login {
+	font-size: 11px;
+	color: #999;
+}
+
+/* Role chip */
+.kwtsms-unphone-role-chip {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+/* Phone input */
+.kwtsms-unphone-input {
+	width: 100% !important;
+	box-sizing: border-box;
+	border-radius: 0 !important;
+	border-color: #ddd !important;
+	font-size: 13px !important;
+	height: 30px !important;
+	padding: 0 8px !important;
+}
+
+.kwtsms-unphone-input:focus {
+	border-color: #FFA200 !important;
+	box-shadow: 0 0 0 1px #FFA200 !important;
+	outline: none;
+}
+
+/* Inline message */
+.kwtsms-unphone-msg {
+	display: block;
+	font-size: 11px;
+	margin-top: 3px;
+	min-height: 14px;
+}
+
+.kwtsms-unphone-msg.is-error {
+	color: #d63638;
+}
+
+.kwtsms-unphone-msg.is-ok {
+	color: #00a32a;
+}
+
+/* Row save animation */
+.kwtsms-row-saved {
+	background: #f0faf0 !important;
+	transition: background 0.4s;
+}
+
+.kwtsms-row-removing {
+	opacity: 0;
+	transform: translateX(8px);
+	transition: opacity 0.35s ease, transform 0.35s ease;
+	pointer-events: none;
+}
+
+/* Empty state */
+.kwtsms-unphone-empty {
+	text-align: center;
+	padding: 60px 24px;
+	max-width: 480px;
+	margin: 0 auto;
+}
+
+.kwtsms-unphone-empty-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	background: #00a32a;
+	color: #fff;
+	font-size: 32px;
+	font-weight: 700;
+	margin-bottom: 16px;
+}
+
+.kwtsms-unphone-empty h3 {
+	font-family: Montserrat, sans-serif;
+	font-size: 18px;
+	font-weight: 700;
+	color: #434345;
+	margin: 0 0 8px;
+}
+
+.kwtsms-unphone-empty p {
+	font-size: 14px;
+	color: #666;
+	margin: 0 0 20px;
+}
+
+/* Notice on General settings page */
+.kwtsms-unphone-notice {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	background: #fff8ed;
+	border: 1px solid #ffd280;
+	border-left: 4px solid #FFA200;
+	border-radius: 4px;
+	padding: 10px 16px;
+	margin-bottom: 16px;
+	font-size: 13px;
+	color: #434345;
+}
+
+.kwtsms-unphone-notice-count {
+	display: inline-block;
+	background: #FFA200;
+	color: #fff;
+	font-weight: 700;
+	font-size: 13px;
+	border-radius: 3px;
+	padding: 1px 7px;
+	flex-shrink: 0;
+}
+
+.kwtsms-unphone-notice a {
+	font-weight: 600;
+	margin-left: 4px;
+}

@@ -61,6 +61,7 @@ class KwtSMS_Admin {
 		add_action( 'wp_dashboard_setup', array( $this, 'register_dashboard_widget' ) );
 		add_action( 'wp_ajax_kwtsms_get_coverage', array( $this, 'ajax_get_coverage' ) );
 		add_action( 'wp_ajax_kwtsms_logout_gateway', array( $this, 'ajax_logout_gateway' ) );
+		add_action( 'wp_ajax_kwtsms_save_user_phone', array( $this, 'ajax_save_user_phone' ) );
 	}
 
 	// =========================================================================
@@ -158,6 +159,15 @@ class KwtSMS_Admin {
 			'manage_options',
 			'kwtsms-otp-logs',
 			array( $this, 'render_logs_page' )
+		);
+
+		$this->page_hooks[] = add_submenu_page(
+			'kwtsms-otp',
+			__( 'Users Without Phone', 'wp-kwtsms' ),
+			__( 'Users', 'wp-kwtsms' ),
+			'manage_options',
+			'kwtsms-otp-users',
+			array( $this, 'render_users_no_phone_page' )
 		);
 
 		$this->page_hooks[] = add_submenu_page(
@@ -966,6 +976,19 @@ class KwtSMS_Admin {
 		include KWTSMS_OTP_DIR . 'admin/views/page-help.php';
 	}
 
+	/**
+	 * Render the Users Without Phone page.
+	 *
+	 * Lists users in OTP-required roles who have no phone number saved,
+	 * with inline AJAX editing so admins can assign phone numbers directly.
+	 */
+	public function render_users_no_phone_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms' ) );
+		}
+		include KWTSMS_OTP_DIR . 'admin/views/page-users-no-phone.php';
+	}
+
 	// =========================================================================
 	// AJAX: Coverage
 	// =========================================================================
@@ -1029,6 +1052,58 @@ class KwtSMS_Admin {
 		$this->clearing_credentials = false;
 
 		wp_send_json_success();
+	}
+
+	// =========================================================================
+	// AJAX: Save user phone (Users Without Phone page)
+	// =========================================================================
+
+	/**
+	 * AJAX handler — save a phone number for a given user.
+	 *
+	 * Called from the "Users Without Phone" admin page. Normalizes the phone
+	 * using the same pipeline as OTP login, then stores it in user meta.
+	 *
+	 * Security: nonce + manage_options capability.
+	 */
+	public function ajax_save_user_phone() {
+		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			return;
+		}
+
+		$user_id = absint( wp_unslash( $_POST['user_id'] ?? 0 ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$phone   = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( ! $user_id || ! get_user_by( 'id', $user_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid user.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		if ( empty( $phone ) ) {
+			wp_send_json_error( array( 'message' => __( 'Phone number is required.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		// Prepend default dial code if a local number was submitted, then normalize.
+		$full_phone = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
+		$normalized = KwtSMS_API::normalize_phone( $full_phone );
+
+		if ( is_wp_error( $normalized ) ) {
+			wp_send_json_error( array( 'message' => $normalized->get_error_message() ) );
+			return;
+		}
+
+		update_user_meta( $user_id, 'kwtsms_phone', $normalized );
+
+		wp_send_json_success(
+			array(
+				'message' => __( 'Phone saved.', 'wp-kwtsms' ),
+				'phone'   => $normalized,
+			)
+		);
 	}
 
 	// =========================================================================
