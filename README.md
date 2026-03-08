@@ -77,13 +77,13 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 
 | | |
 |---|---|
-| ![Gateway settings](assets/screenshots/screenshot-1.png) | ![General settings](assets/screenshots/screenshot-2.png) |
+| ![Gateway settings](assets/screenshot-1.png) | ![General settings](assets/screenshot-2.png) |
 | Gateway settings: credentials, Sender ID, balance | General settings: OTP mode, rate limits, CAPTCHA |
-| ![SMS Templates](assets/screenshots/screenshot-3.png) | ![OTP verification](assets/screenshots/screenshot-4.png) |
+| ![SMS Templates](assets/screenshot-3.png) | ![OTP verification](assets/screenshot-4.png) |
 | SMS Templates: bilingual with character counter | OTP verification screen during login |
-| ![Passwordless login](assets/screenshots/screenshot-5.png) | ![WooCommerce](assets/screenshots/screenshot-6.png) |
+| ![Passwordless login](assets/screenshot-5.png) | ![WooCommerce](assets/screenshot-6.png) |
 | Passwordless login: phone number entry | WooCommerce: per-status SMS templates |
-| ![Integrations](assets/screenshots/screenshot-7.png) | ![SMS Logs](assets/screenshots/screenshot-8.png) |
+| ![Integrations](assets/screenshot-7.png) | ![SMS Logs](assets/screenshot-8.png) |
 | Integrations overview: CF7, WPForms, Elementor, and more | SMS Logs: full send history with status |
 
 ---
