@@ -49,34 +49,34 @@ class Test_KwtSMS_API extends TestCase {
 	}
 
 	public function test_normalize_phone_removes_spaces() {
-		$result = KwtSMS_API::normalize_phone( '965 9922 0322' );
+		$result = KwtSMS_API::normalize_phone( '965 9876 5432' );
 		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_removes_dashes() {
-		$result = KwtSMS_API::normalize_phone( '965-9922-0322' );
+		$result = KwtSMS_API::normalize_phone( '965-9876-5432' );
 		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_converts_arabic_numerals() {
-		// Arabic-Indic numerals: ٩٦٥٩٩٢٢٠٣٢٢
-		$result = KwtSMS_API::normalize_phone( '٩٦٥٩٩٢٢٠٣٢٢' );
+		// Arabic-Indic numerals: ٩٦٥٩٨٧٦٥٤٣٢
+		$result = KwtSMS_API::normalize_phone( '٩٦٥٩٨٧٦٥٤٣٢' );
 		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_converts_eastern_arabic_numerals() {
-		// Extended Arabic-Indic numerals (Persian/Urdu): ۹۶۵۹۹۲۲۰۳۲۲
-		$result = KwtSMS_API::normalize_phone( '۹۶۵۹۹۲۲۰۳۲۲' );
+		// Extended Arabic-Indic numerals (Persian/Urdu): ۹۶۵۹۸۷۶۵۴۳۲
+		$result = KwtSMS_API::normalize_phone( '۹۶۵۹۸۷۶۵۴۳۲' );
 		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_removes_parentheses_and_dots() {
-		$result = KwtSMS_API::normalize_phone( '(965) 9922.0322' );
+		$result = KwtSMS_API::normalize_phone( '(965) 9876.5432' );
 		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_strips_plus_and_spaces_combined() {
-		$result = KwtSMS_API::normalize_phone( '+965 9922 0322' );
+		$result = KwtSMS_API::normalize_phone( '+965 9876 5432' );
 		$this->assertSame( '96598765432', $result );
 	}
 
@@ -195,8 +195,8 @@ class Test_KwtSMS_API extends TestCase {
 	// =========================================================================
 
 	public function test_normalize_phone_with_dot_separator() {
-		// +965.99220322 — dots used as separators (common Kuwaiti format).
-		$result = KwtSMS_API::normalize_phone( '+965.99220322' );
+		// +965.98765432 — dots used as separators (common Kuwaiti format).
+		$result = KwtSMS_API::normalize_phone( '+965.98765432' );
 		$this->assertSame( '96598765432', $result );
 	}
 

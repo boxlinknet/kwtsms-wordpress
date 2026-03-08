@@ -187,7 +187,7 @@ class Test_Form_Gate_CF7 extends TestCase {
 		$plugin = $this->make_plugin_stub( 'notification', false );
 		new KwtSMS_CF7( $plugin );
 
-		$this->assertContains( 'wpcf7_mail_sent', $this->registered_actions );
+		$this->assertContains( 'wpcf7_submit', $this->registered_actions );
 		$this->assertNotContains( 'wpcf7_before_send_mail', $this->registered_filters );
 	}
 

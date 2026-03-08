@@ -113,7 +113,7 @@ class Test_KwtSMS_User_Meta extends TestCase {
 			array(
 				'kwtsms_phone'       => '96598765432',
 				'kwtsms_dial_code'   => '965',
-				'kwtsms_local_phone' => '99220322',
+				'kwtsms_local_phone' => '98765432',
 			)
 		);
 
@@ -135,7 +135,7 @@ class Test_KwtSMS_User_Meta extends TestCase {
 			array(
 				'kwtsms_phone'       => '',
 				'kwtsms_dial_code'   => '965',
-				'kwtsms_local_phone' => '99220322',
+				'kwtsms_local_phone' => '98765432',
 			)
 		);
 

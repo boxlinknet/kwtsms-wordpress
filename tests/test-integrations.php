@@ -290,11 +290,11 @@ class Test_KwtSMS_CF7 extends TestCase {
 	// Hook registration
 	// =========================================================================
 
-	public function test_constructor_registers_wpcf7_mail_sent_hook() {
+	public function test_constructor_registers_wpcf7_submit_hook() {
 		$plugin = $this->make_plugin_stub();
 		new KwtSMS_CF7( $plugin );
 
-		$this->assertContains( 'wpcf7_mail_sent', $this->registered_actions );
+		$this->assertContains( 'wpcf7_submit', $this->registered_actions );
 	}
 
 	// =========================================================================
@@ -1188,7 +1188,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 		};
 
 		// The hook must still be registered (cf7_enabled=1).
-		$this->assertContains( 'wpcf7_mail_sent', $this->registered_actions );
+		$this->assertContains( 'wpcf7_submit', $this->registered_actions );
 
 		$cf7_form = $this->getMockBuilder( 'WPCF7_ContactForm' )
 			->onlyMethods( array( 'title' ) )
@@ -2619,10 +2619,10 @@ class Test_KwtSMS_GF_NF_IntegrationsPage extends TestCase {
 		return dirname( __DIR__ ) . '/admin/views/page-int-form.php';
 	}
 
-	public function test_integrations_page_has_gf_tab_link() {
-		// The overview table references the gf integration slug.
+	public function test_integrations_page_has_gf_entry() {
+		// The overview table lists Gravity Forms (currently shown as coming soon).
 		$src = file_get_contents( $this->view_path() );
-		$this->assertStringContainsString( 'kwtsms-otp-int-gf', $src );
+		$this->assertStringContainsString( 'Gravity Forms', $src );
 	}
 
 	public function test_integrations_page_has_nf_tab_link() {
