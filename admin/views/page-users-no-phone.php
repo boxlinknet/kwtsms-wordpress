@@ -42,6 +42,17 @@ $users      = get_users( $query_args );
 $user_count = count( $users );
 $nonce      = wp_create_nonce( 'kwtsms_admin_nonce' );
 
+// Resolve default dial code for client-side auto-prefixing.
+$default_iso2 = $settings->get( 'general.default_country_code', 'KW' );
+$all_ccs      = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+$default_dial = '965'; // Kuwait fallback.
+foreach ( $all_ccs as $cc_row ) {
+	if ( $cc_row['iso2'] === $default_iso2 ) {
+		$default_dial = $cc_row['dial'];
+		break;
+	}
+}
+
 // Human-readable role labels.
 $all_wp_roles = wp_roles()->get_names();
 
@@ -116,8 +127,7 @@ $role_colors = array(
 			<tr>
 				<th scope="col" style="width:34px;padding:10px 8px;"></th>
 				<th scope="col" style="width:190px;"><?php esc_html_e( 'User', 'wp-kwtsms' ); ?></th>
-				<th scope="col"><?php esc_html_e( 'Email', 'wp-kwtsms' ); ?></th>
-				<th scope="col" style="width:120px;"><?php esc_html_e( 'Role', 'wp-kwtsms' ); ?></th>
+					<th scope="col" style="width:120px;"><?php esc_html_e( 'Role', 'wp-kwtsms' ); ?></th>
 				<th scope="col" style="width:260px;"><?php esc_html_e( 'Phone Number', 'wp-kwtsms' ); ?></th>
 				<th scope="col" style="width:80px;"></th>
 			</tr>
@@ -140,9 +150,6 @@ $role_colors = array(
 					<td style="padding:10px 12px;vertical-align:middle;">
 						<strong><?php echo esc_html( $user->display_name ); ?></strong><br>
 						<span class="kwtsms-unphone-login">@<?php echo esc_html( $user->user_login ); ?></span>
-					</td>
-					<td style="padding:10px 12px;vertical-align:middle;color:#555;font-size:13px;">
-						<?php echo esc_html( $user->user_email ); ?>
 					</td>
 					<td style="padding:10px 12px;vertical-align:middle;">
 						<span class="kwtsms-unphone-role-chip" style="<?php echo esc_attr( $chip_style ); ?>">
@@ -192,8 +199,9 @@ $role_colors = array(
 ( function ( $ ) {
 	'use strict';
 
-	var ajaxUrl = <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
-	var nonce   = <?php echo wp_json_encode( $nonce ); ?>;
+	var ajaxUrl     = <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
+	var nonce       = <?php echo wp_json_encode( $nonce ); ?>;
+	var defaultDial = <?php echo wp_json_encode( $default_dial ); ?>;
 
 	function savePhone( userId, phone, $row ) {
 		var $btn = $row.find( '.kwtsms-unphone-save-btn' );
@@ -238,22 +246,43 @@ $role_colors = array(
 		} );
 	}
 
+	// Digits-only filter: strip any non-digit character as the user types.
+	$( document ).on( 'input', '.kwtsms-unphone-input', function () {
+		var raw     = $( this ).val();
+		var cleaned = raw.replace( /\D/g, '' );
+		if ( raw !== cleaned ) {
+			$( this ).val( cleaned );
+		}
+	} );
+
 	// Save button click.
 	$( document ).on( 'click', '.kwtsms-unphone-save-btn', function () {
 		var userId = $( this ).data( 'user-id' );
 		var $row   = $( '#kwtsms-urow-' + userId );
-		var phone  = $row.find( '.kwtsms-unphone-input' ).val().trim();
+		var $inp   = $row.find( '.kwtsms-unphone-input' );
+		var $msg   = $row.find( '.kwtsms-unphone-msg' );
+		var digits = $inp.val().replace( /\D/g, '' );
 
-		$row.find( '.kwtsms-unphone-msg' ).text( '' ).removeClass( 'is-error is-ok' );
+		$msg.text( '' ).removeClass( 'is-error is-ok' );
 
-		if ( ! phone ) {
-			$row.find( '.kwtsms-unphone-msg' )
-				.text( <?php echo wp_json_encode( __( 'Please enter a phone number.', 'wp-kwtsms' ) ); ?> )
-				.addClass( 'is-error' );
+		if ( ! digits ) {
+			$msg.text( <?php echo wp_json_encode( __( 'Please enter a phone number.', 'wp-kwtsms' ) ); ?> ).addClass( 'is-error' );
 			return;
 		}
 
-		savePhone( userId, phone, $row );
+		// Auto-prepend dial code for short (local) numbers.
+		if ( digits.length <= 8 && digits.length >= 5 ) {
+			digits = defaultDial + digits;
+			$inp.val( digits );
+		}
+
+		// Reject numbers that are too short — must be country code + local number (min 10 digits).
+		if ( digits.length < 10 ) {
+			$msg.text( <?php echo wp_json_encode( __( 'Number too short. Include country code, e.g. 96512345678.', 'wp-kwtsms' ) ); ?> ).addClass( 'is-error' );
+			return;
+		}
+
+		savePhone( userId, digits, $row );
 	} );
 
 	// Enter key in input triggers save.
