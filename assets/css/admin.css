@@ -17,6 +17,20 @@
 	font-family: Lato, Helvetica, Arial, sans-serif;
 	color: #434345;
 	max-width: 900px;
+	/* Flex column so we can use `order` to keep ALL notices above the
+	   logo header, regardless of when/where they land in the DOM. */
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+/* Push all notices (ours and third-party) above the header. */
+.kwtsms-admin-wrap > .notice,
+.kwtsms-admin-wrap > .updated,
+.kwtsms-admin-wrap > .error {
+	order: -1;
+	/* Restore normal block sizing inside the flex container. */
+	min-width: 0;
 }
 
 /* WPForms strips #wpcontent padding-left on its admin pages — restore it. */
