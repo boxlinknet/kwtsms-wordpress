@@ -154,7 +154,7 @@ class KwtSMS_Woo {
 				$order->get_id(),
 				$order->get_formatted_billing_full_name(),
 				wc_get_order_status_name( $new_status ),
-				html_entity_decode( wp_strip_all_tags( $order->get_formatted_order_total() ), ENT_QUOTES | ENT_HTML5, 'UTF-8' )
+				number_format( (float) $order->get_total(), absint( get_option( 'woocommerce_price_num_decimals', 2 ) ) ) . ' ' . get_woocommerce_currency()
 			);
 			foreach ( array_map( 'trim', explode( ',', $admin_phone ) ) as $admin_p ) {
 				$admin_p          = KwtSMS_API::prepend_country_code_if_local( $admin_p, KwtSMS_API::get_default_dial_code() );
@@ -185,7 +185,7 @@ class KwtSMS_Woo {
 	 */
 	private function build_order_message( $status, WC_Order $order ) {
 		$order_id      = $order->get_order_number();
-		$total         = html_entity_decode( wp_strip_all_tags( wc_price( $order->get_total() ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$total         = number_format( (float) $order->get_total(), absint( get_option( 'woocommerce_price_num_decimals', 2 ) ) ) . ' ' . get_woocommerce_currency();
 		$site_name     = get_bloginfo( 'name' );
 		$customer_name = trim(
 			$order->get_billing_first_name() . ' ' . $order->get_billing_last_name()
