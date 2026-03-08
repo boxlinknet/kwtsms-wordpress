@@ -55,16 +55,6 @@ Each integration supports two modes: **Notification** (send a confirmation SMS o
 * Nonces on every form and AJAX action
 * Anti-enumeration: password reset never reveals whether an account exists
 
-= Developer API =
-
-Hooks for custom workflows:
-
-* `kwtsms_otp_before_send`: filter OTP data before sending
-* `kwtsms_otp_message`: filter the SMS text
-* `kwtsms_otp_phone_number`: filter the normalised phone number
-* `kwtsms_otp_verified`: action fired on successful verification
-* `kwtsms_otp_send_failed`: action fired on send failure
-
 = External Services =
 
 This plugin connects to the following external services:
@@ -126,7 +116,7 @@ The plugin has been submitted to the WordPress.org plugin directory and is pendi
 
 = Method 2: Upload via WordPress Admin =
 
-1. Download the plugin zip file from the [GitHub releases page](https://github.com/boxlinknet/wp-kwtsms/releases).
+1. Download the plugin zip file from the [GitHub releases page](https://github.com/boxlinknet/kwtsms-wordpress/releases).
 2. In your WordPress admin, go to **Plugins > Add New Plugin**.
 3. Click the **Upload Plugin** button at the top of the page.
 4. Click **Choose File**, select the downloaded `wp-kwtsms-x.x.x.zip` file, and click **Install Now**.
@@ -135,7 +125,7 @@ The plugin has been submitted to the WordPress.org plugin directory and is pendi
 
 = Method 3: Manual FTP / SFTP Upload =
 
-1. Download the plugin zip file from the [GitHub releases page](https://github.com/boxlinknet/wp-kwtsms/releases).
+1. Download the plugin zip file from the [GitHub releases page](https://github.com/boxlinknet/kwtsms-wordpress/releases).
 2. Unzip the file on your computer. You will get a folder named `wp-kwtsms`.
 3. Upload the `wp-kwtsms` folder to `/wp-content/plugins/` on your server using an FTP or SFTP client (FileZilla, Cyberduck, etc.).
 4. In your WordPress admin, go to **Plugins > Installed Plugins**.
@@ -148,10 +138,24 @@ After activating the plugin:
 
 1. Go to **kwtSMS > Gateway** in the WordPress admin menu.
 2. Enter your **kwtSMS API Username** and **API Password** (find these in your kwtSMS account under Account > API Settings, not your login password).
-3. Click **Save & Verify Credentials**. The plugin calls the kwtSMS API to validate your credentials and populate the Sender ID dropdown.
+3. Click **Login** to verify credentials. The plugin calls the kwtSMS API and populates the Sender ID dropdown.
 4. Select your **Sender ID** from the dropdown and click **Save Settings**.
 5. Go to **kwtSMS > General** and select your OTP mode: **2FA** (password + SMS code), **Passwordless** (phone number + SMS code only), or **Both** (let each user choose).
 6. Go to **kwtSMS > Templates** to customize your SMS messages in English and Arabic.
+
+= Method 4: WP-CLI =
+
+1. Run the following command to download and activate the plugin directly:
+
+`wp plugin install https://github.com/boxlinknet/kwtsms-wordpress/releases/latest/download/wp-kwtsms.zip --activate`
+
+2. Proceed to the configuration steps below.
+
+= Method 5: Git clone (developers) =
+
+1. From your plugins directory: `git clone https://github.com/boxlinknet/kwtsms-wordpress.git wp-kwtsms`
+2. Activate: `wp plugin activate wp-kwtsms`
+3. Proceed to the configuration steps below.
 
 = WooCommerce Order Notifications =
 
@@ -159,7 +163,7 @@ Go to **kwtSMS > Integrations > WooCommerce** and enable the order status notifi
 
 = Test Mode =
 
-Before going live, enable **Test Mode** in Gateway Settings. In test mode the plugin sends the API request with `test=1` so no real SMS is delivered and no credits are consumed. The OTP code is written to `wp-content/debug.log` so you can complete full authentication flows during development. Disable Test Mode when you are ready to go live.
+Before going live, enable **Test Mode** in Gateway Settings. In test mode the plugin sends the API request with `test=1` so no real SMS is delivered and no credits are consumed. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete full authentication flows during development. Disable Test Mode when you are ready to go live.
 
 == Frequently Asked Questions ==
 
@@ -169,51 +173,11 @@ Yes. You need an active kwtSMS account with API access. Sign up at [kwtsms.com](
 
 = What is the difference between Test Mode and Live Mode? =
 
-In **Test Mode** (enabled in Gateway Settings), the plugin calls the kwtSMS API with the `test=1` flag. The SMS is queued on the kwtSMS server but never delivered to the handset, and no credits are consumed. The OTP code is written to `wp-content/debug.log` so you can complete authentication flows during development without a real phone. In **Live Mode** (test mode off), the SMS is delivered to the recipient's phone and credits are deducted. Always develop with Test Mode on, then disable it before going live.
+In **Test Mode** (enabled in Gateway Settings), the plugin calls the kwtSMS API with the `test=1` flag. The SMS is queued on the kwtSMS server but never delivered to the handset, and no credits are consumed. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete authentication flows during development without a real phone. In **Live Mode** (test mode off), the SMS is delivered to the recipient's phone and credits are deducted. Always develop with Test Mode on, then disable it before going live.
 
 = Does the plugin work without WooCommerce? =
 
 Yes. WooCommerce is fully optional. All login, password reset, and contact form features work on any WordPress site.
-
-= Which contact form plugins are supported? =
-
-Contact Form 7, WPForms, Elementor Pro (Forms widget), Gravity Forms, and Ninja Forms. Each integration has its own settings page with independent enable/mode controls and SMS templates.
-
-= What phone number format should users enter? =
-
-International format with country code, no leading + or 00. For example, a Kuwaiti number would be `96598765432`. The plugin automatically strips leading `+` or `00`, removes spaces and dashes, and converts Arabic/Hindi numerals to Latin digits.
-
-= Can I restrict OTP to specific user roles? =
-
-Yes. In General > OTP Required Roles, select which roles must pass OTP. Administrators are excluded by default.
-
-= What happens if a user does not have a phone number on their account? =
-
-The admin sees a notice in the user profile. The user is prompted to add a phone number before SMS features activate for their account. Password reset falls back to the standard email flow.
-
-= Is the plugin HTTPS-only? =
-
-The plugin works over HTTP, but sends an admin notice recommending HTTPS for security. The kwtSMS API endpoint is always called over HTTPS regardless of your site configuration.
-
-= How do I test without sending real SMS messages? =
-
-Enable **Test Mode** in Gateway Settings. With test mode on, the API receives `test=1` and does not deliver the message. No SMS credits are consumed. The OTP code is written to the WordPress debug log (`wp-content/debug.log`) so you can complete the flow.
-
-= What is the OTP Gate mode for contact forms? =
-
-In OTP Gate mode, the form submission is blocked until the user verifies their phone number via SMS. The verification token is validated server-side before the form data is processed. It cannot be bypassed by manipulating the front end.
-
-= Can I customize the SMS message? =
-
-Yes. Go to **kwtSMS > Templates**. Each template has a separate English and Arabic textarea. Supported placeholders (like `{otp}`, `{site_name}`, `{expiry_minutes}`) are listed below each field. A live character counter shows how many SMS pages the message will use.
-
-= Does the plugin support Arabic SMS? =
-
-Yes. Arabic templates are stored separately. The plugin detects the WordPress site language (`get_locale()`) and sends the Arabic template when the locale starts with `ar_`. The admin template editor has a right-to-left textarea for Arabic.
-
-= How does rate limiting work? =
-
-The plugin tracks OTP requests per phone number and per IP address using WordPress transients. By default, a phone can request a maximum of 3 OTPs per 10-minute window. Failed verification attempts are counted separately and trigger a timed lockout after the configured maximum (default: 3 attempts).
 
 = How do I unlock an admin who is locked out due to OTP? =
 
@@ -222,10 +186,6 @@ Add this line to your `wp-config.php`:
 `define( 'KWTSMS_OTP_DISABLED', true );`
 
 This bypasses all OTP checks and restores the standard WordPress login. Remove the line once you have regained access.
-
-= Where is plugin data stored? =
-
-All settings are in `wp_options`. Phone numbers are in `wp_usermeta`. OTP tokens and rate-limit counters use WordPress transients (stored in `wp_options` or object cache). The plugin has an `uninstall.php` that removes all data on deletion.
 
 = My SMS status shows OK but the recipient did not receive the message. What happened? =
 
@@ -254,7 +214,7 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 * **[Sender ID Help](https://www.kwtsms.com/sender-id-help.html)**: Sender ID registration and guidelines.
 * **[kwtSMS Dashboard](https://www.kwtsms.com/login/)**: Recharge credits, buy Sender IDs, view message logs, and manage coverage.
 * **[Other Integrations](https://www.kwtsms.com/integrations.html)**: Plugins and integrations for other platforms and languages.
-* **[Plugin Issues](https://github.com/boxlinknet/wp-kwtsms/issues)**: Report bugs or request features for this WordPress plugin.
+* **[Plugin Issues](https://github.com/boxlinknet/kwtsms-wordpress/issues)**: Report bugs or request features for this WordPress plugin.
 
 == Screenshots ==
 

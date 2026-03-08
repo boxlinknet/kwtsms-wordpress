@@ -26,6 +26,7 @@ kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages an
 ### Authentication
 - **2FA mode:** standard password login followed by a one-time SMS code
 - **Passwordless login:** phone number + OTP only, no password needed
+- **Both:** let each user choose their preferred method
 - **Password reset via OTP:** replaces the default email reset flow with SMS
 - **Per-role enforcement:** choose which user roles require OTP (e.g. skip OTP for subscribers)
 - **Welcome SMS:** send a customisable welcome message when a new user registers
@@ -41,7 +42,7 @@ kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages an
 - Emergency bypass constant `KWTSMS_OTP_DISABLED` for lockout recovery
 
 ### WooCommerce
-- **7 order status SMS**: Processing, Shipped, Completed, Cancelled, Pending, Refunded, Failed
+- **7 order status SMS**: Processing, On-Hold (Shipped), Completed, Cancelled, Pending Payment, Refunded, Failed
 - **Admin SMS notifications:** notify a configurable phone number on any order status change
 - **Per-order custom SMS:** send a free-text SMS to the customer from the order edit screen
 - OTP gate on WooCommerce checkout (verify phone before placing order)
@@ -131,12 +132,60 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 
 ## Installation
 
-1. Clone or download this repository
-2. Upload the `wp-kwtsms/` directory to `/wp-content/plugins/`
-3. Activate from **Plugins → Installed Plugins**
-4. Go to **kwtSMS → Gateway** and enter your API credentials
-5. Click **Login** to verify credentials and load your Sender IDs
-6. Configure OTP behaviour under **kwtSMS → General**
+### Option 1: WordPress Plugin Directory (coming soon)
+
+The plugin has been submitted to the WordPress.org directory and is pending review. Once approved:
+
+1. In your WordPress dashboard, go to **Plugins → Add New Plugin**.
+2. Search for **kwtSMS**.
+3. Click **Install Now** next to "kwtSMS: OTP & SMS Notifications", then click **Activate**.
+
+### Option 2: Upload via WordPress Admin (recommended until directory listing is live)
+
+1. Download the latest `wp-kwtsms.zip` from the [Releases page](https://github.com/boxlinknet/kwtsms-wordpress/releases).
+2. In your WordPress dashboard, go to **Plugins → Add New Plugin → Upload Plugin**.
+3. Choose the downloaded `.zip` file and click **Install Now**.
+4. Click **Activate Plugin**.
+
+### Option 3: WP-CLI
+
+```bash
+# Download and install from the latest GitHub release
+wp plugin install https://github.com/boxlinknet/kwtsms-wordpress/releases/latest/download/wp-kwtsms.zip --activate
+```
+
+### Option 4: Manual FTP / SFTP
+
+```bash
+# 1. Download and extract the release zip
+wget https://github.com/boxlinknet/kwtsms-wordpress/releases/latest/download/wp-kwtsms.zip
+unzip wp-kwtsms.zip
+
+# 2. Upload the extracted wp-kwtsms/ folder to your server
+scp -r wp-kwtsms/ user@yourserver.com:/var/www/html/wp-content/plugins/
+
+# 3. Activate via WP-CLI (or from the Plugins screen in wp-admin)
+wp plugin activate wp-kwtsms
+```
+
+### Option 5: Git clone (for developers)
+
+```bash
+cd /var/www/html/wp-content/plugins/
+git clone https://github.com/boxlinknet/kwtsms-wordpress.git wp-kwtsms
+wp plugin activate wp-kwtsms
+```
+
+### Initial Setup (all methods)
+
+After activation:
+
+1. Go to **kwtSMS → Gateway** in your WordPress dashboard.
+2. Enter your **API Username** and **API Password** (from your kwtSMS account under Account → API Settings, not your login credentials).
+3. Click **Login** to verify credentials. The Sender ID dropdown will populate automatically.
+4. Select your **Sender ID** and click **Save Settings**.
+5. Go to **kwtSMS → General** to configure OTP mode (2FA, Passwordless, or both), rate limits, and CAPTCHA.
+6. Optionally enable **Test Mode** while setting up: OTP codes are written to `wp-content/kwtsms-debug.log` and no credits are consumed.
 
 ---
 
@@ -198,7 +247,7 @@ npx @wp-playground/cli@latest server --auto-mount
 # Opens at http://localhost:9400
 ```
 
-Enable **Test Mode** in Gateway settings. The OTP code is written to `wp-content/debug.log`.
+Enable **Test Mode** in Gateway settings. The OTP code is written to `wp-content/kwtsms-debug.log`.
 
 ### Running the Test Suite
 
@@ -329,7 +378,7 @@ Yes. Sign up free at [kwtsms.com](https://www.kwtsms.com/signup). API credential
 
 **2. What is the difference between Test Mode and Live Mode?**
 
-In Test Mode (`test=1`), the SMS is queued on the kwtSMS server but never delivered to the handset and no credits are consumed. The OTP code is written to `wp-content/debug.log` so you can complete flows during development. In Live Mode, the SMS is delivered and credits are deducted. Always develop with Test Mode on, then disable it before going live.
+In Test Mode (`test=1`), the SMS is queued on the kwtSMS server but never delivered to the handset and no credits are consumed. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete flows during development. In Live Mode, the SMS is delivered and credits are deducted. Always develop with Test Mode on, then disable it before going live.
 
 **3. My SMS status shows OK but the recipient did not receive it. What happened?**
 
