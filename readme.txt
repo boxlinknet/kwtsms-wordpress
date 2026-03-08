@@ -24,13 +24,16 @@ Built for Arabic-speaking markets (Kuwait, Saudi Arabia, UAE, Bahrain, Qatar, Om
 * **Password Reset via SMS:** replace the email link with an SMS OTP verification flow
 * **Role-Based Enforcement:** configure which user roles must pass OTP (exclude administrators, apply only to customers, etc.)
 * **Welcome SMS:** send a customisable welcome message when a new user registers
+* **Country Code Dropdown:** restrict the dial-code selector on login forms to GCC countries or a custom list
 
 = WooCommerce Integration =
 
 * **7 order status notifications:** Processing, On-Hold (Shipped), Completed, Cancelled, Pending Payment, Refunded, Failed
+* **Admin order notifications:** automatically notify a configurable admin phone number on any order status change
 * **Checkout OTP Gate:** require phone verification before the customer can place an order
 * **Per-status templates:** independent English + Arabic SMS template for every order status
-* **Admin SMS panel:** send a custom SMS to any order's phone number directly from the WooCommerce order screen
+* **Admin SMS panel:** send a custom free-text SMS to any order's customer from the order edit screen
+* HPOS (High-Performance Order Storage) compatible
 
 = Contact Form Integrations =
 
@@ -44,7 +47,8 @@ Each integration supports two modes: **Notification** (send a confirmation SMS o
 
 = Security =
 
-* Per-phone and per-IP rate limiting to prevent OTP flooding
+* Sliding-window rate limiting per phone number, per IP address, and per user account
+* Phone blocking list: silently drop OTP requests from blocked numbers (anti-enumeration)
 * Attempt lockout after configurable max failures
 * Google reCAPTCHA v3 and Cloudflare Turnstile support
 * All credentials stored server-side, never output to HTML
@@ -96,6 +100,10 @@ If ipapi.co is unavailable, the phone input falls back to the default country co
 * Service: [https://www.cloudflare.com/products/turnstile/](https://www.cloudflare.com/products/turnstile/)
 * Privacy Policy: [https://www.cloudflare.com/privacypolicy/](https://www.cloudflare.com/privacypolicy/)
 
+= Admin =
+
+* **Users Without Phone** sub-page under the WordPress Users menu: lists all registered users missing a phone number, with a dynamic count badge on the menu item
+
 = Test Mode =
 
 Enable **Test Mode** in the Gateway settings to develop and test without consuming SMS credits. In test mode the API call is made with the `test=1` flag. OTP codes are generated and stored normally, and the code is written to the WordPress debug log so you can complete flows during development.
@@ -106,15 +114,52 @@ Ships with English (default) and Arabic translations. The plugin admin UI and al
 
 == Installation ==
 
-1. Upload the `wp-kwtsms` folder to `/wp-content/plugins/`, or install via **Plugins > Add New Plugin** in your WordPress dashboard.
-2. Activate the plugin through the **Plugins** screen.
-3. Go to **kwtSMS > Gateway** and enter your kwtSMS API username and password.
-4. Click **Save & Verify Credentials**. The Sender ID dropdown will populate automatically.
-5. Select your Sender ID and save.
-6. Go to **kwtSMS > General** and choose your OTP mode (2FA, Passwordless, or Both).
-7. Customize your SMS templates under **kwtSMS > Templates**.
+= Method 1: WordPress Plugin Directory (coming soon) =
 
-For WooCommerce notifications, visit **kwtSMS > Integrations > WooCommerce** and enable the order statuses you want.
+The plugin has been submitted to the WordPress.org plugin directory and is pending review. Once approved, you will be able to install it directly from inside WordPress:
+
+1. In your WordPress admin, go to **Plugins > Add New Plugin**.
+2. Search for **kwtSMS**.
+3. Click **Install Now** next to "kwtSMS: OTP & SMS Notifications".
+4. Click **Activate**.
+5. Proceed to the configuration steps below.
+
+= Method 2: Upload via WordPress Admin =
+
+1. Download the plugin zip file from the [GitHub releases page](https://github.com/boxlinknet/wp-kwtsms/releases).
+2. In your WordPress admin, go to **Plugins > Add New Plugin**.
+3. Click the **Upload Plugin** button at the top of the page.
+4. Click **Choose File**, select the downloaded `wp-kwtsms-x.x.x.zip` file, and click **Install Now**.
+5. Click **Activate Plugin**.
+6. Proceed to the configuration steps below.
+
+= Method 3: Manual FTP / SFTP Upload =
+
+1. Download the plugin zip file from the [GitHub releases page](https://github.com/boxlinknet/wp-kwtsms/releases).
+2. Unzip the file on your computer. You will get a folder named `wp-kwtsms`.
+3. Upload the `wp-kwtsms` folder to `/wp-content/plugins/` on your server using an FTP or SFTP client (FileZilla, Cyberduck, etc.).
+4. In your WordPress admin, go to **Plugins > Installed Plugins**.
+5. Find **kwtSMS: OTP & SMS Notifications** and click **Activate**.
+6. Proceed to the configuration steps below.
+
+= Configuration (all methods) =
+
+After activating the plugin:
+
+1. Go to **kwtSMS > Gateway** in the WordPress admin menu.
+2. Enter your **kwtSMS API Username** and **API Password** (find these in your kwtSMS account under Account > API Settings, not your login password).
+3. Click **Save & Verify Credentials**. The plugin calls the kwtSMS API to validate your credentials and populate the Sender ID dropdown.
+4. Select your **Sender ID** from the dropdown and click **Save Settings**.
+5. Go to **kwtSMS > General** and select your OTP mode: **2FA** (password + SMS code), **Passwordless** (phone number + SMS code only), or **Both** (let each user choose).
+6. Go to **kwtSMS > Templates** to customize your SMS messages in English and Arabic.
+
+= WooCommerce Order Notifications =
+
+Go to **kwtSMS > Integrations > WooCommerce** and enable the order status notifications you want. Each status has its own English and Arabic SMS template.
+
+= Test Mode =
+
+Before going live, enable **Test Mode** in Gateway Settings. In test mode the plugin sends the API request with `test=1` so no real SMS is delivered and no credits are consumed. The OTP code is written to `wp-content/debug.log` so you can complete full authentication flows during development. Disable Test Mode when you are ready to go live.
 
 == Frequently Asked Questions ==
 
@@ -213,14 +258,14 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 
 == Screenshots ==
 
-1. Gateway settings page: enter API credentials, select Sender ID, and view account balance.
-2. General settings: choose OTP mode, configure code length, expiry, rate limits, and CAPTCHA.
-3. SMS Templates: English and Arabic templates with live character counter and page indicator.
-4. OTP verification screen shown to users during login.
-5. Passwordless login: users enter their phone number to receive an OTP.
-6. WooCommerce integration: per-status SMS templates and checkout OTP gate settings.
-7. Integrations overview page: enable and configure CF7, WPForms, Elementor, Gravity Forms, and Ninja Forms.
-8. SMS Logs: full send history with phone number, message, and status.
+1. Gateway settings: API credentials, live account balance, Sender ID dropdown, and Test Mode toggle.
+2. SMS Templates in Arabic (RTL): bilingual template editor with live character counter and SMS page indicator.
+3. Two-Step Verification screen: OTP entry step shown after successful password login (2FA mode).
+4. Passwordless login: phone number entry with country code selector, no password required.
+5. Password reset via OTP: SMS verification step that replaces the default email reset link.
+6. WooCommerce integration: per-status SMS templates and checkout OTP gate configuration.
+7. Integrations overview: WooCommerce, Contact Form 7, WPForms, Elementor Pro, Gravity Forms, and Ninja Forms.
+8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
 
@@ -232,6 +277,8 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 * Fix: Settings get() method now correctly returns $fallback instead of undefined $default variable.
 * Fix: Country code dropdown on SMS login page is now properly sized (constrained width, phone field takes remaining space).
 * Fix: Admin notices and warnings from other plugins (e.g. Action Scheduler) now display above the kwtSMS logo header, not beside it.
+* Fix: Admin sub-menu page hiding now uses CSS/JS and redirect instead of remove_submenu_page, preventing redirect loops.
+* Fix: Users Without Phone page menu count badge now updates dynamically without a page reload.
 * Enhancement: CF7 notification mode now sends SMS even when SMTP email delivery fails (hooks wpcf7_submit instead of wpcf7_mail_sent).
 * Enhancement: Integrations page notes Elementor Pro requirement for form widgets.
 * Enhancement: Integrations page notes Ninja Forms phone field configuration requirement.
