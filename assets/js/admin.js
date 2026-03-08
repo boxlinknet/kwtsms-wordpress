@@ -677,4 +677,7 @@
 
 		}() );
 
+	// Note: third-party admin notices (e.g. Action Scheduler) are kept above
+	// the logo header via CSS flex `order: -1` on .kwtsms-admin-wrap > .notice.
+
 } )( jQuery );
