@@ -59,6 +59,7 @@ class KwtSMS_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_notices', array( $this, 'show_admin_notices' ) );
 		add_action( 'wp_dashboard_setup', array( $this, 'register_dashboard_widget' ) );
+		add_filter( 'get_user_option_meta-box-order_dashboard', array( $this, 'force_widget_side_column' ) );
 		add_action( 'wp_ajax_kwtsms_get_coverage', array( $this, 'ajax_get_coverage' ) );
 		add_action( 'wp_ajax_kwtsms_logout_gateway', array( $this, 'ajax_logout_gateway' ) );
 		add_action( 'wp_ajax_kwtsms_save_user_phone', array( $this, 'ajax_save_user_phone' ) );
@@ -1314,7 +1315,7 @@ class KwtSMS_Admin {
 	// =========================================================================
 
 	/**
-	 * Register the kwtSMS dashboard widget.
+	 * Register the kwtSMS dashboard widget and place it in the right (side) column.
 	 */
 	public function register_dashboard_widget() {
 		wp_add_dashboard_widget(
@@ -1322,6 +1323,51 @@ class KwtSMS_Admin {
 			__( 'kwtSMS', 'wp-kwtsms' ),
 			array( $this, 'render_dashboard_widget' )
 		);
+
+		// Move from the default 'normal' context to the 'side' (right) column.
+		global $wp_meta_boxes;
+		if ( isset( $wp_meta_boxes['dashboard']['normal']['core']['kwtsms_otp_dashboard_widget'] ) ) {
+			$widget = $wp_meta_boxes['dashboard']['normal']['core']['kwtsms_otp_dashboard_widget'];
+			unset( $wp_meta_boxes['dashboard']['normal']['core']['kwtsms_otp_dashboard_widget'] );
+			$wp_meta_boxes['dashboard']['side']['core']['kwtsms_otp_dashboard_widget'] = $widget; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		}
+	}
+
+	/**
+	 * Force the kwtSMS widget to always appear in the right (side) column,
+	 * overriding any saved user layout preference.
+	 *
+	 * @param array|false $order Saved meta-box order from user meta.
+	 * @return array Modified order with kwtSMS widget pinned to the side column.
+	 */
+	public function force_widget_side_column( $order ) {
+		if ( ! is_array( $order ) ) {
+			$order = array();
+		}
+
+		// Remove the widget from any non-side column in the saved layout.
+		foreach ( array( 'normal', 'column3', 'column4' ) as $col ) {
+			if ( ! empty( $order[ $col ] ) ) {
+				$widgets       = explode( ',', $order[ $col ] );
+				$widgets       = array_filter(
+					$widgets,
+					static function ( $w ) {
+						return 'kwtsms_otp_dashboard_widget' !== trim( $w );
+					}
+				);
+				$order[ $col ] = implode( ',', $widgets );
+			}
+		}
+
+		// Pin it to the top of the side column.
+		$side         = isset( $order['side'] ) ? $order['side'] : '';
+		$side_widgets = array_filter( array_map( 'trim', explode( ',', $side ) ) );
+		if ( ! in_array( 'kwtsms_otp_dashboard_widget', $side_widgets, true ) ) {
+			array_unshift( $side_widgets, 'kwtsms_otp_dashboard_widget' );
+		}
+		$order['side'] = implode( ',', $side_widgets );
+
+		return $order;
 	}
 
 	/**
