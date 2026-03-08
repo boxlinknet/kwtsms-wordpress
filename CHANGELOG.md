@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.4] - 2026-03-09
+
+### Added
+- GitHub Actions CI workflow: PHPCS, PHPStan, and PHPUnit run automatically on push and pull requests across PHP 8.1, 8.2, and 8.3.
+- Automated plugin zip release: pushing a version tag (`vX.Y.Z`) now triggers a GitHub Actions workflow that builds and publishes the release zip.
+- Branch protection rules and PR template for the repository.
+
+### Fixed
+- PHPStan false positives in admin view files: suppressed `$this might not be defined`, defensive null-coalescing, offset-always-exists, and left-side-always-true errors that arise because view templates are included inside class methods.
+- PHPUnit test assertions updated to reflect `wpcf7_submit` hook (changed from `wpcf7_mail_sent` in 3.0.3).
+- PHPUnit test for Gravity Forms updated to match "Coming soon" display (no tab ID).
+- Test placeholders: replaced real API username with `wp_username` throughout test files for client identification.
+
 ## [3.0.3] - 2026-03-08
 
 ### Fixed
@@ -81,8 +94,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CodeQL security scanning and Dependabot dependency updates.
 - `uninstall.php` that removes all plugin data on deletion.
 
-[Unreleased]: https://github.com/boxlinknet/wp-kwtsms/compare/v3.0.3...HEAD
-[3.0.3]: https://github.com/boxlinknet/wp-kwtsms/compare/v3.0.2...v3.0.3
-[3.0.2]: https://github.com/boxlinknet/wp-kwtsms/compare/v3.0.1...v3.0.2
-[3.0.1]: https://github.com/boxlinknet/wp-kwtsms/compare/v3.0.0...v3.0.1
-[3.0.0]: https://github.com/boxlinknet/wp-kwtsms/releases/tag/v3.0.0
+[Unreleased]: https://github.com/boxlinknet/kwtsms-wordpress/compare/v3.0.4...HEAD
+[3.0.4]: https://github.com/boxlinknet/kwtsms-wordpress/compare/v3.0.3...v3.0.4
+[3.0.3]: https://github.com/boxlinknet/kwtsms-wordpress/compare/v3.0.2...v3.0.3
+[3.0.2]: https://github.com/boxlinknet/kwtsms-wordpress/compare/v3.0.1...v3.0.2
+[3.0.1]: https://github.com/boxlinknet/kwtsms-wordpress/compare/v3.0.0...v3.0.1
+[3.0.0]: https://github.com/boxlinknet/kwtsms-wordpress/releases/tag/v3.0.0

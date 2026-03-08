@@ -61,8 +61,8 @@ class Test_Admin_Sanitize_Gateway extends TestCase {
 	public function test_sanitize_preserves_balance_from_raw_when_present() {
 		// Simulate the old DB state: balance 71.00.
 		$old_db = array(
-			'api_username'         => 'instabox',
-			'api_password'         => 'secret',
+			'api_username'         => 'wp_username',
+			'api_password'         => 'wp_password',
 			'credentials_verified' => 1,
 			'sender_ids'           => array( 'KWT-SMS' ),
 			'balance_available'    => 71.00,
@@ -111,8 +111,8 @@ class Test_Admin_Sanitize_Gateway extends TestCase {
 	 */
 	public function test_sanitize_falls_back_to_db_balance_when_not_in_raw() {
 		$old_db = array(
-			'api_username'         => 'instabox',
-			'api_password'         => 'secret',
+			'api_username'         => 'wp_username',
+			'api_password'         => 'wp_password',
 			'credentials_verified' => 1,
 			'sender_ids'           => array( 'KWT-SMS' ),
 			'balance_available'    => 71.00,
@@ -128,8 +128,8 @@ class Test_Admin_Sanitize_Gateway extends TestCase {
 
 		// A form POST only contains the HTML form fields — no balance keys.
 		$raw = array(
-			'api_username' => 'instabox',
-			'api_password' => 'secret',
+			'api_username' => 'wp_username',
+			'api_password' => 'wp_password',
 			'sender_id'    => 'KWT-SMS',
 			'test_mode'    => '1',
 		);
