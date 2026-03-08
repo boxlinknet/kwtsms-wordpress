@@ -24,6 +24,7 @@ class KwtSMS_User_Meta {
 		add_action( 'edit_user_profile', array( $this, 'render_phone_field' ) );
 		add_action( 'personal_options_update', array( $this, 'save_phone_field' ) );
 		add_action( 'edit_user_profile_update', array( $this, 'save_phone_field' ) );
+		add_action( 'admin_notices', array( $this, 'show_phone_error_notice' ) );
 
 		add_action( 'register_form', array( $this, 'render_registration_phone_field' ) );
 		add_filter( 'registration_errors', array( $this, 'validate_registration_phone' ), 10, 3 );
@@ -192,17 +193,36 @@ class KwtSMS_User_Meta {
 		$normalized = KwtSMS_API::normalize_phone( $raw_phone );
 
 		if ( is_wp_error( $normalized ) ) {
-			// Attach error to the profile update errors bag.
-			add_action(
-				'user_profile_update_errors',
-				static function ( WP_Error $errors ) use ( $normalized ) {
-					$errors->add( 'kwtsms_invalid_phone', $normalized->get_error_message() );
-				}
-			);
+			set_transient( 'kwtsms_phone_error_' . $user_id, $normalized->get_error_message(), 60 );
 			return;
 		}
 
 		update_user_meta( $user_id, 'kwtsms_phone', $normalized );
+	}
+
+	/**
+	 * Display a phone validation error notice on the profile page.
+	 *
+	 * Reads a transient set by save_phone_field() when normalization fails,
+	 * displays an admin error notice, then deletes the transient.
+	 */
+	public function show_phone_error_notice() {
+		$screen = get_current_screen();
+		if ( ! $screen || ! in_array( $screen->id, array( 'profile', 'user-edit' ), true ) ) {
+			return;
+		}
+
+		$user_id = isset( $_GET['user_id'] ) ? absint( $_GET['user_id'] ) : get_current_user_id(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$msg     = get_transient( 'kwtsms_phone_error_' . $user_id );
+		if ( ! $msg ) {
+			return;
+		}
+
+		delete_transient( 'kwtsms_phone_error_' . $user_id );
+		printf(
+			'<div class="notice notice-error is-dismissible"><p>%s</p></div>',
+			esc_html( $msg )
+		);
 	}
 
 	/**
