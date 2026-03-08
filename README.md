@@ -1,6 +1,6 @@
 # kwtSMS: OTP & SMS Notifications, WordPress Plugin
 
-[![CodeQL](https://github.com/boxlinknet/kwtsms-wordpress/actions/workflows/codeql.yml/badge.svg)](https://github.com/boxlinknet/kwtsms-wordpress/actions/workflows/codeql.yml)
+[![Semgrep](https://github.com/boxlinknet/kwtsms-wordpress/actions/workflows/codeql.yml/badge.svg)](https://github.com/boxlinknet/kwtsms-wordpress/actions/workflows/codeql.yml)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL_v2-blue.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
@@ -66,6 +66,7 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 
 ### Admin
 - 6 admin pages under the **kwtSMS** menu: General, Gateway, Templates, Integrations, Logs, Help
+- **Users Without Phone** sub-page: lists all users missing a phone number, with inline edit and dynamic count badge on the Users menu item
 - Live credential verification with Sender ID auto-population
 - OTP send log (last 100 entries)
 - Dashboard widget with today's send count
@@ -178,20 +179,6 @@ cd wp-kwtsms/
 composer install
 ./vendor/bin/phpunit --no-coverage
 ```
-
----
-
-## Developer Hooks
-
-Filter and action hooks for custom workflows:
-
-| Hook | Type | Description |
-|------|------|-------------|
-| `kwtsms_otp_before_send` | filter | Modify OTP data (code, phone, message) before the API call |
-| `kwtsms_otp_message` | filter | Override the SMS message text |
-| `kwtsms_otp_phone_number` | filter | Override the normalised phone number before sending |
-| `kwtsms_otp_verified` | action | Fires immediately after successful OTP verification |
-| `kwtsms_otp_send_failed` | action | Fires when an OTP send attempt fails |
 
 ---
 
