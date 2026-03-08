@@ -35,12 +35,12 @@ kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages an
 - **Country code dropdown** on login forms: restrict to GCC or custom country list
 
 ### Security
-- Cryptographically secure OTP generation (`random_int()`)
-- **Sliding-window rate limiting:** per-phone, per-IP, per-account (no fixed-window gaming)
-- **Phone blocking list:** silently drop OTP requests from blocked numbers (anti-enumeration)
-- `hash_equals()` timing-safe OTP verification
-- All cookies `httponly`, `secure`, `SameSite=Strict`
-- Emergency bypass constant `KWTSMS_OTP_DISABLED` for lockout recovery
+- Cryptographically secure OTP generation
+- **Rate limiting:** per-phone, per-IP, and per-account to prevent OTP flooding
+- **Phone blocking list:** block specific numbers from ever receiving an OTP
+- Timing-safe OTP verification
+- Hardened session cookies
+- Emergency bypass option for admin lockout recovery
 
 ### WooCommerce
 - **7 order status SMS**: Processing, On-Hold (Shipped), Completed, Cancelled, Pending Payment, Refunded, Failed
@@ -64,7 +64,7 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 - Account balance displayed on Gateway and Help pages without re-verifying credentials
 - Pre-send balance check: warns before sending if credits are zero
 - Test phone country code validation with hint text
-- Test Mode: SMS is queued but not delivered. Credits are deducted, but you can recover them by deleting queued messages from your kwtSMS account dashboard. OTP code is written to `wp-content/kwtsms-debug.log`.
+- Test Mode: SMS is queued but never delivered. Credits are deducted; recover them by deleting queued messages from your kwtSMS dashboard. OTP code is visible under kwtSMS → Logs → Debug Log.
 
 ### Admin
 - 6 admin pages under the **kwtSMS** menu: General, Gateway, Templates, Integrations, Logs, Help
@@ -186,77 +186,7 @@ After activation:
 3. Click **Login** to verify credentials. The Sender ID dropdown will populate automatically.
 4. Select your **Sender ID** and click **Save Settings**.
 5. Go to **kwtSMS → General** to configure OTP mode (2FA, Passwordless, or both), rate limits, and CAPTCHA.
-6. Optionally enable **Test Mode** while setting up: SMS is queued but not delivered, and the OTP code is written to `wp-content/kwtsms-debug.log`. Note: credits are still deducted for queued messages. Delete them from your kwtSMS account dashboard to recover the credits.
-
----
-
-## Plugin Structure
-
-```
-wp-kwtsms/
-├── wp-kwtsms.php
-├── includes/
-│   ├── class-kwtsms-plugin.php       # Main service locator (singleton)
-│   ├── class-kwtsms-api.php          # kwtSMS HTTP API client
-│   ├── class-kwtsms-settings.php     # Settings helper (wp_options wrapper)
-│   ├── class-kwtsms-otp-engine.php   # OTP generate/verify, sliding-window rate limiting
-│   ├── class-kwtsms-login-otp.php    # Login 2FA / passwordless hooks
-│   ├── class-kwtsms-reset-otp.php    # Password reset OTP hooks
-│   ├── class-kwtsms-user-meta.php    # Phone number field on user profile
-│   ├── class-kwtsms-captcha.php      # reCAPTCHA v3 / Turnstile
-│   ├── class-kwtsms-integrations.php # Integration loader
-│   └── integrations/
-│       ├── class-kwtsms-woo.php         # WooCommerce order SMS
-│       ├── class-kwtsms-woo-metabox.php # Per-order custom SMS metabox
-│       ├── class-kwtsms-cf7.php         # Contact Form 7
-│       ├── class-kwtsms-wpforms.php     # WPForms
-│       ├── class-kwtsms-elementor.php   # Elementor Pro
-│       ├── class-kwtsms-gravityforms.php # Gravity Forms
-│       └── class-kwtsms-ninjaforms.php  # Ninja Forms
-├── admin/
-│   ├── class-kwtsms-admin.php
-│   └── views/
-│       ├── page-general.php
-│       ├── page-gateway.php
-│       ├── page-templates.php
-│       ├── page-integrations.php
-│       ├── page-logs.php
-│       └── page-help.php
-├── assets/
-│   ├── css/admin.css
-│   ├── css/login.css
-│   ├── js/admin.js
-│   ├── js/login.js
-│   └── js/form-otp.js   # OTP gate modal for form integrations
-├── languages/
-│   ├── wp-kwtsms.pot
-│   ├── wp-kwtsms-ar.po / .mo
-│   └── wp-kwtsms-en_US.po / .mo
-├── tests/                # PHPUnit 9 + Brain\Monkey (191 tests)
-└── uninstall.php
-```
-
----
-
-## Testing Locally (WP Playground)
-
-No Docker required:
-
-```bash
-cd wp-kwtsms/
-npx @wp-playground/cli@latest server --auto-mount
-# Opens at http://localhost:9400
-```
-
-Enable **Test Mode** in Gateway settings. The OTP code is written to `wp-content/kwtsms-debug.log`.
-
-### Running the Test Suite
-
-```bash
-cd wp-kwtsms/
-composer install
-./vendor/bin/phpunit --no-coverage
-```
+6. Optionally enable **Test Mode** while setting up: SMS is queued but never delivered, and the OTP code is visible under **kwtSMS → Logs → Debug Log**. Note: credits are still deducted for queued messages. Delete them from your kwtSMS dashboard to recover them.
 
 ---
 
@@ -284,77 +214,6 @@ This plugin connects to the following external services:
 
 ---
 
-## Important API Notes
-
-| Topic | Detail |
-|---|---|
-| **Promotional sender "KWT-SMS"** | Intentionally slow (100+ second delivery). Not suitable for OTP. Virgin (Zain-MVNO) Kuwait subscribers do not receive it. Use a private Sender ID for OTP. |
-| **Kuwait delivery reports** | DLR is not available for messages to Kuwait numbers. The API returns "OK" once the message is handed off to the operator, but there is no confirmation of receipt. |
-| **International coverage** | Disabled by default on all accounts. Log in to your kwtSMS account and activate coverage for the countries you need. |
-| **API rate limit** | Max 5 requests/second per IP. Exceeding this temporarily blocks your server IP. |
-| **Test mode credits** | In Test Mode, messages are queued but not delivered. Credits are still deducted. Delete queued messages from your kwtSMS account dashboard to recover them. |
-| **API error log** | Your kwtSMS account dashboard (API → Error Log) shows all send attempts with error details. |
-| **Server timezone** | The kwtSMS API server operates on Asia/Kuwait (GMT+3). |
-
----
-
-## OTP Authentication Flows
-
-### 2FA Login
-```
-1. User submits username + password → WordPress validates credentials
-2. Plugin intercepts via authenticate filter (priority 30)
-3. OTP generated and sent by SMS to the user's registered phone
-4. Partial auth session stored in transient (15-minute TTL)
-5. User redirected to OTP entry page
-6. User enters code → verified → auth cookies issued → redirect to dashboard
-```
-
-### Passwordless Login
-```
-1. User clicks "Login with SMS OTP" on wp-login.php
-2. User enters their phone number (with country code)
-3. Plugin looks up user by kwtsms_phone meta
-4. Same generic message shown whether phone is found or not (anti-enumeration)
-5. If found: OTP sent → user enters code → logged in
-```
-
-### Password Reset via OTP
-```
-1. User clicks "Lost your password?"
-2. Custom form: enter username, email, or phone number
-3. If user found and has a phone: OTP sent via SMS
-4. User enters OTP → redirected to WP password reset form
-5. User sets new password → automatically logged in
-6. If no phone on file: fallback to email reset with notice
-```
-
-### WooCommerce Checkout OTP Gate (optional)
-```
-1. Customer enters phone at checkout
-2. On first "Place Order" click: OTP sent to phone
-3. OTP entry field appears on checkout page
-4. On second submission: OTP verified → order placed
-```
-
-### Emergency Bypass (Lockout Recovery)
-
-**Option 1: wp-config.php constant (easiest)**
-```php
-define( 'KWTSMS_OTP_DISABLED', true );
-```
-Skips the entire OTP system until removed.
-
-**Option 2: WP-CLI**
-```bash
-wp user update admin --user_pass="NewSecurePassword!" --allow-root
-```
-
-**Option 3: SFTP / cPanel**
-Rename `wp-kwtsms/wp-kwtsms.php` to `wp-kwtsms.php.disabled`. WP deactivates the plugin automatically.
-
----
-
 ## Error Reference
 
 | Code | Meaning | Fix |
@@ -379,7 +238,7 @@ Yes. Sign up free at [kwtsms.com](https://www.kwtsms.com/signup). API credential
 
 **2. What is the difference between Test Mode and Live Mode?**
 
-In Test Mode, messages are queued on the kwtSMS server but never delivered to the recipient's phone. Credits are still deducted. To recover them, log in to your kwtSMS account dashboard and delete the queued messages from the outbox. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete flows during development without a real phone. In Live Mode, the SMS is delivered and credits are deducted. Always develop with Test Mode on, then disable it before going live.
+In Test Mode, messages are queued on the kwtSMS server but never delivered to the recipient's phone. Credits are still deducted. To recover them, log in to your kwtSMS dashboard and delete the queued messages from the outbox. The OTP code is visible under **kwtSMS → Logs → Debug Log** so you can complete flows during development without a real phone. In Live Mode, the SMS is delivered and credits are deducted. Always develop with Test Mode on, then disable it before going live.
 
 **3. My SMS status shows OK but the recipient did not receive it. What happened?**
 
@@ -403,7 +262,15 @@ Yes. WooCommerce is fully optional. All login, password reset, and contact form 
 
 **8. How do I recover if I am locked out due to OTP?**
 
-Add `define( 'KWTSMS_OTP_DISABLED', true );` to `wp-config.php`. This bypasses all OTP checks immediately. Remove it once you regain access. See the Emergency Bypass section above for alternatives.
+Add this line to `wp-config.php` (before the `/* That's all, stop editing! */` line):
+
+```php
+define( 'KWTSMS_OTP_DISABLED', true );
+```
+
+Log in normally, fix your phone number or gateway issue, then remove the line.
+
+Alternatively, use WP-CLI to remove the phone from your account: `wp user meta delete <user_id> kwtsms_phone` (replace `<user_id>` with your user ID, usually `1` for the first admin).
 
 ---
 
