@@ -77,14 +77,14 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 
 | | |
 |---|---|
-| ![Login page](assets/screenshots/login-page.png) | ![OTP entry](assets/screenshots/otp-entry-page.png) |
-| Login page | OTP entry page |
-| ![Admin menu](assets/screenshots/admin-menu.png) | ![Gateway](assets/screenshots/gateway-page.png) |
-| Admin menu (kwtSMS) | Gateway settings |
-| ![WooCommerce](assets/screenshots/woo-integrations.png) | ![CF7 gate](assets/screenshots/cf7-gate-mode.png) |
-| WooCommerce order SMS | CF7 OTP gate mode toggle |
-| ![Gravity Forms](assets/screenshots/gravityforms-tab.png) | ![Ninja Forms](assets/screenshots/ninjaforms-tab.png) |
-| Gravity Forms integration | Ninja Forms integration |
+| ![Gateway settings](assets/screenshots/screenshot-1.png) | ![General settings](assets/screenshots/screenshot-2.png) |
+| Gateway settings: credentials, Sender ID, balance | General settings: OTP mode, rate limits, CAPTCHA |
+| ![SMS Templates](assets/screenshots/screenshot-3.png) | ![OTP verification](assets/screenshots/screenshot-4.png) |
+| SMS Templates: bilingual with character counter | OTP verification screen during login |
+| ![Passwordless login](assets/screenshots/screenshot-5.png) | ![WooCommerce](assets/screenshots/screenshot-6.png) |
+| Passwordless login: phone number entry | WooCommerce: per-status SMS templates |
+| ![Integrations](assets/screenshots/screenshot-7.png) | ![SMS Logs](assets/screenshots/screenshot-8.png) |
+| Integrations overview: CF7, WPForms, Elementor, and more | SMS Logs: full send history with status |
 
 ---
 
@@ -308,35 +308,35 @@ Full error code reference: [kwtSMS API Documentation (PDF)](https://www.kwtsms.c
 
 ## FAQ
 
-**Do I need a kwtSMS account?**
+**1. Do I need a kwtSMS account?**
 
 Yes. Sign up free at [kwtsms.com](https://www.kwtsms.com/signup). API credentials (username and password, not your login mobile) are entered in kwtSMS > Gateway.
 
-**What is the difference between Test Mode and Live Mode?**
+**2. What is the difference between Test Mode and Live Mode?**
 
 In Test Mode (`test=1`), the SMS is queued on the kwtSMS server but never delivered to the handset and no credits are consumed. The OTP code is written to `wp-content/debug.log` so you can complete flows during development. In Live Mode, the SMS is delivered and credits are deducted. Always develop with Test Mode on, then disable it before going live.
 
-**My SMS status shows OK but the recipient did not receive it. What happened?**
+**3. My SMS status shows OK but the recipient did not receive it. What happened?**
 
 Check the Sending Queue at [kwtsms.com](https://www.kwtsms.com/login/). If the message is stuck there, it was accepted but not dispatched. Common causes: emoji or hidden characters in the message body, spam filter triggers, or Test Mode still enabled. Delete the stuck message from the queue to recover your credits.
 
-**What is a Sender ID and why should I not use the shared KWT-SMS sender?**
+**4. What is a Sender ID and why should I not use the shared KWT-SMS sender?**
 
 A Sender ID is the name that appears on the recipient's phone instead of a random number. `KWT-SMS` is a shared test sender: it causes delivery delays and is blocked on Virgin Kuwait. For OTP you must use a **Transactional** Sender ID, which bypasses DND filtering on Zain and Ooredoo. Promotional Sender IDs are silently filtered, meaning OTP messages fail while credits are still deducted. Register a private Sender ID through your kwtSMS account.
 
-**I am getting an authentication error when I save my credentials. What should I check?**
+**5. I am getting an authentication error when I save my credentials. What should I check?**
 
 The plugin requires your **API username and API password**, not your account mobile number or login password. Log in to [kwtsms.com](https://www.kwtsms.com/login/), go to Account > API settings, and copy the API credentials. They are case-sensitive.
 
-**Can I send SMS to numbers outside Kuwait?**
+**6. Can I send SMS to numbers outside Kuwait?**
 
 International sending is disabled by default on all kwtSMS accounts. Log in to your kwtSMS account and activate coverage for the countries you need. Enable IP and phone rate limiting before turning on international coverage to prevent balance drain from automated abuse.
 
-**Does the plugin work without WooCommerce?**
+**7. Does the plugin work without WooCommerce?**
 
 Yes. WooCommerce is fully optional. All login, password reset, and contact form features work on any WordPress site.
 
-**How do I recover if I am locked out due to OTP?**
+**8. How do I recover if I am locked out due to OTP?**
 
 Add `define( 'KWTSMS_OTP_DISABLED', true );` to `wp-config.php`. This bypasses all OTP checks immediately. Remove it once you regain access. See the Emergency Bypass section above for alternatives.
 
