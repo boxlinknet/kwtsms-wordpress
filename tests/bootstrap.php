@@ -45,6 +45,16 @@ require_once __DIR__ . '/../includes/integrations/class-kwtsms-elementor.php';
 require_once __DIR__ . '/../includes/integrations/class-kwtsms-gravityforms.php';
 require_once __DIR__ . '/../includes/integrations/class-kwtsms-ninjaforms.php';
 
+// WooCommerce global function stubs — needed by KwtSMS_Woo without a full WC install.
+// Only stub functions that are never mocked with Brain\Monkey in individual tests.
+// Functions that tests mock via Functions\expect() must NOT be pre-defined here
+// because Patchwork cannot redefine functions that were declared before it loaded.
+if ( ! function_exists( 'get_woocommerce_currency' ) ) {
+	function get_woocommerce_currency() { // phpcs:ignore
+		return 'KWD';
+	}
+}
+
 /**
  * Minimal WC_Order stub so getMockBuilder can create WC_Order mocks without
  * a WooCommerce installation. Only method stubs are needed — actual method
