@@ -213,8 +213,23 @@ class KwtSMS_Admin {
 			array( $this, 'render_users_no_phone_page' )
 		);
 
+		// When count = 0, hide the menu item via admin_head CSS+JS instead of
+		// calling remove_submenu_page(). remove_submenu_page() strips the entry
+		// from $submenu but WordPress then cannot resolve the page's parent slug
+		// for the hookname check, resulting in a "not allowed" error on direct
+		// URL access — which breaks the redirect from the view itself.
 		if ( 0 === (int) $nophone_count ) {
-			remove_submenu_page( 'kwtsms-otp', 'kwtsms-otp-users' );
+			add_action(
+				'admin_head',
+				static function () {
+					// Hide the sidebar <li> that contains the Users Without Phone link.
+					echo "<style>#adminmenu a[href$='page=kwtsms-otp-users']{display:none}</style>\n";
+					echo "<script>document.addEventListener('DOMContentLoaded',function(){" .
+						"var a=document.querySelector('#adminmenu a[href*=\"kwtsms-otp-users\"]');" .
+						"if(a){var li=a.closest('li');if(li)li.style.display='none';}" .
+						"});</script>\n";
+				}
+			);
 		}
 		// ── End Users Without Phone ────────────────────────────────────────────
 

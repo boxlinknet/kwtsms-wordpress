@@ -199,9 +199,10 @@ $role_colors = array(
 ( function ( $ ) {
 	'use strict';
 
-	var ajaxUrl     = <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
-	var nonce       = <?php echo wp_json_encode( $nonce ); ?>;
-	var defaultDial = <?php echo wp_json_encode( $default_dial ); ?>;
+	var ajaxUrl        = <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
+	var nonce          = <?php echo wp_json_encode( $nonce ); ?>;
+	var defaultDial    = <?php echo wp_json_encode( $default_dial ); ?>;
+	var generalPageUrl = <?php echo wp_json_encode( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>;
 
 	function savePhone( userId, phone, $row ) {
 		var $btn = $row.find( '.kwtsms-unphone-save-btn' );
@@ -228,7 +229,9 @@ $role_colors = array(
 						var remaining = $( '#kwtsms-unphone-tbody tr' ).length;
 						$( '#kwtsms-unphone-count' ).text( remaining );
 						if ( remaining === 0 ) {
-							window.location.reload();
+							// All phones saved — redirect to General Settings (not reload:
+							// the page becomes inaccessible once the menu count drops to 0).
+							window.location.href = generalPageUrl;
 						}
 					}, 400 );
 				}, 700 );
