@@ -96,7 +96,7 @@ If ipapi.co is unavailable, the phone input falls back to the default country co
 
 = Test Mode =
 
-Enable **Test Mode** in the Gateway settings to test without receiving real SMS messages. In test mode the API call is made with the `test=1` flag. The SMS is queued on the kwtSMS server but never delivered. Credits are still deducted for queued messages. To recover them, log in to your kwtSMS account dashboard and delete the queued messages. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete flows during development.
+Enable **Test Mode** in the Gateway settings to test without receiving real SMS messages. Messages are queued on the kwtSMS server but never delivered to the phone. Credits are still deducted. To recover them, log in to your kwtSMS account dashboard and delete the queued messages. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete flows during development.
 
 = Languages =
 
@@ -163,7 +163,7 @@ Go to **kwtSMS > Integrations > WooCommerce** and enable the order status notifi
 
 = Test Mode =
 
-Before going live, enable **Test Mode** in Gateway Settings. In test mode the plugin sends the API request with `test=1` so no real SMS is delivered. Credits are still deducted for queued messages. To recover them, log in to your kwtSMS account dashboard and delete the queued messages from the outbox. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete full authentication flows during development. Disable Test Mode when you are ready to go live.
+Before going live, enable **Test Mode** in Gateway Settings. Messages are queued but never delivered to the phone. Credits are still deducted. To recover them, log in to your kwtSMS account dashboard and delete the queued messages from the outbox. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete full authentication flows during development. Disable Test Mode when you are ready to go live.
 
 == Frequently Asked Questions ==
 
@@ -173,7 +173,7 @@ Yes. You need an active kwtSMS account with API access. Sign up at [kwtsms.com](
 
 = What is the difference between Test Mode and Live Mode? =
 
-In **Test Mode** (enabled in Gateway Settings), the plugin calls the kwtSMS API with the `test=1` flag. The SMS is queued on the kwtSMS server but never delivered to the handset. Credits are still deducted for queued messages. To recover them, log in to your kwtSMS account dashboard and delete the queued messages from the outbox. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete authentication flows during development without a real phone. In **Live Mode** (test mode off), the SMS is delivered to the recipient's phone and credits are deducted. Always develop with Test Mode on, then disable it before going live.
+In **Test Mode** (enabled in Gateway Settings), messages are queued on the kwtSMS server but never delivered to the recipient's phone. Credits are still deducted. To recover them, log in to your kwtSMS account dashboard and delete the queued messages from the outbox. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete authentication flows during development without a real phone. In **Live Mode**, the SMS is delivered to the recipient's phone and credits are deducted. Always develop with Test Mode on, then disable it before going live.
 
 = Does the plugin work without WooCommerce? =
 
