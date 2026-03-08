@@ -78,43 +78,39 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 
 <table>
 <tr>
-<td width="50%">
-<a href="assets/screenshot-1.png"><img src="assets/screenshot-1.png" width="100%" alt="Gateway settings"></a><br>
-<sub>Gateway: live balance, Sender ID dropdown, Test Mode toggle</sub>
+<td align="center">
+<a href="assets/screenshot-1.png"><img src="assets/screenshot-1.png" width="260" alt="General Settings"></a><br>
+<sub>General Settings: OTP mode, rate limits, CAPTCHA</sub>
 </td>
-<td width="50%">
-<a href="assets/screenshot-2.png"><img src="assets/screenshot-2.png" width="100%" alt="Arabic RTL templates"></a><br>
-<sub>SMS Templates: Arabic RTL with character counter and page indicator</sub>
+<td align="center">
+<a href="assets/screenshot-2.png"><img src="assets/screenshot-2.png" width="260" alt="SMS Templates"></a><br>
+<sub>SMS Templates: English and Arabic with character counter</sub>
 </td>
-</tr>
-<tr>
-<td width="50%">
-<a href="assets/screenshot-3.png"><img src="assets/screenshot-3.png" width="100%" alt="2FA OTP verification"></a><br>
-<sub>2FA: OTP verification step after password login</sub>
+<td align="center">
+<a href="assets/screenshot-3.png"><img src="assets/screenshot-3.png" width="260" alt="2FA OTP verification"></a><br>
+<sub>2FA: OTP step after password login</sub>
 </td>
-<td width="50%">
-<a href="assets/screenshot-4.png"><img src="assets/screenshot-4.png" width="100%" alt="Passwordless login"></a><br>
-<sub>Passwordless login: phone number entry with country code selector</sub>
+<td align="center">
+<a href="assets/screenshot-4.png"><img src="assets/screenshot-4.png" width="260" alt="Passwordless login"></a><br>
+<sub>Passwordless: phone + OTP, no password needed</sub>
 </td>
 </tr>
 <tr>
-<td width="50%">
-<a href="assets/screenshot-5.png"><img src="assets/screenshot-5.png" width="100%" alt="Password reset via OTP"></a><br>
-<sub>Password reset: OTP verification replaces email link</sub>
+<td align="center">
+<a href="assets/screenshot-5.png"><img src="assets/screenshot-5.png" width="260" alt="Password reset via OTP"></a><br>
+<sub>Password reset: OTP replaces email link</sub>
 </td>
-<td width="50%">
-<a href="assets/screenshot-6.png"><img src="assets/screenshot-6.png" width="100%" alt="WooCommerce integration"></a><br>
-<sub>WooCommerce: per-status SMS templates and checkout OTP gate</sub>
+<td align="center">
+<a href="assets/screenshot-6.png"><img src="assets/screenshot-6.png" width="260" alt="WooCommerce integration"></a><br>
+<sub>WooCommerce: order status SMS and checkout OTP gate</sub>
 </td>
-</tr>
-<tr>
-<td width="50%">
-<a href="assets/screenshot-7.png"><img src="assets/screenshot-7.png" width="100%" alt="Integrations overview"></a><br>
-<sub>Integrations: WooCommerce, Contact Form 7, WPForms, and more</sub>
+<td align="center">
+<a href="assets/screenshot-7.png"><img src="assets/screenshot-7.png" width="260" alt="Integrations overview"></a><br>
+<sub>Integrations: WooCommerce, CF7, WPForms, and more</sub>
 </td>
-<td width="50%">
-<a href="assets/screenshot-8.png"><img src="assets/screenshot-8.png" width="100%" alt="SMS Logs"></a><br>
-<sub>SMS Logs: full send history with type, status, and API response</sub>
+<td align="center">
+<a href="assets/screenshot-8.png"><img src="assets/screenshot-8.png" width="260" alt="Contact Form 7 settings"></a><br>
+<sub>CF7: Notification or OTP Gate mode per form</sub>
 </td>
 </tr>
 </table>
