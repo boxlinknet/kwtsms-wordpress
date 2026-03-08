@@ -830,11 +830,14 @@ class KwtSMS_Admin {
 		// Notice: API credentials not verified (never logged in, or logged out).
 		if ( ! $this->plugin->settings->get( 'gateway.credentials_verified', false ) ) {
 			printf(
-				'<div class="notice notice-error inline"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+				'<div class="notice notice-error inline"><p><strong>%s</strong> %s <a href="%s">%s</a> &mdash; %s <a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p></div>',
 				esc_html__( 'kwtSMS:', 'wp-kwtsms' ),
-				esc_html__( 'API credentials are not configured. The plugin will not be able to send SMS messages.', 'wp-kwtsms' ),
+				esc_html__( 'API credentials are not configured.', 'wp-kwtsms' ),
 				esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ),
-				esc_html__( 'Configure now ', 'wp-kwtsms' )
+				esc_html__( 'Configure now', 'wp-kwtsms' ),
+				esc_html__( "Don't have a kwtSMS account?", 'wp-kwtsms' ),
+				esc_url( 'https://www.kwtsms.com/signup' ),
+				esc_html__( 'Sign up for free', 'wp-kwtsms' )
 			);
 		}
 
