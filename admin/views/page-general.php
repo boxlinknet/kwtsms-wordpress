@@ -27,6 +27,29 @@ $blocked_phones       = $general['blocked_phones'] ?? '';
 $otp_required_roles   = $general['otp_required_roles'] ?? array();
 $all_wp_roles         = wp_roles()->get_names();
 
+// Count users in OTP-required roles who have no phone number saved.
+$no_phone_count = 0;
+if ( ! empty( $otp_required_roles ) ) {
+	$no_phone_args = array(
+		'number'     => -1,
+		'fields'     => 'ids',
+		'role__in'   => (array) $otp_required_roles,
+		'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'relation' => 'OR',
+			array(
+				'key'     => 'kwtsms_phone', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'compare' => 'NOT EXISTS',
+			),
+			array(
+				'key'     => 'kwtsms_phone', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'value'   => '',
+				'compare' => '=',
+			),
+		),
+	);
+	$no_phone_count = count( get_users( $no_phone_args ) );
+}
+
 // Load all countries for dropdowns.
 $all_countries = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
 // Index by ISO2 for quick lookup.
@@ -128,6 +151,19 @@ foreach ( $all_countries as $cc ) {
 					<p class="description">
 						<?php esc_html_e( 'Check roles that must complete OTP verification. Unchecked roles log in directly without OTP. Administrators are unchecked by default to prevent lockout. On multisite, super admins are treated as administrators.', 'wp-kwtsms' ); ?>
 					</p>
+					<?php if ( $no_phone_count > 0 ) : ?>
+					<p class="description" style="margin-top:8px;background:#fff8ed;border-left:3px solid #FFA200;padding:8px 12px;border-radius:0 3px 3px 0;">
+						<?php
+						printf(
+							/* translators: 1: number of users without phone, 2: opening link tag, 3: closing link tag */
+							esc_html__( '%1$d user(s) in OTP-required roles have no phone number saved and will bypass OTP. %2$sAdd phone numbers now.%3$s', 'wp-kwtsms' ),
+							(int) $no_phone_count,
+							'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp-users' ) ) . '">',
+							'</a>'
+						);
+						?>
+					</p>
+					<?php endif; ?>
 				</td>
 			</tr>
 
