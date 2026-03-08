@@ -1410,7 +1410,7 @@ class KwtSMS_Admin {
 				<strong><?php esc_html_e( 'Balance:', 'wp-kwtsms' ); ?></strong>
 				<?php echo esc_html( number_format( (float) $balance_avail, 1 ) ); ?>&nbsp;<?php esc_html_e( 'credits', 'wp-kwtsms' ); ?>
 				<?php if ( $balance_updated > 0 ) : ?>
-				<span style="color:#999;font-size:11px;">&mdash; <?php echo esc_html( sprintf( /* translators: %s: time elapsed since balance was last fetched */ __( 'updated %s ago', 'wp-kwtsms' ), human_time_diff( $balance_updated ) ) ); ?></span>
+				<span style="color:#999;font-size:11px;">, <?php echo esc_html( sprintf( /* translators: %s: time elapsed since balance was last fetched */ __( 'updated %s ago', 'wp-kwtsms' ), human_time_diff( $balance_updated ) ) ); ?></span>
 				<?php endif; ?>
 			</p>
 			<?php endif; ?>
@@ -1446,11 +1446,15 @@ class KwtSMS_Admin {
 					<?php endforeach; ?>
 				</tbody>
 			</table>
-			<p style="margin:6px 0 0;"><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs' ) ); ?>"><?php esc_html_e( 'View full log ', 'wp-kwtsms' ); ?></a></p>
-			<?php endif; ?>
-			<p style="margin:8px 0 0;text-align:right;">
+			<p style="margin:6px 0 0;display:flex;justify-content:space-between;align-items:center;">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs' ) ); ?>" style="font-size:12px;"><?php esc_html_e( 'View full log', 'wp-kwtsms' ); ?></a>
 				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener noreferrer" style="font-size:12px;"><?php esc_html_e( 'kwtSMS Dashboard &rsaquo;', 'wp-kwtsms' ); ?></a>
 			</p>
+			<?php else : ?>
+			<p style="margin:6px 0 0;text-align:right;">
+				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener noreferrer" style="font-size:12px;"><?php esc_html_e( 'kwtSMS Dashboard &rsaquo;', 'wp-kwtsms' ); ?></a>
+			</p>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
