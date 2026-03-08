@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.0.3
+Stable tag: 3.0.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,7 +96,7 @@ If ipapi.co is unavailable, the phone input falls back to the default country co
 
 = Test Mode =
 
-Enable **Test Mode** in the Gateway settings to develop and test without consuming SMS credits. In test mode the API call is made with the `test=1` flag. OTP codes are generated and stored normally, and the code is written to the WordPress debug log so you can complete flows during development.
+Enable **Test Mode** in the Gateway settings to test without receiving real SMS messages. In test mode the API call is made with the `test=1` flag. The SMS is queued on the kwtSMS server but never delivered. Credits are still deducted for queued messages. To recover them, log in to your kwtSMS account dashboard and delete the queued messages. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete flows during development.
 
 = Languages =
 
@@ -163,7 +163,7 @@ Go to **kwtSMS > Integrations > WooCommerce** and enable the order status notifi
 
 = Test Mode =
 
-Before going live, enable **Test Mode** in Gateway Settings. In test mode the plugin sends the API request with `test=1` so no real SMS is delivered and no credits are consumed. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete full authentication flows during development. Disable Test Mode when you are ready to go live.
+Before going live, enable **Test Mode** in Gateway Settings. In test mode the plugin sends the API request with `test=1` so no real SMS is delivered. Credits are still deducted for queued messages. To recover them, log in to your kwtSMS account dashboard and delete the queued messages from the outbox. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete full authentication flows during development. Disable Test Mode when you are ready to go live.
 
 == Frequently Asked Questions ==
 
@@ -173,7 +173,7 @@ Yes. You need an active kwtSMS account with API access. Sign up at [kwtsms.com](
 
 = What is the difference between Test Mode and Live Mode? =
 
-In **Test Mode** (enabled in Gateway Settings), the plugin calls the kwtSMS API with the `test=1` flag. The SMS is queued on the kwtSMS server but never delivered to the handset, and no credits are consumed. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete authentication flows during development without a real phone. In **Live Mode** (test mode off), the SMS is delivered to the recipient's phone and credits are deducted. Always develop with Test Mode on, then disable it before going live.
+In **Test Mode** (enabled in Gateway Settings), the plugin calls the kwtSMS API with the `test=1` flag. The SMS is queued on the kwtSMS server but never delivered to the handset. Credits are still deducted for queued messages. To recover them, log in to your kwtSMS account dashboard and delete the queued messages from the outbox. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete authentication flows during development without a real phone. In **Live Mode** (test mode off), the SMS is delivered to the recipient's phone and credits are deducted. Always develop with Test Mode on, then disable it before going live.
 
 = Does the plugin work without WooCommerce? =
 
@@ -228,6 +228,14 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
+
+= 3.0.4 =
+* CI: Added GitHub Actions workflow for PHPCS, PHPStan, and PHPUnit across PHP 8.1, 8.2, and 8.3.
+* CI: Automated plugin zip release on version tag push via GitHub Actions.
+* Fix: Replace real API username placeholder with wp_username in tests for client identification.
+* Fix: PHPStan false positives in admin view files (variable $this, defensive null-coalescing, offset checks).
+* Fix: PHPUnit test for CF7 hook name updated to match wpcf7_submit (changed in 3.0.3).
+* Fix: PHPUnit test for Gravity Forms tab updated to reflect "Coming soon" status.
 
 = 3.0.3 =
 * Fix: password reset OTP SMS now sent correctly even when login OTP cooldown is active for the same user (cooldown is now scoped per action type).

@@ -41,7 +41,7 @@ npx @wp-playground/cli@latest server --auto-mount /tmp/wp-kwtsms --follow-symlin
 # WordPress at http://127.0.0.1:9400  (admin / password)
 ```
 
-Enable **Test Mode** in Gateway settings. OTP codes are written to `wp-content/debug.log` so you can complete full flows without a real phone.
+Enable **Test Mode** in Gateway settings. The SMS is queued but not delivered. Credits are still deducted, so delete queued messages from your kwtSMS dashboard to recover them. The OTP code is written to `wp-content/kwtsms-debug.log` so you can complete full flows without a real phone.
 
 ## Project Structure
 
@@ -130,5 +130,5 @@ wp i18n make-pot . languages/wp-kwtsms.pot
 5. Compile MO files: `wp i18n make-mo languages/`
 6. Run the full test suite and PHPCS
 7. Commit with `feat: release vX.Y.Z`
-8. Tag: `git tag vX.Y.Z && git push origin vX.Y.Z`
-9. Create a GitHub release with notes and attach a plugin zip built via `git archive`
+8. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`
+9. GitHub Actions automatically builds the plugin zip and publishes a GitHub release. No manual step needed.
