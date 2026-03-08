@@ -81,7 +81,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					<input type="text" name="kwtsms_otp_gateway[api_username]" id="kwtsms_api_username"
 						value="<?php echo esc_attr( $gateway['api_username'] ); ?>"
 						class="regular-text" autocomplete="off" />
-					<p class="description"><?php esc_html_e( 'Your kwtSMS API username, found in your kwtSMS account under API Settings, not your login username.', 'wp-kwtsms' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Your kwtSMS API username, found in your kwtSMS account under API Settings, not your login mobile.', 'wp-kwtsms' ); ?></p>
 					<p class="description" id="kwtsms-username-warning" style="color:#dc3232;display:none;"></p>
 				</td>
 			</tr>
