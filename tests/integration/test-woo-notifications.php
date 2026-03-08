@@ -306,7 +306,7 @@ class Test_Integration_Woo_Notifications extends WP_UnitTestCase {
 	 * and an enabled processing template triggers an HTTP call to kwtsms.com.
 	 */
 	public function test_processing_status_triggers_sms(): void {
-		$phone   = '96599220322';
+		$phone   = '96598765432';
 		$user_id = $this->factory()->user->create( [
 			'user_login' => 'wooprocessinguser',
 			'user_email' => 'wooprocessing@example.com',

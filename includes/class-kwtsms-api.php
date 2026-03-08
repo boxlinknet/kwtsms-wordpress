@@ -135,7 +135,7 @@ class KwtSMS_API {
 	 * Phone number must already be normalised (digits only, with country code).
 	 * Message must be sanitised (no emoji, no HTML).
 	 *
-	 * @param string $phone     Recipient phone in international format (e.g. 96599220322).
+	 * @param string $phone     Recipient phone in international format (e.g. 96598765432).
 	 * @param string $sender_id Approved sender ID for this account.
 	 * @param string $message   Message text (English or Arabic).
 	 * @param string $type      Context type for logging: 'login'|'reset'|'passwordless'|'welcome'|'test'.
@@ -559,7 +559,7 @@ class KwtSMS_API {
 	 * The full phone number and message text are stored here — only visible
 	 * to administrators via the Logs page.
 	 *
-	 * @param string $phone   Full normalised phone number (e.g. 96599220322).
+	 * @param string $phone   Full normalised phone number (e.g. 96598765432).
 	 * @param string $message The exact message that was sent.
 	 * @param string $status  'sent' or 'failed'.
 	 * @param string $type    Context: 'login'|'reset'|'passwordless'|'welcome'|'test'.
@@ -751,11 +751,11 @@ class KwtSMS_API {
 	 * Normalise a phone number to international format (digits only, no prefix).
 	 *
 	 * Handles all common input variants:
-	 *   +96599220322      96599220322
-	 *   0096599220322     96599220322
-	 *   965 9922 0322     96599220322
-	 *   965-9922-0322     96599220322
-	 *   ٩٦٥٩٩٢٢٠٣٢٢       96599220322  (Arabic/Hindi numerals)
+	 *   +96598765432      96598765432
+	 *   0096598765432     96598765432
+	 *   965 9922 0322     96598765432
+	 *   965-9922-0322     96598765432
+	 *   ٩٦٥٩٩٢٢٠٣٢٢       96598765432  (Arabic/Hindi numerals)
 	 *
 	 * @param string $phone Raw phone input from user.
 	 *

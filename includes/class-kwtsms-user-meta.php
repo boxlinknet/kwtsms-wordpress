@@ -34,7 +34,7 @@ class KwtSMS_User_Meta {
 	 * Render the phone number field on the user profile page.
 	 *
 	 * Displays a country-code dropdown (from allowed countries) + local number input.
-	 * The combined value (e.g. 96599220322) is stored in kwtsms_phone user meta.
+	 * The combined value (e.g. 96598765432) is stored in kwtsms_phone user meta.
 	 *
 	 * @param WP_User $user The user being edited.
 	 */

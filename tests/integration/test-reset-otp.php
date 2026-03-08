@@ -119,7 +119,7 @@ class Test_Integration_Reset_OTP extends WP_UnitTestCase {
 	 * WP_User_Query with meta_key=kwtsms_phone finds the correct user.
 	 */
 	public function test_reset_lookup_by_phone_returns_correct_user(): void {
-		$phone   = '96599220322';
+		$phone   = '96598765432';
 		$user_id = $this->factory()->user->create( [
 			'user_login' => 'resetphonelookup',
 			'user_email' => 'resetphone@example.com',
@@ -169,7 +169,7 @@ class Test_Integration_Reset_OTP extends WP_UnitTestCase {
 		$token = wp_generate_password( 40, false );
 		$data  = [
 			'user_id' => 42,
-			'phone'   => '96599220322',
+			'phone'   => '96598765432',
 			'action'  => 'reset',
 		];
 
@@ -180,7 +180,7 @@ class Test_Integration_Reset_OTP extends WP_UnitTestCase {
 
 		$this->assertIsArray( $retrieved, 'Transient should be readable as an array.' );
 		$this->assertSame( 42, $retrieved['user_id'] );
-		$this->assertSame( '96599220322', $retrieved['phone'] );
+		$this->assertSame( '96598765432', $retrieved['phone'] );
 		$this->assertSame( 'reset', $retrieved['action'] );
 	}
 

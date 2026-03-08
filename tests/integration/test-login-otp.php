@@ -103,7 +103,7 @@ class Test_Integration_Login_OTP extends WP_UnitTestCase {
 			'user_login' => 'rolebypassadmin',
 			'user_pass'  => 'testpass123',
 		] );
-		update_user_meta( $admin_id, 'kwtsms_phone', '96599220322' );
+		update_user_meta( $admin_id, 'kwtsms_phone', '96598765432' );
 
 		$wp_user = new WP_User( $admin_id );
 
@@ -130,7 +130,7 @@ class Test_Integration_Login_OTP extends WP_UnitTestCase {
 	 * correctly in the real WordPress DB before testing the full flow.
 	 */
 	public function test_passwordless_finds_user_by_phone_meta(): void {
-		$phone   = '96599220322';
+		$phone   = '96598765432';
 		$user_id = $this->factory()->user->create( [
 			'user_login' => 'phonelookupuser',
 			'user_email' => 'phonelookup@example.com',
@@ -168,11 +168,11 @@ class Test_Integration_Login_OTP extends WP_UnitTestCase {
 	}
 
 	/**
-	 * normalize_phone('+965.99220322') normalises to '96599220322', which then
-	 * matches a user whose kwtsms_phone is stored as '96599220322'.
+	 * normalize_phone('+965.99220322') normalises to '96598765432', which then
+	 * matches a user whose kwtsms_phone is stored as '96598765432'.
 	 */
 	public function test_passwordless_normalizes_dot_format_before_lookup(): void {
-		$stored_phone = '96599220322';
+		$stored_phone = '96598765432';
 		$user_id      = $this->factory()->user->create( [
 			'user_login' => 'dotnormalizeuser',
 			'user_email' => 'dotnorm@example.com',
@@ -201,18 +201,18 @@ class Test_Integration_Login_OTP extends WP_UnitTestCase {
 	/**
 	 * normalize_phone() converts Arabic/Hindi numerals before lookup.
 	 *
-	 * Input: '٩٦٥٩٩٢٢٠٣٢٢' (Arabic-Indic digits for 96599220322)
-	 * Expected output: '96599220322'
+	 * Input: '٩٦٥٩٩٢٢٠٣٢٢' (Arabic-Indic digits for 96598765432)
+	 * Expected output: '96598765432'
 	 */
 	public function test_passwordless_normalizes_arabic_numerals_before_lookup(): void {
-		$stored_phone = '96599220322';
+		$stored_phone = '96598765432';
 		$user_id      = $this->factory()->user->create( [
 			'user_login' => 'arabicnumuser',
 			'user_email' => 'arabicnum@example.com',
 		] );
 		update_user_meta( $user_id, 'kwtsms_phone', $stored_phone );
 
-		// Arabic-Indic numerals for 96599220322.
+		// Arabic-Indic numerals for 96598765432.
 		$arabic_input = '٩٦٥٩٩٢٢٠٣٢٢';
 		$normalized   = KwtSMS_API::normalize_phone( $arabic_input );
 

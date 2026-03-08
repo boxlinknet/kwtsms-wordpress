@@ -227,7 +227,7 @@ class Test_KwtSMS_DebugLog extends TestCase {
 		$password = 'S3cr3tP@ssword!';
 		$api      = $this->make_api( true, 'testuser', $password );
 
-		$api->write_debug_log( 'send_sms()', 'type=login phone=96599220322 sender=KWTSMS' );
+		$api->write_debug_log( 'send_sms()', 'type=login phone=96598765432 sender=KWTSMS' );
 
 		$content = file_get_contents( self::$log_path );
 		$this->assertStringNotContainsString(
@@ -242,7 +242,7 @@ class Test_KwtSMS_DebugLog extends TestCase {
 		$api      = $this->make_api( true, 'user2', $password );
 
 		// Simulate what request() actually logs — only the payload, NOT the merged body.
-		$api->write_debug_log( 'request(send/)', 'POST https://www.kwtsms.com/API/send/ payload={"sender":"KWTSMS","mobile":"96599220322","message":"Your code: 123456"}' );
+		$api->write_debug_log( 'request(send/)', 'POST https://www.kwtsms.com/API/send/ payload={"sender":"KWTSMS","mobile":"96598765432","message":"Your code: 123456"}' );
 		$api->write_debug_log( 'send_sms()', 'SUCCESS: msg-id=MSG12345' );
 
 		$content = file_get_contents( self::$log_path );

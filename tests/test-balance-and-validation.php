@@ -243,8 +243,8 @@ class Test_Balance_And_Validation extends TestCase {
 		);
 
 		$api    = new KwtSMS_API( 'testuser', 'testpass', false );
-		// 96599220322  prefix 965  Kuwait (KW) — in allowed list.
-		$result = $api->send_sms( '96599220322', 'KWTSMS', 'Hello', 'login' );
+		// 96598765432  prefix 965  Kuwait (KW) — in allowed list.
+		$result = $api->send_sms( '96598765432', 'KWTSMS', 'Hello', 'login' );
 
 		// The result must not be a country_not_allowed error.
 		if ( $result instanceof WP_Error ) {

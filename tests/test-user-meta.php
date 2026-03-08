@@ -111,14 +111,14 @@ class Test_KwtSMS_User_Meta extends TestCase {
 		$this->invoke_save(
 			1,
 			array(
-				'kwtsms_phone'       => '96599220322',
+				'kwtsms_phone'       => '96598765432',
 				'kwtsms_dial_code'   => '965',
 				'kwtsms_local_phone' => '99220322',
 			)
 		);
 
 		$this->assertArrayHasKey( 1, self::$user_meta );
-		$this->assertSame( '96599220322', self::$user_meta[1]['kwtsms_phone'] );
+		$this->assertSame( '96598765432', self::$user_meta[1]['kwtsms_phone'] );
 	}
 
 	/**
@@ -140,7 +140,7 @@ class Test_KwtSMS_User_Meta extends TestCase {
 		);
 
 		$this->assertArrayHasKey( 2, self::$user_meta );
-		$this->assertSame( '96599220322', self::$user_meta[2]['kwtsms_phone'] );
+		$this->assertSame( '96598765432', self::$user_meta[2]['kwtsms_phone'] );
 	}
 
 	/**
@@ -149,7 +149,7 @@ class Test_KwtSMS_User_Meta extends TestCase {
 	 */
 	public function test_save_phone_field_clears_meta_when_both_combined_and_local_empty(): void {
 		// Seed a pre-existing value so we can verify it gets deleted.
-		self::$user_meta[3]['kwtsms_phone'] = '96599220322';
+		self::$user_meta[3]['kwtsms_phone'] = '96598765432';
 
 		$this->invoke_save(
 			3,
@@ -254,11 +254,11 @@ class Test_KwtSMS_User_Meta_Registration extends TestCase {
 	/**
 	 * A valid international phone passes validation.
 	 *
-	 * 96599220322 is a well-formed Kuwaiti number; normalize_phone() should
+	 * 96598765432 is a well-formed Kuwaiti number; normalize_phone() should
 	 * return it as-is, so no error is added.
 	 */
 	public function test_validate_registration_phone_passes_with_valid_phone(): void {
-		$_POST = array( 'kwtsms_phone_reg' => '96599220322' );
+		$_POST = array( 'kwtsms_phone_reg' => '96598765432' );
 
 		$errors = new WP_Error();
 		$result = ( new KwtSMS_User_Meta() )->validate_registration_phone( $errors, 'testuser', 'test@example.com' );
@@ -293,12 +293,12 @@ class Test_KwtSMS_User_Meta_Registration extends TestCase {
 	 * must contain the normalised number for the given user ID.
 	 */
 	public function test_save_registration_phone_saves_normalized_phone(): void {
-		$_POST = array( 'kwtsms_phone_reg' => '96599220322' );
+		$_POST = array( 'kwtsms_phone_reg' => '96598765432' );
 
 		( new KwtSMS_User_Meta() )->save_registration_phone( 42 );
 
 		$this->assertArrayHasKey( 42, self::$user_meta );
-		$this->assertSame( '96599220322', self::$user_meta[42]['kwtsms_phone'] );
+		$this->assertSame( '96598765432', self::$user_meta[42]['kwtsms_phone'] );
 	}
 
 	/**

@@ -132,7 +132,7 @@ Contact Form 7, WPForms, Elementor Pro (Forms widget), Gravity Forms, and Ninja 
 
 = What phone number format should users enter? =
 
-International format with country code, no leading + or 00. For example, a Kuwaiti number would be `96599220322`. The plugin automatically strips leading `+` or `00`, removes spaces and dashes, and converts Arabic/Hindi numerals to Latin digits.
+International format with country code, no leading + or 00. For example, a Kuwaiti number would be `96598765432`. The plugin automatically strips leading `+` or `00`, removes spaces and dashes, and converts Arabic/Hindi numerals to Latin digits.
 
 = Can I restrict OTP to specific user roles? =
 

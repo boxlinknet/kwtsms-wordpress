@@ -23,7 +23,7 @@ define( 'KWTSMS_TEST_BASE_URL', 'docker' === KWTSMS_TEST_ENV
 
 define( 'KWTSMS_TEST_ADMIN_USER', 'admin' );
 define( 'KWTSMS_TEST_ADMIN_PASS', 'admin' );
-define( 'KWTSMS_TEST_PHONE',      '96599220322' );
+define( 'KWTSMS_TEST_PHONE',      '96598765432' );
 
 // Screenshots root — at REPO ROOT docs/screenshots/, NOT inside plugin dir.
 // __DIR__ = tests/browser/  depth 4 walks up to repo root.

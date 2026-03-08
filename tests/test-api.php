@@ -39,50 +39,50 @@ class Test_KwtSMS_API extends TestCase {
 	// =========================================================================
 
 	public function test_normalize_phone_strips_plus() {
-		$result = KwtSMS_API::normalize_phone( '+96599220322' );
-		$this->assertSame( '96599220322', $result );
+		$result = KwtSMS_API::normalize_phone( '+96598765432' );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_strips_double_zero() {
-		$result = KwtSMS_API::normalize_phone( '0096599220322' );
-		$this->assertSame( '96599220322', $result );
+		$result = KwtSMS_API::normalize_phone( '0096598765432' );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_removes_spaces() {
 		$result = KwtSMS_API::normalize_phone( '965 9922 0322' );
-		$this->assertSame( '96599220322', $result );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_removes_dashes() {
 		$result = KwtSMS_API::normalize_phone( '965-9922-0322' );
-		$this->assertSame( '96599220322', $result );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_converts_arabic_numerals() {
 		// Arabic-Indic numerals: ٩٦٥٩٩٢٢٠٣٢٢
 		$result = KwtSMS_API::normalize_phone( '٩٦٥٩٩٢٢٠٣٢٢' );
-		$this->assertSame( '96599220322', $result );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_converts_eastern_arabic_numerals() {
 		// Extended Arabic-Indic numerals (Persian/Urdu): ۹۶۵۹۹۲۲۰۳۲۲
 		$result = KwtSMS_API::normalize_phone( '۹۶۵۹۹۲۲۰۳۲۲' );
-		$this->assertSame( '96599220322', $result );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_removes_parentheses_and_dots() {
 		$result = KwtSMS_API::normalize_phone( '(965) 9922.0322' );
-		$this->assertSame( '96599220322', $result );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_strips_plus_and_spaces_combined() {
 		$result = KwtSMS_API::normalize_phone( '+965 9922 0322' );
-		$this->assertSame( '96599220322', $result );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_valid_without_changes() {
-		$result = KwtSMS_API::normalize_phone( '96599220322' );
-		$this->assertSame( '96599220322', $result );
+		$result = KwtSMS_API::normalize_phone( '96598765432' );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_returns_wp_error_for_letters() {
@@ -160,7 +160,7 @@ class Test_KwtSMS_API extends TestCase {
 	public function test_send_sms_returns_error_when_credentials_missing() {
 		Functions\when( '__' )->returnArg( 1 );
 		$api    = new KwtSMS_API( '', '', false );
-		$result = $api->send_sms( '96599220322', 'KWTSMS', 'Test message' );
+		$result = $api->send_sms( '96598765432', 'KWTSMS', 'Test message' );
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertSame( 'kwtsms_no_credentials', $result->get_error_code() );
 	}
@@ -184,7 +184,7 @@ class Test_KwtSMS_API extends TestCase {
 		}
 
 		$api    = new KwtSMS_API( 'testuser', 'testpass', true );
-		$result = $api->send_sms( '96599220322', 'KWTSMS', 'Your code is: 123456' );
+		$result = $api->send_sms( '96598765432', 'KWTSMS', 'Your code is: 123456' );
 
 		// Test mode + WP_DEBUG_LOG — just verify no exception and result is an array.
 		$this->assertIsArray( $result );
@@ -197,7 +197,7 @@ class Test_KwtSMS_API extends TestCase {
 	public function test_normalize_phone_with_dot_separator() {
 		// +965.99220322 — dots used as separators (common Kuwaiti format).
 		$result = KwtSMS_API::normalize_phone( '+965.99220322' );
-		$this->assertSame( '96599220322', $result );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_sql_injection_string() {
@@ -215,8 +215,8 @@ class Test_KwtSMS_API extends TestCase {
 	}
 
 	public function test_normalize_phone_newline_and_tab_chars() {
-		$result = KwtSMS_API::normalize_phone( "96599220322\n\t" );
-		$this->assertSame( '96599220322', $result );
+		$result = KwtSMS_API::normalize_phone( "96598765432\n\t" );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	public function test_normalize_phone_arabic_alpha_string() {
@@ -230,8 +230,8 @@ class Test_KwtSMS_API extends TestCase {
 	public function test_normalize_phone_unicode_control_chars() {
 		// Null byte and zero-width space injected around a valid number.
 		// After stripping non-digits, should be valid.
-		$result = KwtSMS_API::normalize_phone( "\x0096599220322\xe2\x80\x8b" );
-		$this->assertSame( '96599220322', $result );
+		$result = KwtSMS_API::normalize_phone( "\x0096598765432\xe2\x80\x8b" );
+		$this->assertSame( '96598765432', $result );
 	}
 
 	// =========================================================================

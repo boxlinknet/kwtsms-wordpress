@@ -152,7 +152,7 @@ class Test_Integration_Blocked_Countries extends WP_UnitTestCase {
 	 * send_sms() does NOT return 'country_not_allowed' when the phone's country
 	 * is explicitly included in allowed_countries.
 	 *
-	 * Phone 96599220322 starts with 965 (Kuwait, ISO2 KW).
+	 * Phone 96598765432 starts with 965 (Kuwait, ISO2 KW).
 	 * allowed_countries=['KW','SA'] allows it.
 	 */
 	public function test_sms_allowed_when_country_in_allowed_list(): void {
@@ -161,7 +161,7 @@ class Test_Integration_Blocked_Countries extends WP_UnitTestCase {
 		] );
 
 		// Kuwait phone (965 prefix).
-		$kw_phone = '96599220322';
+		$kw_phone = '96598765432';
 		$result   = $this->api->send_sms( $kw_phone, 'KWTSMS', 'Test message', 'test' );
 
 		// Result should NOT be a country_not_allowed error.

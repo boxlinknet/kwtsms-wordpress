@@ -21,7 +21,7 @@ return [
         'Login mode = Two-Factor (2FA)  (Admin  General  Login Mode)',
         '2FA enabled for Subscriber role  (Admin  General  Roles requiring OTP)',
         'Test user exists: username = "testuser", password = "testpass", role = Subscriber',
-        'testuser has kwtsms_phone = 96599220322 stored in usermeta',
+        'testuser has kwtsms_phone = 96598765432 stored in usermeta',
         'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
         'debug_logging = 1  (Admin  General  Developer Tools  Debug Logging)',
         'API credentials configured',

@@ -153,7 +153,7 @@ $role_colors = array(
 						<input
 							type="tel"
 							class="kwtsms-unphone-input"
-							placeholder="<?php esc_attr_e( 'e.g. 96599220322', 'wp-kwtsms' ); ?>"
+							placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'wp-kwtsms' ); ?>"
 							maxlength="15"
 							data-user-id="<?php echo (int) $user->ID; ?>"
 							autocomplete="off"

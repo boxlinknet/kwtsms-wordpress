@@ -156,7 +156,7 @@ class Test_Integration_Welcome_SMS extends WP_UnitTestCase {
 			'user_login' => 'welcometestuser',
 			'user_email' => 'welcometest@example.com',
 		] );
-		update_user_meta( $user_id, 'kwtsms_phone', '96599220322' );
+		update_user_meta( $user_id, 'kwtsms_phone', '96598765432' );
 
 		// Reset recorded calls (the factory may have triggered hooks).
 		$this->api_calls = [];
@@ -185,7 +185,7 @@ class Test_Integration_Welcome_SMS extends WP_UnitTestCase {
 			'user_login' => 'disabledwelcomeuser',
 			'user_email' => 'disabledwelcome@example.com',
 		] );
-		update_user_meta( $user_id, 'kwtsms_phone', '96599220322' );
+		update_user_meta( $user_id, 'kwtsms_phone', '96598765432' );
 
 		$this->api_calls = [];
 		do_action( 'user_register', $user_id );

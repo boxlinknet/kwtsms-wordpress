@@ -259,11 +259,11 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	// =========================================================================
 
 	public function test_is_rate_limited_returns_false_initially() {
-		$this->assertFalse( $this->engine->is_rate_limited( '96599220322' ) );
+		$this->assertFalse( $this->engine->is_rate_limited( '96598765432' ) );
 	}
 
 	public function test_is_rate_limited_returns_true_after_max_requests() {
-		$phone = '96599220322';
+		$phone = '96598765432';
 		$now   = time();
 		// Pre-fill the sliding-window array with RATE_LIMIT_MAX timestamps
 		// all within the current window.
@@ -273,7 +273,7 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	}
 
 	public function test_is_rate_limited_records_timestamp_on_first_call() {
-		$phone = '96599220322';
+		$phone = '96598765432';
 		// First call should not be limited (records the timestamp).
 		$this->assertFalse( $this->engine->is_rate_limited( $phone ) );
 		$key = 'kwtsms_otp_rate_' . md5( $phone );
@@ -283,7 +283,7 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	}
 
 	public function test_is_rate_limited_allows_under_max() {
-		$phone = '96599220322';
+		$phone = '96598765432';
 		// Call RATE_LIMIT_MAX - 1 times; none should be blocked.
 		for ( $i = 0; $i < KwtSMS_OTP_Engine::RATE_LIMIT_MAX - 1; $i++ ) {
 			$this->assertFalse( $this->engine->is_rate_limited( $phone ) );
@@ -294,7 +294,7 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	 * Sliding-window test 1: blocks on the (max+1)th call within the window.
 	 */
 	public function test_sliding_window_blocks_after_max_in_window() {
-		$phone = '96599220322';
+		$phone = '96598765432';
 		$max   = KwtSMS_OTP_Engine::RATE_LIMIT_MAX;
 
 		// First $max calls should all be allowed (not limited).
@@ -319,7 +319,7 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	 * that are older than the window.
 	 */
 	public function test_sliding_window_allows_after_window_expires() {
-		$phone  = '96599220322';
+		$phone  = '96598765432';
 		$max    = KwtSMS_OTP_Engine::RATE_LIMIT_MAX;
 		$window = KwtSMS_OTP_Engine::RATE_LIMIT_WINDOW;
 		$key    = 'kwtsms_otp_rate_' . md5( $phone );
@@ -348,7 +348,7 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 	 * allowed again, regardless of how many requests were made previously.
 	 */
 	public function test_sliding_window_prunes_expired_timestamps_correctly() {
-		$phone  = '96599220322';
+		$phone  = '96598765432';
 		$max    = KwtSMS_OTP_Engine::RATE_LIMIT_MAX;
 		$window = KwtSMS_OTP_Engine::RATE_LIMIT_WINDOW; // 600 s
 		$key    = 'kwtsms_otp_rate_' . md5( $phone );
@@ -592,7 +592,7 @@ class Test_KwtSMS_OTP_Engine extends TestCase {
 		$engine = new KwtSMS_OTP_Engine( $this->settings );
 
 		$this->assertFalse(
-			$engine->is_phone_blocked( '96599220322' ),
+			$engine->is_phone_blocked( '96598765432' ),
 			'Empty block list must return false for any phone number.'
 		);
 	}

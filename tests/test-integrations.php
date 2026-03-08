@@ -874,7 +874,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 			->getMock();
 		$order->method( 'get_customer_id' )->willReturn( 0 );
 		// Return a valid billing phone — get_customer_id is 0 so user-meta path is skipped.
-		$order->method( 'get_billing_phone' )->willReturn( '96599220322' );
+		$order->method( 'get_billing_phone' )->willReturn( '96598765432' );
 		$order->method( 'get_order_number' )->willReturn( '42' );
 		$order->method( 'get_total' )->willReturn( 100.00 );
 		$order->method( 'get_billing_first_name' )->willReturn( 'Jane' );
@@ -951,7 +951,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 		$order->method( 'get_billing_last_name' )->willReturn( 'Doe' );
 
 		Functions\when( 'wc_price' )->alias( function ( $amount ) { return (string) $amount; } );
-		Functions\when( 'get_user_meta' )->justReturn( '96599220322' );
+		Functions\when( 'get_user_meta' )->justReturn( '96598765432' );
 
 		$woo->on_order_status_changed( 99, 'pending', 'processing', $order );
 
@@ -1021,7 +1021,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 		// unmockable WPCF7_Submission::get_instance() static call.
 		$cf7 = new class( $plugin ) extends KwtSMS_CF7 {
 			protected function get_submission_phone() {
-				return '96599220322';
+				return '96598765432';
 			}
 		};
 
@@ -1124,7 +1124,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 
 		// Minimal WPForms submission data.
 		$fields = array(
-			array( 'type' => 'phone', 'name' => 'Phone', 'value' => '96599220322' ),
+			array( 'type' => 'phone', 'name' => 'Phone', 'value' => '96598765432' ),
 		);
 		$form_data = array(
 			'settings' => array( 'form_title' => 'My Contact Form' ),
@@ -1183,7 +1183,7 @@ class Test_KwtSMS_Integration_Wiring extends TestCase {
 		// unmockable WPCF7_Submission::get_instance() static call.
 		$cf7 = new class( $plugin ) extends KwtSMS_CF7 {
 			protected function get_submission_phone() {
-				return '96599220322';
+				return '96598765432';
 			}
 		};
 
@@ -1291,7 +1291,7 @@ class Test_KwtSMS_Woo_v230 extends TestCase {
 		} );
 		Functions\when( 'wp_unslash' )->alias( function ( $v ) { return $v; } );
 		Functions\when( 'is_wp_error' )->alias( function ( $v ) { return $v instanceof WP_Error; } );
-		Functions\when( 'get_user_meta' )->justReturn( '96599220322' );
+		Functions\when( 'get_user_meta' )->justReturn( '96598765432' );
 		Functions\when( 'get_bloginfo' )->alias( function ( $show ) {
 			return ( 'name' === $show ) ? 'TestSite' : '';
 		} );
@@ -1590,7 +1590,7 @@ class Test_KwtSMS_Woo_v230 extends TestCase {
 
 		$order->method( 'get_customer_id' )->willReturn( 0 );
 		// Return a valid phone so on_order_status_changed doesn't bail with "No phone".
-		$order->method( 'get_billing_phone' )->willReturn( '96599220322' );
+		$order->method( 'get_billing_phone' )->willReturn( '96598765432' );
 		$order->method( 'get_order_number' )->willReturn( $order_number );
 		$order->method( 'get_total' )->willReturn( $total );
 		$order->method( 'get_billing_first_name' )->willReturn( $first_name );
@@ -1625,7 +1625,7 @@ class Test_KwtSMS_Woo_v230 extends TestCase {
 
 		$order->method( 'get_customer_id' )->willReturn( 0 );
 		// Return a valid phone so on_order_status_changed doesn't bail with "No phone".
-		$order->method( 'get_billing_phone' )->willReturn( '96599220322' );
+		$order->method( 'get_billing_phone' )->willReturn( '96598765432' );
 		$order->method( 'get_order_number' )->willReturn( $order_number );
 		$order->method( 'get_total' )->willReturn( $total );
 		$order->method( 'get_billing_first_name' )->willReturn( $first_name );
@@ -1738,7 +1738,7 @@ class Test_KwtSMS_Woo_Metabox extends TestCase {
 		// Provide POST data so we don't hit the field-missing guard first.
 		$_POST = array(
 			'order_id' => '10',
-			'phone'    => '96599220322',
+			'phone'    => '96598765432',
 			'message'  => 'Hello',
 			'nonce'    => 'fake_nonce',
 		);
@@ -1830,7 +1830,7 @@ class Test_KwtSMS_Woo_Metabox extends TestCase {
 
 		$_POST = array(
 			'order_id' => '10',
-			'phone'    => '96599220322',
+			'phone'    => '96598765432',
 			'message'  => 'Hello from test',
 			'nonce'    => 'fake_nonce',
 		);
@@ -2023,15 +2023,15 @@ class Test_KwtSMS_GravityForms extends TestCase {
 			'title'  => 'Contact Us',
 			'fields' => array( $phone_field ),
 		);
-		$entry           = array( 1 => '96599220322' );
+		$entry           = array( 1 => '96598765432' );
 
 		$gf->send_notification( $entry, $form );
 
 		$this->assertNotNull( $sent_phone,   'send_sms was not called — no phone dispatched.' );
 		$this->assertNotNull( $sent_message, 'send_sms was not called — no message dispatched.' );
-		$this->assertSame( '96599220322', $sent_phone );
+		$this->assertSame( '96598765432', $sent_phone );
 		$this->assertStringContainsString( 'Contact Us', $sent_message );
-		$this->assertStringContainsString( '96599220322', $sent_message );
+		$this->assertStringContainsString( '96598765432', $sent_message );
 		$this->assertStringNotContainsString( '{form_name}', $sent_message );
 		$this->assertStringNotContainsString( '{phone}', $sent_message );
 	}
@@ -2308,7 +2308,7 @@ class Test_KwtSMS_NinjaForms extends TestCase {
 				array(
 					'type'  => 'phone',
 					'label' => 'Phone',
-					'value' => '96599220322',
+					'value' => '96598765432',
 				),
 			),
 		);
@@ -2317,7 +2317,7 @@ class Test_KwtSMS_NinjaForms extends TestCase {
 
 		$this->assertNotNull( $sent_phone,   'send_sms was not called — no phone dispatched.' );
 		$this->assertNotNull( $sent_message, 'send_sms was not called — no message dispatched.' );
-		$this->assertSame( '96599220322', $sent_phone );
+		$this->assertSame( '96598765432', $sent_phone );
 		$this->assertStringContainsString( 'My NF Form', $sent_message );
 		$this->assertStringNotContainsString( '{form_name}', $sent_message );
 	}
@@ -2409,7 +2409,7 @@ class Test_KwtSMS_NinjaForms extends TestCase {
 			array(
 				'type'   => 'phone',
 				'label'  => 'Phone',
-				'value'  => '96599220322',
+				'value'  => '96598765432',
 				'errors' => array(),
 			),
 		);
@@ -2450,7 +2450,7 @@ class Test_KwtSMS_NinjaForms extends TestCase {
 				'id'     => '1',
 				'type'   => 'phone',
 				'label'  => 'Phone',
-				'value'  => '96599220322',
+				'value'  => '96598765432',
 				'errors' => array(),
 			),
 		);

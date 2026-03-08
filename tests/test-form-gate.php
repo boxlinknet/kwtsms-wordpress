@@ -504,7 +504,7 @@ class Test_Form_Gate_Security extends TestCase {
 
 		Functions\when( 'get_transient' )->justReturn(
 			array(
-				'phone'    => '96599220322',
+				'phone'    => '96598765432',
 				'otp_hash' => 'some-bcrypt-hash',
 				'verified' => false,
 				'attempts' => 0,
@@ -565,7 +565,7 @@ class Test_Form_Gate_Security extends TestCase {
 
 		Functions\when( 'get_transient' )->justReturn(
 			array(
-				'phone'    => '96599220322',
+				'phone'    => '96598765432',
 				'otp_hash' => 'irrelevant-hash',
 				'verified' => false,
 				'attempts' => 5,
@@ -838,7 +838,7 @@ class Test_Form_Gate_Token extends TestCase {
 	public function test_verify_form_token_returns_false_when_not_verified() {
 		$token = str_repeat( 'd', 32 );
 		Functions\when( 'get_transient' )->justReturn(
-			array( 'phone' => '96599220322', 'otp_hash' => 'x', 'verified' => false )
+			array( 'phone' => '96598765432', 'otp_hash' => 'x', 'verified' => false )
 		);
 
 		$result = $this->invoke_verify_form_token( $token );
@@ -851,7 +851,7 @@ class Test_Form_Gate_Token extends TestCase {
 	public function test_verify_form_token_returns_true_when_verified() {
 		$token = str_repeat( 'e', 32 );
 		Functions\when( 'get_transient' )->justReturn(
-			array( 'phone' => '96599220322', 'otp_hash' => 'x', 'verified' => true )
+			array( 'phone' => '96598765432', 'otp_hash' => 'x', 'verified' => true )
 		);
 
 		$result = $this->invoke_verify_form_token( $token );
@@ -863,7 +863,7 @@ class Test_Form_Gate_Token extends TestCase {
 	 */
 	public function test_verify_form_token_rejects_invalid_token_format() {
 		Functions\when( 'get_transient' )->justReturn(
-			array( 'phone' => '96599220322', 'otp_hash' => 'x', 'verified' => true )
+			array( 'phone' => '96598765432', 'otp_hash' => 'x', 'verified' => true )
 		);
 
 		// 16 chars instead of 32.

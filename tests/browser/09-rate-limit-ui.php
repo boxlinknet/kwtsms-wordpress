@@ -20,7 +20,7 @@ return [
     'preconditions' => [
         'Passwordless login or 2FA mode enabled  (so the OTP request button is accessible)',
         'Rate limiting enabled — RATE_LIMIT_MAX = 3, window = 600 s  (default plugin settings)',
-        'Test user exists with kwtsms_phone = 96599220322',
+        'Test user exists with kwtsms_phone = 96598765432',
         'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
         'debug_logging = 1  (Admin  General  Developer Tools  Debug Logging)',
         'API credentials configured',

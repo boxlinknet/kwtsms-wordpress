@@ -4,7 +4,7 @@
  *
  * Verifies that phone numbers entered with dots and a leading plus sign
  * (e.g., +965.99220322) are correctly normalised to the stored format
- * (96599220322) and resolve to the correct user, allowing successful login.
+ * (96598765432) and resolve to the correct user, allowing successful login.
  *
  * @test-name    06-passwordless-dot-format
  * @environment  docker (http://localhost:8080)
@@ -18,7 +18,7 @@ return [
 
     'preconditions' => [
         'Passwordless login mode enabled (Admin  General  Login Mode = Passwordless OTP)',
-        'Test user exists with usermeta kwtsms_phone = 96599220322 (plain digits, no plus/dots)',
+        'Test user exists with usermeta kwtsms_phone = 96598765432 (plain digits, no plus/dots)',
         'test_mode     = 1  (Admin  Gateway  Test Mode ON)',
         'debug_logging = 1  (Admin  General  Developer Tools  Debug Logging)',
         'API credentials configured',
@@ -97,5 +97,5 @@ return [
         ],
     ],
 
-    'expected_outcome' => 'Phone entered as +965.99220322 is normalised to 96599220322, the correct user is found, OTP is sent and verified, and the user lands on the dashboard.',
+    'expected_outcome' => 'Phone entered as +965.99220322 is normalised to 96598765432, the correct user is found, OTP is sent and verified, and the user lands on the dashboard.',
 ];

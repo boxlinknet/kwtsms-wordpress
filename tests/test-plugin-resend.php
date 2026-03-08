@@ -109,7 +109,7 @@ class Test_KwtSMS_Plugin_Resend extends TestCase {
 			$reset_key,
 			array(
 				'user_id' => 42,
-				'phone'   => '96599220322',
+				'phone'   => '96598765432',
 			),
 			15 * MINUTE_IN_SECONDS
 		);
@@ -143,7 +143,7 @@ class Test_KwtSMS_Plugin_Resend extends TestCase {
 			$login_key,
 			array(
 				'user_id' => 7,
-				'phone'   => '96599220322',
+				'phone'   => '96598765432',
 			),
 			10 * MINUTE_IN_SECONDS
 		);
