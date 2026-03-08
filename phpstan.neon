@@ -40,6 +40,12 @@ parameters:
             message: '#^Access to protected property KwtSMS_Admin::\$plugin\.$#'
             paths:
                 - admin/views/
+        # View templates are require'd inside class methods, so $this is
+        # always defined at runtime. PHPStan analyses them in isolation.
+        -
+            message: '#^Variable \$this might not be defined\.$#'
+            paths:
+                - admin/views/
 
         # ── Intentional return; after wp_send_json_error / success ────────────
         # wp_send_json_error() calls wp_die() which never returns. PHPStan
@@ -57,10 +63,19 @@ parameters:
         # ── View files: defensive ?? on variables injected by the caller ─────
         # These variables are set by the caller before include. PHPStan analyses
         # the view in isolation and incorrectly believes they are always set.
+        # Also covers defensive guards on array shapes and isset/empty checks.
         -
             message: '#^Variable \$.+ on left side of \?\? always exists and is not nullable\.$#'
             paths:
                 - includes/views/
+                - admin/views/
+        -
+            message: '#^Offset .+ on .+ always exists and is not (nullable|falsy)\.$#'
+            paths:
+                - admin/views/
+        -
+            message: '#^Left side of && is always true\.$#'
+            paths:
                 - admin/views/
 
         # ── PHPDoc-driven type narrowing false positives ───────────────────────
@@ -77,7 +92,7 @@ parameters:
         # WC classes and functions are only available when WooCommerce is active.
         - '#^(Class|Parameter .+ has invalid type) WC_(Order|Checkout|Session|Cart)\b#'
         - '#^Call to method .+ on an unknown class WC_(Order|Checkout|Session|Cart)\b#'
-        - '#^Function wc_(get_order|price|add_notice|get_order_status_name) not found\.#'
+        - '#^Function (wc_(get_order|price|add_notice|get_order_status_name)|get_woocommerce_currency) not found\.#'
 
         # ── Elementor Pro (optional dependency) ────────────────────────────────
         - '#ElementorPro#'
