@@ -223,7 +223,7 @@ $content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<p><?php esc_html_e( 'Customise the message text for each event (login, reset, welcome). Placeholders like {otp}, {site_name}, and {expiry_minutes} are replaced automatically. Separate English and Arabic templates are supported.', 'wp-kwtsms' ); ?></p>
 
 		<h3><?php esc_html_e( 'WooCommerce Integration', 'wp-kwtsms' ); ?></h3>
-		<p><?php esc_html_e( 'When WooCommerce is active, the plugin can send SMS to customers when order status changes. Supported statuses: Processing, Shipped (On-Hold), Completed, Cancelled, Pending Payment, Refunded, and Failed. Each status has its own configurable template (English + Arabic). Additional features:', 'wp-kwtsms' ); ?></p>
+		<p><?php esc_html_e( 'When WooCommerce is active, the plugin can send SMS to customers when order status changes. Supported statuses: Processing, On-Hold (Shipped), Completed, Cancelled, Pending Payment, Refunded, and Failed. Each status has its own configurable template (English + Arabic). Additional features:', 'wp-kwtsms' ); ?></p>
 		<ul style="margin-left:20px;font-size:14px;line-height:1.8;">
 			<li><?php esc_html_e( 'Admin SMS notifications: send a copy to a store phone number on any status change.', 'wp-kwtsms' ); ?></li>
 			<li><?php esc_html_e( 'Per-order custom SMS: send a custom message from the order edit screen.', 'wp-kwtsms' ); ?></li>
