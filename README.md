@@ -336,46 +336,6 @@ International sending is disabled by default on all kwtSMS accounts. Log in to y
 
 Yes. WooCommerce is fully optional. All login, password reset, and contact form features work on any WordPress site.
 
-**Which contact form plugins are supported?**
-
-Contact Form 7, WPForms, Elementor Pro (Forms widget), Gravity Forms, and Ninja Forms. Each has its own settings page with independent enable/mode controls and SMS templates.
-
-**What phone number format should users enter?**
-
-International format with country code, no leading `+` or `00`. For example, a Kuwaiti number is `96598765432`. The plugin automatically strips `+`/`00`, removes spaces and dashes, and converts Arabic/Hindi numerals to Latin digits.
-
-**Can I restrict OTP to specific user roles?**
-
-Yes. In General > OTP Required Roles, select which roles must pass OTP. Administrators are excluded by default.
-
-**What happens if a user does not have a phone number on their account?**
-
-The admin sees a notice in the user profile. The user is prompted to add a phone number before SMS features activate. Password reset falls back to the standard email flow.
-
-**What is the OTP Gate mode for contact forms?**
-
-In OTP Gate mode, form submission is blocked until the user verifies their phone number via SMS. The verification token is validated server-side before the form data is processed and cannot be bypassed by manipulating the front end.
-
-**Can I customize the SMS message?**
-
-Yes. Go to kwtSMS > Templates. Each template has a separate English and Arabic textarea. Supported placeholders (`{otp}`, `{site_name}`, `{expiry_minutes}`, etc.) are listed below each field. A live character counter shows how many SMS pages the message will use.
-
-**Does the plugin support Arabic SMS?**
-
-Yes. Arabic templates are stored separately. The plugin detects the WordPress site language via `get_locale()` and sends the Arabic template when the locale starts with `ar_`. The admin template editor has a right-to-left textarea for Arabic input.
-
-**How does rate limiting work?**
-
-The plugin tracks OTP requests per phone number and per IP address using WordPress transients. By default, a phone can request a maximum of 3 OTPs per 10-minute window. Failed verification attempts are counted separately and trigger a timed lockout after the configured maximum (default: 3 attempts).
-
-**Is the plugin HTTPS-only?**
-
-The plugin works over HTTP but shows an admin notice recommending HTTPS. The kwtSMS API endpoint is always called over HTTPS regardless of your site configuration.
-
-**Where is plugin data stored?**
-
-All settings are in `wp_options`. Phone numbers are in `wp_usermeta`. OTP tokens and rate-limit counters use WordPress transients (stored in `wp_options` or object cache). `uninstall.php` removes all plugin data on deletion.
-
 **How do I recover if I am locked out due to OTP?**
 
 Add `define( 'KWTSMS_OTP_DISABLED', true );` to `wp-config.php`. This bypasses all OTP checks immediately. Remove it once you regain access. See the Emergency Bypass section above for alternatives.
