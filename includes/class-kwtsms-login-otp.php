@@ -114,7 +114,6 @@ class KwtSMS_Login_OTP {
 		if ( $trusted_devices->is_trusted( $user->ID ) ) {
 			$old_token = $trusted_devices->get_cookie_token( $user->ID );
 			$new_token = $trusted_devices->rotate_token( $user->ID, $old_token );
-			$trusted_devices->update_last_seen( $user->ID, $new_token );
 			$trusted_devices->set_cookie( $user->ID, $new_token );
 			return $user; // Let WordPress complete the login normally.
 		}
@@ -425,7 +424,8 @@ class KwtSMS_Login_OTP {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce already verified in handle_otp_submission before calling this method.
 		if ( ! empty( $_POST['kwtsms_trust_device'] ) ) {
 			$trusted   = new KwtSMS_Trusted_Devices();
-			$new_token = $trusted->issue_token( $user_id );
+			$old_token = $trusted->get_cookie_token( $user_id ); // '' if no existing cookie.
+			$new_token = $trusted->rotate_token( $user_id, $old_token );
 			$trusted->set_cookie( $user_id, $new_token );
 		}
 
