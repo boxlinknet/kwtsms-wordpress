@@ -163,16 +163,16 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 										name="kwtsms_otp_integrations[<?php echo esc_attr( $mode_key ); ?>]"
 										value="notification"
 										<?php checked( $current_mode, 'notification' ); ?> />
-									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms' ); ?>
+									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms' ); ?></strong>:
+									<?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms' ); ?>
 								</label>
 								<label style="display:block;">
 									<input type="radio"
 										name="kwtsms_otp_integrations[<?php echo esc_attr( $mode_key ); ?>]"
 										value="gate"
 										<?php checked( $current_mode, 'gate' ); ?> />
-									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms' ); ?></strong>
-									&mdash; <?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms' ); ?>
+									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms' ); ?></strong>:
+									<?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms' ); ?>
 								</label>
 							</fieldset>
 							<?php if ( 'gate' === $current_mode ) : ?>

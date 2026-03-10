@@ -14,7 +14,7 @@ Only the latest stable release receives security fixes.
 
 Please **do not** open a public GitHub issue for security vulnerabilities.
 
-Report security issues by emailing **security@boxlink.net** with:
+Report security issues by emailing **support@kwtsms.com** with:
 
 - A clear description of the vulnerability
 - Steps to reproduce

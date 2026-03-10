@@ -349,13 +349,14 @@ class KwtSMS_Reset_OTP {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
 		}
 		wp_enqueue_script( 'kwtsms-login-js', KWTSMS_OTP_URL . 'assets/js/login.js', array(), KWTSMS_OTP_VERSION, true );
-		$otp_length   = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
-		$cooldown     = (int) $this->plugin->settings->get( 'general.resend_cooldown', 60 );
-		$is_reset     = true;
-		$login_url    = wp_login_url();
-		$nonce_resend = wp_create_nonce( 'kwtsms_otp_nonce' );
-		$token        = $this->get_reset_cookie_token();
-		$redirect_to  = '';
+		$otp_length      = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
+		$cooldown        = (int) $this->plugin->settings->get( 'general.resend_cooldown', 60 );
+		$is_reset        = true;
+		$login_url       = wp_login_url();
+		$nonce_resend    = wp_create_nonce( 'kwtsms_otp_nonce' );
+		$token           = $this->get_reset_cookie_token();
+		$redirect_to     = '';
+		$plugin_settings = $this->plugin->settings;
 		include KWTSMS_OTP_DIR . 'includes/views/page-otp.php';
 	}
 

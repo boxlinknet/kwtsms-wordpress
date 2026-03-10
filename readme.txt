@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.0.4
+Stable tag: 3.1.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -210,6 +210,16 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
+
+= 3.1.1 =
+* Enhancement: Dashboard widget now pinned to the right column for all users.
+* Enhancement: kwtSMS Dashboard link added to the dashboard widget for quick credit and log access.
+* Enhancement: "View full log" and "kwtSMS Dashboard" links placed on the same line in the widget.
+* Fix: Replace em-dash HTML entity separators with pipe/colon in admin balance bar and form integration settings.
+* Fix: Login page CSS improvements: button sizing, OTP code input focus style, back link alignment, form box-shadow removal.
+* Fix: Logs page tab parameter now validated against a whitelist to prevent unexpected tab values.
+* Security: Update security contact email to support@kwtsms.com.
+* CI: Remove PHPUnit job from GitHub Actions (tests run locally).
 
 = 3.0.4 =
 * CI: Added GitHub Actions workflow for PHPCS, PHPStan, and PHPUnit across PHP 8.1, 8.2, and 8.3.

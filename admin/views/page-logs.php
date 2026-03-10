@@ -19,6 +19,7 @@ if ( ! current_user_can( 'manage_options' ) ) {
 }
 
 $active_tab     = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_history'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$active_tab     = in_array( $active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $active_tab : 'sms_history';
 $items_per_page = 20;
 $current_page   = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
