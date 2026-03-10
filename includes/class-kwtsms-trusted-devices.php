@@ -318,7 +318,11 @@ class KwtSMS_Trusted_Devices {
 		if ( ! isset( $_COOKIE[ $name ] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 			return '';
 		}
-		return sanitize_text_field( wp_unslash( $_COOKIE[ $name ] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$token = sanitize_text_field( wp_unslash( $_COOKIE[ $name ] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		if ( ! preg_match( '/^[0-9a-f]{64}$/', $token ) ) {
+			return '';
+		}
+		return $token;
 	}
 
 	// =========================================================================
