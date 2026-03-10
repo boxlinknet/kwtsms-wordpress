@@ -97,7 +97,7 @@ class Test_Admin_Alerts_Sanitize extends TestCase {
 			'tpl_user_register_ar' => '{site_name}: {username}',
 		);
 		$result = $this->admin->sanitize_alerts_settings( $input );
-		// wp_kses_post strips script tags — mocked as returnArg in test.
+		// sanitize_text_field strips script tags; mocked as returnArg in test.
 		$this->assertArrayHasKey( 'tpl_user_register', $result );
 		$this->assertArrayHasKey( 'en', $result['tpl_user_register'] );
 		$this->assertArrayHasKey( 'ar', $result['tpl_user_register'] );
@@ -144,7 +144,7 @@ class Test_KwtSMS_Admin_Alerts extends TestCase {
 	/**
 	 * Set up Brain\Monkey and shared mocks.
 	 */
-	public function setUp(): void {
+	protected function setUp(): void {
 		parent::setUp();
 		Brain\Monkey\setUp();
 
@@ -191,7 +191,7 @@ class Test_KwtSMS_Admin_Alerts extends TestCase {
 	/**
 	 * Tear down Brain\Monkey after each test.
 	 */
-	public function tearDown(): void {
+	protected function tearDown(): void {
 		Brain\Monkey\tearDown();
 		parent::tearDown();
 	}

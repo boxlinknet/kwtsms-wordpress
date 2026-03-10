@@ -162,6 +162,15 @@ class KwtSMS_Admin {
 			array( $this, 'render_logs_page' )
 		);
 
+		$this->page_hooks[] = add_submenu_page(
+			'kwtsms-otp',
+			__( 'Admin Alerts', 'wp-kwtsms' ),
+			__( 'Admin Alerts', 'wp-kwtsms' ),
+			'manage_options',
+			'kwtsms-otp-alerts',
+			array( $this, 'render_alerts_page' )
+		);
+
 		// ── Users Without Phone: dynamic menu entry ───────────────────────────
 		// Query is cached in a 5-minute transient to avoid a meta_query on every
 		// admin page load. The transient is cleared whenever a phone is saved
@@ -1162,6 +1171,16 @@ class KwtSMS_Admin {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms' ) );
 		}
 		include KWTSMS_OTP_DIR . 'admin/views/page-logs.php';
+	}
+
+	/**
+	 * Render the Admin Alerts settings page.
+	 */
+	public function render_alerts_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		include KWTSMS_OTP_DIR . 'admin/views/page-alerts.php';
 	}
 
 	/**
