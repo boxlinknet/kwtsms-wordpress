@@ -442,6 +442,15 @@ class KwtSMS_OTP_Engine {
 			return true; // pretend success, no SMS sent.
 		}
 
+		// IPHub proxy/VPN check (A5).
+		$reputation = $this->check_ip_reputation( $client_ip );
+		if ( 'block' === $reputation ) {
+			return true; // Silent success: no SMS sent, attacker learns nothing.
+		}
+		if ( 'log' === $reputation ) {
+			$this->log_debug( 'iphub', sprintf( '[IPHub] Suspicious IP flagged but allowed: %s', $client_ip ) );
+		}
+
 		// Within send-cooldown: OTP was dispatched recently; skip re-send.
 		if ( $this->is_send_cooldown_active( $identifier, $action ) ) {
 			return 'cooldown';
@@ -600,6 +609,110 @@ class KwtSMS_OTP_Engine {
 		$mask = str_pad( $mask, $ip_len, "\x00" );
 
 		return ( $ip_bin & $mask ) === ( $range_bin & $mask );
+	}
+
+	// =========================================================================
+	// IP reputation check — IPHub (A5)
+	// =========================================================================
+
+	/**
+	 * Check IP reputation via the IPHub v2 API.
+	 *
+	 * Returns 'allow', 'block', or 'log'.
+	 * Fails open: any HTTP error or unexpected response returns 'allow' so that
+	 * a third-party outage never locks out legitimate users.
+	 * Allowlisted IPs bypass this check entirely.
+	 *
+	 * Block levels returned by IPHub:
+	 *   0 — clean / residential.
+	 *   1 — confirmed proxy or VPN.
+	 *   2 — mixed (some residential, some proxy).
+	 *
+	 * The raw block level (integer) is cached per IP so subsequent OTP requests
+	 * from the same IP do not trigger an extra HTTP call. The action (block/log/allow)
+	 * is NOT cached because admins may change it between requests.
+	 *
+	 * @param string $ip IPv4 or IPv6 address.
+	 *
+	 * @return string 'allow' | 'block' | 'log'
+	 */
+	public function check_ip_reputation( string $ip ): string {
+		$enabled = (bool) $this->settings->get( 'security.iphub_enabled', false );
+		if ( ! $enabled ) {
+			return 'allow';
+		}
+
+		// Allowlisted IPs bypass IPHub entirely.
+		if ( $this->is_ip_allowlisted( $ip ) ) {
+			return 'allow';
+		}
+
+		$api_key = (string) $this->settings->get( 'security.iphub_api_key', '' );
+		if ( '' === $api_key ) {
+			return 'allow';
+		}
+
+		// Serve from cache when possible.
+		$cache_key    = 'kwtsms_ip_' . md5( $ip );
+		$cached_level = get_transient( $cache_key );
+
+		if ( false !== $cached_level ) {
+			$level = (int) $cached_level;
+		} else {
+			// Fetch from IPHub API with a short timeout to avoid blocking the login flow.
+			$response = wp_remote_get(
+				'https://v2.api.iphub.info/ip/' . rawurlencode( $ip ),
+				array(
+					'headers' => array( 'X-Key' => $api_key ),
+					'timeout' => 3,
+				)
+			);
+
+			if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+				return 'allow'; // Fail open.
+			}
+
+			$body = json_decode( wp_remote_retrieve_body( $response ), true );
+			if ( ! isset( $body['block'] ) ) {
+				return 'allow'; // Fail open.
+			}
+
+			$level = (int) $body['block'];
+			$ttl   = (int) $this->settings->get( 'security.iphub_cache_ttl', 86400 );
+			set_transient( $cache_key, $level, $ttl );
+		}
+
+		// Map the block level to an admin-configured action.
+		if ( 1 === $level ) {
+			return (string) $this->settings->get( 'security.iphub_action_block1', 'block' );
+		}
+		if ( 2 === $level ) {
+			return (string) $this->settings->get( 'security.iphub_action_block2', 'log' );
+		}
+
+		return 'allow';
+	}
+
+	/**
+	 * Write a line to the debug log when the general.debug_logging setting is on.
+	 *
+	 * Uses the same log file as KwtSMS_API::write_debug_log() so all plugin
+	 * output lands in one file: wp-content/kwtsms-debug.log.
+	 *
+	 * @param string $context Short label (e.g. 'iphub').
+	 * @param string $message Log message text.
+	 */
+	private function log_debug( string $context, string $message ): void {
+		if ( ! $this->settings->get( 'general.debug_logging', false ) ) {
+			return;
+		}
+		if ( ! defined( 'WP_CONTENT_DIR' ) ) {
+			return;
+		}
+		$log_path = WP_CONTENT_DIR . '/kwtsms-debug.log';
+		$line     = '[' . date( 'Y-m-d H:i:s' ) . '] [kwtsms-otp] [' . $context . '] ' . $message . PHP_EOL; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		file_put_contents( $log_path, $line, FILE_APPEND );
 	}
 
 	// =========================================================================

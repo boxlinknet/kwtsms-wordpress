@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.1.4
+Stable tag: 3.1.5
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -210,6 +210,9 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
+
+= 3.1.5 =
+* Security: IPHub Proxy/VPN Detection. OTP requests from known proxy or VPN IPs can be silently blocked or flagged based on admin-configured actions per block level. Result cached per IP with configurable TTL. Allowlisted IPs bypass the check entirely.
 
 = 3.1.4 =
 * Security: IP Allowlist/Blocklist with CIDR support. Admin textareas for IPv4/IPv6 address and CIDR ranges. Allowlisted IPs bypass per-IP rate limiting; blocklisted IPs receive a silent refusal indistinguishable from a rate-limit error.

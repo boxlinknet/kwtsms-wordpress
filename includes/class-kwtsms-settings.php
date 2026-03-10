@@ -25,6 +25,13 @@ class KwtSMS_Settings {
 	 * @var array
 	 */
 	const DEFAULTS = array(
+		'security'     => array(
+			'iphub_api_key'       => '',
+			'iphub_enabled'       => false,
+			'iphub_action_block1' => 'block',  // Action for block level 1 (confirmed proxy/VPN): block, allow, or log.
+			'iphub_action_block2' => 'log',    // Action for block level 2 (mixed residential/proxy): log, allow, or block.
+			'iphub_cache_ttl'     => 86400,    // Transient TTL for cached IP reputation results (default: 1 day = 86400 s).
+		),
 		'general'      => array(
 			'otp_mode'             => '2fa',     // Options: 2fa, passwordless, or both.
 			'otp_length'           => 6,          // 4 or 6.

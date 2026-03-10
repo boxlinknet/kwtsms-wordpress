@@ -525,6 +525,101 @@ foreach ( $all_countries as $cc ) {
 
 		<?php submit_button( __( 'Save Settings', 'wp-kwtsms' ), 'primary kwtsms-save-btn' ); ?>
 	</form>
+
+	<?php
+	// Load security settings for the IPHub form.
+	$security            = $settings->get( 'security' ) + KwtSMS_Settings::DEFAULTS['security'];
+	$iphub_api_key       = $security['iphub_api_key'] ?? '';
+	$iphub_enabled       = ! empty( $security['iphub_enabled'] );
+	$iphub_action_block1 = $security['iphub_action_block1'] ?? 'block';
+	$iphub_action_block2 = $security['iphub_action_block2'] ?? 'log';
+	$iphub_cache_ttl     = (int) ( $security['iphub_cache_ttl'] ?? 86400 );
+	?>
+
+	<!-- ===== IPHub Proxy/VPN Detection ===== -->
+	<form method="post" action="options.php">
+		<?php settings_fields( 'kwtsms_otp_security_group' ); ?>
+
+		<h2 class="title"><?php esc_html_e( 'Proxy and VPN Detection (IPHub)', 'wp-kwtsms' ); ?></h2>
+		<p style="margin-top:-8px;color:#555;font-size:13px;">
+			<?php
+			printf(
+				/* translators: %s: IPHub website link */
+				esc_html__( 'Uses the %s API to identify and act on OTP requests from known proxy or VPN IP addresses. Allowlisted IPs (above) always bypass this check.', 'wp-kwtsms' ),
+				'<a href="https://iphub.info/" target="_blank" rel="noopener noreferrer">IPHub</a>'
+			);
+			?>
+		</p>
+		<table class="form-table" role="presentation">
+
+			<tr>
+				<th scope="row"><label for="kwtsms_iphub_enabled"><?php esc_html_e( 'Enable IPHub Detection', 'wp-kwtsms' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_security[iphub_enabled]" id="kwtsms_iphub_enabled"
+							value="1" <?php checked( $iphub_enabled ); ?> />
+						<?php esc_html_e( 'Check each OTP request IP against the IPHub reputation database.', 'wp-kwtsms' ); ?>
+					</label>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><label for="kwtsms_iphub_api_key"><?php esc_html_e( 'IPHub API Key', 'wp-kwtsms' ); ?></label></th>
+				<td>
+					<input type="password" name="kwtsms_otp_security[iphub_api_key]" id="kwtsms_iphub_api_key"
+						value="<?php echo esc_attr( $iphub_api_key ); ?>"
+						class="regular-text" autocomplete="new-password"
+						placeholder="<?php esc_attr_e( 'Paste your IPHub API key here', 'wp-kwtsms' ); ?>" />
+					<p class="description">
+						<a href="https://iphub.info/register" target="_blank" rel="noopener noreferrer">
+							<?php esc_html_e( 'Get a free API key from IPHub.info (up to 1,000 lookups/day on the free plan) ', 'wp-kwtsms' ); ?>
+						</a>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><label for="kwtsms_iphub_action_block1"><?php esc_html_e( 'Action for Level 1 (Proxy/VPN)', 'wp-kwtsms' ); ?></label></th>
+				<td>
+					<select name="kwtsms_otp_security[iphub_action_block1]" id="kwtsms_iphub_action_block1">
+						<option value="block" <?php selected( $iphub_action_block1, 'block' ); ?>><?php esc_html_e( 'Block silently (recommended)', 'wp-kwtsms' ); ?></option>
+						<option value="log"   <?php selected( $iphub_action_block1, 'log' ); ?>><?php esc_html_e( 'Log only, allow through', 'wp-kwtsms' ); ?></option>
+						<option value="allow" <?php selected( $iphub_action_block1, 'allow' ); ?>><?php esc_html_e( 'Allow (no action)', 'wp-kwtsms' ); ?></option>
+					</select>
+					<p class="description"><?php esc_html_e( 'IP identified as a confirmed proxy or VPN exit node.', 'wp-kwtsms' ); ?></p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><label for="kwtsms_iphub_action_block2"><?php esc_html_e( 'Action for Level 2 (Mixed)', 'wp-kwtsms' ); ?></label></th>
+				<td>
+					<select name="kwtsms_otp_security[iphub_action_block2]" id="kwtsms_iphub_action_block2">
+						<option value="log"   <?php selected( $iphub_action_block2, 'log' ); ?>><?php esc_html_e( 'Log only, allow through (recommended)', 'wp-kwtsms' ); ?></option>
+						<option value="block" <?php selected( $iphub_action_block2, 'block' ); ?>><?php esc_html_e( 'Block silently', 'wp-kwtsms' ); ?></option>
+						<option value="allow" <?php selected( $iphub_action_block2, 'allow' ); ?>><?php esc_html_e( 'Allow (no action)', 'wp-kwtsms' ); ?></option>
+					</select>
+					<p class="description"><?php esc_html_e( 'IP from a range that contains a mix of residential and proxy traffic.', 'wp-kwtsms' ); ?></p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><label for="kwtsms_iphub_cache_ttl"><?php esc_html_e( 'Cache TTL', 'wp-kwtsms' ); ?></label></th>
+				<td>
+					<input type="number" name="kwtsms_otp_security[iphub_cache_ttl]" id="kwtsms_iphub_cache_ttl"
+						value="<?php echo (int) $iphub_cache_ttl; ?>"
+						min="3600" max="604800" class="small-text" />
+					<?php esc_html_e( 'seconds', 'wp-kwtsms' ); ?>
+					<p class="description">
+						<?php esc_html_e( 'How long to cache each IP reputation result (min: 1 hour = 3600 s, max: 7 days = 604800 s, default: 86400 s = 1 day). Cached results avoid repeated API calls for the same IP.', 'wp-kwtsms' ); ?>
+					</p>
+				</td>
+			</tr>
+
+		</table>
+
+		<?php submit_button( __( 'Save Security Settings', 'wp-kwtsms' ), 'primary kwtsms-save-btn' ); ?>
+	</form>
+
 </div>
 
 <script>

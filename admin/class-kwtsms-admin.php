@@ -304,6 +304,15 @@ class KwtSMS_Admin {
 				'sanitize_callback' => array( $this, 'sanitize_integrations_settings' ),
 			)
 		);
+
+		// ----- Security settings (IPHub proxy/VPN detection) -----
+		register_setting(
+			'kwtsms_otp_security_group',
+			'kwtsms_otp_security',
+			array(
+				'sanitize_callback' => array( $this, 'sanitize_security_settings' ),
+			)
+		);
 	}
 
 	// =========================================================================
@@ -740,6 +749,42 @@ class KwtSMS_Admin {
 		}
 
 		return $sanitized;
+	}
+
+	/**
+	 * Sanitize security settings (IPHub proxy/VPN detection).
+	 *
+	 * Stored under the option key kwtsms_otp_security.
+	 *
+	 * @param mixed $raw Raw form input.
+	 *
+	 * @return array Sanitized settings array.
+	 */
+	public function sanitize_security_settings( $raw ) {
+		if ( ! is_array( $raw ) ) {
+			return array();
+		}
+
+		$valid_actions = array( 'allow', 'block', 'log' );
+
+		$cache_ttl = absint( $raw['iphub_cache_ttl'] ?? 86400 );
+		if ( $cache_ttl < 3600 ) {
+			$cache_ttl = 3600;
+		} elseif ( $cache_ttl > 604800 ) {
+			$cache_ttl = 604800;
+		}
+
+		return array(
+			'iphub_api_key'       => sanitize_text_field( $raw['iphub_api_key'] ?? '' ),
+			'iphub_enabled'       => ! empty( $raw['iphub_enabled'] ) ? true : false,
+			'iphub_action_block1' => in_array( $raw['iphub_action_block1'] ?? '', $valid_actions, true )
+				? $raw['iphub_action_block1']
+				: 'block',
+			'iphub_action_block2' => in_array( $raw['iphub_action_block2'] ?? '', $valid_actions, true )
+				? $raw['iphub_action_block2']
+				: 'log',
+			'iphub_cache_ttl'     => $cache_ttl,
+		);
 	}
 
 	/**
