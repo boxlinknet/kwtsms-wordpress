@@ -148,7 +148,16 @@ if ( ! empty( $token ) ) {
 				/>
 			</div>
 
-			<input type="submit" name="kwtsms_verify" class="button button-primary button-large kwtsms-btn" value="<?php esc_attr_e( 'Verify Code', 'wp-kwtsms' ); ?>" />
+			<?php if ( ! $is_reset ) : ?>
+			<div class="kwtsms-trust-device">
+				<label>
+					<input type="checkbox" name="kwtsms_trust_device" value="1" />
+					<?php esc_html_e( 'Trust this device for 30 days', 'wp-kwtsms' ); ?>
+				</label>
+			</div>
+		<?php endif; ?>
+
+		<input type="submit" name="kwtsms_verify" class="button button-primary button-large kwtsms-btn" value="<?php esc_attr_e( 'Verify Code', 'wp-kwtsms' ); ?>" />
 		</form>
 
 		<div class="kwtsms-resend-wrap">

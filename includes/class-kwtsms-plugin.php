@@ -107,6 +107,13 @@ class KwtSMS_Plugin {
 		// AJAX handlers.
 		$this->register_ajax_handlers();
 
+		// Trusted Devices: revoke all on password reset.
+		add_action( 'password_reset', array( $this, 'on_password_reset_revoke_devices' ), 10, 1 );
+
+		// Trusted Devices: user profile section for viewing and revoking.
+		add_action( 'show_user_profile', array( $this, 'render_trusted_devices_profile' ) );
+		add_action( 'edit_user_profile', array( $this, 'render_trusted_devices_profile' ) );
+
 		// Referral link on standard WP login page.
 		if ( $this->settings->get( 'general.referral_link', 0 ) ) {
 			add_action( 'login_footer', array( $this, 'render_login_referral' ) );
@@ -214,6 +221,10 @@ class KwtSMS_Plugin {
 
 		// Enqueue form-otp.js on frontend when gate mode is active.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_form_otp_assets' ) );
+
+		// Trusted Device revoke (logged-in users only).
+		add_action( 'wp_ajax_kwtsms_revoke_device', array( $this, 'ajax_revoke_device' ) );
+		add_action( 'wp_ajax_kwtsms_revoke_all_devices', array( $this, 'ajax_revoke_all_devices' ) );
 	}
 
 	// =========================================================================
@@ -812,6 +823,190 @@ class KwtSMS_Plugin {
 				'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 			)
 		);
+	}
+
+	// =========================================================================
+	// Trusted Devices
+	// =========================================================================
+
+	/**
+	 * Revoke all trusted devices for a user when they reset their password.
+	 *
+	 * Hooked to `password_reset` action. Ensures that after a password reset,
+	 * any previously trusted devices are no longer trusted.
+	 *
+	 * @param WP_User $user The user whose password was reset.
+	 */
+	public function on_password_reset_revoke_devices( $user ) {
+		( new KwtSMS_Trusted_Devices() )->revoke_all( (int) $user->ID );
+	}
+
+	/**
+	 * Render the trusted devices table in the user profile edit screen.
+	 *
+	 * Shows each trusted device with its last-seen time and partial UA string.
+	 * Each row has an individual "Revoke" button; a "Revoke all" link appears
+	 * at the bottom of the section. Both actions are AJAX-powered.
+	 *
+	 * Hooked to `show_user_profile` and `edit_user_profile`.
+	 *
+	 * @param WP_User $user The user whose profile is being edited.
+	 */
+	public function render_trusted_devices_profile( $user ) {
+		// Only show when login OTP / 2FA is enabled.
+		if ( ! $this->settings->get( 'general.login_otp', 1 ) ) {
+			return;
+		}
+
+		$trusted  = new KwtSMS_Trusted_Devices();
+		$devices  = $trusted->get_devices( $user->ID );
+		$nonce    = wp_create_nonce( 'kwtsms_profile_nonce' );
+		$ajax_url = admin_url( 'admin-ajax.php' );
+		?>
+		<h2><?php esc_html_e( 'Trusted Devices', 'wp-kwtsms' ); ?></h2>
+		<table class="form-table" id="kwtsms-trusted-devices-table" data-user-id="<?php echo esc_attr( $user->ID ); ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>" data-ajax="<?php echo esc_url( $ajax_url ); ?>">
+			<tbody>
+			<?php if ( empty( $devices ) ) : ?>
+				<tr>
+					<td colspan="3">
+						<em><?php esc_html_e( 'No trusted devices.', 'wp-kwtsms' ); ?></em>
+					</td>
+				</tr>
+			<?php else : ?>
+				<tr>
+					<th><?php esc_html_e( 'Last seen', 'wp-kwtsms' ); ?></th>
+					<th><?php esc_html_e( 'Device', 'wp-kwtsms' ); ?></th>
+					<th></th>
+				</tr>
+				<?php foreach ( $devices as $device ) : ?>
+				<tr class="kwtsms-device-row" data-hash="<?php echo esc_attr( $device['token_hash'] ); ?>">
+					<td>
+						<?php
+						echo esc_html(
+							sprintf(
+								/* translators: %s: human-readable time difference */
+								__( '%s ago', 'wp-kwtsms' ),
+								human_time_diff( (int) $device['last_seen'] )
+							)
+						);
+						?>
+					</td>
+					<td><?php echo esc_html( substr( $device['ua'], 0, 60 ) ); ?></td>
+					<td>
+						<button type="button" class="button button-small kwtsms-revoke-device">
+							<?php esc_html_e( 'Revoke', 'wp-kwtsms' ); ?>
+						</button>
+					</td>
+				</tr>
+				<?php endforeach; ?>
+			<?php endif; ?>
+			</tbody>
+		</table>
+		<?php if ( ! empty( $devices ) ) : ?>
+		<p>
+			<a href="#" id="kwtsms-revoke-all-devices">
+				<?php esc_html_e( 'Revoke all trusted devices', 'wp-kwtsms' ); ?>
+			</a>
+		</p>
+		<?php endif; ?>
+		<script>
+		(function () {
+			var table = document.getElementById('kwtsms-trusted-devices-table');
+			if (!table) return;
+			var userId   = table.dataset.userId;
+			var nonce    = table.dataset.nonce;
+			var ajaxUrl  = table.dataset.ajax;
+
+			// Revoke single device.
+			table.addEventListener('click', function (e) {
+				if (!e.target.classList.contains('kwtsms-revoke-device')) return;
+				e.preventDefault();
+				var row  = e.target.closest('.kwtsms-device-row');
+				var hash = row ? row.dataset.hash : '';
+				if (!hash) return;
+				var fd = new FormData();
+				fd.append('action',     'kwtsms_revoke_device');
+				fd.append('nonce',      nonce);
+				fd.append('user_id',    userId);
+				fd.append('token_hash', hash);
+				fetch(ajaxUrl, { method: 'POST', body: fd })
+					.then(function (r) { return r.json(); })
+					.then(function (json) {
+						if (json.success && row) { row.remove(); }
+					});
+			});
+
+			// Revoke all.
+			var revokeAll = document.getElementById('kwtsms-revoke-all-devices');
+			if (revokeAll) {
+				revokeAll.addEventListener('click', function (e) {
+					e.preventDefault();
+					var fd = new FormData();
+					fd.append('action',  'kwtsms_revoke_all_devices');
+					fd.append('nonce',   nonce);
+					fd.append('user_id', userId);
+					fetch(ajaxUrl, { method: 'POST', body: fd })
+						.then(function (r) { return r.json(); })
+						.then(function (json) {
+							if (json.success) {
+								// Remove all device rows and the revoke-all link.
+								table.querySelectorAll('.kwtsms-device-row').forEach(function (r) { r.remove(); });
+								revokeAll.parentElement.remove();
+							}
+						});
+				});
+			}
+		}());
+		</script>
+		<?php
+	}
+
+	/**
+	 * AJAX: revoke a single trusted device by token hash.
+	 *
+	 * Accepts: nonce, user_id (int), token_hash (sha256 hex string).
+	 * Capability check: current user must be able to edit the target user.
+	 *
+	 * Security: nonce verified, capability checked.
+	 */
+	public function ajax_revoke_device() {
+		check_ajax_referer( 'kwtsms_profile_nonce', 'nonce' );
+
+		$target_user_id = absint( $_POST['user_id'] ?? 0 );
+		if ( ! current_user_can( 'edit_user', $target_user_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			return;
+		}
+
+		$token_hash = sanitize_text_field( wp_unslash( $_POST['token_hash'] ?? '' ) );
+		if ( empty( $token_hash ) || ! preg_match( '/^[0-9a-f]{64}$/', $token_hash ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid token hash.', 'wp-kwtsms' ) ) );
+			return;
+		}
+
+		( new KwtSMS_Trusted_Devices() )->revoke_by_hash( $target_user_id, $token_hash );
+		wp_send_json_success();
+	}
+
+	/**
+	 * AJAX: revoke all trusted devices for a user.
+	 *
+	 * Accepts: nonce, user_id (int).
+	 * Capability check: current user must be able to edit the target user.
+	 *
+	 * Security: nonce verified, capability checked.
+	 */
+	public function ajax_revoke_all_devices() {
+		check_ajax_referer( 'kwtsms_profile_nonce', 'nonce' );
+
+		$target_user_id = absint( $_POST['user_id'] ?? 0 );
+		if ( ! current_user_can( 'edit_user', $target_user_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			return;
+		}
+
+		( new KwtSMS_Trusted_Devices() )->revoke_all( $target_user_id );
+		wp_send_json_success();
 	}
 
 	/**
