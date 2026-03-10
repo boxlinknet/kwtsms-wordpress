@@ -556,6 +556,12 @@ class KwtSMS_OTP_Engine {
 	 * @param string $ip   IPv4 or IPv6 address to test.
 	 * @param string $cidr CIDR range (e.g. "192.168.1.0/24") or bare IP.
 	 *
+	 * @note IPv4-mapped IPv6 addresses (e.g. ::ffff:1.2.3.4) will NOT match IPv4
+	 *       CIDR entries because inet_pton() produces a 16-byte binary string for
+	 *       the IPv6 family and a 4-byte string for IPv4. The length guard at line
+	 *       577 catches the mismatch and returns false. If you need cross-family
+	 *       matching, normalize addresses to one family before calling this method.
+	 *
 	 * @return bool True if $ip is within $cidr.
 	 */
 	private function ip_matches_cidr( string $ip, string $cidr ): bool {
@@ -579,6 +585,9 @@ class KwtSMS_OTP_Engine {
 		}
 
 		$max_prefix = $ip_len * 8;
+		// Handles bare IPs (no slash, so $prefix == -1) and valid full-host
+		// prefixes (/32 for IPv4, /128 for IPv6). For /32 and /128 the mask
+		// would be all-ones anyway, so a direct equality check is equivalent.
 		if ( $prefix < 0 || $prefix >= $max_prefix ) {
 			return $ip_bin === $range_bin;
 		}
@@ -730,11 +739,6 @@ class KwtSMS_OTP_Engine {
 		return 'kwtsms_otp_cd_' . md5( $suffix );
 	}
 
-	/**
-	 * Get the client IP address (best-effort, for logging only).
-	 *
-	 * @return string IP address, or empty string.
-	 */
 	/**
 	 * Get the client IP address, respecting reverse-proxy headers.
 	 *
