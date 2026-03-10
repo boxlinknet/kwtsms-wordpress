@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.1.6
+Stable tag: 3.1.7
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -210,6 +210,9 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
+
+= 3.1.7 =
+* Security: Trusted Devices. After completing 2FA, users can trust their device for 30 days. Trusted devices skip the OTP step on subsequent logins. Tokens stored as SHA-256 hashes in user meta, never raw. Profile page shows all trusted devices with individual and bulk revoke. All trusted devices are cleared on password reset.
 
 = 3.1.6 =
 * Security: Registration OTP Gate. Verify phone number via OTP before the WordPress account is created. Supports disabled, optional, and required modes. Works for standard WordPress registration and WooCommerce My Account registration.

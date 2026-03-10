@@ -109,6 +109,16 @@ class KwtSMS_Login_OTP {
 			return $user;
 		}
 
+		// Trusted device check: if the user has a valid trusted device cookie, skip OTP.
+		$trusted_devices = new KwtSMS_Trusted_Devices();
+		if ( $trusted_devices->is_trusted( $user->ID ) ) {
+			$old_token = $trusted_devices->get_cookie_token( $user->ID );
+			$new_token = $trusted_devices->rotate_token( $user->ID, $old_token );
+			$trusted_devices->update_last_seen( $user->ID, $new_token );
+			$trusted_devices->set_cookie( $user->ID, $new_token );
+			return $user; // Let WordPress complete the login normally.
+		}
+
 		// Rate-limit checks: per-phone, per-IP, per-account.
 		if ( $this->plugin->otp->is_rate_limited( $phone, 'login', $user->ID ) ) {
 			return new WP_Error(
@@ -409,6 +419,15 @@ class KwtSMS_Login_OTP {
 		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id, false );
 		do_action( 'wp_login', $user->user_login, $user );
+
+		// Issue a trusted device cookie if the user checked "Trust this device".
+		// Only available in the 2FA flow (not password reset).
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce already verified in handle_otp_submission before calling this method.
+		if ( ! empty( $_POST['kwtsms_trust_device'] ) ) {
+			$trusted   = new KwtSMS_Trusted_Devices();
+			$new_token = $trusted->issue_token( $user_id );
+			$trusted->set_cookie( $user_id, $new_token );
+		}
 
 		$redirect_to = sanitize_url( wp_unslash( $_GET['redirect_to'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( empty( $redirect_to ) ) {
