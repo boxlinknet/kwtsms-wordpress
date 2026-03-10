@@ -367,36 +367,41 @@ class KwtSMS_Admin {
 		delete_transient( 'kwtsms_nophone_count' );
 
 		return array(
-			'otp_mode'             => in_array( $raw['otp_mode'] ?? '', array( '2fa', 'passwordless', 'both' ), true )
+			'otp_mode'              => in_array( $raw['otp_mode'] ?? '', array( '2fa', 'passwordless', 'both' ), true )
 				? $raw['otp_mode']
 				: $defaults['otp_mode'],
-			'otp_length'           => in_array( (int) ( $raw['otp_length'] ?? 6 ), array( 4, 6 ), true )
+			'otp_length'            => in_array( (int) ( $raw['otp_length'] ?? 6 ), array( 4, 6 ), true )
 				? (int) $raw['otp_length']
 				: 6,
-			'otp_expiry'           => max( 1, min( 30, absint( $raw['otp_expiry'] ?? 5 ) ) ),
-			'max_attempts'         => max( 1, min( 10, absint( $raw['max_attempts'] ?? 3 ) ) ),
-			'resend_cooldown'      => max( 30, min( 600, absint( $raw['resend_cooldown'] ?? 120 ) ) ),
-			'login_otp'            => ! empty( $raw['login_otp'] ) ? 1 : 0,
-			'reset_otp'            => ! empty( $raw['reset_otp'] ) ? 1 : 0,
-			'captcha_provider'     => in_array( $raw['captcha_provider'] ?? '', array( 'none', 'recaptcha', 'turnstile' ), true )
+			'otp_expiry'            => max( 1, min( 30, absint( $raw['otp_expiry'] ?? 5 ) ) ),
+			'max_attempts'          => max( 1, min( 10, absint( $raw['max_attempts'] ?? 3 ) ) ),
+			'resend_cooldown'       => max( 30, min( 600, absint( $raw['resend_cooldown'] ?? 120 ) ) ),
+			'login_otp'             => ! empty( $raw['login_otp'] ) ? 1 : 0,
+			'reset_otp'             => ! empty( $raw['reset_otp'] ) ? 1 : 0,
+			'captcha_provider'      => in_array( $raw['captcha_provider'] ?? '', array( 'none', 'recaptcha', 'turnstile' ), true )
 				? $raw['captcha_provider']
 				: 'none',
-			'recaptcha_site_key'   => sanitize_text_field( $raw['recaptcha_site_key'] ?? '' ),
-			'recaptcha_secret_key' => sanitize_text_field( $raw['recaptcha_secret_key'] ?? '' ),
-			'turnstile_site_key'   => sanitize_text_field( $raw['turnstile_site_key'] ?? '' ),
-			'turnstile_secret_key' => sanitize_text_field( $raw['turnstile_secret_key'] ?? '' ),
-			'referral_link'        => ! empty( $raw['referral_link'] ) ? 1 : 0,
-			'default_country_code' => $default_cc,
-			'allowed_countries'    => $allowed_countries,
-			'debug_logging'        => ! empty( $raw['debug_logging'] ) ? 1 : 0,
-			'balance_failure_mode' => in_array( $raw['balance_failure_mode'] ?? '', array( 'block', 'allow' ), true )
+			'recaptcha_site_key'    => sanitize_text_field( $raw['recaptcha_site_key'] ?? '' ),
+			'recaptcha_secret_key'  => sanitize_text_field( $raw['recaptcha_secret_key'] ?? '' ),
+			'turnstile_site_key'    => sanitize_text_field( $raw['turnstile_site_key'] ?? '' ),
+			'turnstile_secret_key'  => sanitize_text_field( $raw['turnstile_secret_key'] ?? '' ),
+			'referral_link'         => ! empty( $raw['referral_link'] ) ? 1 : 0,
+			'default_country_code'  => $default_cc,
+			'allowed_countries'     => $allowed_countries,
+			'debug_logging'         => ! empty( $raw['debug_logging'] ) ? 1 : 0,
+			'balance_failure_mode'  => in_array( $raw['balance_failure_mode'] ?? '', array( 'block', 'allow' ), true )
 				? $raw['balance_failure_mode']
 				: 'block',
-			'blocked_phones'       => sanitize_textarea_field( wp_unslash( $raw['blocked_phones'] ?? '' ) ),
-			'ip_allowlist'         => $this->sanitize_ip_list( wp_unslash( $raw['ip_allowlist'] ?? '' ) ),
-			'ip_blocklist'         => $this->sanitize_ip_list( wp_unslash( $raw['ip_blocklist'] ?? '' ) ),
-			'otp_required_roles'   => $otp_required_roles,
-			'welcome_sms_enabled'  => ! empty( $raw['welcome_sms_enabled'] ) ? 1 : 0,
+			'blocked_phones'        => sanitize_textarea_field( wp_unslash( $raw['blocked_phones'] ?? '' ) ),
+			'ip_allowlist'          => $this->sanitize_ip_list( wp_unslash( $raw['ip_allowlist'] ?? '' ) ),
+			'ip_blocklist'          => $this->sanitize_ip_list( wp_unslash( $raw['ip_blocklist'] ?? '' ) ),
+			'otp_required_roles'    => $otp_required_roles,
+			'welcome_sms_enabled'   => ! empty( $raw['welcome_sms_enabled'] ) ? 1 : 0,
+			'registration_otp_gate' => in_array(
+				$raw['registration_otp_gate'] ?? 'disabled',
+				array( 'disabled', 'optional', 'required' ),
+				true
+			) ? $raw['registration_otp_gate'] : 'disabled',
 		);
 	}
 

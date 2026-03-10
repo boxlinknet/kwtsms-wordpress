@@ -11,23 +11,24 @@
 defined( 'ABSPATH' ) || exit;
 
 // phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
-$settings             = $this->plugin->settings;
-$general              = $settings->get( 'general' ) + KwtSMS_Settings::DEFAULTS['general'];
-$gateway              = $settings->get( 'gateway' ) + KwtSMS_Settings::DEFAULTS['gateway'];
-$credentials_verified = ! empty( $gateway['credentials_verified'] );
-$bal_available        = $gateway['balance_available'] ?? null;
-$bal_purchased        = $gateway['balance_purchased'] ?? null;
-$captcha_provider     = $general['captcha_provider'] ?? 'none';
-$referral_link        = ! empty( $general['referral_link'] );
-$default_cc           = $general['default_country_code'] ?? 'KW';
-$allowed_iso2         = $general['allowed_countries'] ?? array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' );
-$debug_logging        = ! empty( $general['debug_logging'] );
-$balance_failure_mode = $general['balance_failure_mode'] ?? 'block';
-$blocked_phones       = $general['blocked_phones'] ?? '';
-$ip_allowlist         = $general['ip_allowlist'] ?? '';
-$ip_blocklist         = $general['ip_blocklist'] ?? '';
-$otp_required_roles   = $general['otp_required_roles'] ?? array();
-$all_wp_roles         = wp_roles()->get_names();
+$settings              = $this->plugin->settings;
+$general               = $settings->get( 'general' ) + KwtSMS_Settings::DEFAULTS['general'];
+$gateway               = $settings->get( 'gateway' ) + KwtSMS_Settings::DEFAULTS['gateway'];
+$credentials_verified  = ! empty( $gateway['credentials_verified'] );
+$bal_available         = $gateway['balance_available'] ?? null;
+$bal_purchased         = $gateway['balance_purchased'] ?? null;
+$captcha_provider      = $general['captcha_provider'] ?? 'none';
+$referral_link         = ! empty( $general['referral_link'] );
+$default_cc            = $general['default_country_code'] ?? 'KW';
+$allowed_iso2          = $general['allowed_countries'] ?? array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' );
+$debug_logging         = ! empty( $general['debug_logging'] );
+$balance_failure_mode  = $general['balance_failure_mode'] ?? 'block';
+$blocked_phones        = $general['blocked_phones'] ?? '';
+$ip_allowlist          = $general['ip_allowlist'] ?? '';
+$ip_blocklist          = $general['ip_blocklist'] ?? '';
+$otp_required_roles    = $general['otp_required_roles'] ?? array();
+$registration_otp_gate = $general['registration_otp_gate'] ?? 'disabled';
+$all_wp_roles          = wp_roles()->get_names();
 
 // Count users in OTP-required roles who have no phone number saved.
 $no_phone_count = 0;
@@ -233,6 +234,18 @@ foreach ( $all_countries as $cc ) {
 					</p>
 				</td>
 			</tr>
+
+		<tr>
+			<th scope="row"><label for="kwtsms_registration_otp_gate"><?php esc_html_e( 'Registration OTP Gate', 'wp-kwtsms' ); ?></label></th>
+			<td>
+				<select id="kwtsms_registration_otp_gate" name="kwtsms_otp_general[registration_otp_gate]">
+					<option value="disabled" <?php selected( $registration_otp_gate, 'disabled' ); ?>><?php esc_html_e( 'Disabled', 'wp-kwtsms' ); ?></option>
+					<option value="optional" <?php selected( $registration_otp_gate, 'optional' ); ?>><?php esc_html_e( 'Optional (verify phone if provided)', 'wp-kwtsms' ); ?></option>
+					<option value="required" <?php selected( $registration_otp_gate, 'required' ); ?>><?php esc_html_e( 'Required (phone and OTP mandatory)', 'wp-kwtsms' ); ?></option>
+				</select>
+				<p class="description"><?php esc_html_e( 'Require OTP phone verification before creating a new user account. Works for standard WordPress registration and WooCommerce My Account registration.', 'wp-kwtsms' ); ?></p>
+			</td>
+		</tr>
 
 		</table>
 

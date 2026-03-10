@@ -1,0 +1,539 @@
+<?php
+/**
+ * Registration OTP Gate — verify phone number before creating a WordPress account.
+ *
+ * Flow:
+ *   1. User submits the registration form with a phone number.
+ *   2. gate_registration() intercepts via the registration_errors filter (priority 10).
+ *   3. If phone is present and gate mode is not disabled:
+ *      a. Generate OTP (keyed on the normalised phone).
+ *      b. Send OTP SMS.
+ *      c. Store a pending-registration transient: username, email, raw password, phone.
+ *      d. Redirect to wp-login.php?action=kwtsms_reg_otp&token={token}.
+ *   4. handle_reg_otp_page() renders the OTP entry form on that URL (login_init hook).
+ *   5. complete_registration() on POST:
+ *      a. Retrieve the pending transient.
+ *      b. Verify OTP. On success: call wp_create_user(), set auth cookie, redirect to dashboard.
+ *      c. On failure: redirect back to registration with an error query arg.
+ *
+ * Graceful fallback: if gate mode is optional and no phone was supplied, the user
+ * passes through without OTP verification.
+ *
+ * WooCommerce: gate_woo_registration() mirrors gate_registration() for the
+ * woocommerce_registration_errors filter (My Account page registration).
+ *
+ * @package KwtSMS_OTP
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class KwtSMS_Registration_OTP_Gate
+ */
+class KwtSMS_Registration_OTP_Gate {
+
+	/**
+	 * Transient key prefix for pending registrations.
+	 *
+	 * @var string
+	 */
+	const PENDING_REG_PREFIX = 'kwtsms_pending_reg_';
+
+	/**
+	 * OTP action context for registration flow.
+	 *
+	 * @var string
+	 */
+	const OTP_ACTION = 'registration';
+
+	/**
+	 * Settings helper.
+	 *
+	 * @var KwtSMS_Settings
+	 */
+	private $settings;
+
+	/**
+	 * KwtSMS API client.
+	 *
+	 * @var KwtSMS_API
+	 */
+	private $api;
+
+	/**
+	 * OTP engine.
+	 *
+	 * @var KwtSMS_OTP_Engine
+	 */
+	private $otp;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param KwtSMS_Settings   $settings Settings instance.
+	 * @param KwtSMS_API        $api      API client.
+	 * @param KwtSMS_OTP_Engine $otp      OTP engine.
+	 */
+	public function __construct( KwtSMS_Settings $settings, KwtSMS_API $api, KwtSMS_OTP_Engine $otp ) {
+		$this->settings = $settings;
+		$this->api      = $api;
+		$this->otp      = $otp;
+
+		add_filter( 'registration_errors', array( $this, 'gate_registration' ), 10, 3 );
+		add_filter( 'woocommerce_registration_errors', array( $this, 'gate_woo_registration' ), 10, 3 );
+		add_action( 'login_init', array( $this, 'handle_reg_otp_page' ) );
+	}
+
+	// =========================================================================
+	// Standard WP registration gate
+	// =========================================================================
+
+	/**
+	 * Intercept standard WordPress registration and require OTP when gate is active.
+	 *
+	 * Hooked to registration_errors at priority 10.
+	 *
+	 * @param WP_Error $errors               Existing registration errors.
+	 * @param string   $sanitized_user_login Sanitized username from the form.
+	 * @param string   $user_email           Email address from the form.
+	 *
+	 * @return WP_Error Unchanged errors, or a redirect never returns (wp_safe_redirect + exit).
+	 */
+	public function gate_registration( WP_Error $errors, $sanitized_user_login, $user_email ) {
+		$gate = $this->settings->get( 'general.registration_otp_gate', 'disabled' );
+
+		if ( 'disabled' === $gate ) {
+			return $errors;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce verified by WordPress core before this filter fires.
+		$phone = trim(
+			sanitize_text_field( wp_unslash( $_POST['kwtsms_phone'] ?? '' ) )
+		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( '' === $phone ) {
+			if ( 'required' === $gate ) {
+				$errors->add(
+					'phone_required',
+					__( 'A phone number is required to register.', 'wp-kwtsms' )
+				);
+			}
+			return $errors;
+		}
+
+		// Do not proceed with OTP if other registration errors already exist.
+		if ( $errors->has_errors() ) {
+			return $errors;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- raw password is intentionally preserved for wp_create_user(); nonce verified by core.
+		$password = wp_unslash( $_POST['pass1'] ?? $_POST['password'] ?? '' );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		$this->send_registration_otp( $sanitized_user_login, $user_email, $password, $phone );
+		// send_registration_otp() calls wp_safe_redirect() + exit on success.
+		// If we get here something went wrong — return errors to show the form.
+		return $errors;
+	}
+
+	// =========================================================================
+	// WooCommerce My Account registration gate
+	// =========================================================================
+
+	/**
+	 * Intercept WooCommerce My Account registration and require OTP when gate is active.
+	 *
+	 * Hooked to woocommerce_registration_errors at priority 10.
+	 * WooCommerce uses a 'password' field (not 'pass1') on the My Account form.
+	 *
+	 * @param WP_Error $errors   Existing registration errors.
+	 * @param string   $username Username from the form.
+	 * @param string   $email    Email address from the form.
+	 *
+	 * @return WP_Error Unchanged errors, or a redirect never returns.
+	 */
+	public function gate_woo_registration( WP_Error $errors, $username, $email ) {
+		$gate = $this->settings->get( 'general.registration_otp_gate', 'disabled' );
+
+		if ( 'disabled' === $gate ) {
+			return $errors;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce verified by WooCommerce before this filter fires.
+		$phone = trim(
+			sanitize_text_field( wp_unslash( $_POST['kwtsms_phone'] ?? $_POST['billing_phone'] ?? '' ) )
+		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( '' === $phone ) {
+			if ( 'required' === $gate ) {
+				$errors->add(
+					'phone_required',
+					__( 'A phone number is required to register.', 'wp-kwtsms' )
+				);
+			}
+			return $errors;
+		}
+
+		if ( $errors->has_errors() ) {
+			return $errors;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- raw password is intentionally preserved for wp_create_user(); nonce verified by WooCommerce.
+		$password = wp_unslash( $_POST['password'] ?? $_POST['pass1'] ?? '' );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		$this->send_registration_otp( $username, $email, $password, $phone );
+		return $errors;
+	}
+
+	// =========================================================================
+	// OTP page: render and handle POST
+	// =========================================================================
+
+	/**
+	 * Handle the OTP entry page for registration verification.
+	 *
+	 * Fires on login_init. Renders an OTP entry form when GET, and processes the
+	 * submitted code on POST.
+	 *
+	 * URL: /wp-login.php?action=kwtsms_reg_otp&token={token}
+	 */
+	public function handle_reg_otp_page() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$action = sanitize_key( wp_unslash( $_GET['action'] ?? '' ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( 'kwtsms_reg_otp' !== $action ) {
+			return;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$token = sanitize_text_field( wp_unslash( $_GET['token'] ?? '' ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( empty( $token ) ) {
+			wp_safe_redirect( wp_registration_url() );
+			exit;
+		}
+
+		if ( 'POST' === strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) ) ) {
+			$this->complete_registration( $token );
+			exit;
+		}
+
+		// GET: render the OTP entry form.
+		$this->render_reg_otp_form( $token, '' );
+		exit;
+	}
+
+	/**
+	 * Complete registration after successful OTP verification.
+	 *
+	 * Retrieves the pending registration transient, verifies the submitted OTP,
+	 * and on success calls wp_create_user() and logs the new user in.
+	 *
+	 * @param string $token Session token from the URL.
+	 */
+	public function complete_registration( $token ) {
+		$token         = sanitize_text_field( $token );
+		$transient_key = self::PENDING_REG_PREFIX . $token;
+		$pending       = get_transient( $transient_key );
+
+		if ( ! is_array( $pending ) ) {
+			// Session expired or invalid.
+			$url = add_query_arg(
+				array( 'kwtsms_reg_error' => 'expired' ),
+				wp_registration_url()
+			);
+			wp_safe_redirect( $url );
+			exit;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce is read and verified below via wp_verify_nonce().
+		$submitted_code = sanitize_text_field( wp_unslash( $_POST['kwtsms_reg_code'] ?? '' ) );
+		$nonce          = sanitize_text_field( wp_unslash( $_POST['kwtsms_reg_nonce'] ?? '' ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( ! wp_verify_nonce( $nonce, 'kwtsms_reg_otp_submit' ) ) {
+			$url = add_query_arg(
+				array( 'kwtsms_reg_error' => 'security' ),
+				wp_registration_url()
+			);
+			wp_safe_redirect( $url );
+			exit;
+		}
+
+		$phone  = $pending['phone'];
+		$result = $this->otp->verify( $phone, $submitted_code, self::OTP_ACTION, null, $phone );
+
+		if ( 'valid' !== $result ) {
+			if ( 'invalid' === $result ) {
+				// Wrong code — redirect back to OTP entry page with error.
+				$redirect = add_query_arg(
+					array(
+						'action'           => 'kwtsms_reg_otp',
+						'token'            => rawurlencode( $token ),
+						'kwtsms_reg_error' => 'invalid_code',
+					),
+					wp_login_url()
+				);
+				wp_safe_redirect( $redirect );
+				exit;
+			}
+
+			// Expired or max attempts — send back to registration form.
+			$error = 'expired' === $result ? 'expired' : 'max_attempts';
+			$url   = add_query_arg(
+				array( 'kwtsms_reg_error' => $error ),
+				wp_registration_url()
+			);
+			wp_safe_redirect( $url );
+			exit;
+		}
+
+		// OTP is valid — create the user account.
+		delete_transient( $transient_key );
+
+		$user_id = wp_create_user(
+			$pending['username'],
+			$pending['password'],
+			$pending['email']
+		);
+
+		if ( is_wp_error( $user_id ) ) {
+			$url = add_query_arg(
+				array( 'kwtsms_reg_error' => 'create_failed' ),
+				wp_registration_url()
+			);
+			wp_safe_redirect( $url );
+			exit;
+		}
+
+		// Save verified phone to user meta.
+		update_user_meta( $user_id, 'kwtsms_phone', $phone );
+
+		// Log the user in immediately.
+		wp_set_auth_cookie( $user_id );
+		do_action( 'wp_login', $pending['username'], get_userdata( $user_id ) );
+
+		// Redirect to dashboard.
+		$redirect = get_dashboard_url( $user_id );
+		wp_safe_redirect( $redirect );
+		exit;
+	}
+
+	// =========================================================================
+	// Internal helpers
+	// =========================================================================
+
+	/**
+	 * Generate an OTP, send it to the phone, store the pending-registration
+	 * transient, and redirect to the OTP entry page.
+	 *
+	 * If SMS sending fails, no transient is stored — the method returns normally
+	 * so that gate_registration() can fall through and return the existing errors.
+	 *
+	 * @param string $username Username (sanitized by WP core before this is called).
+	 * @param string $email    Email address.
+	 * @param string $password Raw password (stored as-is for wp_create_user).
+	 * @param string $phone    Raw phone number from the form.
+	 */
+	private function send_registration_otp( $username, $email, $password, $phone ) {
+		// Normalise phone number.
+		$phone = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
+		$phone = KwtSMS_API::normalize_phone( $phone );
+
+		if ( is_wp_error( $phone ) ) {
+			// Invalid phone — return without redirecting; caller returns errors.
+			return;
+		}
+
+		// Rate limiting: per-phone.
+		if ( $this->otp->is_rate_limited( $phone, self::OTP_ACTION, 0 ) ) {
+			return;
+		}
+		if ( $this->otp->is_ip_rate_limited( self::OTP_ACTION, 0, $phone ) ) {
+			return;
+		}
+
+		// Generate OTP and send SMS.
+		$otp_code = $this->otp->generate( $phone, self::OTP_ACTION );
+		$message  = $this->otp->build_message( $otp_code, 'login_otp' );
+
+		$send_result = $this->api->send_sms(
+			$phone,
+			$this->settings->get( 'gateway.sender_id', '' ),
+			$message,
+			'registration'
+		);
+
+		if ( is_wp_error( $send_result ) ) {
+			return;
+		}
+
+		// Build and store the pending registration transient.
+		$token       = wp_generate_password( 32, false );
+		$expiry_secs = (int) $this->settings->get( 'general.otp_expiry', 5 ) * MINUTE_IN_SECONDS;
+		$ttl         = $expiry_secs + 60;
+
+		set_transient(
+			self::PENDING_REG_PREFIX . $token,
+			array(
+				'username' => $username,
+				'email'    => $email,
+				'password' => $password,
+				'phone'    => $phone,
+				'created'  => time(),
+			),
+			$ttl
+		);
+
+		// Redirect to OTP entry page.
+		$redirect = add_query_arg(
+			'token',
+			rawurlencode( $token ),
+			add_query_arg( 'action', 'kwtsms_reg_otp', wp_login_url() )
+		);
+		wp_safe_redirect( $redirect );
+		exit;
+	}
+
+	/**
+	 * Render the registration OTP entry form.
+	 *
+	 * Outputs a full HTML page using the same layout as the login OTP page,
+	 * adapted for the registration context.
+	 *
+	 * @param string $token         Session token.
+	 * @param string $error_message Error message to display (empty for none).
+	 */
+	private function render_reg_otp_form( $token, $error_message ) {
+		$site_name  = get_bloginfo( 'name' );
+		$otp_length = (int) $this->settings->get( 'general.otp_length', 6 );
+		$login_url  = wp_login_url();
+
+		$pending = get_transient( self::PENDING_REG_PREFIX . $token );
+		$masked  = '';
+		if ( $pending && ! empty( $pending['phone'] ) ) {
+			$p      = $pending['phone'];
+			$len    = strlen( $p );
+			$masked = substr( $p, 0, max( 0, $len - 4 ) ) . '****';
+		}
+
+		// Build site logo.
+		$custom_logo_id = get_theme_mod( 'custom_logo' );
+		if ( $custom_logo_id ) {
+			$logo_html = wp_get_attachment_image(
+				$custom_logo_id,
+				array( 312, 84 ),
+				false,
+				array( 'alt' => $site_name )
+			);
+		} elseif ( has_site_icon() ) {
+			$logo_html = '<img src="' . esc_url( get_site_icon_url( 84 ) ) . '" alt="' . esc_attr( $site_name ) . '" style="max-height:84px;width:auto;" />';
+		} else {
+			$logo_html = '<span class="screen-reader-text">' . esc_html( $site_name ) . '</span>';
+		}
+
+		$form_action = add_query_arg(
+			array(
+				'action' => 'kwtsms_reg_otp',
+				'token'  => rawurlencode( $token ),
+			),
+			$login_url
+		);
+
+		ob_start();
+		?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+	<meta charset="<?php bloginfo( 'charset' ); ?>" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title><?php echo esc_html( __( 'Verify Your Phone Number', 'wp-kwtsms' ) . ' — ' . $site_name ); ?></title>
+		<?php wp_head(); ?>
+</head>
+<body class="login wp-core-ui">
+<div id="login">
+
+	<h1>
+		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( $site_name ); ?>" tabindex="-1">
+			<?php echo $logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		</a>
+	</h1>
+
+	<div class="kwtsms-otp-box">
+		<h2 class="kwtsms-otp-title"><?php esc_html_e( 'Verify Your Phone Number', 'wp-kwtsms' ); ?></h2>
+
+		<?php if ( ! empty( $masked ) ) : ?>
+		<p class="kwtsms-otp-desc">
+			<?php
+			printf(
+				/* translators: 1: number of digits, 2: masked phone number */
+				esc_html__( 'We sent a %1$d-digit code to %2$s', 'wp-kwtsms' ),
+				(int) $otp_length,
+				'<strong>' . esc_html( $masked ) . '</strong>'
+			);
+			?>
+		</p>
+		<?php else : ?>
+		<p class="kwtsms-otp-desc">
+			<?php
+			printf(
+				/* translators: %d: number of digits */
+				esc_html__( 'Enter the %d-digit code sent to your phone.', 'wp-kwtsms' ),
+				(int) $otp_length
+			);
+			?>
+		</p>
+		<?php endif; ?>
+
+		<?php if ( ! empty( $error_message ) ) : ?>
+		<div class="kwtsms-otp-error" role="alert">
+			<?php echo esc_html( $error_message ); ?>
+		</div>
+		<?php endif; ?>
+
+		<form method="post" action="<?php echo esc_url( $form_action ); ?>" id="kwtsms-reg-otp-form">
+			<?php wp_nonce_field( 'kwtsms_reg_otp_submit', 'kwtsms_reg_nonce' ); ?>
+
+			<div class="kwtsms-code-group">
+				<label for="kwtsms_reg_code" class="screen-reader-text">
+					<?php esc_html_e( 'Verification code', 'wp-kwtsms' ); ?>
+				</label>
+				<input
+					type="text"
+					inputmode="numeric"
+					pattern="[0-9]*"
+					autocomplete="one-time-code"
+					name="kwtsms_reg_code"
+					id="kwtsms_reg_code"
+					class="input kwtsms-code-input"
+					placeholder="<?php echo esc_attr( str_repeat( '_', $otp_length ) ); ?>"
+					maxlength="<?php echo (int) $otp_length; ?>"
+					autofocus
+					required
+				/>
+			</div>
+
+			<input type="submit" name="kwtsms_reg_verify" class="button button-primary button-large kwtsms-btn"
+				value="<?php esc_attr_e( 'Verify and Create Account', 'wp-kwtsms' ); ?>" />
+		</form>
+
+		<p class="kwtsms-back-link">
+			<a href="<?php echo esc_url( $login_url ); ?>">
+				<?php esc_html_e( 'Back to login', 'wp-kwtsms' ); ?>
+			</a>
+		</p>
+	</div>
+</div>
+
+		<?php wp_footer(); ?>
+</body>
+</html>
+		<?php
+		echo ob_get_clean(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+}
