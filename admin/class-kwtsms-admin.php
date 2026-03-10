@@ -804,26 +804,29 @@ class KwtSMS_Admin {
 	/**
 	 * Sanitize admin alerts settings.
 	 *
-	 * @param array $input Raw POST values.
+	 * @param mixed $raw Raw POST values (expected array).
 	 * @return array Sanitized settings array.
 	 */
-	public function sanitize_alerts_settings( array $input ): array {
+	public function sanitize_alerts_settings( $raw ) {
+		if ( ! is_array( $raw ) ) {
+			$raw = array();
+		}
 		$out = array();
 
 		// Admin phone numbers (free-text, stored as-is; validated on send).
-		$out['admin_phones'] = sanitize_text_field( wp_unslash( $input['admin_phones'] ?? '' ) );
+		$out['admin_phones'] = sanitize_text_field( wp_unslash( $raw['admin_phones'] ?? '' ) );
 
 		// Per-event toggles.
 		foreach ( array( 'user_register', 'wp_login', 'post_published', 'comment_posted', 'core_update' ) as $key ) {
-			$out[ $key ] = ! empty( $input[ $key ] ) ? 1 : 0;
+			$out[ $key ] = ! empty( $raw[ $key ] ) ? 1 : 0;
 		}
 
 		// Per-event templates (EN + AR).
 		$tpl_keys = array( 'tpl_user_register', 'tpl_wp_login', 'tpl_post_published', 'tpl_comment_posted', 'tpl_core_update' );
 		foreach ( $tpl_keys as $tkey ) {
 			$out[ $tkey ] = array(
-				'en' => sanitize_text_field( wp_unslash( $input[ $tkey . '_en' ] ?? '' ) ),
-				'ar' => sanitize_text_field( wp_unslash( $input[ $tkey . '_ar' ] ?? '' ) ),
+				'en' => sanitize_text_field( wp_unslash( $raw[ $tkey . '_en' ] ?? '' ) ),
+				'ar' => sanitize_text_field( wp_unslash( $raw[ $tkey . '_ar' ] ?? '' ) ),
 			);
 		}
 
