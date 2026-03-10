@@ -445,6 +445,7 @@ class KwtSMS_OTP_Engine {
 		// IPHub proxy/VPN check (A5).
 		$reputation = $this->check_ip_reputation( $client_ip );
 		if ( 'block' === $reputation ) {
+			$this->log_debug( 'iphub', sprintf( '[IPHub] Blocked IP, request silently dropped: %s', $client_ip ) );
 			return true; // Silent success: no SMS sent, attacker learns nothing.
 		}
 		if ( 'log' === $reputation ) {
