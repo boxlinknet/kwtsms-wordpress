@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.1.2
+Stable tag: 3.1.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -210,6 +210,9 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
+
+= 3.1.3 =
+* Security: Verify sliding-window rate limiting — per-phone, per-IP, and per-account limiters use timestamp arrays that self-prune, making fixed-window boundary exploits impossible.
 
 = 3.1.2 =
 * Security: Verify duplicate OTP guard — generate() reuses existing valid OTP and resets expiry clock to prevent double-SMS on double-click or page refresh.
