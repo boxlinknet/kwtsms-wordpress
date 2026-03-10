@@ -2,11 +2,12 @@
 /**
  * Settings storage and retrieval helper.
  *
- * All plugin settings are stored in four wp_options entries:
- *   - kwtsms_otp_general   — OTP behaviour, CAPTCHA provider
- *   - kwtsms_otp_gateway   — API credentials, sender ID, test mode
- *   - kwtsms_otp_templates — SMS message templates (EN + AR)
- *   - kwtsms_otp_security  — IPHub proxy/VPN detection settings
+ * All plugin settings are stored in five wp_options entries:
+ *   - kwtsms_otp_general   : OTP behaviour, CAPTCHA provider
+ *   - kwtsms_otp_gateway   : API credentials, sender ID, test mode
+ *   - kwtsms_otp_templates : SMS message templates (EN + AR)
+ *   - kwtsms_otp_security  : IPHub proxy/VPN detection settings
+ *   - kwtsms_otp_alerts    : Admin-targeted event alert settings
  *
  * Access values with dot-notation: $settings->get('gateway.sender_id')
  *
@@ -162,6 +163,34 @@ class KwtSMS_Settings {
 				'enabled' => 1,
 				'en'      => '{form_name}: Thank you for submitting the form.',
 				'ar'      => '{form_name}: شكراً لإرسال النموذج.',
+			),
+		),
+		'alerts'       => array(
+			'admin_phones'       => '',
+			'user_register'      => 1,
+			'wp_login'           => 0,
+			'post_published'     => 1,
+			'comment_posted'     => 1,
+			'core_update'        => 1,
+			'tpl_user_register'  => array(
+				'en' => '{site_name}: New user registered, {username} ({email}).',
+				'ar' => '{site_name}: مستخدم جديد {username} ({email}).',
+			),
+			'tpl_wp_login'       => array(
+				'en' => '{site_name}: User {username} logged in.',
+				'ar' => '{site_name}: المستخدم {username} سجّل دخوله.',
+			),
+			'tpl_post_published' => array(
+				'en' => '{site_name}: New post published: {post_title}.',
+				'ar' => '{site_name}: مقال جديد: {post_title}.',
+			),
+			'tpl_comment_posted' => array(
+				'en' => '{site_name}: New comment on "{post_title}" by {author}.',
+				'ar' => '{site_name}: تعليق جديد على "{post_title}" من {author}.',
+			),
+			'tpl_core_update'    => array(
+				'en' => '{site_name}: WordPress updated to version {version}.',
+				'ar' => '{site_name}: تم تحديث ووردبريس إلى الإصدار {version}.',
 			),
 		),
 	);
@@ -332,7 +361,7 @@ class KwtSMS_Settings {
 	/**
 	 * Load and cache an option group from the database.
 	 *
-	 * @param string $group Option group name (general|gateway|templates|integrations).
+	 * @param string $group Option group name (general|gateway|templates|integrations|alerts).
 	 *
 	 * @return array
 	 */
