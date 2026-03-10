@@ -48,6 +48,11 @@ Each integration supports two modes: **Notification** (send a confirmation SMS o
 = Security =
 
 * Sliding-window rate limiting per phone number, per IP address, and per user account
+* Duplicate OTP guard: reuses existing valid OTP on double-click or page reload
+* IP Allowlist/Blocklist with CIDR support for IPv4 and IPv6
+* IPHub proxy/VPN detection (optional): silently block or flag OTP requests from known proxies
+* Registration OTP gate: verify phone via OTP before account creation
+* Trusted Devices: trust a device for 30 days after 2FA, with profile revoke controls
 * Phone blocking list: silently drop OTP requests from blocked numbers (anti-enumeration)
 * Attempt lockout after configurable max failures
 * Google reCAPTCHA v3 and Cloudflare Turnstile support
@@ -80,12 +85,23 @@ A kwtSMS account with SMS credits is required.
 
 If ipapi.co is unavailable, the phone input falls back to the default country configured in General Settings. No personal data is stored by the plugin as a result of this call.
 
-**3. Google reCAPTCHA v3** (optional): bot protection on OTP forms. Only active if you enter a reCAPTCHA Site Key in General Settings.
+**3. IPHub** (optional): detects whether a visitor's IP is a known proxy or VPN.
+
+* Service: [https://iphub.info](https://iphub.info)
+* API endpoint: `https://v2.api.iphub.info/ip/{ip}`
+* Data sent: visitor IP address, API key in request header
+* When: on every OTP request when IPHub integration is enabled in General Settings, with result cached per IP (configurable TTL, default 24 hours)
+* Terms of Service: [https://iphub.info/legal](https://iphub.info/legal)
+* Privacy Policy: [https://iphub.info/legal](https://iphub.info/legal)
+
+If IPHub is unavailable or returns an error, the request is allowed through (fail-open). No personal data is stored by the plugin as a result of this call beyond the cached block level.
+
+**4. Google reCAPTCHA v3** (optional): bot protection on OTP forms. Only active if you enter a reCAPTCHA Site Key in General Settings.
 
 * Service: [https://www.google.com/recaptcha/](https://www.google.com/recaptcha/)
 * Privacy Policy: [https://policies.google.com/privacy](https://policies.google.com/privacy)
 
-**4. Cloudflare Turnstile** (optional): alternative bot protection. Only active if you enter a Turnstile Site Key in General Settings.
+**5. Cloudflare Turnstile** (optional): alternative bot protection. Only active if you enter a Turnstile Site Key in General Settings.
 
 * Service: [https://www.cloudflare.com/products/turnstile/](https://www.cloudflare.com/products/turnstile/)
 * Privacy Policy: [https://www.cloudflare.com/privacypolicy/](https://www.cloudflare.com/privacypolicy/)
