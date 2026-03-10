@@ -360,7 +360,7 @@ class KwtSMS_Registration_OTP_Gate {
 
 		// Generate OTP and send SMS.
 		$otp_code = $this->otp->generate( $phone, self::OTP_ACTION );
-		$message  = $this->otp->build_message( $otp_code, 'login_otp' );
+		$message  = $this->otp->build_message( $otp_code, 'reset_otp' );
 
 		$send_result = $this->api->send_sms(
 			$phone,
