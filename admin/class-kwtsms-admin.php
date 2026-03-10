@@ -384,9 +384,44 @@ class KwtSMS_Admin {
 				? $raw['balance_failure_mode']
 				: 'block',
 			'blocked_phones'       => sanitize_textarea_field( wp_unslash( $raw['blocked_phones'] ?? '' ) ),
+			'ip_allowlist'         => $this->sanitize_ip_list( wp_unslash( $raw['ip_allowlist'] ?? '' ) ),
+			'ip_blocklist'         => $this->sanitize_ip_list( wp_unslash( $raw['ip_blocklist'] ?? '' ) ),
 			'otp_required_roles'   => $otp_required_roles,
 			'welcome_sms_enabled'  => ! empty( $raw['welcome_sms_enabled'] ) ? 1 : 0,
 		);
+	}
+
+	/**
+	 * Sanitize a newline-separated list of IPs and CIDR ranges.
+	 *
+	 * Strips empty lines, trims whitespace, and discards invalid entries.
+	 *
+	 * @param string $raw Raw textarea input.
+	 *
+	 * @return string Cleaned newline-separated list.
+	 */
+	private function sanitize_ip_list( string $raw ): string {
+		$lines   = preg_split( '/[\r\n]+/', sanitize_textarea_field( $raw ), -1, PREG_SPLIT_NO_EMPTY );
+		$cleaned = array();
+		foreach ( $lines as $line ) {
+			$line  = trim( $line );
+			$parts = explode( '/', $line, 2 );
+			$ip    = $parts[0];
+			if ( ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+				continue;
+			}
+			if ( isset( $parts[1] ) ) {
+				$prefix = (int) $parts[1];
+				$max    = filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ? 128 : 32;
+				if ( $prefix < 0 || $prefix > $max ) {
+					continue;
+				}
+				$cleaned[] = $ip . '/' . $prefix;
+			} else {
+				$cleaned[] = $ip;
+			}
+		}
+		return implode( "\n", $cleaned );
 	}
 
 	/**

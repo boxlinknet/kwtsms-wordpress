@@ -44,6 +44,8 @@ class KwtSMS_Settings {
 			'debug_logging'        => 0,          // Write detailed logs to wp-content/kwtsms-debug.log.
 			'balance_failure_mode' => 'block',    // block or allow — action when SMS credits run out.
 			'blocked_phones'       => '',         // Newline or comma-separated normalized phone numbers.
+			'ip_allowlist'         => '',         // Newline-separated IPs or CIDRs. Allowlisted IPs skip rate limiting and proxy checks.
+			'ip_blocklist'         => '',         // Newline-separated IPs or CIDRs. Blocklisted IPs receive a silent rate-limit response.
 			'otp_required_roles'   => array( 'editor', 'author', 'contributor', 'subscriber' ), // Administrator excluded by default.
 			'welcome_sms_enabled'  => 0,         // Send welcome SMS to new registrations.
 		),
