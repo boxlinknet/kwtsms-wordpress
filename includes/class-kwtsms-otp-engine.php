@@ -662,7 +662,7 @@ class KwtSMS_OTP_Engine {
 		} else {
 			// Fetch from IPHub API with a short timeout to avoid blocking the login flow.
 			$response = wp_remote_get(
-				'https://v2.api.iphub.info/ip/' . rawurlencode( $ip ),
+				'https://v2.api.iphub.info/ip/' . $ip,
 				array(
 					'headers' => array( 'X-Key' => $api_key ),
 					'timeout' => 3,
