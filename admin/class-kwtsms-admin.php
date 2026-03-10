@@ -318,7 +318,9 @@ class KwtSMS_Admin {
 		register_setting(
 			'kwtsms_otp_alerts_group',
 			'kwtsms_otp_alerts',
-			array( $this, 'sanitize_alerts_settings' )
+			array(
+				'sanitize_callback' => array( $this, 'sanitize_alerts_settings' ),
+			)
 		);
 	}
 
