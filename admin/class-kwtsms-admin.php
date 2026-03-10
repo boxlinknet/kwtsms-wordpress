@@ -830,12 +830,13 @@ class KwtSMS_Admin {
 			$out[ $key ] = ! empty( $raw[ $key ] ) ? 1 : 0;
 		}
 
-		// Per-event templates (EN + AR).
+		// Per-event templates (EN + AR) — uses sanitize_template_content() to strip
+		// emoji, hidden Unicode, and invalid characters, consistent with other templates.
 		$tpl_keys = array( 'tpl_user_register', 'tpl_wp_login', 'tpl_post_published', 'tpl_comment_posted', 'tpl_core_update' );
 		foreach ( $tpl_keys as $tkey ) {
 			$out[ $tkey ] = array(
-				'en' => sanitize_text_field( wp_unslash( $raw[ $tkey . '_en' ] ?? '' ) ),
-				'ar' => sanitize_text_field( wp_unslash( $raw[ $tkey . '_ar' ] ?? '' ) ),
+				'en' => $this->sanitize_template_content( $raw[ $tkey . '_en' ] ?? '' ),
+				'ar' => $this->sanitize_template_content( $raw[ $tkey . '_ar' ] ?? '' ),
 			);
 		}
 
@@ -1178,7 +1179,7 @@ class KwtSMS_Admin {
 	 */
 	public function render_alerts_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms' ) );
 		}
 		include KWTSMS_OTP_DIR . 'admin/views/page-alerts.php';
 	}
