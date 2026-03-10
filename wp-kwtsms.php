@@ -72,17 +72,18 @@ function kwtsms_otp_activate() {
 		update_option(
 			'kwtsms_otp_general',
 			array(
-				'otp_mode'             => '2fa',
-				'otp_length'           => 6,
-				'otp_expiry'           => 5,
-				'max_attempts'         => 3,
-				'resend_cooldown'      => 120,
-				'login_otp'            => 1,
-				'reset_otp'            => 1,
-				'captcha_provider'     => 'none',
-				'referral_link'        => 0,
-				'default_country_code' => 'KW',
-				'allowed_countries'    => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ),
+				'otp_mode'              => '2fa',
+				'otp_length'            => 6,
+				'otp_expiry'            => 5,
+				'max_attempts'          => 3,
+				'resend_cooldown'       => 120,
+				'login_otp'             => 1,
+				'reset_otp'             => 1,
+				'registration_otp_gate' => 'disabled',
+				'captcha_provider'      => 'none',
+				'referral_link'         => 0,
+				'default_country_code'  => 'KW',
+				'allowed_countries'     => array( 'KW', 'SA', 'AE', 'BH', 'QA', 'OM' ),
 			)
 		);
 	}
