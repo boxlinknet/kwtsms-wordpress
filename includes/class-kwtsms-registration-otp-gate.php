@@ -79,9 +79,49 @@ class KwtSMS_Registration_OTP_Gate {
 		$this->api      = $api;
 		$this->otp      = $otp;
 
+		add_filter( 'registration_errors', array( $this, 'prepend_reg_url_error' ), 1, 1 );
 		add_filter( 'registration_errors', array( $this, 'gate_registration' ), 10, 3 );
 		add_filter( 'woocommerce_registration_errors', array( $this, 'gate_woo_registration' ), 10, 3 );
 		add_action( 'login_init', array( $this, 'handle_reg_otp_page' ) );
+	}
+
+	// =========================================================================
+	// Registration error display from redirect query args
+	// =========================================================================
+
+	/**
+	 * Surface kwtsms_reg_error query-arg errors on the registration form.
+	 *
+	 * Hooked to registration_errors at priority 1, before any other processing.
+	 * Reads the error code from the URL (set by complete_registration() redirects)
+	 * and injects a human-readable message into the errors object so WordPress
+	 * displays it at the top of the registration form.
+	 *
+	 * @param WP_Error $errors Existing registration errors.
+	 *
+	 * @return WP_Error Errors with any URL-sourced error prepended.
+	 */
+	public function prepend_reg_url_error( WP_Error $errors ): WP_Error {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only GET param; no state change.
+		$error_code = sanitize_key( $_GET['kwtsms_reg_error'] ?? '' );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( '' === $error_code ) {
+			return $errors;
+		}
+
+		$messages = array(
+			'expired'       => __( 'Verification expired. Please register again.', 'wp-kwtsms' ),
+			'security'      => __( 'Security check failed. Please register again.', 'wp-kwtsms' ),
+			'create_failed' => __( 'Account creation failed. Please try again.', 'wp-kwtsms' ),
+			'max_attempts'  => __( 'Too many failed attempts. Please register again.', 'wp-kwtsms' ),
+		);
+
+		if ( isset( $messages[ $error_code ] ) ) {
+			$errors->add( 'kwtsms_reg_' . $error_code, $messages[ $error_code ] );
+		}
+
+		return $errors;
 	}
 
 	// =========================================================================
@@ -131,9 +171,12 @@ class KwtSMS_Registration_OTP_Gate {
 		$password = wp_unslash( $_POST['pass1'] ?? $_POST['password'] ?? '' );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		$this->send_registration_otp( $sanitized_user_login, $user_email, $password, $phone );
-		// send_registration_otp() calls wp_safe_redirect() + exit on success.
-		// If we get here something went wrong — return errors to show the form.
+		$result = $this->send_registration_otp( $sanitized_user_login, $user_email, $password, $phone );
+		// send_registration_otp() calls wp_safe_redirect() + exit on success (returns null).
+		// If it returns a WP_Error, SMS failed — block registration and surface the error.
+		if ( is_wp_error( $result ) ) {
+			$errors->add( $result->get_error_code(), $result->get_error_message() );
+		}
 		return $errors;
 	}
 
@@ -184,7 +227,12 @@ class KwtSMS_Registration_OTP_Gate {
 		$password = wp_unslash( $_POST['password'] ?? $_POST['pass1'] ?? '' );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		$this->send_registration_otp( $username, $email, $password, $phone );
+		$result = $this->send_registration_otp( $username, $email, $password, $phone );
+		// send_registration_otp() calls wp_safe_redirect() + exit on success (returns null).
+		// If it returns a WP_Error, SMS failed — block registration and surface the error.
+		if ( is_wp_error( $result ) ) {
+			$errors->add( $result->get_error_code(), $result->get_error_message() );
+		}
 		return $errors;
 	}
 
@@ -218,7 +266,7 @@ class KwtSMS_Registration_OTP_Gate {
 			exit;
 		}
 
-		if ( 'POST' === strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) ) ) {
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			$this->complete_registration( $token );
 			exit;
 		}
@@ -236,7 +284,7 @@ class KwtSMS_Registration_OTP_Gate {
 	 *
 	 * @param string $token Session token from the URL.
 	 */
-	public function complete_registration( $token ) {
+	private function complete_registration( $token ) {
 		$token         = sanitize_text_field( $token );
 		$transient_key = self::PENDING_REG_PREFIX . $token;
 		$pending       = get_transient( $transient_key );
@@ -315,6 +363,7 @@ class KwtSMS_Registration_OTP_Gate {
 		update_user_meta( $user_id, 'kwtsms_phone', $phone );
 
 		// Log the user in immediately.
+		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id );
 		do_action( 'wp_login', $pending['username'], get_userdata( $user_id ) );
 
@@ -332,35 +381,52 @@ class KwtSMS_Registration_OTP_Gate {
 	 * Generate an OTP, send it to the phone, store the pending-registration
 	 * transient, and redirect to the OTP entry page.
 	 *
-	 * If SMS sending fails, no transient is stored — the method returns normally
-	 * so that gate_registration() can fall through and return the existing errors.
+	 * On success, this method calls wp_safe_redirect() + exit and never returns.
+	 * On failure, it returns a WP_Error so that the caller can add the error to
+	 * the registration errors object and block account creation.
 	 *
 	 * @param string $username Username (sanitized by WP core before this is called).
 	 * @param string $email    Email address.
 	 * @param string $password Raw password (stored as-is for wp_create_user).
 	 * @param string $phone    Raw phone number from the form.
+	 *
+	 * @return WP_Error|void Returns WP_Error on any failure; redirects and exits on success.
 	 */
 	private function send_registration_otp( $username, $email, $password, $phone ) {
+		$sms_error = new WP_Error(
+			'sms_send_failed',
+			__( 'Unable to send verification code. Please try again.', 'wp-kwtsms' )
+		);
+
 		// Normalise phone number.
 		$phone = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
 		$phone = KwtSMS_API::normalize_phone( $phone );
 
 		if ( is_wp_error( $phone ) ) {
-			// Invalid phone — return without redirecting; caller returns errors.
-			return;
+			// Invalid phone format — block registration with a descriptive error.
+			return $sms_error;
+		}
+
+		// Double-submit guard: if this email already has an OTP in flight, do not
+		// create a second pending transient. TTL matches the OTP expiry window.
+		$email_guard_key = 'kwtsms_pending_reg_email_' . md5( $email );
+		if ( get_transient( $email_guard_key ) ) {
+			// A registration flow for this email is already in progress — silently
+			// return the send-failed error so the gate blocks this duplicate request.
+			return $sms_error;
 		}
 
 		// Rate limiting: per-phone.
 		if ( $this->otp->is_rate_limited( $phone, self::OTP_ACTION, 0 ) ) {
-			return;
+			return $sms_error;
 		}
 		if ( $this->otp->is_ip_rate_limited( self::OTP_ACTION, 0, $phone ) ) {
-			return;
+			return $sms_error;
 		}
 
 		// Generate OTP and send SMS.
 		$otp_code = $this->otp->generate( $phone, self::OTP_ACTION );
-		$message  = $this->otp->build_message( $otp_code, 'reset_otp' );
+		$message  = $this->otp->build_message( $otp_code, 'login_otp' );
 
 		$send_result = $this->api->send_sms(
 			$phone,
@@ -370,13 +436,16 @@ class KwtSMS_Registration_OTP_Gate {
 		);
 
 		if ( is_wp_error( $send_result ) ) {
-			return;
+			return $sms_error;
 		}
 
-		// Build and store the pending registration transient.
-		$token       = wp_generate_password( 32, false );
+		// Mark this email as having an in-progress registration to prevent double-submit.
 		$expiry_secs = (int) $this->settings->get( 'general.otp_expiry', 5 ) * MINUTE_IN_SECONDS;
 		$ttl         = $expiry_secs + 60;
+		set_transient( $email_guard_key, 1, $ttl );
+
+		// Build and store the pending registration transient.
+		$token = wp_generate_password( 32, false );
 
 		set_transient(
 			self::PENDING_REG_PREFIX . $token,
