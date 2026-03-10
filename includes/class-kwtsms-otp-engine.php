@@ -558,7 +558,7 @@ class KwtSMS_OTP_Engine {
 	 *
 	 * @return bool True if $ip is within $cidr.
 	 */
-	public function ip_matches_cidr( string $ip, string $cidr ): bool {
+	private function ip_matches_cidr( string $ip, string $cidr ): bool {
 		$parts  = explode( '/', $cidr, 2 );
 		$range  = $parts[0];
 		$prefix = isset( $parts[1] ) ? (int) $parts[1] : -1;
