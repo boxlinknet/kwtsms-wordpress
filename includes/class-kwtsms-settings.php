@@ -2,10 +2,11 @@
 /**
  * Settings storage and retrieval helper.
  *
- * All plugin settings are stored in three wp_options entries:
+ * All plugin settings are stored in four wp_options entries:
  *   - kwtsms_otp_general   — OTP behaviour, CAPTCHA provider
  *   - kwtsms_otp_gateway   — API credentials, sender ID, test mode
  *   - kwtsms_otp_templates — SMS message templates (EN + AR)
+ *   - kwtsms_otp_security  — IPHub proxy/VPN detection settings
  *
  * Access values with dot-notation: $settings->get('gateway.sender_id')
  *

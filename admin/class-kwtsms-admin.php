@@ -775,7 +775,7 @@ class KwtSMS_Admin {
 		}
 
 		return array(
-			'iphub_api_key'       => sanitize_text_field( $raw['iphub_api_key'] ?? '' ),
+			'iphub_api_key'       => sanitize_text_field( wp_unslash( $raw['iphub_api_key'] ?? '' ) ),
 			'iphub_enabled'       => ! empty( $raw['iphub_enabled'] ) ? true : false,
 			'iphub_action_block1' => in_array( $raw['iphub_action_block1'] ?? '', $valid_actions, true )
 				? $raw['iphub_action_block1']
