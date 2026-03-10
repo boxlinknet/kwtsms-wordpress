@@ -107,7 +107,7 @@ class KwtSMS_OTP_Engine {
 	 * the stored OTP belongs to a different action context.
 	 *
 	 * @param int|string $identifier User ID (int) or phone number (string for passwordless).
-	 * @param string     $action     Context: 'login' | 'reset' | 'passwordless' | 'checkout'.
+	 * @param string     $action     Context: 'login' | 'reset' | 'passwordless' | 'checkout' | 'registration'.
 	 *
 	 * @return string The OTP code (existing or freshly generated).
 	 */
