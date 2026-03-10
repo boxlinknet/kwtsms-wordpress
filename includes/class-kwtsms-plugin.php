@@ -101,6 +101,9 @@ class KwtSMS_Plugin {
 			new KwtSMS_Registration_OTP_Gate( $this->settings, $this->api, $this->otp );
 		}
 
+		// Admin Site Alerts: notify admin phone(s) on key site events.
+		new KwtSMS_Admin_Alerts( $this );
+
 		// Welcome SMS: fires for all registrations — WC checkout, WC My Account, standard WP.
 		add_action( 'user_register', array( $this, 'maybe_send_welcome_on_register' ), 20 );
 
