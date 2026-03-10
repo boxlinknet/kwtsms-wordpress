@@ -24,6 +24,8 @@ $allowed_iso2         = $general['allowed_countries'] ?? array( 'KW', 'SA', 'AE'
 $debug_logging        = ! empty( $general['debug_logging'] );
 $balance_failure_mode = $general['balance_failure_mode'] ?? 'block';
 $blocked_phones       = $general['blocked_phones'] ?? '';
+$ip_allowlist         = $general['ip_allowlist'] ?? '';
+$ip_blocklist         = $general['ip_blocklist'] ?? '';
 $otp_required_roles   = $general['otp_required_roles'] ?? array();
 $all_wp_roles         = wp_roles()->get_names();
 
@@ -389,6 +391,43 @@ foreach ( $all_countries as $cc ) {
 						placeholder="96599000000&#10;96566000000"><?php echo esc_textarea( $blocked_phones ); ?></textarea>
 					<p class="description">
 						<?php esc_html_e( 'One per line or comma-separated, with country code (digits only). These numbers will never receive OTP SMS. Blocked requests return a silent success to prevent enumeration.', 'wp-kwtsms' ); ?>
+					</p>
+				</td>
+			</tr>
+
+		</table>
+
+		<!-- ===== IP Rules ===== -->
+		<h2 class="title"><?php esc_html_e( 'IP Rules', 'wp-kwtsms' ); ?></h2>
+		<p style="margin-top:-8px;color:#555;font-size:13px;">
+			<?php esc_html_e( 'One IPv4 or IPv6 address or CIDR per line (e.g. 192.168.1.0/24). Allowlisted IPs skip per-IP rate limiting. Blocklisted IPs receive a silent refusal.', 'wp-kwtsms' ); ?>
+		</p>
+		<table class="form-table" role="presentation">
+
+			<tr>
+				<th scope="row">
+					<label for="kwtsms_ip_allowlist"><?php esc_html_e( 'IP Allowlist', 'wp-kwtsms' ); ?></label>
+				</th>
+				<td>
+					<textarea name="kwtsms_otp_general[ip_allowlist]" id="kwtsms_ip_allowlist"
+						rows="5" class="large-text code"
+						placeholder="192.168.1.0/24&#10;10.0.0.5"><?php echo esc_textarea( $ip_allowlist ); ?></textarea>
+					<p class="description">
+						<?php esc_html_e( 'These IPs skip the per-IP rate limit and proxy detection (when enabled). OTP is still required.', 'wp-kwtsms' ); ?>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="kwtsms_ip_blocklist"><?php esc_html_e( 'IP Blocklist', 'wp-kwtsms' ); ?></label>
+				</th>
+				<td>
+					<textarea name="kwtsms_otp_general[ip_blocklist]" id="kwtsms_ip_blocklist"
+						rows="5" class="large-text code"
+						placeholder="185.220.101.0/24&#10;45.33.32.156"><?php echo esc_textarea( $ip_blocklist ); ?></textarea>
+					<p class="description">
+						<?php esc_html_e( 'These IPs are silently refused. The response is identical to a rate-limit error to prevent enumeration of this list.', 'wp-kwtsms' ); ?>
 					</p>
 				</td>
 			</tr>

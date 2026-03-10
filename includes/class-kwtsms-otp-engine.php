@@ -280,6 +280,10 @@ class KwtSMS_OTP_Engine {
 		if ( '' === $ip ) {
 			return false; // Cannot determine IP — fail open.
 		}
+		// Skip rate limiting for allowlisted IPs.
+		if ( $this->is_ip_allowlisted( $ip ) ) {
+			return false;
+		}
 		$limited = $this->is_rate_limited_sliding(
 			'kwtsms_otp_ip_' . md5( $ip ),
 			self::IP_RATE_LIMIT_MAX,
@@ -427,6 +431,12 @@ class KwtSMS_OTP_Engine {
 	 *                           or array ['otp_code','message','phone','sender','action'].
 	 */
 	public function request_otp( $normalized_phone, $identifier, $template_id, $action, $sender_id ) {
+		// Blocklisted IP: silently pretend success — identical response to phone-blocked.
+		$client_ip = $this->get_client_ip();
+		if ( '' !== $client_ip && $this->is_ip_blocklisted( $client_ip ) ) {
+			return true; // pretend success, no SMS sent.
+		}
+
 		// Blocked phone: silently pretend success — no SMS sent, no error exposed.
 		if ( $this->is_phone_blocked( $normalized_phone ) ) {
 			return true; // pretend success, no SMS sent.
@@ -478,6 +488,109 @@ class KwtSMS_OTP_Engine {
 			$blocked
 		);
 		return in_array( $phone, array_filter( $blocked ), true );
+	}
+
+	// =========================================================================
+	// IP allowlist / blocklist (A6)
+	// =========================================================================
+
+	/**
+	 * Check whether a client IP is on the admin-configured allowlist.
+	 *
+	 * Allowlisted IPs skip per-IP rate limiting and IPHub proxy checks.
+	 * OTP verification is still required.
+	 *
+	 * @param string $ip IPv4 or IPv6 address.
+	 *
+	 * @return bool True if the IP is allowlisted.
+	 */
+	public function is_ip_allowlisted( string $ip ): bool {
+		return $this->ip_in_list( $ip, (string) $this->settings->get( 'general.ip_allowlist', '' ) );
+	}
+
+	/**
+	 * Check whether a client IP is on the admin-configured blocklist.
+	 *
+	 * Blocklisted IPs receive a rate-limit-identical error response so attackers
+	 * cannot enumerate the blocklist by inspecting error messages.
+	 *
+	 * @param string $ip IPv4 or IPv6 address.
+	 *
+	 * @return bool True if the IP is blocklisted.
+	 */
+	public function is_ip_blocklisted( string $ip ): bool {
+		return $this->ip_in_list( $ip, (string) $this->settings->get( 'general.ip_blocklist', '' ) );
+	}
+
+	/**
+	 * Check whether an IP matches any entry in a newline-separated list of IPs or CIDRs.
+	 *
+	 * @param string $ip      IP address to test.
+	 * @param string $ip_list Newline-separated IPs / CIDRs.
+	 *
+	 * @return bool True if any entry in $ip_list matches $ip.
+	 */
+	private function ip_in_list( string $ip, string $ip_list ): bool {
+		if ( '' === $ip_list ) {
+			return false;
+		}
+		$entries = preg_split( '/[\r\n]+/', $ip_list, -1, PREG_SPLIT_NO_EMPTY );
+		foreach ( $entries as $entry ) {
+			$entry = trim( $entry );
+			if ( '' === $entry ) {
+				continue;
+			}
+			if ( $this->ip_matches_cidr( $ip, $entry ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Test whether an IP address falls within a CIDR range (or equals a bare IP).
+	 *
+	 * Supports IPv4 and IPv6 via inet_pton() binary comparison with bitmasking.
+	 * No external library required.
+	 *
+	 * @param string $ip   IPv4 or IPv6 address to test.
+	 * @param string $cidr CIDR range (e.g. "192.168.1.0/24") or bare IP.
+	 *
+	 * @return bool True if $ip is within $cidr.
+	 */
+	public function ip_matches_cidr( string $ip, string $cidr ): bool {
+		$parts  = explode( '/', $cidr, 2 );
+		$range  = $parts[0];
+		$prefix = isset( $parts[1] ) ? (int) $parts[1] : -1;
+
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		$ip_bin = @inet_pton( $ip );
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		$range_bin = @inet_pton( $range );
+
+		if ( false === $ip_bin || false === $range_bin ) {
+			return false;
+		}
+
+		$ip_len    = strlen( $ip_bin );
+		$range_len = strlen( $range_bin );
+		if ( $ip_len !== $range_len ) {
+			return false;
+		}
+
+		$max_prefix = $ip_len * 8;
+		if ( $prefix < 0 || $prefix >= $max_prefix ) {
+			return $ip_bin === $range_bin;
+		}
+
+		$mask   = str_repeat( "\xFF", (int) ( $prefix / 8 ) );
+		$remain = $prefix % 8;
+		if ( $remain > 0 ) {
+			$mask .= chr( 0xFF & ( 0xFF << ( 8 - $remain ) ) );
+		}
+		$mask = str_pad( $mask, $ip_len, "\x00" );
+
+		return ( $ip_bin & $mask ) === ( $range_bin & $mask );
 	}
 
 	// =========================================================================
