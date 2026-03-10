@@ -96,6 +96,11 @@ class KwtSMS_Plugin {
 		// Third-party plugin integrations (WooCommerce, CF7, WPForms, Elementor).
 		new KwtSMS_Integrations( $this );
 
+		// Registration OTP Gate — verify phone before account creation.
+		if ( 'disabled' !== $this->settings->get( 'general.registration_otp_gate', 'disabled' ) ) {
+			new KwtSMS_Registration_OTP_Gate( $this->settings, $this->api, $this->otp );
+		}
+
 		// Welcome SMS: fires for all registrations — WC checkout, WC My Account, standard WP.
 		add_action( 'user_register', array( $this, 'maybe_send_welcome_on_register' ), 20 );
 
