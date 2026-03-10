@@ -32,6 +32,9 @@ auth-state.json
 .DS_Store
 Thumbs.db
 
+# Tests
+tests/
+
 # PHPUnit / static analysis artifacts
 .phpunit.result.cache
 
