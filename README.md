@@ -10,7 +10,7 @@
 
 Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress, powered by the [kwtSMS](https://www.kwtsms.com) gateway.
 
-**Version:** 3.1.1 | **Requires:** WordPress 6.0+, PHP 7.4+
+**Version:** 3.1.7 | **Requires:** WordPress 6.0+, PHP 7.4+
 
 > Don't have a kwtSMS account? [Sign up at kwtsms.com →](https://www.kwtsms.com/signup)
 
@@ -36,8 +36,13 @@ kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages an
 
 ### Security
 - Cryptographically secure OTP generation
-- **Rate limiting:** per-phone, per-IP, and per-account to prevent OTP flooding
-- **Phone blocking list:** block specific numbers from ever receiving an OTP
+- **Sliding-window rate limiting:** per-phone, per-IP, and per-account — immune to fixed-window boundary exploits
+- **Duplicate OTP guard:** reuses existing valid OTP on double-click or page reload — no duplicate SMS
+- **IP Allowlist/Blocklist:** CIDR support for IPv4 and IPv6. Allowlisted IPs bypass rate limiting; blocklisted IPs receive a silent refusal
+- **IPHub proxy/VPN detection:** optional integration to silently block or flag OTP requests from known proxies and VPNs, with per-IP caching
+- **Registration OTP gate:** verify phone number via OTP before the WordPress account is created — prevents registrations with invalid numbers
+- **Trusted Devices:** after completing 2FA, users can trust a device for 30 days. Subsequent logins skip OTP on trusted devices. Tokens stored as SHA-256 hashes. Profile page shows all trusted devices with revoke controls
+- **Phone blocking list:** block specific numbers from ever receiving an OTP (anti-enumeration)
 - Timing-safe OTP verification
 - Hardened session cookies
 - Emergency bypass option for admin lockout recovery
