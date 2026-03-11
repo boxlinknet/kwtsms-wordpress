@@ -223,23 +223,7 @@ class KwtSMS_Admin_Alerts {
 		}
 		$message = str_replace( array_keys( $placeholders ), array_values( $placeholders ), $message );
 
-		$sender_id = (string) $this->plugin->settings->get( 'gateway.sender_id', '' );
-		$test_mode = (bool) $this->plugin->settings->get( 'gateway.test_mode', false );
-
-		// In test mode: redirect all admin alerts to the configured test phone.
-		if ( $test_mode ) {
-			$test_phone = (string) $this->plugin->settings->get( 'gateway.test_phone', '' );
-			if ( '' === trim( $test_phone ) ) {
-				return;
-			}
-			$phone = KwtSMS_API::prepend_country_code_if_local( $test_phone, KwtSMS_API::get_default_dial_code() );
-			$phone = KwtSMS_API::normalize_phone( $phone );
-			if ( ! is_wp_error( $phone ) ) {
-				$this->plugin->api->send_sms( $phone, $sender_id, $message, 'admin_alert' );
-			}
-			return;
-		}
-
+		$sender_id  = (string) $this->plugin->settings->get( 'gateway.sender_id', '' );
 		$raw_phones = (string) $this->plugin->settings->get( 'alerts.admin_phones', '' );
 
 		foreach ( preg_split( '/[\s,]+/', $raw_phones, -1, PREG_SPLIT_NO_EMPTY ) as $raw ) {
