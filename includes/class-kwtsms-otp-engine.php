@@ -638,7 +638,7 @@ class KwtSMS_OTP_Engine {
 	 * @return string 'allow' | 'block' | 'log'
 	 */
 	public function check_ip_reputation( string $ip ): string {
-		$enabled = (bool) $this->settings->get( 'security.iphub_enabled', false );
+		$enabled = (bool) $this->settings->get( 'general.iphub_enabled', false );
 		if ( ! $enabled ) {
 			return 'allow';
 		}
@@ -648,7 +648,7 @@ class KwtSMS_OTP_Engine {
 			return 'allow';
 		}
 
-		$api_key = (string) $this->settings->get( 'security.iphub_api_key', '' );
+		$api_key = (string) $this->settings->get( 'general.iphub_api_key', '' );
 		if ( '' === $api_key ) {
 			return 'allow';
 		}
@@ -679,16 +679,16 @@ class KwtSMS_OTP_Engine {
 			}
 
 			$level = (int) $body['block'];
-			$ttl   = (int) $this->settings->get( 'security.iphub_cache_ttl', 86400 );
+			$ttl   = (int) $this->settings->get( 'general.iphub_cache_ttl', 86400 );
 			set_transient( $cache_key, $level, $ttl );
 		}
 
 		// Map the block level to an admin-configured action.
 		if ( 1 === $level ) {
-			return (string) $this->settings->get( 'security.iphub_action_block1', 'block' );
+			return (string) $this->settings->get( 'general.iphub_action_block1', 'block' );
 		}
 		if ( 2 === $level ) {
-			return (string) $this->settings->get( 'security.iphub_action_block2', 'log' );
+			return (string) $this->settings->get( 'general.iphub_action_block2', 'log' );
 		}
 
 		return 'allow';

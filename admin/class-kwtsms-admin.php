@@ -95,7 +95,7 @@ class KwtSMS_Admin {
 		$this->page_hooks[] = add_submenu_page(
 			'kwtsms-otp',
 			__( 'Admin Alerts', 'wp-kwtsms' ),
-			__( 'Alerts', 'wp-kwtsms' ),
+			'&#8627; ' . __( 'Alerts', 'wp-kwtsms' ),
 			'manage_options',
 			'kwtsms-otp-alerts',
 			array( $this, 'render_alerts_page' )
