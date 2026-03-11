@@ -2,11 +2,10 @@
 /**
  * Settings storage and retrieval helper.
  *
- * All plugin settings are stored in five wp_options entries:
- *   - kwtsms_otp_general   : OTP behaviour, CAPTCHA provider
+ * All plugin settings are stored in four wp_options entries:
+ *   - kwtsms_otp_general   : OTP behaviour, CAPTCHA, IPHub proxy detection
  *   - kwtsms_otp_gateway   : API credentials, sender ID, test mode
  *   - kwtsms_otp_templates : SMS message templates (EN + AR)
- *   - kwtsms_otp_security  : IPHub proxy/VPN detection settings
  *   - kwtsms_otp_alerts    : Admin-targeted event alert settings
  *
  * Access values with dot-notation: $settings->get('gateway.sender_id')
@@ -27,13 +26,6 @@ class KwtSMS_Settings {
 	 * @var array
 	 */
 	const DEFAULTS = array(
-		'security'     => array(
-			'iphub_api_key'       => '',
-			'iphub_enabled'       => false,
-			'iphub_action_block1' => 'block',  // Action for block level 1 (confirmed proxy/VPN): block, allow, or log.
-			'iphub_action_block2' => 'log',    // Action for block level 2 (mixed residential/proxy): log, allow, or block.
-			'iphub_cache_ttl'     => 86400,    // Transient TTL for cached IP reputation results (default: 1 day = 86400 s).
-		),
 		'general'      => array(
 			'otp_mode'              => '2fa',     // Options: 2fa, passwordless, or both.
 			'otp_length'            => 6,          // 4 or 6.
@@ -58,6 +50,11 @@ class KwtSMS_Settings {
 			'otp_required_roles'    => array( 'editor', 'author', 'contributor', 'subscriber' ), // Administrator excluded by default.
 			'welcome_sms_enabled'   => 0,           // Send welcome SMS to new registrations.
 			'registration_otp_gate' => 'disabled',  // Options: disabled, optional, required.
+			'iphub_api_key'         => '',
+			'iphub_enabled'         => false,
+			'iphub_action_block1'   => 'block',  // Action for block level 1 (confirmed proxy/VPN): block, allow, or log.
+			'iphub_action_block2'   => 'log',    // Action for block level 2 (mixed residential/proxy): log, allow, or block.
+			'iphub_cache_ttl'       => 86400,    // Transient TTL for cached IP reputation results (default: 1 day = 86400 s).
 		),
 		'gateway'      => array(
 			'api_username'         => '',
@@ -355,13 +352,22 @@ class KwtSMS_Settings {
 			}
 		}
 
+		foreach ( self::DEFAULTS['alerts'] as $key => $val ) {
+			if ( is_array( $val ) && isset( $val['en'], $val['ar'] ) ) {
+				$all[ $key ] = array(
+					'en' => $val['en'],
+					'ar' => $val['ar'],
+				);
+			}
+		}
+
 		return $all;
 	}
 
 	/**
 	 * Load and cache an option group from the database.
 	 *
-	 * @param string $group Option group name (general|gateway|templates|integrations|alerts).
+	 * @param string $group Option group name (general|gateway|templates|integrations|alerts|security).
 	 *
 	 * @return array
 	 */
