@@ -240,7 +240,7 @@ function kwtsms_attempt_result_label( $result ) {
 	</table>
 	<?php endif; ?>
 
-	<?php elseif ( 'debug_log' === $active_tab && $show_debug_tab ) : ?>
+	<?php elseif ( $show_debug_tab ) : ?>
 	<!-- ===== Debug Log Tab ===== -->
 		<?php
 		// Read file, reverse lines (newest first), paginate.
