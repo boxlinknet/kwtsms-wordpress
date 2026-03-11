@@ -92,13 +92,20 @@ $tpl_placeholders = array(
 			<?php esc_html_e( 'Customise the SMS message for each event in English and Arabic.', 'wp-kwtsms' ); ?>
 		</p>
 
-		<?php foreach ( $events as $event_key => $event_label ) :
+		<?php
+		foreach ( $events as $event_key => $event_label ) :
 			$tpl_key     = 'tpl_' . $event_key;
-			$tpl         = is_array( $alerts[ $tpl_key ] ) ? $alerts[ $tpl_key ] : array( 'en' => '', 'ar' => '' );
-			$default_tpl = KwtSMS_Settings::DEFAULTS['alerts'][ $tpl_key ] ?? array( 'en' => '', 'ar' => '' );
+			$tpl         = is_array( $alerts[ $tpl_key ] ) ? $alerts[ $tpl_key ] : array(
+				'en' => '',
+				'ar' => '',
+			);
+			$default_tpl = KwtSMS_Settings::DEFAULTS['alerts'][ $tpl_key ] ?? array(
+				'en' => '',
+				'ar' => '',
+			);
 			$en_id       = 'alerts_' . $event_key . '_en';
 			$ar_id       = 'alerts_' . $event_key . '_ar';
-		?>
+			?>
 		<div class="kwtsms-template-card">
 			<div class="kwtsms-template-card-header">
 				<h3><?php echo esc_html( $event_label ); ?></h3>
