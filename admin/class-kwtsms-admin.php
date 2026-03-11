@@ -94,6 +94,15 @@ class KwtSMS_Admin {
 
 		$this->page_hooks[] = add_submenu_page(
 			'kwtsms-otp',
+			__( 'Admin Alerts', 'wp-kwtsms' ),
+			__( 'Alerts', 'wp-kwtsms' ),
+			'manage_options',
+			'kwtsms-otp-alerts',
+			array( $this, 'render_alerts_page' )
+		);
+
+		$this->page_hooks[] = add_submenu_page(
+			'kwtsms-otp',
 			__( 'Gateway Settings', 'wp-kwtsms' ),
 			__( 'Gateway', 'wp-kwtsms' ),
 			'manage_options',
@@ -160,15 +169,6 @@ class KwtSMS_Admin {
 			'manage_options',
 			'kwtsms-otp-logs',
 			array( $this, 'render_logs_page' )
-		);
-
-		$this->page_hooks[] = add_submenu_page(
-			'kwtsms-otp',
-			__( 'Admin Alerts', 'wp-kwtsms' ),
-			__( 'Admin Alerts', 'wp-kwtsms' ),
-			'manage_options',
-			'kwtsms-otp-alerts',
-			array( $this, 'render_alerts_page' )
 		);
 
 		// ── Users Without Phone: dynamic menu entry ───────────────────────────
@@ -314,15 +314,6 @@ class KwtSMS_Admin {
 			)
 		);
 
-		// ----- Security settings (IPHub proxy/VPN detection) -----
-		register_setting(
-			'kwtsms_otp_security_group',
-			'kwtsms_otp_security',
-			array(
-				'sanitize_callback' => array( $this, 'sanitize_security_settings' ),
-			)
-		);
-
 		// ----- Admin alert settings -----
 		register_setting(
 			'kwtsms_otp_alerts_group',
@@ -420,6 +411,15 @@ class KwtSMS_Admin {
 				array( 'disabled', 'optional', 'required' ),
 				true
 			) ? $raw['registration_otp_gate'] : 'disabled',
+			'iphub_api_key'         => sanitize_text_field( wp_unslash( $raw['iphub_api_key'] ?? '' ) ),
+			'iphub_enabled'         => ! empty( $raw['iphub_enabled'] ),
+			'iphub_action_block1'   => in_array( $raw['iphub_action_block1'] ?? '', array( 'allow', 'block', 'log' ), true )
+				? $raw['iphub_action_block1']
+				: 'block',
+			'iphub_action_block2'   => in_array( $raw['iphub_action_block2'] ?? '', array( 'allow', 'block', 'log' ), true )
+				? $raw['iphub_action_block2']
+				: 'log',
+			'iphub_cache_ttl'       => max( 3600, min( 604800, absint( $raw['iphub_cache_ttl'] ?? 86400 ) ) ),
 		);
 	}
 
@@ -772,42 +772,6 @@ class KwtSMS_Admin {
 		}
 
 		return $sanitized;
-	}
-
-	/**
-	 * Sanitize security settings (IPHub proxy/VPN detection).
-	 *
-	 * Stored under the option key kwtsms_otp_security.
-	 *
-	 * @param mixed $raw Raw form input.
-	 *
-	 * @return array Sanitized settings array.
-	 */
-	public function sanitize_security_settings( $raw ) {
-		if ( ! is_array( $raw ) ) {
-			return array();
-		}
-
-		$valid_actions = array( 'allow', 'block', 'log' );
-
-		$cache_ttl = absint( $raw['iphub_cache_ttl'] ?? 86400 );
-		if ( $cache_ttl < 3600 ) {
-			$cache_ttl = 3600;
-		} elseif ( $cache_ttl > 604800 ) {
-			$cache_ttl = 604800;
-		}
-
-		return array(
-			'iphub_api_key'       => sanitize_text_field( wp_unslash( $raw['iphub_api_key'] ?? '' ) ),
-			'iphub_enabled'       => ! empty( $raw['iphub_enabled'] ) ? true : false,
-			'iphub_action_block1' => in_array( $raw['iphub_action_block1'] ?? '', $valid_actions, true )
-				? $raw['iphub_action_block1']
-				: 'block',
-			'iphub_action_block2' => in_array( $raw['iphub_action_block2'] ?? '', $valid_actions, true )
-				? $raw['iphub_action_block2']
-				: 'log',
-			'iphub_cache_ttl'     => $cache_ttl,
-		);
 	}
 
 	/**
