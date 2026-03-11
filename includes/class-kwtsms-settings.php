@@ -353,7 +353,7 @@ class KwtSMS_Settings {
 		}
 
 		foreach ( self::DEFAULTS['alerts'] as $key => $val ) {
-			if ( is_array( $val ) && isset( $val['en'], $val['ar'] ) ) {
+			if ( is_array( $val ) ) {
 				$all[ $key ] = array(
 					'en' => $val['en'],
 					'ar' => $val['ar'],

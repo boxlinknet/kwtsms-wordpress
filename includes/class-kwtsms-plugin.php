@@ -867,7 +867,7 @@ class KwtSMS_Plugin {
 		$ajax_url = admin_url( 'admin-ajax.php' );
 		?>
 		<h2><?php esc_html_e( 'Trusted Devices', 'wp-kwtsms' ); ?></h2>
-		<table class="form-table" id="kwtsms-trusted-devices-table" data-user-id="<?php echo esc_attr( $user->ID ); ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>" data-ajax="<?php echo esc_url( $ajax_url ); ?>">
+		<table class="form-table" id="kwtsms-trusted-devices-table" data-user-id="<?php echo esc_attr( (string) $user->ID ); ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>" data-ajax="<?php echo esc_url( $ajax_url ); ?>">
 			<tbody>
 			<?php if ( empty( $devices ) ) : ?>
 				<tr>

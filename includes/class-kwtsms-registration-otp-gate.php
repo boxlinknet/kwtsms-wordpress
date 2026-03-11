@@ -390,7 +390,7 @@ class KwtSMS_Registration_OTP_Gate {
 	 * @param string $password Raw password (stored as-is for wp_create_user).
 	 * @param string $phone    Raw phone number from the form.
 	 *
-	 * @return WP_Error|void Returns WP_Error on any failure; redirects and exits on success.
+	 * @return WP_Error Returns WP_Error on any failure; redirects and exits on success.
 	 */
 	private function send_registration_otp( $username, $email, $password, $phone ) {
 		$sms_error = new WP_Error(
