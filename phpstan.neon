@@ -12,7 +12,7 @@ parameters:
 
     excludePaths:
         - vendor/
-        - tests/
+        - tests/ (?)
 
     bootstrapFiles:
         # WordPress stubs — also loaded by szepeviktor extension.neon, but
