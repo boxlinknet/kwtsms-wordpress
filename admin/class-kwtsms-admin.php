@@ -701,6 +701,20 @@ class KwtSMS_Admin {
 			$sanitized['woo_checkout_otp_cod_only'] = ! empty( $raw['woo_checkout_otp_cod_only'] ) ? 1 : 0;
 			$sanitized['woo_admin_phone']           = sanitize_text_field( wp_unslash( $raw['woo_admin_phone'] ?? '' ) );
 			$sanitized['woo_notify_admin_statuses'] = $notify_admin_statuses;
+			// D1+D2 — Stock alerts.
+			$sanitized['woo_stock_admin_phone']     = sanitize_text_field( wp_unslash( $raw['woo_stock_admin_phone'] ?? '' ) );
+			$sanitized['woo_low_stock_enabled']     = ! empty( $raw['woo_low_stock_enabled'] ) ? 1 : 0;
+			$sanitized['woo_no_stock_enabled']      = ! empty( $raw['woo_no_stock_enabled'] ) ? 1 : 0;
+			$sanitized['woo_backorder_enabled']     = ! empty( $raw['woo_backorder_enabled'] ) ? 1 : 0;
+			$sanitized['woo_new_product_enabled']   = ! empty( $raw['woo_new_product_enabled'] ) ? 1 : 0;
+			$sanitized['woo_back_in_stock_enabled'] = ! empty( $raw['woo_back_in_stock_enabled'] ) ? 1 : 0;
+			foreach ( array( 'woo_tpl_low_stock', 'woo_tpl_no_stock', 'woo_tpl_backorder', 'woo_tpl_new_product', 'woo_tpl_back_in_stock' ) as $tpl_key ) {
+				$tpl_raw               = is_array( $raw[ $tpl_key ] ?? null ) ? $raw[ $tpl_key ] : array();
+				$sanitized[ $tpl_key ] = array(
+					'en' => $this->sanitize_template_content( $tpl_raw['en'] ?? '' ),
+					'ar' => $this->sanitize_template_content( $tpl_raw['ar'] ?? '' ),
+				);
+			}
 			foreach ( array( 'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled', 'woo_pending', 'woo_refunded', 'woo_failed' ) as $key ) {
 				if ( isset( $raw[ $key ] ) && is_array( $raw[ $key ] ) ) {
 					$sanitized[ $key ] = array(

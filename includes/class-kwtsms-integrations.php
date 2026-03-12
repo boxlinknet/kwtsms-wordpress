@@ -54,6 +54,10 @@ class KwtSMS_Integrations {
 			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-woo.php';
 			new KwtSMS_Woo( $this->plugin );
 
+			// D1+D2 — Stock alerts and new product SMS.
+			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-woo-stock.php';
+			new KwtSMS_Woo_Stock( $this->plugin );
+
 			// Per-order custom SMS metabox (admin only to avoid frontend overhead).
 			if ( is_admin() ) {
 				require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-woo-metabox.php';
