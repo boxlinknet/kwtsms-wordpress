@@ -62,6 +62,10 @@ class KwtSMS_Integrations {
 			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-woo-multivendor.php';
 			new KwtSMS_Woo_Multivendor( $this->plugin );
 
+			// D3 — Cart abandonment recovery.
+			require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-woo-cart.php';
+			$this->plugin->woo_cart = new KwtSMS_Woo_Cart( $this->plugin );
+
 			// Per-order custom SMS metabox (admin only to avoid frontend overhead).
 			if ( is_admin() ) {
 				require_once KWTSMS_OTP_DIR . 'includes/integrations/class-kwtsms-woo-metabox.php';
