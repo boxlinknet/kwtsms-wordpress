@@ -111,3 +111,11 @@ parameters:
 
         # ── Ninja Forms (optional dependency) ──────────────────────────────────
         - '#Ninja_Forms#'
+
+        # ── Multivendor plugins (optional dependencies) ─────────────────────────
+        # Dokan, WCFM, and WC Vendors are only present when the respective plugin
+        # is active. method_exists guards are defensive and can never be resolved
+        # statically.
+        - '#WCV_Vendors#'
+        - '#^Call to function method_exists\(\) with .WCV_Vendors.#'
+        - '#^Call to function (dokan|wcfm)#'

@@ -162,6 +162,18 @@ class KwtSMS_Settings {
 				'en' => '{site_name}: Good news! {product_name} is back in stock.',
 				'ar' => '{site_name}: بشرى! {product_name} عاد إلى المخزون.',
 			),
+			// D4 — Instant new order alert and multivendor SMS.
+			'woo_instant_order_enabled' => 0,
+			'woo_instant_order_phone'   => '',
+			'woo_tpl_instant_order'     => array(
+				'en' => '{site_name}: New order #{order_id} from {customer_name}. Total: {total}.',
+				'ar' => '{site_name}: طلب جديد #{order_id} من {customer_name}. المجموع: {total}.',
+			),
+			'woo_vendor_sms_enabled'    => 0,
+			'woo_tpl_vendor_new_order'  => array(
+				'en' => '{site_name}: New order #{order_id} includes your product {product_name}. Total: {total}.',
+				'ar' => '{site_name}: الطلب #{order_id} يتضمن منتجك {product_name}. المجموع: {total}.',
+			),
 			'cf7_confirmation'          => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your form "{form_name}" has been submitted successfully. Thank you!',
@@ -346,6 +358,8 @@ class KwtSMS_Settings {
 			'woo_tpl_backorder',
 			'woo_tpl_new_product',
 			'woo_tpl_back_in_stock',
+			'woo_tpl_instant_order',
+			'woo_tpl_vendor_new_order',
 			'cf7_confirmation',
 			'wpforms_confirmation',
 			'elementor_confirmation',
