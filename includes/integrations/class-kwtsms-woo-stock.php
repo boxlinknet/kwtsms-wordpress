@@ -43,7 +43,7 @@ class KwtSMS_Woo_Stock {
 			return;
 		}
 
-		// D1 — Admin stock alerts.
+		// D1: Admin stock alerts.
 		if ( $this->plugin->settings->get( 'integrations.woo_low_stock_enabled', 1 ) ) {
 			add_action( 'woocommerce_low_stock', array( $this, 'on_low_stock' ), 10, 1 );
 		}
@@ -51,15 +51,15 @@ class KwtSMS_Woo_Stock {
 			add_action( 'woocommerce_no_stock', array( $this, 'on_no_stock' ), 10, 1 );
 		}
 		if ( $this->plugin->settings->get( 'integrations.woo_backorder_enabled', 1 ) ) {
-			add_action( 'woocommerce_product_on_backorder', array( $this, 'on_backorder' ), 10, 3 );
+			add_action( 'woocommerce_product_on_backorder', array( $this, 'on_backorder' ), 10, 1 );
 		}
 
-		// D2 — New product published.
+		// D2: New product published.
 		if ( $this->plugin->settings->get( 'integrations.woo_new_product_enabled', 0 ) ) {
 			add_action( 'transition_post_status', array( $this, 'on_product_published' ), 10, 3 );
 		}
 
-		// D1 — Back-in-stock customer notifications.
+		// D1: Back-in-stock customer notifications.
 		if ( $this->plugin->settings->get( 'integrations.woo_back_in_stock_enabled', 0 ) ) {
 			add_action( 'woocommerce_product_set_stock_status', array( $this, 'on_stock_status_changed' ), 10, 3 );
 			add_action( 'woocommerce_single_product_summary', array( $this, 'render_back_in_stock_form' ), 31 );
@@ -71,7 +71,7 @@ class KwtSMS_Woo_Stock {
 	}
 
 	// =========================================================================
-	// D1 — Admin stock alerts
+	// D1: Admin stock alerts
 	// =========================================================================
 
 	/**
@@ -108,11 +108,13 @@ class KwtSMS_Woo_Stock {
 	/**
 	 * Send admin SMS on backorder.
 	 *
-	 * @param array      $args     {product, quantity, order} hook argument.
-	 * @param WC_Product $product  The product on backorder.
-	 * @param int        $quantity Quantity on backorder.
+	 * @param array $args Hook arguments: {product: WC_Product, quantity: int, order: WC_Order}.
 	 */
-	public function on_backorder( $args, $product, $quantity ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+	public function on_backorder( $args ) {
+		$product = $args['product'] ?? null;
+		if ( ! $product instanceof WC_Product ) {
+			return;
+		}
 		$this->send_admin_stock_sms(
 			'woo_tpl_backorder',
 			array(
@@ -123,7 +125,7 @@ class KwtSMS_Woo_Stock {
 	}
 
 	// =========================================================================
-	// D2 — New product published
+	// D2: New product published
 	// =========================================================================
 
 	/**
@@ -154,7 +156,7 @@ class KwtSMS_Woo_Stock {
 	}
 
 	// =========================================================================
-	// D1 — Back-in-stock customer notifications
+	// D1: Back-in-stock customer notifications
 	// =========================================================================
 
 	/**
