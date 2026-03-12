@@ -4,10 +4,10 @@
  *
  * Provides two features:
  *
- * 1. Instant new order SMS to admin — fires on woocommerce_checkout_order_processed
+ * 1. Instant new order SMS to admin, fires on woocommerce_checkout_order_processed
  *    (once per order, regardless of payment method or initial status).
  *
- * 2. Vendor SMS — when Dokan, WCFM, or WC Vendors is active, sends an SMS to
+ * 2. Vendor SMS, when Dokan, WCFM, or WC Vendors is active, sends an SMS to
  *    the vendor of each ordered product.
  *
  * @package KwtSMS_OTP
