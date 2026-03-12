@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.2.0
+Stable tag: 3.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -226,6 +226,17 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
+
+= 3.3.0 =
+* New: WooCommerce HPOS (High-Performance Order Storage) compatibility declaration
+* New: COD-only OTP gate option — require OTP only for Cash on Delivery orders
+* New: Stock alert SMS — low stock, out of stock, backorder notifications to admin
+* New: New product published SMS notification to admin
+* New: Back-in-stock subscriber notifications — customers opt-in, SMS sent on restock
+* New: Instant new order SMS (fires once per order regardless of status)
+* New: Multivendor support — vendor SMS for Dokan, WCFM, WC Vendors
+* New: Cart abandonment recovery SMS with coupon code generation
+* New: Cart abandonment dashboard card with recovery stats
 
 = 3.2.0 =
 * Added: Admin Site Alerts: send SMS to admin phone(s) on new user registration, login, post publish, comment, and WordPress core update events.
