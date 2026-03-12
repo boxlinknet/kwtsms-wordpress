@@ -36,11 +36,11 @@ kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages an
 
 ### Security
 - Cryptographically secure OTP generation
-- **Sliding-window rate limiting:** per-phone, per-IP, and per-account — immune to fixed-window boundary exploits
-- **Duplicate OTP guard:** reuses existing valid OTP on double-click or page reload — no duplicate SMS
+- **Sliding-window rate limiting:** per-phone, per-IP, and per-account, immune to fixed-window boundary exploits
+- **Duplicate OTP guard:** reuses existing valid OTP on double-click or page reload, no duplicate SMS
 - **IP Allowlist/Blocklist:** CIDR support for IPv4 and IPv6. Allowlisted IPs bypass rate limiting; blocklisted IPs receive a silent refusal
 - **IPHub proxy/VPN detection:** optional integration to silently block or flag OTP requests from known proxies and VPNs, with per-IP caching
-- **Registration OTP gate:** verify phone number via OTP before the WordPress account is created — prevents registrations with invalid numbers
+- **Registration OTP gate:** verify phone number via OTP before the WordPress account is created, preventing registrations with invalid numbers
 - **Trusted Devices:** after completing 2FA, users can trust a device for 30 days. Subsequent logins skip OTP on trusted devices. Tokens stored as SHA-256 hashes. Profile page shows all trusted devices with revoke controls
 - **Phone blocking list:** block specific numbers from ever receiving an OTP (anti-enumeration)
 - Timing-safe OTP verification
