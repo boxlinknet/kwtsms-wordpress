@@ -708,6 +708,17 @@ class KwtSMS_Admin {
 			$sanitized['woo_backorder_enabled']     = ! empty( $raw['woo_backorder_enabled'] ) ? 1 : 0;
 			$sanitized['woo_new_product_enabled']   = ! empty( $raw['woo_new_product_enabled'] ) ? 1 : 0;
 			$sanitized['woo_back_in_stock_enabled'] = ! empty( $raw['woo_back_in_stock_enabled'] ) ? 1 : 0;
+			// D4 — Instant order + multivendor.
+			$sanitized['woo_instant_order_enabled'] = ! empty( $raw['woo_instant_order_enabled'] ) ? 1 : 0;
+			$sanitized['woo_instant_order_phone']   = sanitize_text_field( wp_unslash( $raw['woo_instant_order_phone'] ?? '' ) );
+			$sanitized['woo_vendor_sms_enabled']    = ! empty( $raw['woo_vendor_sms_enabled'] ) ? 1 : 0;
+			foreach ( array( 'woo_tpl_instant_order', 'woo_tpl_vendor_new_order' ) as $tpl_key ) {
+				$tpl_raw               = is_array( $raw[ $tpl_key ] ?? null ) ? $raw[ $tpl_key ] : array();
+				$sanitized[ $tpl_key ] = array(
+					'en' => $this->sanitize_template_content( $tpl_raw['en'] ?? '' ),
+					'ar' => $this->sanitize_template_content( $tpl_raw['ar'] ?? '' ),
+				);
+			}
 			foreach ( array( 'woo_tpl_low_stock', 'woo_tpl_no_stock', 'woo_tpl_backorder', 'woo_tpl_new_product', 'woo_tpl_back_in_stock' ) as $tpl_key ) {
 				$tpl_raw               = is_array( $raw[ $tpl_key ] ?? null ) ? $raw[ $tpl_key ] : array();
 				$sanitized[ $tpl_key ] = array(
