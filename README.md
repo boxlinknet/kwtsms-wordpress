@@ -10,7 +10,7 @@
 
 Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress, powered by the [kwtSMS](https://www.kwtsms.com) gateway.
 
-**Version:** 3.1.7 | **Requires:** WordPress 6.0+, PHP 7.4+
+**Version:** 3.3.0 | **Requires:** WordPress 6.0+, PHP 7.4+
 
 > Don't have a kwtSMS account? [Sign up at kwtsms.com →](https://www.kwtsms.com/signup)
 
@@ -51,7 +51,13 @@ kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages an
 - **7 order status SMS**: Processing, On-Hold (Shipped), Completed, Cancelled, Pending Payment, Refunded, Failed
 - **Admin SMS notifications:** notify a configurable phone number on any order status change
 - **Per-order custom SMS:** send a free-text SMS to the customer from the order edit screen
-- OTP gate on WooCommerce checkout (verify phone before placing order)
+- **OTP gate on checkout:** verify phone before placing order, with optional COD-only mode
+- **Stock alerts:** low stock, out-of-stock, and backorder notifications to admin
+- **New product SMS:** notify admin when a product is first published
+- **Back-in-stock notifications:** customers subscribe via product page, SMS sent when stock returns
+- **Instant new order SMS:** fires once per order at checkout, before any status change
+- **Multivendor support:** route order SMS to the vendor (Dokan, WCFM, WC Vendors)
+- **Cart abandonment recovery:** detect abandoned carts, send recovery SMS with a generated coupon code, track recovery rate in the dashboard widget
 - HPOS (High-Performance Order Storage) compatible
 
 ### Form Integrations: Notification or OTP Gate
@@ -61,9 +67,9 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 |--------|:---:|:---:|:---:|
 | Contact Form 7 | ✓ | ✓ | ✓ |
 | WPForms | ✓ | ✓ | ✓ |
-| Elementor Pro | ✓ | ✓ | ✓ |
-| Gravity Forms | ✓ | ✓ | ✓ |
 | Ninja Forms | ✓ | ✓ | ✓ |
+
+More integrations are coming. Need a specific plugin supported? [Open an issue](https://github.com/boxlinknet/kwtsms-wordpress/issues) and we will look into it.
 
 ### Balance & Gateway
 - Account balance displayed on Gateway and Help pages without re-verifying credentials
@@ -132,7 +138,7 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 | PHP | 7.4 or later (8.x recommended) |
 | kwtSMS account | [Sign up free](https://www.kwtsms.com/signup) |
 | WooCommerce | Optional |
-| Contact Form 7 / WPForms / Elementor Pro / Gravity Forms / Ninja Forms | Optional |
+| Contact Form 7 / WPForms / Ninja Forms | Optional |
 
 ---
 
