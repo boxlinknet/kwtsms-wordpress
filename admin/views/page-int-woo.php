@@ -70,7 +70,7 @@ $woo_template_defs = array(
 	),
 );
 
-$valid_tabs = array_merge( array( 'stock_alerts', 'multivendor' ), array_keys( $woo_template_defs ) );
+$valid_tabs = array_merge( array( 'stock_alerts', 'multivendor', 'cart_abandonment' ), array_keys( $woo_template_defs ) );
 $active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	? sanitize_key( $_GET['tab'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	: 'woo_processing';
@@ -300,6 +300,10 @@ $customer_status_labels = array(
 			<a href="<?php echo esc_url( kwtsms_woo_tab_url( 'multivendor' ) ); ?>"
 				class="nav-tab <?php echo 'multivendor' === $active_tab ? 'nav-tab-active' : ''; ?>">
 				<?php esc_html_e( 'Multivendor', 'wp-kwtsms' ); ?>
+			</a>
+			<a href="<?php echo esc_url( kwtsms_woo_tab_url( 'cart_abandonment' ) ); ?>"
+				class="nav-tab <?php echo 'cart_abandonment' === $active_tab ? 'nav-tab-active' : ''; ?>">
+				<?php esc_html_e( 'Cart Abandonment', 'wp-kwtsms' ); ?>
 			</a>
 			<?php foreach ( $woo_template_defs as $key => $def ) : ?>
 			<a href="<?php echo esc_url( kwtsms_woo_tab_url( $key ) ); ?>"
@@ -900,6 +904,133 @@ $customer_status_labels = array(
 			</div>
 
 		</div><!-- /.kwtsms-tab-section[multivendor] -->
+		<?php endif; ?>
+		<?php if ( 'cart_abandonment' === $active_tab ) : ?>
+		<div class="kwtsms-tab-section">
+
+			<!-- Cart Abandonment Settings -->
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
+					<h3><?php esc_html_e( 'Cart Abandonment Recovery', 'wp-kwtsms' ); ?></h3>
+				</div>
+				<p class="description">
+					<?php esc_html_e( 'Automatically send a recovery SMS with an optional coupon code to customers who add items to their cart but do not complete checkout.', 'wp-kwtsms' ); ?>
+				</p>
+				<table class="form-table" style="margin-top:12px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Enable', 'wp-kwtsms' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox"
+									name="kwtsms_otp_integrations[woo_cart_abandon_enabled]"
+									value="1"
+									<?php checked( ! empty( $int['woo_cart_abandon_enabled'] ) ); ?> />
+								<?php esc_html_e( 'Enable cart abandonment recovery SMS', 'wp-kwtsms' ); ?>
+							</label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Send delay (minutes)', 'wp-kwtsms' ); ?></th>
+						<td>
+							<input type="number"
+								name="kwtsms_otp_integrations[woo_cart_abandon_delay]"
+								value="<?php echo absint( $int['woo_cart_abandon_delay'] ?? 60 ); ?>"
+								min="1"
+								class="small-text" />
+							<p class="description"><?php esc_html_e( 'Minutes of inactivity before the recovery SMS is sent.', 'wp-kwtsms' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Coupon discount (%)', 'wp-kwtsms' ); ?></th>
+						<td>
+							<input type="number"
+								name="kwtsms_otp_integrations[woo_cart_abandon_coupon]"
+								value="<?php echo absint( $int['woo_cart_abandon_coupon'] ?? 10 ); ?>"
+								min="0"
+								max="100"
+								class="small-text" />
+							<p class="description"><?php esc_html_e( 'Set to 0 to disable coupon generation. Otherwise, a single-use percentage coupon will be created and included in the message.', 'wp-kwtsms' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Coupon expiry (hours)', 'wp-kwtsms' ); ?></th>
+						<td>
+							<input type="number"
+								name="kwtsms_otp_integrations[woo_cart_abandon_expiry]"
+								value="<?php echo absint( $int['woo_cart_abandon_expiry'] ?? 48 ); ?>"
+								min="1"
+								class="small-text" />
+							<p class="description"><?php esc_html_e( 'Hours until the generated coupon expires.', 'wp-kwtsms' ); ?></p>
+						</td>
+					</tr>
+				</table>
+			</div>
+
+			<!-- Cart Abandonment Template -->
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
+					<h3><?php esc_html_e( 'Recovery SMS Template', 'wp-kwtsms' ); ?></h3>
+				</div>
+				<p class="description">
+					<?php esc_html_e( 'Message sent to the customer when their cart is considered abandoned.', 'wp-kwtsms' ); ?>
+				</p>
+				<p class="description" style="margin-top:4px;">
+					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms' ); ?></strong>
+					<code>{site_name}, {first_name}, {cart_total}, {coupon_code}, {discount}, {cart_url}</code>
+				</p>
+				<?php
+				$tpl_ca = $templates['woo_tpl_cart_abandon'] ?? array(
+					'en' => '',
+					'ar' => '',
+				);
+				?>
+				<div class="kwtsms-lang-tabs">
+					<div class="kwtsms-tab-nav">
+						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms' ); ?></button>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="en">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_cart_abandon][en]"
+								id="int_woo_tpl_cart_abandon_en"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="ltr"
+								data-lang="en"
+							><?php echo esc_textarea( $tpl_ca['en'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_cart_abandon_en">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_cart_abandon][ar]"
+								id="int_woo_tpl_cart_abandon_ar"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="rtl"
+								data-lang="ar"
+							><?php echo esc_textarea( $tpl_ca['ar'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_cart_abandon_ar">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
+					<button type="button" class="button kwtsms-reset-template"
+						data-key="woo_tpl_cart_abandon">
+						&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms' ); ?>
+					</button>
+				</div>
+			</div>
+
+		</div><!-- /.kwtsms-tab-section[cart_abandonment] -->
 		<?php endif; ?>
 
 		<?php

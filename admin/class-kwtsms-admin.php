@@ -708,6 +708,16 @@ class KwtSMS_Admin {
 			$sanitized['woo_backorder_enabled']     = ! empty( $raw['woo_backorder_enabled'] ) ? 1 : 0;
 			$sanitized['woo_new_product_enabled']   = ! empty( $raw['woo_new_product_enabled'] ) ? 1 : 0;
 			$sanitized['woo_back_in_stock_enabled'] = ! empty( $raw['woo_back_in_stock_enabled'] ) ? 1 : 0;
+			// D3 — Cart abandonment recovery.
+			$sanitized['woo_cart_abandon_enabled'] = ! empty( $raw['woo_cart_abandon_enabled'] ) ? 1 : 0;
+			$sanitized['woo_cart_abandon_delay']   = max( 1, absint( $raw['woo_cart_abandon_delay'] ?? 60 ) );
+			$sanitized['woo_cart_abandon_coupon']  = min( 100, absint( $raw['woo_cart_abandon_coupon'] ?? 10 ) );
+			$sanitized['woo_cart_abandon_expiry']  = max( 1, absint( $raw['woo_cart_abandon_expiry'] ?? 48 ) );
+			$tpl_ca_raw                            = is_array( $raw['woo_tpl_cart_abandon'] ?? null ) ? $raw['woo_tpl_cart_abandon'] : array();
+			$sanitized['woo_tpl_cart_abandon']     = array(
+				'en' => $this->sanitize_template_content( $tpl_ca_raw['en'] ?? '' ),
+				'ar' => $this->sanitize_template_content( $tpl_ca_raw['ar'] ?? '' ),
+			);
 			// D4 — Instant order + multivendor.
 			$sanitized['woo_instant_order_enabled'] = ! empty( $raw['woo_instant_order_enabled'] ) ? 1 : 0;
 			$sanitized['woo_instant_order_phone']   = sanitize_text_field( wp_unslash( $raw['woo_instant_order_phone'] ?? '' ) );
@@ -1591,6 +1601,24 @@ class KwtSMS_Admin {
 				<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener noreferrer" style="font-size:12px;"><?php esc_html_e( 'kwtSMS Dashboard &rsaquo;', 'wp-kwtsms' ); ?></a>
 			</p>
 			<?php endif; ?>
+
+		<?php
+		// Cart abandonment stats (when feature is enabled and WC is active).
+		if ( class_exists( 'WooCommerce' )
+			&& $this->plugin->settings->get( 'integrations.woo_cart_abandon_enabled', 0 )
+			&& $this->plugin->woo_cart instanceof KwtSMS_Woo_Cart
+		) {
+			$stats = $this->plugin->woo_cart->get_stats();
+			echo '<hr style="margin:12px 0;">';
+			echo '<p style="font-weight:600;margin:0 0 8px;">' . esc_html__( 'Cart Abandonment (all time)', 'wp-kwtsms' ) . '</p>';
+			echo '<table style="width:100%;font-size:13px;">';
+			echo '<tr><td>' . esc_html__( 'Abandoned carts', 'wp-kwtsms' ) . '</td><td style="text-align:right;">' . absint( $stats['total'] ) . '</td></tr>';
+			echo '<tr><td>' . esc_html__( 'Recovery SMS sent', 'wp-kwtsms' ) . '</td><td style="text-align:right;">' . absint( $stats['sms_sent'] ) . '</td></tr>';
+			echo '<tr><td>' . esc_html__( 'Recovered', 'wp-kwtsms' ) . '</td><td style="text-align:right;">' . absint( $stats['recovered'] ) . '</td></tr>';
+			echo '<tr><td>' . esc_html__( 'Recovery rate', 'wp-kwtsms' ) . '</td><td style="text-align:right;font-weight:600;">' . absint( $stats['rate'] ) . '%</td></tr>';
+			echo '</table>';
+		}
+		?>
 		</div>
 		<?php
 	}

@@ -162,6 +162,15 @@ class KwtSMS_Settings {
 				'en' => '{site_name}: Good news! {product_name} is back in stock.',
 				'ar' => '{site_name}: بشرى! {product_name} عاد إلى المخزون.',
 			),
+			// D3 — Cart abandonment recovery.
+			'woo_cart_abandon_enabled'  => 0,
+			'woo_cart_abandon_delay'    => 60,   // Minutes before sending recovery SMS.
+			'woo_cart_abandon_coupon'   => 10,   // Discount percentage (0 = no coupon).
+			'woo_cart_abandon_expiry'   => 48,   // Hours until coupon expires.
+			'woo_tpl_cart_abandon'      => array(
+				'en' => '{site_name}: Hi {first_name}, you left something behind! Your cart total is {cart_total}. Use code {coupon_code} for {discount}% off: {cart_url}',
+				'ar' => '{site_name}: مرحبا {first_name}، نسيت شيئاً! مجموع سلتك {cart_total}. استخدم كود {coupon_code} للحصول على خصم {discount}%: {cart_url}',
+			),
 			// D4 — Instant new order alert and multivendor SMS.
 			'woo_instant_order_enabled' => 0,
 			'woo_instant_order_phone'   => '',
@@ -358,6 +367,7 @@ class KwtSMS_Settings {
 			'woo_tpl_backorder',
 			'woo_tpl_new_product',
 			'woo_tpl_back_in_stock',
+			'woo_tpl_cart_abandon',
 			'woo_tpl_instant_order',
 			'woo_tpl_vendor_new_order',
 			'cf7_confirmation',

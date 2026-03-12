@@ -47,6 +47,13 @@ class KwtSMS_Plugin {
 	public $otp;
 
 	/**
+	 * WooCommerce cart abandonment instance (set by integrations loader when WC active).
+	 *
+	 * @var KwtSMS_Woo_Cart|null
+	 */
+	public $woo_cart = null;
+
+	/**
 	 * Get or create the singleton instance.
 	 *
 	 * @return KwtSMS_Plugin
