@@ -70,7 +70,7 @@ $woo_template_defs = array(
 	),
 );
 
-$valid_tabs = array_keys( $woo_template_defs );
+$valid_tabs = array_merge( array( 'stock_alerts' ), array_keys( $woo_template_defs ) );
 $active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	? sanitize_key( $_GET['tab'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	: 'woo_processing';
@@ -293,6 +293,10 @@ $customer_status_labels = array(
 
 		<!-- ===== Order Status Template Tabs ===== -->
 		<nav class="nav-tab-wrapper" style="margin-top:24px;">
+			<a href="<?php echo esc_url( kwtsms_woo_tab_url( 'stock_alerts' ) ); ?>"
+				class="nav-tab <?php echo 'stock_alerts' === $active_tab ? 'nav-tab-active' : ''; ?>">
+				<?php esc_html_e( 'Stock Alerts', 'wp-kwtsms' ); ?>
+			</a>
 			<?php foreach ( $woo_template_defs as $key => $def ) : ?>
 			<a href="<?php echo esc_url( kwtsms_woo_tab_url( $key ) ); ?>"
 				class="nav-tab <?php echo $key === $active_tab ? 'nav-tab-active' : ''; ?>">
@@ -300,6 +304,425 @@ $customer_status_labels = array(
 			</a>
 			<?php endforeach; ?>
 		</nav>
+		<?php if ( 'stock_alerts' === $active_tab ) : ?>
+		<div class="kwtsms-tab-section">
+
+			<!-- Stock Admin Phone -->
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
+					<h3><?php esc_html_e( 'Stock Alert Admin Phone', 'wp-kwtsms' ); ?></h3>
+				</div>
+				<p class="description">
+					<?php esc_html_e( 'Phone number(s) to receive stock alert SMS messages. Separate multiple numbers with commas.', 'wp-kwtsms' ); ?>
+				</p>
+				<table class="form-table" style="margin-top:12px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Admin Phone Number(s)', 'wp-kwtsms' ); ?></th>
+						<td>
+							<input type="text"
+								name="kwtsms_otp_integrations[woo_stock_admin_phone]"
+								value="<?php echo esc_attr( $int['woo_stock_admin_phone'] ?? '' ); ?>"
+								class="regular-text"
+								placeholder="<?php esc_attr_e( 'e.g. 96598765432, 96599220333', 'wp-kwtsms' ); ?>" />
+							<p class="description"><?php esc_html_e( 'Comma-separated list of phone numbers (with country code) to receive stock notifications.', 'wp-kwtsms' ); ?></p>
+						</td>
+					</tr>
+				</table>
+			</div>
+
+			<!-- Low Stock Alert -->
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
+					<h3><?php esc_html_e( 'Low Stock Alert', 'wp-kwtsms' ); ?></h3>
+				</div>
+				<p class="description">
+					<?php esc_html_e( 'Sent to the stock admin phone when a product reaches its low stock threshold.', 'wp-kwtsms' ); ?>
+				</p>
+				<p class="description" style="margin-top:4px;">
+					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms' ); ?></strong>
+					<code>{site_name}, {product_name}, {quantity}</code>
+				</p>
+				<table class="form-table" style="margin-top:8px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Enable', 'wp-kwtsms' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox"
+									name="kwtsms_otp_integrations[woo_low_stock_enabled]"
+									value="1"
+									<?php checked( ! empty( $int['woo_low_stock_enabled'] ) ); ?> />
+								<?php esc_html_e( 'Send SMS on low stock', 'wp-kwtsms' ); ?>
+							</label>
+						</td>
+					</tr>
+				</table>
+				<?php
+				$tpl_ls = $templates['woo_tpl_low_stock'] ?? array(
+					'en' => '',
+					'ar' => '',
+				);
+				?>
+				<div class="kwtsms-lang-tabs">
+					<div class="kwtsms-tab-nav">
+						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms' ); ?></button>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="en">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_low_stock][en]"
+								id="int_woo_tpl_low_stock_en"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="ltr"
+								data-lang="en"
+							><?php echo esc_textarea( $tpl_ls['en'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_low_stock_en">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_low_stock][ar]"
+								id="int_woo_tpl_low_stock_ar"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="rtl"
+								data-lang="ar"
+							><?php echo esc_textarea( $tpl_ls['ar'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_low_stock_ar">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
+					<button type="button" class="button kwtsms-reset-template"
+						data-key="woo_tpl_low_stock">
+						&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms' ); ?>
+					</button>
+				</div>
+			</div>
+
+			<!-- Out of Stock Alert -->
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
+					<h3><?php esc_html_e( 'Out of Stock Alert', 'wp-kwtsms' ); ?></h3>
+				</div>
+				<p class="description">
+					<?php esc_html_e( 'Sent to the stock admin phone when a product goes out of stock.', 'wp-kwtsms' ); ?>
+				</p>
+				<p class="description" style="margin-top:4px;">
+					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms' ); ?></strong>
+					<code>{site_name}, {product_name}</code>
+				</p>
+				<table class="form-table" style="margin-top:8px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Enable', 'wp-kwtsms' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox"
+									name="kwtsms_otp_integrations[woo_no_stock_enabled]"
+									value="1"
+									<?php checked( ! empty( $int['woo_no_stock_enabled'] ) ); ?> />
+								<?php esc_html_e( 'Send SMS on out of stock', 'wp-kwtsms' ); ?>
+							</label>
+						</td>
+					</tr>
+				</table>
+				<?php
+				$tpl_ns = $templates['woo_tpl_no_stock'] ?? array(
+					'en' => '',
+					'ar' => '',
+				);
+				?>
+				<div class="kwtsms-lang-tabs">
+					<div class="kwtsms-tab-nav">
+						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms' ); ?></button>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="en">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_no_stock][en]"
+								id="int_woo_tpl_no_stock_en"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="ltr"
+								data-lang="en"
+							><?php echo esc_textarea( $tpl_ns['en'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_no_stock_en">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_no_stock][ar]"
+								id="int_woo_tpl_no_stock_ar"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="rtl"
+								data-lang="ar"
+							><?php echo esc_textarea( $tpl_ns['ar'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_no_stock_ar">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
+					<button type="button" class="button kwtsms-reset-template"
+						data-key="woo_tpl_no_stock">
+						&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms' ); ?>
+					</button>
+				</div>
+			</div>
+
+			<!-- Backorder Alert -->
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
+					<h3><?php esc_html_e( 'Backorder Alert', 'wp-kwtsms' ); ?></h3>
+				</div>
+				<p class="description">
+					<?php esc_html_e( 'Sent to the stock admin phone when a product is placed on backorder.', 'wp-kwtsms' ); ?>
+				</p>
+				<p class="description" style="margin-top:4px;">
+					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms' ); ?></strong>
+					<code>{site_name}, {product_name}</code>
+				</p>
+				<table class="form-table" style="margin-top:8px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Enable', 'wp-kwtsms' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox"
+									name="kwtsms_otp_integrations[woo_backorder_enabled]"
+									value="1"
+									<?php checked( ! empty( $int['woo_backorder_enabled'] ) ); ?> />
+								<?php esc_html_e( 'Send SMS on backorder', 'wp-kwtsms' ); ?>
+							</label>
+						</td>
+					</tr>
+				</table>
+				<?php
+				$tpl_bo = $templates['woo_tpl_backorder'] ?? array(
+					'en' => '',
+					'ar' => '',
+				);
+				?>
+				<div class="kwtsms-lang-tabs">
+					<div class="kwtsms-tab-nav">
+						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms' ); ?></button>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="en">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_backorder][en]"
+								id="int_woo_tpl_backorder_en"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="ltr"
+								data-lang="en"
+							><?php echo esc_textarea( $tpl_bo['en'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_backorder_en">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_backorder][ar]"
+								id="int_woo_tpl_backorder_ar"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="rtl"
+								data-lang="ar"
+							><?php echo esc_textarea( $tpl_bo['ar'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_backorder_ar">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
+					<button type="button" class="button kwtsms-reset-template"
+						data-key="woo_tpl_backorder">
+						&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms' ); ?>
+					</button>
+				</div>
+			</div>
+
+			<!-- New Product SMS -->
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
+					<h3><?php esc_html_e( 'New Product SMS', 'wp-kwtsms' ); ?></h3>
+				</div>
+				<p class="description">
+					<?php esc_html_e( 'Sent to the stock admin phone when a new product is first published. Disabled by default.', 'wp-kwtsms' ); ?>
+				</p>
+				<p class="description" style="margin-top:4px;">
+					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms' ); ?></strong>
+					<code>{site_name}, {product_name}</code>
+				</p>
+				<table class="form-table" style="margin-top:8px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Enable', 'wp-kwtsms' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox"
+									name="kwtsms_otp_integrations[woo_new_product_enabled]"
+									value="1"
+									<?php checked( ! empty( $int['woo_new_product_enabled'] ) ); ?> />
+								<?php esc_html_e( 'Send SMS when a new product is published', 'wp-kwtsms' ); ?>
+							</label>
+						</td>
+					</tr>
+				</table>
+				<?php
+				$tpl_np = $templates['woo_tpl_new_product'] ?? array(
+					'en' => '',
+					'ar' => '',
+				);
+				?>
+				<div class="kwtsms-lang-tabs">
+					<div class="kwtsms-tab-nav">
+						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms' ); ?></button>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="en">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_new_product][en]"
+								id="int_woo_tpl_new_product_en"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="ltr"
+								data-lang="en"
+							><?php echo esc_textarea( $tpl_np['en'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_new_product_en">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_new_product][ar]"
+								id="int_woo_tpl_new_product_ar"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="rtl"
+								data-lang="ar"
+							><?php echo esc_textarea( $tpl_np['ar'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_new_product_ar">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
+					<button type="button" class="button kwtsms-reset-template"
+						data-key="woo_tpl_new_product">
+						&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms' ); ?>
+					</button>
+				</div>
+			</div>
+
+			<!-- Back-in-Stock Notifications -->
+			<div class="kwtsms-template-card">
+				<div class="kwtsms-template-card-header">
+					<h3><?php esc_html_e( 'Back-in-Stock Notifications', 'wp-kwtsms' ); ?></h3>
+				</div>
+				<p class="description">
+					<?php esc_html_e( 'When enabled, out-of-stock product pages show a subscribe form. Subscribers receive an SMS when the product comes back in stock. Disabled by default.', 'wp-kwtsms' ); ?>
+				</p>
+				<p class="description" style="margin-top:4px;">
+					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms' ); ?></strong>
+					<code>{site_name}, {product_name}</code>
+				</p>
+				<table class="form-table" style="margin-top:8px;">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Enable', 'wp-kwtsms' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox"
+									name="kwtsms_otp_integrations[woo_back_in_stock_enabled]"
+									value="1"
+									<?php checked( ! empty( $int['woo_back_in_stock_enabled'] ) ); ?> />
+								<?php esc_html_e( 'Enable back-in-stock subscriber notifications', 'wp-kwtsms' ); ?>
+							</label>
+						</td>
+					</tr>
+				</table>
+				<?php
+				$tpl_bis = $templates['woo_tpl_back_in_stock'] ?? array(
+					'en' => '',
+					'ar' => '',
+				);
+				?>
+				<div class="kwtsms-lang-tabs">
+					<div class="kwtsms-tab-nav">
+						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms' ); ?></button>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="en">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_back_in_stock][en]"
+								id="int_woo_tpl_back_in_stock_en"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="ltr"
+								data-lang="en"
+							><?php echo esc_textarea( $tpl_bis['en'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_back_in_stock_en">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+					<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
+						<div class="kwtsms-textarea-wrap">
+							<textarea
+								name="kwtsms_otp_integrations[woo_tpl_back_in_stock][ar]"
+								id="int_woo_tpl_back_in_stock_ar"
+								class="large-text kwtsms-sms-textarea"
+								rows="3"
+								dir="rtl"
+								data-lang="ar"
+							><?php echo esc_textarea( $tpl_bis['ar'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_woo_tpl_back_in_stock_ar">
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
+					<button type="button" class="button kwtsms-reset-template"
+						data-key="woo_tpl_back_in_stock">
+						&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms' ); ?>
+					</button>
+				</div>
+			</div>
+
+		</div><!-- /.kwtsms-tab-section[stock_alerts] -->
+		<?php endif; ?>
+
 		<?php
 		foreach ( $woo_template_defs as $key => $def ) :
 			$tpl       = $templates[ $key ] ?? array(

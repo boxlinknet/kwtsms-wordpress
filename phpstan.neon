@@ -58,6 +58,7 @@ parameters:
                 - includes/class-kwtsms-plugin.php
                 - includes/class-kwtsms-woo.php
                 - includes/integrations/class-kwtsms-woo-metabox.php
+                - includes/integrations/class-kwtsms-woo-stock.php
                 - admin/class-kwtsms-admin.php
 
         # ── View files: defensive ?? on variables injected by the caller ─────
@@ -90,9 +91,9 @@ parameters:
 
         # ── WooCommerce (optional dependency) ──────────────────────────────────
         # WC classes and functions are only available when WooCommerce is active.
-        - '#^(Class|Parameter .+ has invalid type) WC_(Order|Checkout|Session|Cart)\b#'
-        - '#^Call to method .+ on an unknown class WC_(Order|Checkout|Session|Cart)\b#'
-        - '#^Function (wc_(get_order|price|add_notice|get_order_status_name)|get_woocommerce_currency) not found\.#'
+        - '#^(Class|Parameter .+ has invalid type) WC_(Order|Checkout|Session|Cart|Product)\b#'
+        - '#^Call to method .+ on an unknown class WC_(Order|Checkout|Session|Cart|Product)\b#'
+        - '#^Function (wc_(get_order|get_product|price|add_notice|get_order_status_name)|get_woocommerce_currency) not found\.#'
 
         # ── Elementor Pro (optional dependency) ────────────────────────────────
         - '#ElementorPro#'

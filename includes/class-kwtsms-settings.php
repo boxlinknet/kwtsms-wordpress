@@ -133,6 +133,35 @@ class KwtSMS_Settings {
 			),
 			'woo_admin_phone'           => '',
 			'woo_notify_admin_statuses' => array(),
+			// D1 — Stock & inventory alerts (to admin phone).
+			'woo_stock_admin_phone'     => '',
+			'woo_low_stock_enabled'     => 1,
+			'woo_no_stock_enabled'      => 1,
+			'woo_backorder_enabled'     => 1,
+			'woo_tpl_low_stock'         => array(
+				'en' => '{site_name}: Low stock alert! {product_name} has {quantity} left.',
+				'ar' => '{site_name}: تنبيه مخزون منخفض! {product_name} متبقي {quantity}.',
+			),
+			'woo_tpl_no_stock'          => array(
+				'en' => '{site_name}: {product_name} is now out of stock.',
+				'ar' => '{site_name}: {product_name} نفد المخزون.',
+			),
+			'woo_tpl_backorder'         => array(
+				'en' => '{site_name}: {product_name} is now on backorder.',
+				'ar' => '{site_name}: {product_name} أصبح تحت الطلب المسبق.',
+			),
+			// D2 — New product published.
+			'woo_new_product_enabled'   => 0,
+			'woo_tpl_new_product'       => array(
+				'en' => '{site_name}: New product available: {product_name}. Check it out!',
+				'ar' => '{site_name}: منتج جديد: {product_name}. اكتشفه الآن!',
+			),
+			// D1 — Back-in-stock subscriber notifications.
+			'woo_back_in_stock_enabled' => 0,
+			'woo_tpl_back_in_stock'     => array(
+				'en' => '{site_name}: Good news! {product_name} is back in stock.',
+				'ar' => '{site_name}: بشرى! {product_name} عاد إلى المخزون.',
+			),
 			'cf7_confirmation'          => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your form "{form_name}" has been submitted successfully. Thank you!',
@@ -312,6 +341,11 @@ class KwtSMS_Settings {
 			'woo_pending',
 			'woo_refunded',
 			'woo_failed',
+			'woo_tpl_low_stock',
+			'woo_tpl_no_stock',
+			'woo_tpl_backorder',
+			'woo_tpl_new_product',
+			'woo_tpl_back_in_stock',
 			'cf7_confirmation',
 			'wpforms_confirmation',
 			'elementor_confirmation',
