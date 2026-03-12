@@ -174,6 +174,7 @@ $customer_status_labels = array(
 							<label>
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_checkout_otp]"
+									id="kwtsms-checkout-otp-toggle"
 									value="1"
 									<?php checked( $int['woo_checkout_otp'], 1 ); ?> />
 								<?php esc_html_e( 'Require OTP verification before placing an order', 'wp-kwtsms' ); ?>
@@ -183,7 +184,30 @@ $customer_status_labels = array(
 							</p>
 						</td>
 					</tr>
+					<tr id="kwtsms-cod-only-row"<?php echo empty( $int['woo_checkout_otp'] ) ? ' style="display:none;"' : ''; ?>>
+						<th scope="row"><?php esc_html_e( 'COD Only', 'wp-kwtsms' ); ?></th>
+						<td>
+							<label class="kwtsms-toggle">
+								<input type="checkbox"
+									name="kwtsms_otp_integrations[woo_checkout_otp_cod_only]"
+									value="1"
+									<?php checked( ! empty( $int['woo_checkout_otp_cod_only'] ) ); ?> />
+								<span><?php esc_html_e( 'Require OTP only for Cash on Delivery orders', 'wp-kwtsms' ); ?></span>
+							</label>
+							<p class="description"><?php esc_html_e( 'When enabled, card and other payment methods bypass the OTP gate. Only COD customers must verify.', 'wp-kwtsms' ); ?></p>
+						</td>
+					</tr>
 				</table>
+				<script>
+				(function() {
+					var toggle = document.getElementById('kwtsms-checkout-otp-toggle');
+					var row    = document.getElementById('kwtsms-cod-only-row');
+					if (!toggle || !row) return;
+					toggle.addEventListener('change', function() {
+						row.style.display = this.checked ? '' : 'none';
+					});
+				})();
+				</script>
 
 				<hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0;">
 

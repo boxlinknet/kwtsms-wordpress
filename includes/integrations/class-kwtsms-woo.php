@@ -365,6 +365,8 @@ class KwtSMS_Woo {
 	 * @param WC_Checkout $checkout WooCommerce checkout instance.
 	 */
 	public function render_checkout_otp_field( WC_Checkout $checkout ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+		$cod_only = (bool) $this->plugin->settings->get( 'integrations.woo_checkout_otp_cod_only', 0 );
+
 		// Check if OTP has already been verified for this session.
 		$session_key = $this->get_checkout_session_key();
 		if ( $session_key && get_transient( self::CHECKOUT_OTP_PREFIX . $session_key ) ) {
@@ -376,7 +378,7 @@ class KwtSMS_Woo {
 		$token = wp_generate_password( 20, false );
 		$nonce = wp_create_nonce( 'kwtsms_otp_nonce' );
 		?>
-		<div id="kwtsms-checkout-otp" style="margin-bottom:20px;padding:16px;border:1px solid #ddd;border-radius:4px;background:#fff8f0;">
+		<div id="kwtsms-checkout-otp" <?php echo $cod_only ? 'data-cod-only="1" ' : ''; ?>style="margin-bottom:20px;padding:16px;border:1px solid #ddd;border-radius:4px;background:#fff8f0;">
 			<h4 style="margin:0 0 8px;"><?php esc_html_e( 'Phone Verification', 'wp-kwtsms' ); ?></h4>
 			<p style="font-size:14px;margin:0 0 10px;"><?php esc_html_e( 'We will send an OTP to your billing phone to verify your order.', 'wp-kwtsms' ); ?></p>
 			<input type="hidden" name="kwtsms_checkout_token" value="<?php echo esc_attr( $token ); ?>" />
@@ -391,6 +393,22 @@ class KwtSMS_Woo {
 				style="width:100%;padding:8px;margin-top:4px;box-sizing:border-box;"
 			/>
 		</div>
+		<?php if ( $cod_only ) : ?>
+		<script>
+		(function() {
+			var wrap = document.getElementById('kwtsms-checkout-otp');
+			if (!wrap) return;
+			function update() {
+				var chosen = document.querySelector('input[name="payment_method"]:checked');
+				wrap.style.display = (chosen && chosen.value === 'cod') ? '' : 'none';
+			}
+			document.addEventListener('change', function(e) {
+				if (e.target && e.target.name === 'payment_method') update();
+			});
+			update();
+		})();
+		</script>
+		<?php endif; ?>
 		<?php
 	}
 
@@ -409,6 +427,13 @@ class KwtSMS_Woo {
 		// If already verified for this session, skip.
 		$session_key = $this->get_checkout_session_key();
 		if ( $session_key && get_transient( self::CHECKOUT_OTP_PREFIX . $session_key ) ) {
+			return;
+		}
+
+		// In COD-only mode, skip OTP for non-COD payment methods.
+		$cod_only       = (bool) $this->plugin->settings->get( 'integrations.woo_checkout_otp_cod_only', 0 );
+		$payment_method = sanitize_key( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( $cod_only && 'cod' !== $payment_method ) {
 			return;
 		}
 

@@ -92,6 +92,7 @@ class KwtSMS_Settings {
 			'wpforms_enabled'           => 1,
 			'elementor_enabled'         => 1,
 			'woo_checkout_otp'          => 0,
+			'woo_checkout_otp_cod_only' => 0,  // 0 = all payment methods, 1 = COD only.
 			'cf7_mode'                  => 'notification', // Options: notification or gate.
 			'wpforms_mode'              => 'notification', // Options: notification or gate.
 			'elementor_mode'            => 'notification', // Options: notification or gate.
