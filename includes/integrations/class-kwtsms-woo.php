@@ -62,6 +62,20 @@ class KwtSMS_Woo {
 	public function __construct( KwtSMS_Plugin $plugin ) {
 		$this->plugin = $plugin;
 
+		// Declare HPOS (High-Performance Order Storage) compatibility.
+		add_action(
+			'before_woocommerce_init',
+			function () {
+				if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+						'custom_order_tables',
+						KWTSMS_OTP_DIR . 'wp-kwtsms.php',
+						true
+					);
+				}
+			}
+		);
+
 		// Bail entirely if the WooCommerce integration is disabled.
 		if ( ! $this->plugin->settings->get( 'integrations.woo_enabled', 1 ) ) {
 			return;
