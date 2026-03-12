@@ -698,6 +698,7 @@ class KwtSMS_Admin {
 		if ( $update_woo ) {
 			$sanitized['woo_enabled']               = ! empty( $raw['woo_enabled'] ) ? 1 : 0;
 			$sanitized['woo_checkout_otp']          = ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0;
+			$sanitized['woo_checkout_otp_cod_only'] = ! empty( $raw['woo_checkout_otp_cod_only'] ) ? 1 : 0;
 			$sanitized['woo_admin_phone']           = sanitize_text_field( wp_unslash( $raw['woo_admin_phone'] ?? '' ) );
 			$sanitized['woo_notify_admin_statuses'] = $notify_admin_statuses;
 			foreach ( array( 'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled', 'woo_pending', 'woo_refunded', 'woo_failed' ) as $key ) {
