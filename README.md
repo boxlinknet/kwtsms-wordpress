@@ -223,6 +223,12 @@ This plugin connects to the following external services:
 **4. Cloudflare Turnstile** (optional): alternative bot protection. Only active when a Turnstile Site Key is entered in General Settings.
 - [Privacy Policy](https://www.cloudflare.com/privacypolicy/)
 
+**5. IPHub** (optional): detects proxies and VPNs to block or flag suspicious OTP requests. Only active when an IPHub API key is entered and the feature is enabled in General Settings.
+- Endpoint: `https://v2.api.iphub.info/ip/{ip}`
+- Data sent: visitor IP address (in URL), API key (in request header)
+- When: on every OTP request when enabled; result cached per IP (default 24 hours)
+- [Website](https://iphub.info/) | [Privacy Policy](https://iphub.info/privacy)
+
 ---
 
 ## Error Reference
