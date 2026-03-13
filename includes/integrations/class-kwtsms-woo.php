@@ -481,7 +481,7 @@ class KwtSMS_Woo {
 
 			// Store the phone so we can verify the same number on the second submit.
 			set_transient( $transient_key . '_pending', $normalized, 15 * MINUTE_IN_SECONDS );
-			wc_add_notice( __( 'An OTP has been sent to your phone. Enter it above and place the order again.', 'wp-kwtsms' ), 'notice' );
+			wc_add_notice( __( 'An OTP has been sent to your phone. Enter it above and place the order again.', 'wp-kwtsms' ), 'error' );
 			return; // Prevent order creation on first submit.
 		}
 

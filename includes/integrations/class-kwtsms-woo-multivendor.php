@@ -5,6 +5,7 @@
  * Provides two features:
  *
  * 1. Instant new order SMS to admin, fires on woocommerce_checkout_order_processed
+ *    (classic checkout) and woocommerce_store_api_checkout_order_processed (block checkout)
  *    (once per order, regardless of payment method or initial status).
  *
  * 2. Vendor SMS, when Dokan, WCFM, or WC Vendors is active, sends an SMS to
@@ -41,13 +42,19 @@ class KwtSMS_Woo_Multivendor {
 
 		// Instant new order alert (fires before any status change).
 		if ( $this->plugin->settings->get( 'integrations.woo_instant_order_enabled', 0 ) ) {
+			// Classic checkout.
 			add_action( 'woocommerce_checkout_order_processed', array( $this, 'on_new_order' ), 10, 3 );
+			// Block checkout (WooCommerce Store API).
+			add_action( 'woocommerce_store_api_checkout_order_processed', array( $this, 'on_new_order_from_block' ), 10, 1 );
 		}
 
 		// Vendor SMS (only when a multivendor plugin is detected).
 		if ( $this->plugin->settings->get( 'integrations.woo_vendor_sms_enabled', 0 ) ) {
 			if ( $this->is_multivendor_active() ) {
+				// Classic checkout.
 				add_action( 'woocommerce_checkout_order_processed', array( $this, 'on_vendor_order' ), 20, 3 );
+				// Block checkout.
+				add_action( 'woocommerce_store_api_checkout_order_processed', array( $this, 'on_vendor_order_from_block' ), 20, 1 );
 			}
 		}
 	}
@@ -164,6 +171,24 @@ class KwtSMS_Woo_Multivendor {
 
 			$notified[] = $vendor_id;
 		}
+	}
+
+	/**
+	 * Bridge: block checkout passes WC_Order directly, no posted_data.
+	 *
+	 * @param WC_Order $order New order object.
+	 */
+	public function on_new_order_from_block( $order ) {
+		$this->on_new_order( $order->get_id(), array(), $order );
+	}
+
+	/**
+	 * Bridge: vendor SMS for block checkout.
+	 *
+	 * @param WC_Order $order New order object.
+	 */
+	public function on_vendor_order_from_block( $order ) {
+		$this->on_vendor_order( $order->get_id(), array(), $order );
 	}
 
 	/**

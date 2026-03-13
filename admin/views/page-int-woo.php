@@ -144,7 +144,12 @@ $customer_status_labels = array(
 
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_integrations_group' ); ?>
-		<input type="hidden" name="kwtsms_otp_integrations[_save_section]" value="woo" />
+		<?php
+		$save_section = in_array( $active_tab, array( 'stock_alerts', 'multivendor', 'cart_abandonment' ), true )
+			? $active_tab
+			: 'woo';
+		?>
+		<input type="hidden" name="kwtsms_otp_integrations[_save_section]" value="<?php echo esc_attr( $save_section ); ?>" />
 
 		<!-- ===== Settings (always visible) ===== -->
 		<div class="kwtsms-template-card">
