@@ -96,48 +96,31 @@ class KwtSMS_OTP_Engine {
 	// =========================================================================
 
 	/**
-	 * Return a valid OTP for a user, reusing the existing one when possible.
+	 * Generate and store a new OTP for a user.
 	 *
-	 * If a non-expired OTP already exists for this identifier and action, it is
-	 * reused and its expiry clock is reset to the full configured window. This
-	 * prevents duplicate codes being issued when a user submits a form twice
-	 * quickly (double-click, page refresh, browser back-button resubmit).
-	 *
-	 * A completely new code is generated only when no valid OTP exists, or when
-	 * the stored OTP belongs to a different action context.
+	 * The code is stored as an HMAC-SHA256 hash so that a database read cannot
+	 * reveal the plaintext OTP. A fresh code is always issued on each call; the
+	 * send-cooldown already prevents abuse from rapid re-requests.
 	 *
 	 * @param int|string $identifier User ID (int) or phone number (string for passwordless).
 	 * @param string     $action     Context: 'login' | 'reset' | 'passwordless' | 'checkout' | 'registration'.
 	 *
-	 * @return string The OTP code (existing or freshly generated).
+	 * @return string The plaintext OTP code (for sending via SMS — not stored).
 	 */
 	public function generate( $identifier, $action ) {
 		$key    = $this->transient_key( $identifier );
-		$data   = get_transient( $key );
 		$expiry = (int) $this->settings->get( 'general.otp_expiry', 5 ) * MINUTE_IN_SECONDS;
 
-		// Reuse an existing valid OTP for the same action — reset the expiry clock.
-		if ( is_array( $data )
-			&& isset( $data['code'], $data['action'], $data['created'] )
-			&& $data['action'] === $action
-			&& ( time() - $data['created'] ) < $expiry
-		) {
-			$data['created'] = time();
-			set_transient( $key, $data, $expiry );
-			return $data['code'];
-		}
-
-		// No valid OTP for this action — generate a fresh one.
 		$length = (int) $this->settings->get( 'general.otp_length', 6 );
 		$code   = $this->generate_code( $length );
 
 		set_transient(
 			$key,
 			array(
-				'code'     => $code,
-				'attempts' => 0,
-				'action'   => $action,
-				'created'  => time(),
+				'code_hash' => hash_hmac( 'sha256', $code, wp_salt( 'auth' ) ),
+				'attempts'  => 0,
+				'action'    => $action,
+				'created'   => time(),
 			),
 			$expiry
 		);
@@ -185,8 +168,9 @@ class KwtSMS_OTP_Engine {
 			return 'expired';
 		}
 
-		// Timing-safe comparison.
-		if ( ! hash_equals( (string) $data['code'], (string) $submitted ) ) {
+		// Timing-safe comparison — hash the submitted code before comparing to the stored hash.
+		$stored_hash = isset( $data['code_hash'] ) ? (string) $data['code_hash'] : '';
+		if ( '' === $stored_hash || ! hash_equals( $stored_hash, hash_hmac( 'sha256', (string) $submitted, wp_salt( 'auth' ) ) ) ) {
 			++$data['attempts'];
 			if ( $data['attempts'] >= $max_attempts ) {
 				// Delete OTP on lockout — user must request a new one.
