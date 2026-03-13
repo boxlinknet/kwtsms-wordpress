@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.3.2
+Stable tag: 3.3.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -226,6 +226,9 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
+
+= 3.3.3 =
+* Fix: Local phone numbers with a trunk prefix (e.g. Saudi 0559..., UAE 050...) are now correctly normalized by stripping the trunk digit and raising the local-number threshold to 9 digits.
 
 = 3.3.2 =
 * New: Country-specific phone validation for 70+ countries: local digit length and mobile prefix are now checked inside normalize_phone(), giving callers meaningful error messages instead of generic rejections.
