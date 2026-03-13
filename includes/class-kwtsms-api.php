@@ -748,6 +748,538 @@ class KwtSMS_API {
 	// =========================================================================
 
 	/**
+	 * Country-specific phone number validation rules.
+	 *
+	 * Each entry maps a dial code string to:
+	 *   local_lengths  — valid digit counts AFTER the country code.
+	 *   mobile_start   — valid first character(s) of the local number.
+	 *                    If empty, any starting digit is accepted.
+	 *
+	 * Sources: ITU-T E.164, Wikipedia "Telephone numbers in [Country]",
+	 * HowToCallAbroad.com, CountryCode.com. Kept in sync with the TypeScript
+	 * PHONE_RULES table in kwtsms_shopify/app/lib/kwtsms/phone.ts.
+	 *
+	 * @return array<string, array{local_lengths: int[], mobile_start: string[]}>
+	 */
+	private static function get_phone_rules(): array {
+		return array(
+			// === GCC ===
+			'965' => array(
+				'local_lengths' => array( 8 ),
+				'mobile_start'  => array( '4', '5', '6', '9' ),
+			),
+			'966' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '5' ),
+			),
+			'971' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '5' ),
+			),
+			'973' => array(
+				'local_lengths' => array( 8 ),
+				'mobile_start'  => array( '3', '6' ),
+			),
+			'974' => array(
+				'local_lengths' => array( 8 ),
+				'mobile_start'  => array( '3', '5', '6', '7' ),
+			),
+			'968' => array(
+				'local_lengths' => array( 8 ),
+				'mobile_start'  => array( '7', '9' ),
+			),
+			// === Levant ===
+			'962' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '7' ),
+			),
+			'961' => array(
+				'local_lengths' => array( 7, 8 ),
+				'mobile_start'  => array( '3', '7', '8' ),
+			),
+			'970' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '5' ),
+			),
+			'964' => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '7' ),
+			),
+			'963' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '9' ),
+			),
+			// === Other Arab ===
+			'967' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '7' ),
+			),
+			'20'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '1' ),
+			),
+			'218' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '9' ),
+			),
+			'216' => array(
+				'local_lengths' => array( 8 ),
+				'mobile_start'  => array( '2', '4', '5', '9' ),
+			),
+			'212' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '6', '7' ),
+			),
+			'213' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '5', '6', '7' ),
+			),
+			'249' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '9' ),
+			),
+			// === Non-Arab Middle East ===
+			'98'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '9' ),
+			),
+			'90'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '5' ),
+			),
+			'972' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '5' ),
+			),
+			// === South Asia ===
+			'91'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '6', '7', '8', '9' ),
+			),
+			'92'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '3' ),
+			),
+			'880' => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '1' ),
+			),
+			'94'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '7' ),
+			),
+			'960' => array(
+				'local_lengths' => array( 7 ),
+				'mobile_start'  => array( '7', '9' ),
+			),
+			// === East Asia ===
+			'86'  => array(
+				'local_lengths' => array( 11 ),
+				'mobile_start'  => array( '1' ),
+			),
+			'81'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '7', '8', '9' ),
+			),
+			'82'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '1' ),
+			),
+			'886' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '9' ),
+			),
+			// === Southeast Asia ===
+			'65'  => array(
+				'local_lengths' => array( 8 ),
+				'mobile_start'  => array( '8', '9' ),
+			),
+			'60'  => array(
+				'local_lengths' => array( 9, 10 ),
+				'mobile_start'  => array( '1' ),
+			),
+			'62'  => array(
+				'local_lengths' => array( 9, 10, 11, 12 ),
+				'mobile_start'  => array( '8' ),
+			),
+			'63'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '9' ),
+			),
+			'66'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '6', '8', '9' ),
+			),
+			'84'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '3', '5', '7', '8', '9' ),
+			),
+			'95'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '9' ),
+			),
+			'855' => array(
+				'local_lengths' => array( 8, 9 ),
+				'mobile_start'  => array( '1', '6', '7', '8', '9' ),
+			),
+			'976' => array(
+				'local_lengths' => array( 8 ),
+				'mobile_start'  => array( '6', '8', '9' ),
+			),
+			// === Europe ===
+			'44'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '7' ),
+			),
+			'33'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '6', '7' ),
+			),
+			'49'  => array(
+				'local_lengths' => array( 10, 11 ),
+				'mobile_start'  => array( '1' ),
+			),
+			'39'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '3' ),
+			),
+			'34'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '6', '7' ),
+			),
+			'31'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '6' ),
+			),
+			'32'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array(),
+			),
+			'41'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '7' ),
+			),
+			'43'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '6' ),
+			),
+			'47'  => array(
+				'local_lengths' => array( 8 ),
+				'mobile_start'  => array( '4', '9' ),
+			),
+			'48'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array(),
+			),
+			'30'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '6' ),
+			),
+			'420' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '6', '7' ),
+			),
+			'46'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '7' ),
+			),
+			'45'  => array(
+				'local_lengths' => array( 8 ),
+				'mobile_start'  => array(),
+			),
+			'40'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '7' ),
+			),
+			'36'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array(),
+			),
+			'380' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array(),
+			),
+			// === Americas ===
+			'1'   => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array(),
+			),
+			'52'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array(),
+			),
+			'55'  => array(
+				'local_lengths' => array( 11 ),
+				'mobile_start'  => array(),
+			),
+			'57'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '3' ),
+			),
+			'54'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '9' ),
+			),
+			'56'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '9' ),
+			),
+			'58'  => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '4' ),
+			),
+			'51'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '9' ),
+			),
+			'593' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '9' ),
+			),
+			'53'  => array(
+				'local_lengths' => array( 8 ),
+				'mobile_start'  => array( '5', '6' ),
+			),
+			// === Africa ===
+			'27'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '6', '7', '8' ),
+			),
+			'234' => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array( '7', '8', '9' ),
+			),
+			'254' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '1', '7' ),
+			),
+			'233' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '2', '5' ),
+			),
+			'251' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '7', '9' ),
+			),
+			'255' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '6', '7' ),
+			),
+			'256' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '7' ),
+			),
+			'237' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '6' ),
+			),
+			'225' => array(
+				'local_lengths' => array( 10 ),
+				'mobile_start'  => array(),
+			),
+			'221' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '7' ),
+			),
+			'252' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '6', '7' ),
+			),
+			'250' => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '7' ),
+			),
+			// === Oceania ===
+			'61'  => array(
+				'local_lengths' => array( 9 ),
+				'mobile_start'  => array( '4' ),
+			),
+			'64'  => array(
+				'local_lengths' => array( 8, 9, 10 ),
+				'mobile_start'  => array( '2' ),
+			),
+		);
+	}
+
+	/**
+	 * Country names keyed by dial code, for use in error messages.
+	 *
+	 * @return array<string, string>
+	 */
+	private static function get_country_names(): array {
+		return array(
+			'965' => 'Kuwait',
+			'966' => 'Saudi Arabia',
+			'971' => 'UAE',
+			'973' => 'Bahrain',
+			'974' => 'Qatar',
+			'968' => 'Oman',
+			'962' => 'Jordan',
+			'961' => 'Lebanon',
+			'970' => 'Palestine',
+			'964' => 'Iraq',
+			'963' => 'Syria',
+			'967' => 'Yemen',
+			'20'  => 'Egypt',
+			'218' => 'Libya',
+			'216' => 'Tunisia',
+			'212' => 'Morocco',
+			'213' => 'Algeria',
+			'249' => 'Sudan',
+			'98'  => 'Iran',
+			'90'  => 'Turkey',
+			'972' => 'Israel',
+			'91'  => 'India',
+			'92'  => 'Pakistan',
+			'880' => 'Bangladesh',
+			'94'  => 'Sri Lanka',
+			'960' => 'Maldives',
+			'86'  => 'China',
+			'81'  => 'Japan',
+			'82'  => 'South Korea',
+			'886' => 'Taiwan',
+			'65'  => 'Singapore',
+			'60'  => 'Malaysia',
+			'62'  => 'Indonesia',
+			'63'  => 'Philippines',
+			'66'  => 'Thailand',
+			'84'  => 'Vietnam',
+			'95'  => 'Myanmar',
+			'855' => 'Cambodia',
+			'976' => 'Mongolia',
+			'44'  => 'UK',
+			'33'  => 'France',
+			'49'  => 'Germany',
+			'39'  => 'Italy',
+			'34'  => 'Spain',
+			'31'  => 'Netherlands',
+			'32'  => 'Belgium',
+			'41'  => 'Switzerland',
+			'43'  => 'Austria',
+			'47'  => 'Norway',
+			'48'  => 'Poland',
+			'30'  => 'Greece',
+			'420' => 'Czech Republic',
+			'46'  => 'Sweden',
+			'45'  => 'Denmark',
+			'40'  => 'Romania',
+			'36'  => 'Hungary',
+			'380' => 'Ukraine',
+			'1'   => 'USA/Canada',
+			'52'  => 'Mexico',
+			'55'  => 'Brazil',
+			'57'  => 'Colombia',
+			'54'  => 'Argentina',
+			'56'  => 'Chile',
+			'58'  => 'Venezuela',
+			'51'  => 'Peru',
+			'593' => 'Ecuador',
+			'53'  => 'Cuba',
+			'27'  => 'South Africa',
+			'234' => 'Nigeria',
+			'254' => 'Kenya',
+			'233' => 'Ghana',
+			'251' => 'Ethiopia',
+			'255' => 'Tanzania',
+			'256' => 'Uganda',
+			'237' => 'Cameroon',
+			'225' => 'Ivory Coast',
+			'221' => 'Senegal',
+			'252' => 'Somalia',
+			'250' => 'Rwanda',
+			'61'  => 'Australia',
+			'64'  => 'New Zealand',
+		);
+	}
+
+	/**
+	 * Find the dial-code prefix of a normalised phone number.
+	 *
+	 * Tries 3-digit codes first, then 2-digit, then 1-digit (longest match wins).
+	 * Only considers codes present in get_phone_rules().
+	 *
+	 * @param string $phone Normalised phone (digits only, no leading zeros).
+	 * @return string|null Matched dial code, or null if no rules exist for this number.
+	 */
+	public static function find_country_code( string $phone ): ?string {
+		$rules = self::get_phone_rules();
+		foreach ( array( 3, 2, 1 ) as $len ) {
+			if ( strlen( $phone ) >= $len ) {
+				$prefix = substr( $phone, 0, $len );
+				if ( isset( $rules[ $prefix ] ) ) {
+					return $prefix;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Validate a normalised phone number against country-specific format rules.
+	 *
+	 * Checks local number length and (where defined) mobile starting digits.
+	 * Numbers with no matching country rule pass through — only generic E.164
+	 * length validation (already done in normalize_phone) applies to them.
+	 *
+	 * @param string $phone Normalised phone (digits only, no leading zeros).
+	 * @return true|WP_Error True on pass, WP_Error with description on failure.
+	 */
+	public static function validate_phone_format( string $phone ) {
+		$cc = self::find_country_code( $phone );
+		if ( null === $cc ) {
+			return true; // No country-specific rules — generic E.164 length is enough.
+		}
+
+		$rules        = self::get_phone_rules();
+		$rule         = $rules[ $cc ];
+		$local        = substr( $phone, strlen( $cc ) );
+		$local_len    = strlen( $local );
+		$names        = self::get_country_names();
+		$country_name = isset( $names[ $cc ] ) ? $names[ $cc ] : ( '+' . $cc );
+
+		// Validate local number length.
+		if ( ! in_array( $local_len, $rule['local_lengths'], true ) ) {
+			$expected = implode( ' or ', $rule['local_lengths'] );
+			return new WP_Error(
+				'invalid_phone_length',
+				sprintf(
+					/* translators: 1: country name, 2: expected digit count(s), 3: dial code, 4: actual digit count */
+					__( 'Invalid %1$s number: expected %2$s local digits after +%3$s, got %4$d.', 'wp-kwtsms' ),
+					$country_name,
+					$expected,
+					$cc,
+					$local_len
+				)
+			);
+		}
+
+		// Validate mobile starting digit (if rules defined for this country).
+		if ( ! empty( $rule['mobile_start'] ) ) {
+			$valid = false;
+			foreach ( $rule['mobile_start'] as $start ) {
+				if ( 0 === strpos( $local, $start ) ) {
+					$valid = true;
+					break;
+				}
+			}
+			if ( ! $valid ) {
+				return new WP_Error(
+					'invalid_phone_prefix',
+					sprintf(
+						/* translators: 1: country name, 2: dial code, 3: comma-separated list of valid starting digits */
+						__( 'Invalid %1$s mobile number: local part after +%2$s must start with %3$s.', 'wp-kwtsms' ),
+						$country_name,
+						$cc,
+						implode( ', ', $rule['mobile_start'] )
+					)
+				);
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Normalise a phone number to international format (digits only, no prefix).
 	 *
 	 * Handles all common input variants:
@@ -780,8 +1312,8 @@ class KwtSMS_API {
 		// 4. Strip all leading zeros (trunk/international prefix: 0xxx, 00xxx, 000xxx…).
 		$phone = ltrim( $phone, '0' );
 
-		// 5. Validate: must be digits only, 8–15 characters.
-		if ( ! preg_match( '/^\d{8,15}$/', $phone ) ) {
+		// 5. Validate: must be digits only, 7–15 characters (E.164 minimum is 7).
+		if ( ! preg_match( '/^\d{7,15}$/', $phone ) ) {
 			return new WP_Error(
 				'invalid_phone',
 				sprintf(
@@ -790,6 +1322,12 @@ class KwtSMS_API {
 					esc_html( $phone )
 				)
 			);
+		}
+
+		// 6. Validate country-specific format (local length + mobile prefix).
+		$format = self::validate_phone_format( $phone );
+		if ( is_wp_error( $format ) ) {
+			return $format;
 		}
 
 		return $phone;
