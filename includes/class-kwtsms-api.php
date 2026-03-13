@@ -1377,7 +1377,13 @@ class KwtSMS_API {
 	 *
 	 * If the stripped digit-only value has 5–8 digits it is treated as a local
 	 * number and the dial code is prepended. Numbers that already contain a
-	 * country code (> 8 stripped digits) are returned unchanged.
+	 * country code (> 9 stripped digits) are returned unchanged.
+	 *
+	 * Handles trunk-prefixed local numbers (single leading 0, e.g. Saudi 0559…,
+	 * UAE 050…) in addition to the double-zero international prefix (00xxx).
+	 * The threshold is 9 digits to cover countries whose local numbers are 9
+	 * digits (Saudi Arabia, UAE, Jordan, etc.) matching the TypeScript normalize()
+	 * implementation in kwtsms_shopify/app/lib/kwtsms/phone.ts.
 	 *
 	 * @param string $phone     Raw phone input (any format).
 	 * @param string $dial_code Dial code to prepend, digits only (e.g. '965').
@@ -1385,8 +1391,9 @@ class KwtSMS_API {
 	 */
 	public static function prepend_country_code_if_local( string $phone, string $dial_code ): string {
 		$stripped = preg_replace( '/\D/', '', ltrim( trim( $phone ), '+' ) );
-		$stripped = preg_replace( '/^00/', '', $stripped );
-		if ( strlen( $stripped ) >= 5 && strlen( $stripped ) <= 8 ) {
+		$stripped = preg_replace( '/^00/', '', $stripped ); // Strip 00 international prefix.
+		$stripped = preg_replace( '/^0/', '', $stripped );  // Strip single trunk digit (e.g. 0559… → 559…).
+		if ( strlen( $stripped ) >= 5 && strlen( $stripped ) <= 9 ) {
 			return $dial_code . $stripped;
 		}
 		return $phone;
