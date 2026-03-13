@@ -1407,6 +1407,7 @@ class KwtSMS_Admin {
 			$filename = 'kwtsms-debug-' . gmdate( 'Y-m-d' ) . '.log';
 			header( 'Content-Type: text/plain; charset=UTF-8' );
 			header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
+			header( 'X-Content-Type-Options: nosniff' );
 			header( 'Pragma: no-cache' );
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents,WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo file_get_contents( $debug_log_path );
@@ -1427,6 +1428,7 @@ class KwtSMS_Admin {
 				$filename = 'kwtsms-' . $log_key . '-' . gmdate( 'Y-m-d' ) . '.csv';
 				header( 'Content-Type: text/csv; charset=UTF-8' );
 				header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
+				header( 'X-Content-Type-Options: nosniff' );
 				header( 'Pragma: no-cache' );
 
 				$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
