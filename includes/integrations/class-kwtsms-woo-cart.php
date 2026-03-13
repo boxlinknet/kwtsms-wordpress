@@ -145,34 +145,38 @@ class KwtSMS_Woo_Cart {
 	 * Cron job: scan records, send SMS to carts abandoned beyond the delay.
 	 */
 	public function process_abandoned_carts() {
-		$carts = $this->get_carts();
-		if ( empty( $carts ) ) {
-			return;
-		}
+		$this->with_cart_lock(
+			function () {
+				$carts = $this->get_carts();
+				if ( empty( $carts ) ) {
+					return;
+				}
 
-		$delay_minutes = (int) $this->plugin->settings->get( 'integrations.woo_cart_abandon_delay', 60 );
-		$cutoff        = time() - ( $delay_minutes * MINUTE_IN_SECONDS );
-		$changed       = false;
+				$delay_minutes = (int) $this->plugin->settings->get( 'integrations.woo_cart_abandon_delay', 60 );
+				$cutoff        = time() - ( $delay_minutes * MINUTE_IN_SECONDS );
+				$changed       = false;
 
-		foreach ( $carts as &$cart ) {
-			if ( $cart['sms_sent'] || $cart['recovered'] ) {
-				continue;
+				foreach ( $carts as &$cart ) {
+					if ( $cart['sms_sent'] || $cart['recovered'] ) {
+						continue;
+					}
+					if ( $cart['timestamp'] > $cutoff ) {
+						continue; // Not yet old enough.
+					}
+
+					$sent = $this->send_recovery_sms( $cart );
+					if ( $sent ) {
+						$cart['sms_sent'] = true;
+						$changed          = true;
+					}
+				}
+				unset( $cart );
+
+				if ( $changed ) {
+					update_option( self::CARTS_OPTION, wp_json_encode( $carts ), false );
+				}
 			}
-			if ( $cart['timestamp'] > $cutoff ) {
-				continue; // Not yet old enough.
-			}
-
-			$sent = $this->send_recovery_sms( $cart );
-			if ( $sent ) {
-				$cart['sms_sent'] = true;
-				$changed          = true;
-			}
-		}
-		unset( $cart );
-
-		if ( $changed ) {
-			update_option( self::CARTS_OPTION, wp_json_encode( $carts ), false );
-		}
+		);
 	}
 
 	/**
@@ -260,43 +264,70 @@ class KwtSMS_Woo_Cart {
 	}
 
 	/**
+	 * Acquire a MySQL advisory lock, run a callback, then release the lock.
+	 *
+	 * Prevents concurrent read-modify-write races on the cart option. Falls back
+	 * gracefully on non-MySQL environments (e.g. SQLite in WP Playground) where
+	 * GET_LOCK is not supported.
+	 *
+	 * @param callable $callback Callback to execute inside the lock.
+	 */
+	private function with_cart_lock( callable $callback ) {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$locked = $wpdb->get_var( "SELECT GET_LOCK('kwtsms_cart_lock', 5)" );
+		try {
+			$callback();
+		} finally {
+			if ( '1' === (string) $locked ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->query( "SELECT RELEASE_LOCK('kwtsms_cart_lock')" );
+			}
+		}
+	}
+
+	/**
 	 * Insert or update a cart record (keyed by phone).
 	 *
 	 * @param array $record Cart record array.
 	 */
 	private function upsert_cart_record( array $record ) {
-		$carts = $this->get_carts();
+		$this->with_cart_lock(
+			function () use ( $record ) {
+				$carts = $this->get_carts();
 
-		$found = false;
-		foreach ( $carts as &$existing ) {
-			if ( $existing['phone'] === $record['phone'] ) {
-				$existing['cart_total'] = $record['cart_total'];
-				$existing['first_name'] = $record['first_name'];
-				$existing['timestamp']  = $record['timestamp'];
-				$existing['recovered']  = false;
-				$existing['sms_sent']   = false;
-				$found                  = true;
-				break;
-			}
-		}
-		unset( $existing );
-
-		if ( ! $found ) {
-			$carts[] = $record;
-		}
-
-		// Prune oldest records if over limit.
-		if ( count( $carts ) > self::MAX_RECORDS ) {
-			usort(
-				$carts,
-				function ( $a, $b ) {
-					return $a['timestamp'] - $b['timestamp'];
+				$found = false;
+				foreach ( $carts as &$existing ) {
+					if ( $existing['phone'] === $record['phone'] ) {
+						$existing['cart_total'] = $record['cart_total'];
+						$existing['first_name'] = $record['first_name'];
+						$existing['timestamp']  = $record['timestamp'];
+						$existing['recovered']  = false;
+						$existing['sms_sent']   = false;
+						$found                  = true;
+						break;
+					}
 				}
-			);
-			$carts = array_slice( $carts, -self::MAX_RECORDS );
-		}
+				unset( $existing );
 
-		update_option( self::CARTS_OPTION, wp_json_encode( $carts ), false );
+				if ( ! $found ) {
+					$carts[] = $record;
+				}
+
+				// Prune oldest records if over limit.
+				if ( count( $carts ) > self::MAX_RECORDS ) {
+					usort(
+						$carts,
+						function ( $a, $b ) {
+							return $a['timestamp'] - $b['timestamp'];
+						}
+					);
+					$carts = array_slice( $carts, -self::MAX_RECORDS );
+				}
+
+				update_option( self::CARTS_OPTION, wp_json_encode( $carts ), false );
+			}
+		);
 	}
 
 	/**
@@ -305,15 +336,19 @@ class KwtSMS_Woo_Cart {
 	 * @param string $phone Normalized phone number.
 	 */
 	private function remove_cart_record( $phone ) {
-		$carts = $this->get_carts();
-		$carts = array_filter(
-			$carts,
-			function ( $c ) use ( $phone ) {
-				// Keep records from other phones, and keep recovered records for stats.
-				return $c['phone'] !== $phone || ! empty( $c['recovered'] );
+		$this->with_cart_lock(
+			function () use ( $phone ) {
+				$carts = $this->get_carts();
+				$carts = array_filter(
+					$carts,
+					function ( $c ) use ( $phone ) {
+						// Keep records from other phones, and keep recovered records for stats.
+						return $c['phone'] !== $phone || ! empty( $c['recovered'] );
+					}
+				);
+				update_option( self::CARTS_OPTION, wp_json_encode( array_values( $carts ) ), false );
 			}
 		);
-		update_option( self::CARTS_OPTION, wp_json_encode( array_values( $carts ) ), false );
 	}
 
 	/**
@@ -322,18 +357,22 @@ class KwtSMS_Woo_Cart {
 	 * @param string $phone Normalized phone number.
 	 */
 	private function mark_recovered( $phone ) {
-		$carts   = $this->get_carts();
-		$changed = false;
-		foreach ( $carts as &$cart ) {
-			if ( $cart['phone'] === $phone && ! $cart['recovered'] ) {
-				$cart['recovered'] = true;
-				$changed           = true;
+		$this->with_cart_lock(
+			function () use ( $phone ) {
+				$carts   = $this->get_carts();
+				$changed = false;
+				foreach ( $carts as &$cart ) {
+					if ( $cart['phone'] === $phone && ! $cart['recovered'] ) {
+						$cart['recovered'] = true;
+						$changed           = true;
+					}
+				}
+				unset( $cart );
+				if ( $changed ) {
+					update_option( self::CARTS_OPTION, wp_json_encode( $carts ), false );
+				}
 			}
-		}
-		unset( $cart );
-		if ( $changed ) {
-			update_option( self::CARTS_OPTION, wp_json_encode( $carts ), false );
-		}
+		);
 	}
 
 	/**
