@@ -902,14 +902,14 @@ class KwtSMS_OTP_Engine {
 		if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) &&
 			filter_var( $subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ) {
 			// IPv6 comparison.
-			$bits      = (int) $bits;
-			$ip_bin    = inet_pton( $ip );
-			$net_bin   = inet_pton( $subnet );
-			$ip_hex    = bin2hex( $ip_bin );
-			$net_hex   = bin2hex( $net_bin );
-			$ip_int    = gmp_init( $ip_hex, 16 );
-			$net_int   = gmp_init( $net_hex, 16 );
-			$mask_int  = gmp_sub( gmp_pow( 2, 128 ), gmp_pow( 2, 128 - $bits ) );
+			$bits     = (int) $bits;
+			$ip_bin   = inet_pton( $ip );
+			$net_bin  = inet_pton( $subnet );
+			$ip_hex   = bin2hex( $ip_bin );
+			$net_hex  = bin2hex( $net_bin );
+			$ip_int   = gmp_init( $ip_hex, 16 );
+			$net_int  = gmp_init( $net_hex, 16 );
+			$mask_int = gmp_sub( gmp_pow( 2, 128 ), gmp_pow( 2, 128 - $bits ) );
 			return gmp_cmp( gmp_and( $ip_int, $mask_int ), gmp_and( $net_int, $mask_int ) ) === 0;
 		}
 
