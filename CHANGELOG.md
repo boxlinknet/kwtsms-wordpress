@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Elementor Pro and Gravity Forms form integrations are now fully active: removed "coming soon" status, both appear as live integrations on the Integrations overview page with install/activate/configure actions.
 
 ### Fixed
+- Admin phone fields (order status, instant order, stock alerts, admin alerts) no longer send duplicate SMS when the same number is entered in both local and international format. Normalized phones are deduplicated before sending.
+- `woo_admin_phone` (order status admin notification) now accepts space-separated phone numbers in addition to comma-separated, consistent with all other admin phone fields.
 - WooCommerce sub-tab settings (stock alerts, multivendor, cart abandonment) were reset to defaults whenever the parent WooCommerce tab was saved, because unrendered checkboxes produce no POST data. Each sub-section now only updates its own fields when its specific tab is saved.
 - Cart abandonment records with `recovered=true` were deleted when the cart was emptied after a successful purchase, losing recovery stats.
 - Checkout OTP first-submit notice type changed from `notice` to `error` so WooCommerce correctly halts order creation while the customer retrieves their OTP code.

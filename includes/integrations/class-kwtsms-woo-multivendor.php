@@ -108,12 +108,15 @@ class KwtSMS_Woo_Multivendor {
 
 		$sender_id = (string) $this->plugin->settings->get( 'gateway.sender_id', '' );
 
+		$dial_code     = KwtSMS_API::get_default_dial_code();
+		$unique_phones = array();
 		foreach ( preg_split( '/[\s,]+/', $admin_phone, -1, PREG_SPLIT_NO_EMPTY ) as $raw ) {
-			$phone = KwtSMS_API::prepend_country_code_if_local( $raw, KwtSMS_API::get_default_dial_code() );
-			$phone = KwtSMS_API::normalize_phone( $phone );
-			if ( is_wp_error( $phone ) ) {
-				continue;
+			$phone = KwtSMS_API::normalize_phone( KwtSMS_API::prepend_country_code_if_local( $raw, $dial_code ) );
+			if ( ! is_wp_error( $phone ) ) {
+				$unique_phones[ $phone ] = true;
 			}
+		}
+		foreach ( array_keys( $unique_phones ) as $phone ) {
 			$this->plugin->api->send_sms( $phone, $sender_id, $message, 'woo_instant_order' );
 		}
 	}

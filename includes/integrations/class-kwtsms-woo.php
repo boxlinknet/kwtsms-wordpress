@@ -170,17 +170,17 @@ class KwtSMS_Woo {
 				wc_get_order_status_name( $new_status ),
 				number_format( (float) $order->get_total(), absint( get_option( 'woocommerce_price_num_decimals', 2 ) ) ) . ' ' . get_woocommerce_currency()
 			);
-			foreach ( array_map( 'trim', explode( ',', $admin_phone ) ) as $admin_p ) {
-				$admin_p          = KwtSMS_API::prepend_country_code_if_local( $admin_p, KwtSMS_API::get_default_dial_code() );
-				$normalized_admin = KwtSMS_API::normalize_phone( $admin_p );
-				if ( ! is_wp_error( $normalized_admin ) ) {
-					$this->plugin->api->send_sms(
-						$normalized_admin,
-						$this->plugin->settings->get( 'gateway.sender_id', '' ),
-						$admin_msg,
-						'woo_admin'
-					);
+			$sender_id     = (string) $this->plugin->settings->get( 'gateway.sender_id', '' );
+			$dial_code     = KwtSMS_API::get_default_dial_code();
+			$unique_phones = array();
+			foreach ( preg_split( '/[\s,]+/', $admin_phone, -1, PREG_SPLIT_NO_EMPTY ) as $raw_p ) {
+				$norm = KwtSMS_API::normalize_phone( KwtSMS_API::prepend_country_code_if_local( $raw_p, $dial_code ) );
+				if ( ! is_wp_error( $norm ) ) {
+					$unique_phones[ $norm ] = true;
 				}
+			}
+			foreach ( array_keys( $unique_phones ) as $norm_phone ) {
+				$this->plugin->api->send_sms( $norm_phone, $sender_id, $admin_msg, 'woo_admin' );
 			}
 		}
 	}
