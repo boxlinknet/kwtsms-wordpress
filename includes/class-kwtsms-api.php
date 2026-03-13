@@ -758,8 +758,6 @@ class KwtSMS_API {
 	 * Sources: ITU-T E.164, Wikipedia "Telephone numbers in [Country]",
 	 * HowToCallAbroad.com, CountryCode.com. Kept in sync with the TypeScript
 	 * PHONE_RULES table in kwtsms_shopify/app/lib/kwtsms/phone.ts.
-	 *
-	 * @return array<string, array{local_lengths: int[], mobile_start: string[]}>
 	 */
 	private static function get_phone_rules(): array {
 		return array(
@@ -1103,8 +1101,6 @@ class KwtSMS_API {
 
 	/**
 	 * Country names keyed by dial code, for use in error messages.
-	 *
-	 * @return array<string, string>
 	 */
 	private static function get_country_names(): array {
 		return array(
