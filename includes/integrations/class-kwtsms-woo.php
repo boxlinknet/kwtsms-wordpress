@@ -459,7 +459,17 @@ class KwtSMS_Woo {
 		$transient_key = self::CHECKOUT_OTP_PREFIX . $token;
 
 		if ( '' === $otp_code ) {
-			// First (or repeated) submit — generate (or reuse) OTP.
+			// First (or repeated) submit — enforce per-phone and per-IP rate limits.
+			if ( $this->plugin->otp->is_rate_limited( $normalized, 'checkout' ) ) {
+				wc_add_notice( __( 'Too many OTP requests for this phone number. Please wait before trying again.', 'wp-kwtsms' ), 'error' );
+				return;
+			}
+			if ( $this->plugin->otp->is_ip_rate_limited( 'checkout' ) ) {
+				wc_add_notice( __( 'Too many requests from your connection. Please wait before trying again.', 'wp-kwtsms' ), 'error' );
+				return;
+			}
+
+			// Generate (or reuse) OTP.
 			$otp         = $this->plugin->otp->generate( 'checkout_' . $token, 'checkout' );
 			$checkout_id = 'checkout_' . $token;
 
