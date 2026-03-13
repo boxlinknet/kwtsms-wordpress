@@ -227,6 +227,13 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 
 == Changelog ==
 
+= 3.3.1 (unreleased) =
+* Fix: WooCommerce sub-tab settings (stock alerts, multivendor, cart abandonment) were reset to defaults whenever the parent WooCommerce tab was saved, because unrendered checkboxes produce no POST data. Each sub-section now only updates its own fields when its specific tab is saved.
+* Fix: Cart abandonment records with recovered=true were deleted when the cart was emptied after a successful purchase, losing recovery stats.
+* Fix: Checkout OTP first-submit notice type changed from notice to error so WooCommerce correctly halts order creation while the customer retrieves their OTP code.
+* Fix: Instant order and vendor SMS now also fire for WooCommerce block checkout orders via woocommerce_store_api_checkout_order_processed.
+* Fix: Default SMS templates are now applied when saved template values are empty strings, ensuring out-of-box SMS content without requiring manual template entry.
+
 = 3.3.0 =
 * New: WooCommerce HPOS (High-Performance Order Storage) compatibility declaration
 * New: COD-only OTP gate option — require OTP only for Cash on Delivery orders
