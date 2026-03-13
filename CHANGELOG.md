@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Elementor Pro and Gravity Forms form integrations are now fully active: removed "coming soon" status, both appear as live integrations on the Integrations overview page with install/activate/configure actions.
+
+### Fixed
+- WooCommerce sub-tab settings (stock alerts, multivendor, cart abandonment) were reset to defaults whenever the parent WooCommerce tab was saved, because unrendered checkboxes produce no POST data. Each sub-section now only updates its own fields when its specific tab is saved.
+- Cart abandonment records with `recovered=true` were deleted when the cart was emptied after a successful purchase, losing recovery stats.
+- Checkout OTP first-submit notice type changed from `notice` to `error` so WooCommerce correctly halts order creation while the customer retrieves their OTP code.
+- Instant order and vendor SMS now also fire for WooCommerce block checkout orders via `woocommerce_store_api_checkout_order_processed`.
+- Default SMS templates are now applied when saved template values are empty strings, ensuring out-of-box SMS content without requiring manual template entry.
+
+## [3.3.0] - 2026-03-12
+
+### Added
+- WooCommerce HPOS (High-Performance Order Storage) compatibility declaration.
+- COD-only OTP gate option: require phone verification only for Cash on Delivery orders.
+- Stock alert SMS notifications: low stock, out of stock, and backorder events sent to the configured admin phone.
+- New product published SMS notification to admin.
+- Back-in-stock subscriber notifications: customers opt in on the product page, SMS sent to all subscribers when stock is restored.
+- Instant new order SMS alert, fires once per order regardless of payment method or initial status.
+- Multivendor support: sends order SMS to the relevant vendor on Dokan, WCFM, or WC Vendors.
+- Cart abandonment recovery SMS with optional percentage-off coupon code generation (single-use, configurable expiry).
+- Cart abandonment dashboard card showing total tracked carts, SMS sent count, recovered orders, and recovery rate.
+
+## [3.2.0] - 2026-03-11
+
+### Added
+- Admin Site Alerts: configurable SMS notifications to admin phone on new user registration, login, post publish, comment, and WordPress core update events.
+- Each alert has an individual enable/disable toggle and independent English and Arabic message templates.
+- New "Admin Alerts" settings page under the kwtSMS admin menu.
+
 ## [3.0.4] - 2026-03-09
 
 ### Added

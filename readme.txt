@@ -228,6 +228,7 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 == Changelog ==
 
 = 3.3.1 (unreleased) =
+* New: Elementor Pro and Gravity Forms integrations are now fully active (removed "coming soon" status).
 * Fix: WooCommerce sub-tab settings (stock alerts, multivendor, cart abandonment) were reset to defaults whenever the parent WooCommerce tab was saved, because unrendered checkboxes produce no POST data. Each sub-section now only updates its own fields when its specific tab is saved.
 * Fix: Cart abandonment records with recovered=true were deleted when the cart was emptied after a successful purchase, losing recovery stats.
 * Fix: Checkout OTP first-submit notice type changed from notice to error so WooCommerce correctly halts order creation while the customer retrieves their OTP code.
