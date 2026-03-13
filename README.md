@@ -68,8 +68,10 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 | Contact Form 7 | ✓ | ✓ | ✓ |
 | WPForms | ✓ | ✓ | ✓ |
 | Ninja Forms | ✓ | ✓ | ✓ |
+| Elementor Pro | ✓ | ✓ | ✓ |
+| Gravity Forms | ✓ | ✓ | ✓ |
 
-More integrations are coming. Need a specific plugin supported? [Open an issue](https://github.com/boxlinknet/kwtsms-wordpress/issues) and we will look into it.
+Need a specific plugin supported? [Open an issue](https://github.com/boxlinknet/kwtsms-wordpress/issues) and we will look into it.
 
 ### Balance & Gateway
 - Account balance displayed on Gateway and Help pages without re-verifying credentials
