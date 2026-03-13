@@ -876,4 +876,43 @@ class KwtSMS_OTP_Engine {
 
 		return filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : '';
 	}
+
+	/**
+	 * Check whether a given IP address falls within a CIDR block.
+	 *
+	 * Supports both IPv4 (e.g. 192.168.0.0/16) and IPv6 (e.g. ::1/128) ranges.
+	 *
+	 * @param string $ip   The IP address to test.
+	 * @param string $cidr The CIDR notation block to test against.
+	 * @return bool True if the IP is within the CIDR range.
+	 */
+	private function is_ip_in_cidr( $ip, $cidr ) {
+		list( $subnet, $bits ) = explode( '/', $cidr );
+
+		if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) &&
+			filter_var( $subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+			// IPv4 comparison.
+			$bits     = (int) $bits;
+			$ip_long  = ip2long( $ip );
+			$net_long = ip2long( $subnet );
+			$mask     = $bits > 0 ? ( -1 << ( 32 - $bits ) ) : 0;
+			return ( $ip_long & $mask ) === ( $net_long & $mask );
+		}
+
+		if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) &&
+			filter_var( $subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ) {
+			// IPv6 comparison.
+			$bits      = (int) $bits;
+			$ip_bin    = inet_pton( $ip );
+			$net_bin   = inet_pton( $subnet );
+			$ip_hex    = bin2hex( $ip_bin );
+			$net_hex   = bin2hex( $net_bin );
+			$ip_int    = gmp_init( $ip_hex, 16 );
+			$net_int   = gmp_init( $net_hex, 16 );
+			$mask_int  = gmp_sub( gmp_pow( 2, 128 ), gmp_pow( 2, 128 - $bits ) );
+			return gmp_cmp( gmp_and( $ip_int, $mask_int ), gmp_and( $net_int, $mask_int ) ) === 0;
+		}
+
+		return false;
+	}
 }
