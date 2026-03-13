@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.3.0
+Stable tag: 3.3.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -227,7 +227,7 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 
 == Changelog ==
 
-= 3.3.1 (unreleased) =
+= 3.3.1 =
 * New: Elementor Pro and Gravity Forms integrations are now fully active (removed "coming soon" status).
 * Fix: Admin phone fields (order status, instant order, stock alerts, admin alerts) no longer send duplicate SMS when the same number appears in both local and international format.
 * Fix: woo_admin_phone (order status admin notification) now accepts space-separated phone numbers, consistent with all other admin phone fields.
