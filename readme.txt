@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.3.1
+Stable tag: 3.3.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -226,6 +226,17 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
+
+= 3.3.2 =
+* New: Country-specific phone validation for 70+ countries: local digit length and mobile prefix are now checked inside normalize_phone(), giving callers meaningful error messages instead of generic rejections.
+* Fix: OTP codes are now stored as HMAC-SHA256 hashes in transients; a database read can no longer reveal active OTP values.
+* Fix: Cart abandonment operations are now protected by a MySQL advisory lock to prevent concurrent race conditions.
+* Fix: Debug log and CSV export downloads now include the X-Content-Type-Options: nosniff header.
+* Fix: Private IP detection in rate limiting now uses the correct 172.16.0.0/12 CIDR range.
+* Fix: API password special characters are now preserved correctly on save.
+* Fix: Checkout OTP send now enforces per-phone and per-IP rate limits.
+* Fix: Cart recovery coupon codes now use a cryptographically secure random source.
+* Fix: Added missing is_ip_in_cidr() method that was causing a fatal error on every OTP attempt.
 
 = 3.3.1 =
 * New: Elementor Pro and Gravity Forms integrations are now fully active (removed "coming soon" status).
