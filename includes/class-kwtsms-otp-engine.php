@@ -867,10 +867,11 @@ class KwtSMS_OTP_Engine {
 		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 
 		// Only trust proxy headers when REMOTE_ADDR is a known private/loopback range.
-		$private_prefixes = array( '127.', '10.', '172.', '192.168.' );
-		$is_private       = false;
-		foreach ( $private_prefixes as $prefix ) {
-			if ( 0 === strpos( $ip, $prefix ) ) {
+		// Note: 172.16.0.0/12 is private; the full 172.0.0.0/8 is NOT — do not use '172.' prefix.
+		$private_cidrs = array( '127.0.0.0/8', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '::1/128', 'fc00::/7' );
+		$is_private    = false;
+		foreach ( $private_cidrs as $cidr ) {
+			if ( $this->is_ip_in_cidr( $ip, $cidr ) ) {
 				$is_private = true;
 				break;
 			}

@@ -489,8 +489,10 @@ class KwtSMS_Admin {
 		}
 
 		// Preserve credentials_verified flag only if the credentials are unchanged.
-		$current_gw       = get_option( 'kwtsms_otp_gateway', array() );
-		$api_password_raw = sanitize_text_field( $raw['api_password'] ?? '' );
+		$current_gw = get_option( 'kwtsms_otp_gateway', array() );
+		// Use wp_unslash only (not sanitize_text_field) to preserve special characters
+		// such as <, >, &, ", ' which sanitize_text_field would strip, corrupting the credential.
+		$api_password_raw = wp_unslash( $raw['api_password'] ?? '' );
 
 		// The password input is never pre-populated in the HTML (security: prevent
 		// the plaintext credential appearing in page source / browser history).

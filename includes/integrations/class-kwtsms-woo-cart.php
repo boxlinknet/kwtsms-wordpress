@@ -227,7 +227,7 @@ class KwtSMS_Woo_Cart {
 	 * @return string Coupon code.
 	 */
 	private function create_coupon( $phone, $discount ) {
-		$code   = 'KWTSMS' . strtoupper( substr( md5( $phone . (string) time() ), 0, 8 ) );
+		$code   = 'KWTSMS' . strtoupper( bin2hex( random_bytes( 4 ) ) );
 		$expiry = (int) $this->plugin->settings->get( 'integrations.woo_cart_abandon_expiry', 48 );
 
 		$coupon = new WC_Coupon();
