@@ -695,30 +695,47 @@ class KwtSMS_Admin {
 		$update_gf        = in_array( $section, array( 'all', 'gf' ), true );
 		$update_nf        = in_array( $section, array( 'all', 'nf' ), true );
 
+		// Tab-specific subsections: each sub-tab saves only its own fields, not overwritten by the parent 'woo' save.
+		$update_stock_alerts     = in_array( $section, array( 'all', 'stock_alerts' ), true );
+		$update_multivendor      = in_array( $section, array( 'all', 'multivendor' ), true );
+		$update_cart_abandonment = in_array( $section, array( 'all', 'cart_abandonment' ), true );
+
 		if ( $update_woo ) {
 			$sanitized['woo_enabled']               = ! empty( $raw['woo_enabled'] ) ? 1 : 0;
 			$sanitized['woo_checkout_otp']          = ! empty( $raw['woo_checkout_otp'] ) ? 1 : 0;
 			$sanitized['woo_checkout_otp_cod_only'] = ! empty( $raw['woo_checkout_otp_cod_only'] ) ? 1 : 0;
 			$sanitized['woo_admin_phone']           = sanitize_text_field( wp_unslash( $raw['woo_admin_phone'] ?? '' ) );
 			$sanitized['woo_notify_admin_statuses'] = $notify_admin_statuses;
-			// D1+D2 — Stock alerts.
+			foreach ( array( 'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled', 'woo_pending', 'woo_refunded', 'woo_failed' ) as $key ) {
+				if ( isset( $raw[ $key ] ) && is_array( $raw[ $key ] ) ) {
+					$sanitized[ $key ] = array(
+						'enabled' => ! empty( $raw[ $key ]['enabled'] ) ? 1 : 0,
+						'en'      => $this->sanitize_template_content( $raw[ $key ]['en'] ?? '' ),
+						'ar'      => $this->sanitize_template_content( $raw[ $key ]['ar'] ?? '' ),
+					);
+				}
+			}
+		}
+
+		// D1+D2 — Stock alerts (saved from stock_alerts tab).
+		if ( $update_stock_alerts ) {
 			$sanitized['woo_stock_admin_phone']     = sanitize_text_field( wp_unslash( $raw['woo_stock_admin_phone'] ?? '' ) );
 			$sanitized['woo_low_stock_enabled']     = ! empty( $raw['woo_low_stock_enabled'] ) ? 1 : 0;
 			$sanitized['woo_no_stock_enabled']      = ! empty( $raw['woo_no_stock_enabled'] ) ? 1 : 0;
 			$sanitized['woo_backorder_enabled']     = ! empty( $raw['woo_backorder_enabled'] ) ? 1 : 0;
 			$sanitized['woo_new_product_enabled']   = ! empty( $raw['woo_new_product_enabled'] ) ? 1 : 0;
 			$sanitized['woo_back_in_stock_enabled'] = ! empty( $raw['woo_back_in_stock_enabled'] ) ? 1 : 0;
-			// D3 — Cart abandonment recovery.
-			$sanitized['woo_cart_abandon_enabled'] = ! empty( $raw['woo_cart_abandon_enabled'] ) ? 1 : 0;
-			$sanitized['woo_cart_abandon_delay']   = max( 1, absint( $raw['woo_cart_abandon_delay'] ?? 60 ) );
-			$sanitized['woo_cart_abandon_coupon']  = min( 100, absint( $raw['woo_cart_abandon_coupon'] ?? 10 ) );
-			$sanitized['woo_cart_abandon_expiry']  = max( 1, absint( $raw['woo_cart_abandon_expiry'] ?? 48 ) );
-			$tpl_ca_raw                            = is_array( $raw['woo_tpl_cart_abandon'] ?? null ) ? $raw['woo_tpl_cart_abandon'] : array();
-			$sanitized['woo_tpl_cart_abandon']     = array(
-				'en' => $this->sanitize_template_content( $tpl_ca_raw['en'] ?? '' ),
-				'ar' => $this->sanitize_template_content( $tpl_ca_raw['ar'] ?? '' ),
-			);
-			// D4 — Instant order + multivendor.
+			foreach ( array( 'woo_tpl_low_stock', 'woo_tpl_no_stock', 'woo_tpl_backorder', 'woo_tpl_new_product', 'woo_tpl_back_in_stock' ) as $tpl_key ) {
+				$tpl_raw               = is_array( $raw[ $tpl_key ] ?? null ) ? $raw[ $tpl_key ] : array();
+				$sanitized[ $tpl_key ] = array(
+					'en' => $this->sanitize_template_content( $tpl_raw['en'] ?? '' ),
+					'ar' => $this->sanitize_template_content( $tpl_raw['ar'] ?? '' ),
+				);
+			}
+		}
+
+		// D4 — Instant order + multivendor (saved from multivendor tab).
+		if ( $update_multivendor ) {
 			$sanitized['woo_instant_order_enabled'] = ! empty( $raw['woo_instant_order_enabled'] ) ? 1 : 0;
 			$sanitized['woo_instant_order_phone']   = sanitize_text_field( wp_unslash( $raw['woo_instant_order_phone'] ?? '' ) );
 			$sanitized['woo_vendor_sms_enabled']    = ! empty( $raw['woo_vendor_sms_enabled'] ) ? 1 : 0;
@@ -729,22 +746,19 @@ class KwtSMS_Admin {
 					'ar' => $this->sanitize_template_content( $tpl_raw['ar'] ?? '' ),
 				);
 			}
-			foreach ( array( 'woo_tpl_low_stock', 'woo_tpl_no_stock', 'woo_tpl_backorder', 'woo_tpl_new_product', 'woo_tpl_back_in_stock' ) as $tpl_key ) {
-				$tpl_raw               = is_array( $raw[ $tpl_key ] ?? null ) ? $raw[ $tpl_key ] : array();
-				$sanitized[ $tpl_key ] = array(
-					'en' => $this->sanitize_template_content( $tpl_raw['en'] ?? '' ),
-					'ar' => $this->sanitize_template_content( $tpl_raw['ar'] ?? '' ),
-				);
-			}
-			foreach ( array( 'woo_processing', 'woo_shipped', 'woo_completed', 'woo_cancelled', 'woo_pending', 'woo_refunded', 'woo_failed' ) as $key ) {
-				if ( isset( $raw[ $key ] ) && is_array( $raw[ $key ] ) ) {
-					$sanitized[ $key ] = array(
-						'enabled' => ! empty( $raw[ $key ]['enabled'] ) ? 1 : 0,
-						'en'      => $this->sanitize_template_content( $raw[ $key ]['en'] ?? '' ),
-						'ar'      => $this->sanitize_template_content( $raw[ $key ]['ar'] ?? '' ),
-					);
-				}
-			}
+		}
+
+		// D3 — Cart abandonment recovery (saved from cart_abandonment tab).
+		if ( $update_cart_abandonment ) {
+			$sanitized['woo_cart_abandon_enabled'] = ! empty( $raw['woo_cart_abandon_enabled'] ) ? 1 : 0;
+			$sanitized['woo_cart_abandon_delay']   = max( 1, absint( $raw['woo_cart_abandon_delay'] ?? 60 ) );
+			$sanitized['woo_cart_abandon_coupon']  = min( 100, absint( $raw['woo_cart_abandon_coupon'] ?? 10 ) );
+			$sanitized['woo_cart_abandon_expiry']  = max( 1, absint( $raw['woo_cart_abandon_expiry'] ?? 48 ) );
+			$tpl_ca_raw                            = is_array( $raw['woo_tpl_cart_abandon'] ?? null ) ? $raw['woo_tpl_cart_abandon'] : array();
+			$sanitized['woo_tpl_cart_abandon']     = array(
+				'en' => $this->sanitize_template_content( $tpl_ca_raw['en'] ?? '' ),
+				'ar' => $this->sanitize_template_content( $tpl_ca_raw['ar'] ?? '' ),
+			);
 		}
 
 		if ( $update_cf7 ) {

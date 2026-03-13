@@ -309,7 +309,8 @@ class KwtSMS_Woo_Cart {
 		$carts = array_filter(
 			$carts,
 			function ( $c ) use ( $phone ) {
-				return $c['phone'] !== $phone;
+				// Keep records from other phones, and keep recovered records for stats.
+				return $c['phone'] !== $phone || ! empty( $c['recovered'] );
 			}
 		);
 		update_option( self::CARTS_OPTION, wp_json_encode( array_values( $carts ) ), false );

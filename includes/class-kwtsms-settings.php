@@ -378,7 +378,16 @@ class KwtSMS_Settings {
 		);
 
 		foreach ( $template_keys as $key ) {
-			$merged[ $key ] = array_merge( $defaults[ $key ], $saved[ $key ] ?? array() );
+			$saved_tpl = $saved[ $key ] ?? array();
+			// Only use saved 'en'/'ar' values when non-empty, so defaults apply when templates were never customized.
+			$resolved = $defaults[ $key ];
+			if ( ! empty( $saved_tpl['en'] ) ) {
+				$resolved['en'] = $saved_tpl['en'];
+			}
+			if ( ! empty( $saved_tpl['ar'] ) ) {
+				$resolved['ar'] = $saved_tpl['ar'];
+			}
+			$merged[ $key ] = $resolved;
 		}
 
 		return $merged;
