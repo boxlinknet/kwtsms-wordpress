@@ -102,6 +102,26 @@ function kwtsms_otp_deactivate() {
 register_deactivation_hook( KWTSMS_OTP_FILE, 'kwtsms_otp_deactivate' );
 
 /**
+ * Self-hosted update checker.
+ *
+ * Checks GitHub Releases for new versions and integrates with the native
+ * WordPress auto-update toggle (WP 5.5+). Uses the release asset zip so
+ * users get a clean package without development files.
+ *
+ * @see https://github.com/YahnisElsts/plugin-update-checker
+ */
+if ( file_exists( KWTSMS_OTP_DIR . 'vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php' ) ) {
+	require_once KWTSMS_OTP_DIR . 'vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php';
+	$kwtsms_update_checker = YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+		'https://github.com/boxlinknet/kwtsms-wordpress/',
+		KWTSMS_OTP_FILE,
+		'wp-kwtsms'
+	);
+	$kwtsms_update_checker->setBranch( 'main' );
+	$kwtsms_update_checker->getVcsApi()->enableReleaseAssets();
+}
+
+/**
  * Bootstrap the plugin after all plugins are loaded.
  *
  * Using plugins_loaded ensures other plugins (e.g. WooCommerce) are available

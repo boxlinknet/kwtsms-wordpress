@@ -1,7 +1,6 @@
 .github
 .claude
 tests
-vendor
 docs
 docker
 kwtsms-ext4

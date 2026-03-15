@@ -48,6 +48,9 @@ jobs:
           echo "$NOTES" > /tmp/release-notes.txt
           echo "Release notes extracted for $VERSION"
 
+      - name: Install production dependencies
+        run: composer install --no-dev --no-scripts --optimize-autoloader
+
       - name: Build plugin zip
         run: |
           VERSION="${{ steps.version.outputs.version }}"
