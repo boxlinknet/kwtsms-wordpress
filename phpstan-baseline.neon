@@ -1,2 +1,5 @@
 parameters:
     ignoreErrors:
+        -
+            message: '#Call to an undefined method YahnisElsts\\PluginUpdateChecker\\v5p6\\Vcs\\Api::enableReleaseAssets#'
+            path: wp-kwtsms.php

@@ -170,18 +170,13 @@ class KwtSMS_Woo {
 				wc_get_order_status_name( $new_status ),
 				number_format( (float) $order->get_total(), absint( get_option( 'woocommerce_price_num_decimals', 2 ) ) ) . ' ' . get_woocommerce_currency()
 			);
-			$sender_id     = (string) $this->plugin->settings->get( 'gateway.sender_id', '' );
-			$dial_code     = KwtSMS_API::get_default_dial_code();
-			$unique_phones = array();
+			$sender_id = (string) $this->plugin->settings->get( 'gateway.sender_id', '' );
+			$dial_code = KwtSMS_API::get_default_dial_code();
+			$phones    = array();
 			foreach ( preg_split( '/[\s,]+/', $admin_phone, -1, PREG_SPLIT_NO_EMPTY ) as $raw_p ) {
-				$norm = KwtSMS_API::normalize_phone( KwtSMS_API::prepend_country_code_if_local( $raw_p, $dial_code ) );
-				if ( ! is_wp_error( $norm ) ) {
-					$unique_phones[ $norm ] = true;
-				}
+				$phones[] = KwtSMS_API::prepend_country_code_if_local( $raw_p, $dial_code );
 			}
-			foreach ( array_keys( $unique_phones ) as $norm_phone ) {
-				$this->plugin->api->send_sms( $norm_phone, $sender_id, $admin_msg, 'woo_admin' );
-			}
+			$this->plugin->api->send( $phones, $sender_id, $admin_msg, 'woo_admin' );
 		}
 	}
 

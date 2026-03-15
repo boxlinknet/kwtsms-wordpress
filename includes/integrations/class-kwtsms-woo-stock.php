@@ -197,11 +197,11 @@ class KwtSMS_Woo_Stock {
 
 		$sender_id = (string) $this->plugin->settings->get( 'gateway.sender_id', '' );
 
-		foreach ( $subscribers as $phone ) {
-			if ( ! is_string( $phone ) || '' === $phone ) {
-				continue;
-			}
-			$this->plugin->api->send_sms( $phone, $sender_id, $tpl, 'back_in_stock' );
+		$phones = array_values( array_filter( $subscribers, function ( $p ) {
+			return is_string( $p ) && '' !== $p;
+		} ) );
+		if ( ! empty( $phones ) ) {
+			$this->plugin->api->send( $phones, $sender_id, $tpl, 'back_in_stock' );
 		}
 
 		// Clear subscriber list after sending.
@@ -328,17 +328,12 @@ class KwtSMS_Woo_Stock {
 
 		$sender_id = (string) $this->plugin->settings->get( 'gateway.sender_id', '' );
 
-		$dial_code     = KwtSMS_API::get_default_dial_code();
-		$unique_phones = array();
+		$dial_code = KwtSMS_API::get_default_dial_code();
+		$phones    = array();
 		foreach ( preg_split( '/[\s,]+/', $admin_phone, -1, PREG_SPLIT_NO_EMPTY ) as $raw ) {
-			$phone = KwtSMS_API::normalize_phone( KwtSMS_API::prepend_country_code_if_local( $raw, $dial_code ) );
-			if ( ! is_wp_error( $phone ) ) {
-				$unique_phones[ $phone ] = true;
-			}
+			$phones[] = KwtSMS_API::prepend_country_code_if_local( $raw, $dial_code );
 		}
-		foreach ( array_keys( $unique_phones ) as $phone ) {
-			$this->plugin->api->send_sms( $phone, $sender_id, $message, 'woo_stock' );
-		}
+		$this->plugin->api->send( $phones, $sender_id, $message, 'woo_stock' );
 	}
 
 	/**
