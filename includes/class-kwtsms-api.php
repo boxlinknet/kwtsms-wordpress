@@ -130,10 +130,356 @@ class KwtSMS_API {
 	}
 
 	/**
-	 * Send an SMS message.
+	 * Send an SMS message to one or more recipients.
 	 *
-	 * Phone number must already be normalised (digits only, with country code).
-	 * Message must be sanitised (no emoji, no HTML).
+	 * Unified entry point for all SMS sending. Handles validation, phone
+	 * normalization, deduplication, country allow-list filtering, cached
+	 * balance check, and batching (max 200 phones per API request).
+	 *
+	 * Single mode: when $phones is a string, returns the same format as the
+	 * legacy send_sms() for backward compatibility with all existing callers.
+	 *
+	 * Multi mode: when $phones is an array, returns an aggregate result with
+	 * sent/failed counts, per-batch details, and any errors encountered.
+	 *
+	 * @param string|string[] $phones    One phone (string) or multiple (array).
+	 * @param string          $sender_id Approved sender ID for this account.
+	 * @param string          $message   Message text (English or Arabic).
+	 * @param string          $type      Context type for logging: 'login'|'reset'|'passwordless'|'welcome'|'test'|'notification'|'alert'.
+	 *
+	 * @return array{msg_id: string, balance_after: float|null}|array{sent: int, failed: int, total: int, batches: array, balance_after: float|null, errors: array}|WP_Error
+	 */
+	public function send( $phones, $sender_id, $message, $type = 'login' ) {
+		$single_mode = ! is_array( $phones );
+
+		// Normalize input to array.
+		if ( $single_mode ) {
+			$phones = array( $phones );
+		}
+
+		$this->write_debug_log( 'send()', "type={$type} phones=" . count( $phones ) . " sender={$sender_id}" );
+
+		// ── Clean message ────────────────────────────────────────────────────
+		$message = self::clean_message( $message );
+
+		// ── Validate required fields ─────────────────────────────────────────
+		if ( empty( $message ) ) {
+			$err = new WP_Error(
+				'kwtsms_missing_message',
+				__( 'Cannot send SMS: message is empty. Please check your SMS templates in Settings > kwtSMS > Templates.', 'wp-kwtsms' )
+			);
+			$this->write_debug_log( 'send()', 'ABORT: message empty' );
+			foreach ( $phones as $p ) {
+				$log_phone = ! empty( $p ) ? $p : '?';
+				self::append_send_log( $log_phone, 'failed', $type );
+				self::append_sms_history( $log_phone, $message, 'failed', $type, '', '', array(
+					'ok'      => false,
+					'code'    => $err->get_error_code(),
+					'message' => $err->get_error_message(),
+				), $this->username );
+			}
+			if ( $single_mode ) {
+				return $err;
+			}
+			return array(
+				'sent'          => 0,
+				'failed'        => count( $phones ),
+				'total'         => count( $phones ),
+				'batches'       => array(),
+				'balance_after' => null,
+				'errors'        => array( $err ),
+			);
+		}
+
+		if ( empty( $sender_id ) ) {
+			$err = new WP_Error(
+				'kwtsms_missing_sender_id',
+				__( 'Cannot send SMS: no Sender ID configured. Go to kwtSMS > Gateway, save your API credentials, then choose a Sender ID from the dropdown. Click Save Settings.', 'wp-kwtsms' )
+			);
+			$this->write_debug_log( 'send()', 'ABORT: sender_id empty' );
+			foreach ( $phones as $p ) {
+				$log_phone = ! empty( $p ) ? $p : '?';
+				self::append_send_log( $log_phone, 'failed', $type );
+				self::append_sms_history( $log_phone, $message, 'failed', $type, '', '', array(
+					'ok'      => false,
+					'code'    => $err->get_error_code(),
+					'message' => $err->get_error_message(),
+				), $this->username );
+			}
+			if ( $single_mode ) {
+				return $err;
+			}
+			return array(
+				'sent'          => 0,
+				'failed'        => count( $phones ),
+				'total'         => count( $phones ),
+				'batches'       => array(),
+				'balance_after' => null,
+				'errors'        => array( $err ),
+			);
+		}
+
+		// ── Normalize, deduplicate, and validate phones ──────────────────────
+		$normalized = array(); // normalized_phone => true (dedup map).
+		$invalid    = 0;
+
+		foreach ( $phones as $raw_phone ) {
+			if ( empty( $raw_phone ) ) {
+				$err = new WP_Error(
+					'kwtsms_missing_phone',
+					__( 'Cannot send SMS: phone number is missing. Please check user phone in their profile.', 'wp-kwtsms' )
+				);
+				$this->write_debug_log( 'send()', 'SKIP: empty phone in batch' );
+				self::append_send_log( '?', 'failed', $type );
+				self::append_sms_history( $raw_phone, $message, 'failed', $type, '', '', array(
+					'ok'      => false,
+					'code'    => $err->get_error_code(),
+					'message' => $err->get_error_message(),
+				), $this->username );
+				++$invalid;
+
+				// In single mode, return the error immediately.
+				if ( $single_mode ) {
+					return $err;
+				}
+				continue;
+			}
+
+			$norm = self::normalize_phone( $raw_phone );
+			if ( is_wp_error( $norm ) ) {
+				$this->write_debug_log( 'send()', "SKIP: invalid phone={$raw_phone}: " . $norm->get_error_message() );
+				self::append_send_log( $raw_phone, 'failed', $type );
+				self::append_sms_history( $raw_phone, $message, 'failed', $type, '', '', array(
+					'ok'      => false,
+					'code'    => $norm->get_error_code(),
+					'message' => $norm->get_error_message(),
+				), $this->username );
+				++$invalid;
+
+				if ( $single_mode ) {
+					return $norm;
+				}
+				continue;
+			}
+
+			// Deduplicate by normalized value.
+			if ( isset( $normalized[ $norm ] ) ) {
+				$this->write_debug_log( 'send()', "SKIP: duplicate phone={$norm}" );
+				continue;
+			}
+
+			$normalized[ $norm ] = true;
+		}
+
+		$unique_phones = array_keys( $normalized );
+
+		// If no valid phones remain after normalization, abort.
+		if ( empty( $unique_phones ) ) {
+			$err = new WP_Error(
+				'kwtsms_no_valid_phones',
+				__( 'Cannot send SMS: no valid phone numbers provided.', 'wp-kwtsms' )
+			);
+			$this->write_debug_log( 'send()', 'ABORT: no valid phones after normalization' );
+			if ( $single_mode ) {
+				return $err;
+			}
+			return array(
+				'sent'          => 0,
+				'failed'        => $invalid,
+				'total'         => count( $phones ),
+				'batches'       => array(),
+				'balance_after' => null,
+				'errors'        => array( $err ),
+			);
+		}
+
+		// ── Country allow-list check ─────────────────────────────────────────
+		$general           = get_option( 'kwtsms_otp_general', array() );
+		$allowed_countries = isset( $general['allowed_countries'] ) && is_array( $general['allowed_countries'] )
+			? $general['allowed_countries']
+			: array();
+
+		if ( ! empty( $allowed_countries ) ) {
+			$allowed_phones = array();
+			foreach ( $unique_phones as $p ) {
+				$phone_iso2 = self::get_iso2_from_phone( $p );
+				if ( '' === $phone_iso2 || ! in_array( $phone_iso2, $allowed_countries, true ) ) {
+					$country_err = new WP_Error(
+						'country_not_allowed',
+						__( 'SMS to this country is not enabled.', 'wp-kwtsms' )
+					);
+					$this->write_debug_log(
+						'send()',
+						"BLOCK: country not allowed, phone={$p} iso2={$phone_iso2} allowed=" . implode( ',', $allowed_countries )
+					);
+					self::append_send_log( $p, 'failed', $type );
+					self::append_sms_history( $p, $message, 'failed', $type, '', '', array(
+						'ok'      => false,
+						'code'    => $country_err->get_error_code(),
+						'message' => $country_err->get_error_message(),
+					), $this->username );
+					++$invalid;
+
+					if ( $single_mode ) {
+						return $country_err;
+					}
+					continue;
+				}
+				$allowed_phones[] = $p;
+			}
+			$unique_phones = $allowed_phones;
+
+			if ( empty( $unique_phones ) ) {
+				$err = new WP_Error(
+					'country_not_allowed',
+					__( 'SMS to this country is not enabled.', 'wp-kwtsms' )
+				);
+				if ( $single_mode ) {
+					return $err;
+				}
+				return array(
+					'sent'          => 0,
+					'failed'        => $invalid,
+					'total'         => count( $phones ),
+					'batches'       => array(),
+					'balance_after' => null,
+					'errors'        => array( $err ),
+				);
+			}
+		}
+
+		// ── Balance check (once for the whole batch) ─────────────────────────
+		$balance_check = $this->check_balance_before_send();
+		if ( is_wp_error( $balance_check ) ) {
+			$this->write_debug_log( 'send()', 'ABORT: ' . $balance_check->get_error_message() );
+			foreach ( $unique_phones as $p ) {
+				self::append_send_log( $p, 'failed', $type );
+				self::append_sms_history( $p, $message, 'failed', $type, '', '', array(
+					'ok'      => false,
+					'code'    => $balance_check->get_error_code(),
+					'message' => $balance_check->get_error_message(),
+				), $this->username );
+			}
+			if ( $single_mode ) {
+				return $balance_check;
+			}
+			return array(
+				'sent'          => 0,
+				'failed'        => $invalid + count( $unique_phones ),
+				'total'         => count( $phones ),
+				'batches'       => array(),
+				'balance_after' => null,
+				'errors'        => array( $balance_check ),
+			);
+		}
+
+		// ── Split into chunks of 200 (API max per request) ───────────────────
+		$chunks        = array_chunk( $unique_phones, 200 );
+		$total_sent    = 0;
+		$total_failed  = $invalid;
+		$batch_results = array();
+		$batch_errors  = array();
+		$balance_after = null;
+
+		foreach ( $chunks as $chunk_index => $chunk ) {
+			$payload = array(
+				'sender'  => $sender_id,
+				'mobile'  => implode( ',', $chunk ),
+				'message' => $message,
+			);
+
+			if ( $this->test_mode ) {
+				$payload['test'] = 1;
+			}
+
+			$response = $this->request( 'send/', $payload );
+
+			if ( is_wp_error( $response ) ) {
+				$this->write_debug_log( 'send()', "BATCH {$chunk_index} FAILED: " . $response->get_error_message() );
+
+				$_api_data = is_array( $response->get_error_data() ) ? $response->get_error_data() : array();
+				$_api_code = $_api_data['api_code'] ?? '';
+				$_api_desc = $_api_data['description'] ?? '';
+
+				foreach ( $chunk as $p ) {
+					self::append_send_log( $p, 'failed', $type, $sender_id );
+					self::append_sms_history( $p, $message, 'failed', $type, '', $sender_id, array(
+						'ok'      => false,
+						'code'    => $_api_code ? $_api_code : $response->get_error_code(),
+						'message' => $_api_desc ? $_api_desc : ( $_api_code ? $_api_code : $response->get_error_code() ),
+					), $this->username );
+				}
+
+				$total_failed += count( $chunk );
+				$batch_errors[] = $response;
+
+				$batch_results[] = array(
+					'ok'     => false,
+					'phones' => $chunk,
+					'error'  => $response->get_error_message(),
+				);
+
+				// In single mode (only one phone, so only one batch), return immediately.
+				if ( $single_mode ) {
+					return $response;
+				}
+				continue;
+			}
+
+			// ── Batch success ────────────────────────────────────────────────
+			$msg_id = sanitize_text_field( $response['msg-id'] ?? '' );
+			$this->write_debug_log( 'send()', "BATCH {$chunk_index} SUCCESS: msg-id={$msg_id} phones=" . count( $chunk ) );
+
+			foreach ( $chunk as $p ) {
+				self::append_send_log( $p, 'sent', $type, $sender_id );
+				self::append_sms_history( $p, $message, 'sent', $type, $msg_id, $sender_id, array(
+					'ok'      => true,
+					'code'    => '',
+					'message' => 'OK',
+				), $this->username );
+			}
+
+			$total_sent += count( $chunk );
+
+			if ( isset( $response['balance-after'] ) ) {
+				$balance_after = (float) $response['balance-after'];
+				self::update_saved_balance( $balance_after );
+			}
+
+			$batch_results[] = array(
+				'ok'            => true,
+				'phones'        => $chunk,
+				'msg_id'        => $msg_id,
+				'balance_after' => isset( $response['balance-after'] ) ? (float) $response['balance-after'] : null,
+			);
+		}
+
+		// ── Return ───────────────────────────────────────────────────────────
+		if ( $single_mode ) {
+			// Single mode: backward-compatible return format.
+			$last_batch = end( $batch_results );
+			return array(
+				'msg_id'        => $last_batch['msg_id'] ?? '',
+				'balance_after' => $balance_after,
+			);
+		}
+
+		return array(
+			'sent'          => $total_sent,
+			'failed'        => $total_failed,
+			'total'         => count( $phones ),
+			'batches'       => $batch_results,
+			'balance_after' => $balance_after,
+			'errors'        => $batch_errors,
+		);
+	}
+
+	/**
+	 * Send an SMS message (legacy method, delegates to send()).
+	 *
+	 * This method is retained for backward compatibility. All validation,
+	 * normalization, country checks, balance checks, and logging are handled
+	 * by the unified send() method.
 	 *
 	 * @param string $phone     Recipient phone in international format (e.g. 96598765432).
 	 * @param string $sender_id Approved sender ID for this account.
@@ -143,210 +489,7 @@ class KwtSMS_API {
 	 * @return array{msg_id: string, balance_after: float}|WP_Error
 	 */
 	public function send_sms( $phone, $sender_id, $message, $type = 'login' ) {
-		$this->write_debug_log( 'send_sms()', "type={$type} phone={$phone} sender={$sender_id}" );
-
-		// ── Clean message — strip HTML, emoji, invisible chars (covers all callers)
-		$message = self::clean_message( $message );
-
-		// ── Sanity checks ──────────────────────────────────────────────────────
-		if ( empty( $phone ) ) {
-			$err = new WP_Error(
-				'kwtsms_missing_phone',
-				__( 'Cannot send SMS: phone number is missing. Please check user phone in their profile.', 'wp-kwtsms' )
-			);
-			$this->write_debug_log( 'send_sms()', 'ABORT: phone missing' );
-			self::append_send_log( '?', 'failed', $type );
-			self::append_sms_history(
-				$phone,
-				$message,
-				'failed',
-				$type,
-				'',
-				'',
-				array(
-					'ok'      => false,
-					'code'    => $err->get_error_code(),
-					'message' => $err->get_error_message(),
-				),
-				$this->username
-			);
-			return $err;
-		}
-
-		if ( empty( $message ) ) {
-			$err = new WP_Error(
-				'kwtsms_missing_message',
-				__( 'Cannot send SMS: message is empty. Please check your SMS templates in Settings  kwtSMS  Templates.', 'wp-kwtsms' )
-			);
-			$this->write_debug_log( 'send_sms()', 'ABORT: message empty' );
-			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history(
-				$phone,
-				$message,
-				'failed',
-				$type,
-				'',
-				'',
-				array(
-					'ok'      => false,
-					'code'    => $err->get_error_code(),
-					'message' => $err->get_error_message(),
-				),
-				$this->username
-			);
-			return $err;
-		}
-
-		if ( empty( $sender_id ) ) {
-			$err = new WP_Error(
-				'kwtsms_missing_sender_id',
-				__( 'Cannot send SMS: no Sender ID configured. Go to kwtSMS  Gateway, save your API credentials, then choose a Sender ID from the dropdown. Click Save Settings.', 'wp-kwtsms' )
-			);
-			$this->write_debug_log( 'send_sms()', 'ABORT: sender_id empty' );
-			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history(
-				$phone,
-				$message,
-				'failed',
-				$type,
-				'',
-				'',
-				array(
-					'ok'      => false,
-					'code'    => $err->get_error_code(),
-					'message' => $err->get_error_message(),
-				),
-				$this->username
-			);
-			return $err;
-		}
-
-		// ── Country allow-list check ──────────────────────────────────────────
-		// If the admin has restricted sending to specific countries, verify the
-		// destination phone belongs to one of those countries BEFORE making any
-		// API call. An empty allowed_countries array means "no restriction".
-		$general           = get_option( 'kwtsms_otp_general', array() );
-		$allowed_countries = isset( $general['allowed_countries'] ) && is_array( $general['allowed_countries'] )
-			? $general['allowed_countries']
-			: array();
-
-		if ( ! empty( $allowed_countries ) ) {
-			$phone_iso2 = self::get_iso2_from_phone( $phone );
-			if ( '' === $phone_iso2 || ! in_array( $phone_iso2, $allowed_countries, true ) ) {
-				$err = new WP_Error(
-					'country_not_allowed',
-					__( 'SMS to this country is not enabled.', 'wp-kwtsms' )
-				);
-				$this->write_debug_log(
-					'send_sms()',
-					"ABORT: country not allowed — phone={$phone} iso2={$phone_iso2} allowed=" . implode( ',', $allowed_countries )
-				);
-				self::append_send_log( $phone, 'failed', $type );
-				self::append_sms_history(
-					$phone,
-					$message,
-					'failed',
-					$type,
-					'',
-					'',
-					array(
-						'ok'      => false,
-						'code'    => $err->get_error_code(),
-						'message' => $err->get_error_message(),
-					),
-					$this->username
-				);
-				return $err;
-			}
-		}
-
-		// ── Balance check ─────────────────────────────────────────────────────
-		// Run in both live and test mode — test mode still consumes no credits
-		// but we still want to surface a zero-balance condition early.
-		$balance_check = $this->check_balance_before_send();
-		if ( is_wp_error( $balance_check ) ) {
-			$this->write_debug_log( 'send_sms()', 'ABORT: ' . $balance_check->get_error_message() );
-			self::append_send_log( $phone, 'failed', $type );
-			self::append_sms_history(
-				$phone,
-				$message,
-				'failed',
-				$type,
-				'',
-				'',
-				array(
-					'ok'      => false,
-					'code'    => $balance_check->get_error_code(),
-					'message' => $balance_check->get_error_message(),
-				),
-				$this->username
-			);
-			return $balance_check;
-		}
-
-		$payload = array(
-			'sender'  => $sender_id,
-			'mobile'  => $phone,
-			'message' => $message,
-		);
-
-		// In test mode: add test=1 to payload so the API queues but does not deliver.
-		if ( $this->test_mode ) {
-			$payload['test'] = 1;
-		}
-
-		$response = $this->request( 'send/', $payload );
-
-		if ( is_wp_error( $response ) ) {
-			$this->write_debug_log( 'send_sms()', 'FAILED: ' . $response->get_error_message() );
-			self::append_send_log( $phone, 'failed', $type, $sender_id );
-			$_api_data = is_array( $response->get_error_data() ) ? $response->get_error_data() : array();
-			$_api_code = $_api_data['api_code'] ?? '';
-			$_api_desc = $_api_data['description'] ?? '';
-			self::append_sms_history(
-				$phone,
-				$message,
-				'failed',
-				$type,
-				'',
-				$sender_id,
-				array(
-					'ok'      => false,
-					'code'    => $_api_code ? $_api_code : $response->get_error_code(),
-					'message' => $_api_desc ? $_api_desc : ( $_api_code ? $_api_code : $response->get_error_code() ),
-				),
-				$this->username
-			);
-			return $response;
-		}
-
-		$msg_id = sanitize_text_field( $response['msg-id'] ?? '' );
-		$this->write_debug_log( 'send_sms()', "SUCCESS: msg-id={$msg_id}" );
-		self::append_send_log( $phone, 'sent', $type, $sender_id );
-		self::append_sms_history(
-			$phone,
-			$message,
-			'sent',
-			$type,
-			$msg_id,
-			$sender_id,
-			array(
-				'ok'      => true,
-				'code'    => '',
-				'message' => 'OK',
-			),
-			$this->username
-		);
-		// Always update the saved balance when the API returns a balance-after value.
-		// The kwtsms API returns balance-after even in test mode (test=1 still charges
-		// 1 credit per send), so the condition must not be gated on $this->test_mode.
-		if ( isset( $response['balance-after'] ) ) {
-			self::update_saved_balance( (float) $response['balance-after'] );
-		}
-		return array(
-			'msg_id'        => $msg_id,
-			'balance_after' => isset( $response['balance-after'] ) ? (float) $response['balance-after'] : null,
-		);
+		return $this->send( $phone, $sender_id, $message, $type );
 	}
 
 	/**
