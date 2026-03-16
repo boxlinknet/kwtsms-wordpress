@@ -115,7 +115,7 @@ class KwtSMS_Reset_OTP {
 				function ( $errors ) {
 					$errors->add(
 						'kwtsms_rate_limited',
-						__( 'Too many requests. Please wait a few minutes before trying again.', 'wp-kwtsms' )
+						__( 'Too many requests. Please wait a few minutes before trying again.', 'kwtsms' )
 					);
 				}
 			);
@@ -187,7 +187,7 @@ class KwtSMS_Reset_OTP {
 	public function add_phone_field_to_lost_password() {
 		printf(
 			'<p class="message" style="margin-bottom:12px;">%s</p>',
-			esc_html__( 'If your account has a phone number registered, an OTP will be sent instead of an email reset link.', 'wp-kwtsms' )
+			esc_html__( 'If your account has a phone number registered, an OTP will be sent instead of an email reset link.', 'kwtsms' )
 		);
 	}
 
@@ -223,19 +223,19 @@ class KwtSMS_Reset_OTP {
 				'kwtsms_reset_otp_submit'
 			)
 		) {
-			wp_die( esc_html__( 'Security check failed. Please go back and try again.', 'wp-kwtsms' ) );
+			wp_die( esc_html__( 'Security check failed. Please go back and try again.', 'kwtsms' ) );
 		}
 
 		$token = $this->get_reset_cookie_token();
 		if ( empty( $token ) ) {
-			$this->render_reset_otp_page( __( 'Session expired. Please start over.', 'wp-kwtsms' ) );
+			$this->render_reset_otp_page( __( 'Session expired. Please start over.', 'kwtsms' ) );
 			exit;
 		}
 
 		$session = get_transient( self::RESET_TRANSIENT_PREFIX . $token );
 		if ( ! $session ) {
 			$this->clear_reset_cookie();
-			$this->render_reset_otp_page( __( 'Session expired. Please start over.', 'wp-kwtsms' ) );
+			$this->render_reset_otp_page( __( 'Session expired. Please start over.', 'kwtsms' ) );
 			exit;
 		}
 
@@ -257,7 +257,7 @@ class KwtSMS_Reset_OTP {
 
 		// Empty code.
 		if ( '' === $submitted ) {
-			$this->render_reset_otp_page( __( 'Please enter your verification code.', 'wp-kwtsms' ) );
+			$this->render_reset_otp_page( __( 'Please enter your verification code.', 'kwtsms' ) );
 			exit;
 		}
 
@@ -277,7 +277,7 @@ class KwtSMS_Reset_OTP {
 
 				$reset_key = get_password_reset_key( $user );
 				if ( is_wp_error( $reset_key ) ) {
-					$this->render_reset_otp_page( __( 'Could not generate reset link. Please try again.', 'wp-kwtsms' ) );
+					$this->render_reset_otp_page( __( 'Could not generate reset link. Please try again.', 'kwtsms' ) );
 					exit;
 				}
 
@@ -298,7 +298,7 @@ class KwtSMS_Reset_OTP {
 				if ( 0 === $remaining ) {
 					// Transient expired between verify() and get_remaining_attempts() — treat as expired.
 					$this->render_reset_otp_page(
-						__( 'Your code has expired. Please go back and request a new one.', 'wp-kwtsms' )
+						__( 'Your code has expired. Please go back and request a new one.', 'kwtsms' )
 					);
 				} else {
 					$this->render_reset_otp_page(
@@ -308,7 +308,7 @@ class KwtSMS_Reset_OTP {
 								'Incorrect code. %d attempt remaining.',
 								'Incorrect code. %d attempts remaining.',
 								$remaining,
-								'wp-kwtsms'
+								'kwtsms'
 							),
 							$remaining
 						)
@@ -318,7 +318,7 @@ class KwtSMS_Reset_OTP {
 
 			case 'expired':
 				$this->render_reset_otp_page(
-					__( 'Your code has expired. Please go back and request a new one.', 'wp-kwtsms' )
+					__( 'Your code has expired. Please go back and request a new one.', 'kwtsms' )
 				);
 				exit;
 
@@ -326,12 +326,12 @@ class KwtSMS_Reset_OTP {
 				delete_transient( self::RESET_TRANSIENT_PREFIX . $token );
 				$this->clear_reset_cookie();
 				$this->render_reset_otp_page(
-					__( 'Too many incorrect attempts. Please start the password reset process again.', 'wp-kwtsms' )
+					__( 'Too many incorrect attempts. Please start the password reset process again.', 'kwtsms' )
 				);
 				exit;
 
 			default:
-				$this->render_reset_otp_page( __( 'Something went wrong. Please try again.', 'wp-kwtsms' ) );
+				$this->render_reset_otp_page( __( 'Something went wrong. Please try again.', 'kwtsms' ) );
 				exit;
 		}
 	}

@@ -70,7 +70,7 @@ class KwtSMS_Woo_Metabox {
 
 		add_meta_box(
 			'kwtsms-custom-sms',
-			__( 'Send Custom SMS', 'wp-kwtsms' ),
+			__( 'Send Custom SMS', 'kwtsms' ),
 			array( $this, 'render_metabox' ),
 			$screen,
 			'side',
@@ -103,24 +103,24 @@ class KwtSMS_Woo_Metabox {
 		?>
 		<div id="kwtsms-metabox-wrap">
 			<p>
-				<label for="kwtsms-custom-sms-phone"><?php esc_html_e( 'Phone', 'wp-kwtsms' ); ?></label><br>
+				<label for="kwtsms-custom-sms-phone"><?php esc_html_e( 'Phone', 'kwtsms' ); ?></label><br>
 				<input
 					type="text"
 					id="kwtsms-custom-sms-phone"
 					name="kwtsms_custom_sms_phone"
 					value="<?php echo esc_attr( $phone ); ?>"
 					class="widefat"
-					placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'wp-kwtsms' ); ?>"
+					placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'kwtsms' ); ?>"
 				>
 			</p>
 			<p>
-				<label for="kwtsms-custom-sms-message"><?php esc_html_e( 'Message', 'wp-kwtsms' ); ?></label><br>
+				<label for="kwtsms-custom-sms-message"><?php esc_html_e( 'Message', 'kwtsms' ); ?></label><br>
 				<textarea
 					id="kwtsms-custom-sms-message"
 					name="kwtsms_custom_sms_message"
 					rows="4"
 					class="widefat"
-					placeholder="<?php esc_attr_e( 'Type your SMS message...', 'wp-kwtsms' ); ?>"
+					placeholder="<?php esc_attr_e( 'Type your SMS message...', 'kwtsms' ); ?>"
 				></textarea>
 			</p>
 			<p>
@@ -131,32 +131,34 @@ class KwtSMS_Woo_Metabox {
 					data-order="<?php echo esc_attr( $order ? (string) $order->get_id() : '0' ); ?>"
 					data-nonce="<?php echo esc_attr( wp_create_nonce( 'kwtsms_woo_custom_sms' ) ); ?>"
 				>
-					<?php esc_html_e( 'Send SMS', 'wp-kwtsms' ); ?>
+					<?php esc_html_e( 'Send SMS', 'kwtsms' ); ?>
 				</button>
 				<span id="kwtsms-custom-sms-result" style="margin-left:8px;"></span>
 			</p>
 		</div>
-		<script>
-		jQuery( function( $ ) {
-			$( '#kwtsms-send-custom-sms-btn' ).on( 'click', function() {
-				var btn = $( this );
-				btn.prop( 'disabled', true );
-				$.post( ajaxurl, {
-					action:   'kwtsms_woo_send_custom_sms',
-					order_id: btn.data( 'order' ),
-					phone:    $( '#kwtsms-custom-sms-phone' ).val(),
-					message:  $( '#kwtsms-custom-sms-message' ).val(),
-					nonce:    btn.data( 'nonce' )
-				}, function( r ) {
-					btn.prop( 'disabled', false );
-					$( '#kwtsms-custom-sms-result' ).text(
-						r.success ? '\u2713 Sent' : '\u2717 ' + r.data.message
-					);
-				} );
-			} );
-		} );
-		</script>
 		<?php
+		$metabox_js = 'jQuery( function( $ ) {'
+			. ' $( "#kwtsms-send-custom-sms-btn" ).on( "click", function() {'
+			. '  var btn = $( this );'
+			. '  btn.prop( "disabled", true );'
+			. '  $.post( ajaxurl, {'
+			. '   action:   "kwtsms_woo_send_custom_sms",'
+			. '   order_id: btn.data( "order" ),'
+			. '   phone:    $( "#kwtsms-custom-sms-phone" ).val(),'
+			. '   message:  $( "#kwtsms-custom-sms-message" ).val(),'
+			. '   nonce:    btn.data( "nonce" )'
+			. '  }, function( r ) {'
+			. '   btn.prop( "disabled", false );'
+			. '   $( "#kwtsms-custom-sms-result" ).text('
+			. '    r.success ? "\\u2713 Sent" : "\\u2717 " + r.data.message'
+			. '   );'
+			. '  } );'
+			. ' } );'
+			. '} );';
+
+		wp_register_script( 'kwtsms-woo-metabox', '', array( 'jquery' ), KWTSMS_OTP_VERSION, true );
+		wp_enqueue_script( 'kwtsms-woo-metabox' );
+		wp_add_inline_script( 'kwtsms-woo-metabox', $metabox_js, 'after' );
 	}
 
 	/**
@@ -175,7 +177,7 @@ class KwtSMS_Woo_Metabox {
 		check_ajax_referer( 'kwtsms_woo_custom_sms', 'nonce' );
 
 		if ( ! current_user_can( 'edit_shop_orders' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -185,14 +187,14 @@ class KwtSMS_Woo_Metabox {
 
 		if ( ! $order_id || ! $phone || ! $message ) {
 			wp_send_json_error(
-				array( 'message' => __( 'Order, phone, and message are required.', 'wp-kwtsms' ) )
+				array( 'message' => __( 'Order, phone, and message are required.', 'kwtsms' ) )
 			);
 			return;
 		}
 
 		$order = wc_get_order( $order_id );
 		if ( ! $order ) {
-			wp_send_json_error( array( 'message' => __( 'Order not found.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Order not found.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -214,6 +216,6 @@ class KwtSMS_Woo_Metabox {
 			return;
 		}
 
-		wp_send_json_success( array( 'message' => __( 'SMS sent.', 'wp-kwtsms' ) ) );
+		wp_send_json_success( array( 'message' => __( 'SMS sent.', 'kwtsms' ) ) );
 	}
 }

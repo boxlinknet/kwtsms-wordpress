@@ -104,23 +104,20 @@ class KwtSMS_Captcha {
 			return '';
 		}
 
-		ob_start();
-		?>
-		<input type="hidden" name="kwtsms_recaptcha_token" id="kwtsms_recaptcha_token" />
-		<script>
-		document.addEventListener( 'DOMContentLoaded', function () {
-			if ( typeof grecaptcha === 'undefined' ) { return; }
-			grecaptcha.ready( function () {
-				grecaptcha.execute( <?php echo wp_json_encode( $site_key ); ?>, { action: 'kwtsms_otp_request' } )
-					.then( function ( token ) {
-						var field = document.getElementById( 'kwtsms_recaptcha_token' );
-						if ( field ) { field.value = token; }
-					} );
-			} );
-		} );
-		</script>
-		<?php
-		return ob_get_clean();
+		$js = 'document.addEventListener( "DOMContentLoaded", function () {'
+			. ' if ( typeof grecaptcha === "undefined" ) { return; }'
+			. ' grecaptcha.ready( function () {'
+			. '  grecaptcha.execute( ' . wp_json_encode( $site_key ) . ', { action: "kwtsms_otp_request" } )'
+			. '   .then( function ( token ) {'
+			. '    var field = document.getElementById( "kwtsms_recaptcha_token" );'
+			. '    if ( field ) { field.value = token; }'
+			. '   } );'
+			. ' } );'
+			. '} );';
+
+		wp_add_inline_script( 'google-recaptcha', $js, 'after' );
+
+		return '<input type="hidden" name="kwtsms_recaptcha_token" id="kwtsms_recaptcha_token" />';
 	}
 
 	/**
@@ -184,7 +181,7 @@ class KwtSMS_Captcha {
 		if ( empty( $token ) ) {
 			return new WP_Error(
 				'kwtsms_captcha_missing',
-				__( 'CAPTCHA verification failed. Please try again.', 'wp-kwtsms' )
+				__( 'CAPTCHA verification failed. Please try again.', 'kwtsms' )
 			);
 		}
 
@@ -215,14 +212,14 @@ class KwtSMS_Captcha {
 		if ( ! isset( $data['success'] ) || ! $data['success'] ) {
 			return new WP_Error(
 				'kwtsms_captcha_failed',
-				__( 'CAPTCHA verification failed. Please try again.', 'wp-kwtsms' )
+				__( 'CAPTCHA verification failed. Please try again.', 'kwtsms' )
 			);
 		}
 
 		if ( isset( $data['score'] ) && $data['score'] < 0.5 ) {
 			return new WP_Error(
 				'kwtsms_captcha_score',
-				__( 'Your request was flagged as suspicious. Please try again.', 'wp-kwtsms' )
+				__( 'Your request was flagged as suspicious. Please try again.', 'kwtsms' )
 			);
 		}
 
@@ -240,7 +237,7 @@ class KwtSMS_Captcha {
 		if ( empty( $token ) ) {
 			return new WP_Error(
 				'kwtsms_captcha_missing',
-				__( 'Please complete the security check before continuing.', 'wp-kwtsms' )
+				__( 'Please complete the security check before continuing.', 'kwtsms' )
 			);
 		}
 
@@ -269,7 +266,7 @@ class KwtSMS_Captcha {
 		if ( ! isset( $data['success'] ) || ! $data['success'] ) {
 			return new WP_Error(
 				'kwtsms_captcha_failed',
-				__( 'Security check failed. Please try again.', 'wp-kwtsms' )
+				__( 'Security check failed. Please try again.', 'kwtsms' )
 			);
 		}
 

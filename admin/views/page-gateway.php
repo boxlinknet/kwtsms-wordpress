@@ -41,7 +41,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 
 	<div class="kwtsms-admin-header">
 		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'Gateway Settings', 'wp-kwtsms' ); ?></h1>
+		<h1><?php esc_html_e( 'Gateway Settings', 'kwtsms' ); ?></h1>
 	</div>
 	<hr class="wp-header-end">
 
@@ -51,12 +51,12 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 	$bal_purchased = $gateway['balance_purchased'] ?? null;
 	?>
 	<div class="kwtsms-balance-bar" id="kwtsms-balance-card"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
-		<?php esc_html_e( 'Available balance:', 'wp-kwtsms' ); ?>
+		<?php esc_html_e( 'Available balance:', 'kwtsms' ); ?>
 		<strong id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></strong>
 		&nbsp;|&nbsp;
-		<?php esc_html_e( 'Total purchased:', 'wp-kwtsms' ); ?>
+		<?php esc_html_e( 'Total purchased:', 'kwtsms' ); ?>
 		<span id="kwtsms-balance-purchased"><?php echo ( null !== $bal_purchased && $bal_purchased > 0 ) ? esc_html( number_format( (float) $bal_purchased, 2 ) ) : '—'; ?></span>
-		<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="margin-left:auto;font-size:13px;font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits ', 'wp-kwtsms' ); ?></a>
+		<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="margin-left:auto;font-size:13px;font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits ', 'kwtsms' ); ?></a>
 	</div>
 
 	<form method="post" action="options.php" id="kwtsms-gateway-form">
@@ -64,36 +64,36 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 
 		<?php if ( ! $credentials_verified ) : ?>
 		<div class="kwtsms-api-status is-info kwtsms-signup-note">
-			<?php esc_html_e( "Don't have a kwtSMS account?", 'wp-kwtsms' ); ?>
+			<?php esc_html_e( "Don't have a kwtSMS account?", 'kwtsms' ); ?>
 			<a href="https://www.kwtsms.com/signup" target="_blank" rel="noopener" style="color:#46b450;font-weight:600;">
-				<?php esc_html_e( 'Sign up for free ', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Sign up for free ', 'kwtsms' ); ?>
 			</a>
 		</div>
 		<?php endif; ?>
 
 		<!-- ===== API Information ===== -->
-		<h2 class="title"><?php esc_html_e( 'API Information', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'API Information', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr id="kwtsms-row-username"<?php echo $credentials_verified ? ' style="display:none;"' : ''; ?>>
-				<th scope="row"><label for="kwtsms_api_username"><?php esc_html_e( 'API Username', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_api_username"><?php esc_html_e( 'API Username', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="text" name="kwtsms_otp_gateway[api_username]" id="kwtsms_api_username"
 						value="<?php echo esc_attr( $gateway['api_username'] ); ?>"
 						class="regular-text" autocomplete="off" />
-					<p class="description"><?php esc_html_e( 'Your kwtSMS API username, found in your kwtSMS account under API Settings, not your login mobile.', 'wp-kwtsms' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Your kwtSMS API username, found in your kwtSMS account under API Settings, not your login mobile.', 'kwtsms' ); ?></p>
 					<p class="description" id="kwtsms-username-warning" style="color:#dc3232;display:none;"></p>
 				</td>
 			</tr>
 
 			<tr id="kwtsms-row-password"<?php echo $credentials_verified ? ' style="display:none;"' : ''; ?>>
-				<th scope="row"><label for="kwtsms_api_password"><?php esc_html_e( 'API Password', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_api_password"><?php esc_html_e( 'API Password', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="password" name="kwtsms_otp_gateway[api_password]" id="kwtsms_api_password"
 						value=""
-						placeholder="<?php echo $credentials_verified ? esc_attr__( '(leave blank to keep current password)', 'wp-kwtsms' ) : ''; ?>"
+						placeholder="<?php echo $credentials_verified ? esc_attr__( '(leave blank to keep current password)', 'kwtsms' ) : ''; ?>"
 						class="regular-text" autocomplete="new-password" />
-					<p class="description"><?php esc_html_e( 'Your kwtSMS API password, found in your kwtSMS account under API Settings, not your login password.', 'wp-kwtsms' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Your kwtSMS API password, found in your kwtSMS account under API Settings, not your login password.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
 
@@ -103,39 +103,39 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 					<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
 						<?php if ( $credentials_verified ) : ?>
 						<button type="button" id="kwtsms-login-btn" class="button button-primary" style="display:none;">
-							<?php esc_html_e( 'Login', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Login', 'kwtsms' ); ?>
 						</button>
 						<div style="display:flex;flex-direction:row;gap:10px;align-items:center;">
 							<button type="button" id="kwtsms-reload-all" class="button">
-								&#x21BB; <?php esc_html_e( 'Reload', 'wp-kwtsms' ); ?>
+								&#x21BB; <?php esc_html_e( 'Reload', 'kwtsms' ); ?>
 							</button>
 							<button type="button" id="kwtsms-logout-btn" class="button">
-								<?php esc_html_e( 'Logout', 'wp-kwtsms' ); ?>
+								<?php esc_html_e( 'Logout', 'kwtsms' ); ?>
 							</button>
 							<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite">
 								<span style="color:#46b450;">&#x2713; 
 								<?php
 								/* translators: %s: API username */
-								printf( esc_html__( 'Connected as %s', 'wp-kwtsms' ), esc_html( $gateway['api_username'] ) );
+								printf( esc_html__( 'Connected as %s', 'kwtsms' ), esc_html( $gateway['api_username'] ) );
 								?>
 								</span>
 							</span>
 						</div>
-						<p class="description kwtsms-reload-hint"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from your kwtSMS account.', 'wp-kwtsms' ); ?></p>
+						<p class="description kwtsms-reload-hint"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from your kwtSMS account.', 'kwtsms' ); ?></p>
 						<?php else : ?>
 						<button type="button" id="kwtsms-login-btn" class="button button-primary">
-							<?php esc_html_e( 'Login', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Login', 'kwtsms' ); ?>
 						</button>
 						<div style="display:flex;flex-direction:row;gap:10px;align-items:center;">
 							<button type="button" id="kwtsms-reload-all" class="button" style="display:none;">
-								&#x21BB; <?php esc_html_e( 'Reload', 'wp-kwtsms' ); ?>
+								&#x21BB; <?php esc_html_e( 'Reload', 'kwtsms' ); ?>
 							</button>
 							<button type="button" id="kwtsms-logout-btn" class="button" style="display:none;">
-								<?php esc_html_e( 'Logout', 'wp-kwtsms' ); ?>
+								<?php esc_html_e( 'Logout', 'kwtsms' ); ?>
 							</button>
 							<span id="kwtsms-login-status" style="font-size:13px;font-weight:600;" aria-live="polite"></span>
 						</div>
-						<p class="description kwtsms-reload-hint" style="display:none;"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from your kwtSMS account.', 'wp-kwtsms' ); ?></p>
+						<p class="description kwtsms-reload-hint" style="display:none;"><?php esc_html_e( 'Fetches latest Sender IDs, coverage, and balance from your kwtSMS account.', 'kwtsms' ); ?></p>
 						<?php endif; ?>
 					</div>
 					</td>
@@ -147,19 +147,19 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 		<div id="kwtsms-verified-sections"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
 
 		<!-- ===== SMS Sending ===== -->
-		<h2 class="title"><?php esc_html_e( 'SMS Sending', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'SMS Sending', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 			<tr>
-				<th scope="row"><label for="kwtsms_sms_enabled"><?php esc_html_e( 'Enable SMS Sending', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_sms_enabled"><?php esc_html_e( 'Enable SMS Sending', 'kwtsms' ); ?></label></th>
 				<td>
 					<label>
 						<input type="checkbox" name="kwtsms_otp_gateway[sms_enabled]" id="kwtsms_sms_enabled"
 							value="1" <?php checked( ! empty( $gateway['sms_enabled'] ) ); ?> />
-						<?php esc_html_e( 'When disabled, no SMS messages are sent. OTP login, notifications, and all integrations are paused.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'When disabled, no SMS messages are sent. OTP login, notifications, and all integrations are paused.', 'kwtsms' ); ?>
 					</label>
 					<?php if ( empty( $gateway['sms_enabled'] ) ) : ?>
 					<p class="description" style="color:#d63638;font-weight:600;">
-						<?php esc_html_e( 'SMS sending is currently OFF. No messages will be sent until you enable this.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'SMS sending is currently OFF. No messages will be sent until you enable this.', 'kwtsms' ); ?>
 					</p>
 					<?php endif; ?>
 				</td>
@@ -167,11 +167,11 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 		</table>
 
 		<!-- ===== Test Mode ===== -->
-		<h2 class="title"><?php esc_html_e( 'Test Mode', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'Test Mode', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr>
-				<th scope="row"><label for="kwtsms_test_mode"><?php esc_html_e( 'Enable Test Mode', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_test_mode"><?php esc_html_e( 'Enable Test Mode', 'kwtsms' ); ?></label></th>
 				<td>
 					<label>
 						<input type="checkbox" name="kwtsms_otp_gateway[test_mode]" id="kwtsms_test_mode"
@@ -179,14 +179,14 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 						<?php
 						printf(
 							/* translators: %s: link to kwtSMS account dashboard */
-							esc_html__( 'Messages are queued but not delivered. Delete from %s queue to recover credits.', 'wp-kwtsms' ),
-							'<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'kwtSMS account', 'wp-kwtsms' ) . '</a>'
+							esc_html__( 'Messages are queued but not delivered. Delete from %s queue to recover credits.', 'kwtsms' ),
+							'<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'kwtSMS account', 'kwtsms' ) . '</a>'
 						);
 						?>
 					</label>
 					<?php if ( $test_mode ) : ?>
 					<p class="description" style="color:#d63638;font-weight:600;">
-						<?php esc_html_e( '⚠ Test Mode is ON. The SMS will be queued but will NOT be delivered to your phone.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( '⚠ Test Mode is ON. The SMS will be queued but will NOT be delivered to your phone.', 'kwtsms' ); ?>
 					</p>
 					<?php endif; ?>
 				</td>
@@ -198,7 +198,7 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 		<table class="form-table" role="presentation">
 
 			<tr id="kwtsms-sender-row">
-				<th scope="row"><label for="kwtsms_sender_id"><?php esc_html_e( 'Sender ID', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_sender_id"><?php esc_html_e( 'Sender ID', 'kwtsms' ); ?></label></th>
 				<td>
 					<select name="kwtsms_otp_gateway[sender_id]" id="kwtsms_sender_id">
 							<?php if ( ! empty( $sender_ids ) ) : ?>
@@ -213,13 +213,13 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 									<?php echo esc_html( $sender_id ); ?>
 								</option>
 							<?php else : ?>
-								<option value=""><?php esc_html_e( '— Login to load —', 'wp-kwtsms' ); ?></option>
+								<option value=""><?php esc_html_e( '— Login to load —', 'kwtsms' ); ?></option>
 							<?php endif; ?>
 					</select>
-					<p class="description"><?php esc_html_e( 'This is the name recipients see as the sender of your SMS messages. Choose from the sender IDs registered on your kwtSMS account.', 'wp-kwtsms' ); ?></p>
+					<p class="description"><?php esc_html_e( 'This is the name recipients see as the sender of your SMS messages. Choose from the sender IDs registered on your kwtSMS account.', 'kwtsms' ); ?></p>
 					<p class="description">
 						<a href="https://www.kwtsms.com/sender-id-help.html" target="_blank" rel="noopener">
-							<?php esc_html_e( 'Register or request a Sender ID at kwtSMS ', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Register or request a Sender ID at kwtSMS ', 'kwtsms' ); ?>
 						</a>
 					</p>
 				</td>
@@ -228,15 +228,15 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 		</table>
 
 		<div style="margin-top:20px;">
-			<?php submit_button( __( 'Save Settings', 'wp-kwtsms' ), 'primary kwtsms-save-btn', 'submit', false ); ?>
+			<?php submit_button( __( 'Save Settings', 'kwtsms' ), 'primary kwtsms-save-btn', 'submit', false ); ?>
 		</div>
 		<hr style="margin:20px 0;" />
 
 		<!-- ===== SMS Coverage ===== -->
-		<h2 class="title"><?php esc_html_e( 'SMS Coverage', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'SMS Coverage', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Active Coverage', 'wp-kwtsms' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Active Coverage', 'kwtsms' ); ?></th>
 				<td id="kwtsms-coverage-section" aria-live="polite">
 					<div id="kwtsms-coverage-result" style="display:flex;flex-wrap:wrap;gap:6px;" aria-live="polite">
 						<?php
@@ -303,36 +303,36 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 						?>
 					</div>
 					<p class="description" style="margin-top:8px;">
-						<?php esc_html_e( 'These are the countries your account can currently send SMS to. To send to additional countries, request coverage from your kwtSMS account.', 'wp-kwtsms' ); ?>
-						&nbsp;<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener"><?php esc_html_e( 'Request more coverage ', 'wp-kwtsms' ); ?></a>
+						<?php esc_html_e( 'These are the countries your account can currently send SMS to. To send to additional countries, request coverage from your kwtSMS account.', 'kwtsms' ); ?>
+						&nbsp;<a href="https://www.kwtsms.com/coverage/" target="_blank" rel="noopener"><?php esc_html_e( 'Request more coverage ', 'kwtsms' ); ?></a>
 					</p>
 				</td>
 			</tr>
 		</table>
 
 		<!-- ===== Gateway Test ===== -->
-		<h2 class="title"><?php esc_html_e( 'Gateway Test', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'Gateway Test', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr>
-				<th scope="row"><label for="kwtsms_test_phone"><?php esc_html_e( 'Test Phone Number', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_test_phone"><?php esc_html_e( 'Test Phone Number', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="tel" id="kwtsms_test_phone"
 						value=""
-						class="regular-text" placeholder="<?php esc_attr_e( 'e.g. 96512345678', 'wp-kwtsms' ); ?>" />
-					<p class="description"><?php esc_html_e( 'Enter the full number with country code. e.g. Kuwait: 965 + 8 digits = 96512345678 (11 digits total).', 'wp-kwtsms' ); ?></p>
+						class="regular-text" placeholder="<?php esc_attr_e( 'e.g. 96512345678', 'kwtsms' ); ?>" />
+					<p class="description"><?php esc_html_e( 'Enter the full number with country code. e.g. Kuwait: 965 + 8 digits = 96512345678 (11 digits total).', 'kwtsms' ); ?></p>
 					<?php if ( $test_mode ) : ?>
 					<p class="description" style="color:#dc3232;font-weight:700;">
-						<?php esc_html_e( '⚠ Test Mode is ON. The SMS will be queued but will NOT be delivered to your phone.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( '⚠ Test Mode is ON. The SMS will be queued but will NOT be delivered to your phone.', 'kwtsms' ); ?>
 					</p>
 					<?php else : ?>
 					<p class="description" style="color:#2a7a2f;font-weight:600;">
-						<?php esc_html_e( 'Test Mode is currently OFF. The SMS will be delivered to the phone number above. SMS credits will be consumed.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Test Mode is currently OFF. The SMS will be delivered to the phone number above. SMS credits will be consumed.', 'kwtsms' ); ?>
 					</p>
 					<?php endif; ?>
 					<div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
 						<button type="button" id="kwtsms-send-test-sms" class="button button-primary"<?php echo $credentials_verified ? '' : ' disabled'; ?>>
-							<?php esc_html_e( 'Send Test SMS', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Send Test SMS', 'kwtsms' ); ?>
 						</button>
 						<span id="kwtsms-test-sms-result" style="font-size:13px;line-height:1.5;" aria-live="polite"></span>
 					</div>

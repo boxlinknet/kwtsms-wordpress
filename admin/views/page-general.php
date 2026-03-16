@@ -72,83 +72,83 @@ foreach ( $all_countries as $cc ) {
 
 	<div class="kwtsms-admin-header">
 		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'General Settings', 'wp-kwtsms' ); ?></h1>
+		<h1><?php esc_html_e( 'General Settings', 'kwtsms' ); ?></h1>
 	</div>
 	<hr class="wp-header-end">
 
 	<div class="kwtsms-intro-box" style="background:#fff8ed;border:1px solid #FFA200;border-radius:4px;padding:16px 20px;margin-bottom:20px;">
 		<p style="margin:0;font-size:14px;line-height:1.6;">
-			<?php esc_html_e( 'kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages anywhere in the world, with private Sender ID, free API testing, non-expiring credits, and competitive flat-rate pricing. Secure, simple to integrate, built to last.', 'wp-kwtsms' ); ?>
+			<?php esc_html_e( 'kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages anywhere in the world, with private Sender ID, free API testing, non-expiring credits, and competitive flat-rate pricing. Secure, simple to integrate, built to last.', 'kwtsms' ); ?>
 		</p>
 		<p style="margin:8px 0 0;font-size:14px;line-height:1.6;">
-			<?php esc_html_e( 'Open a free account easily under 1 minute, no papers or payment required.', 'wp-kwtsms' ); ?>
-			<a href="https://www.kwtsms.com/signup/" target="_blank" rel="noopener noreferrer" style="color:#FFA200;font-weight:600;"><?php esc_html_e( '🚀 Click here to get started ', 'wp-kwtsms' ); ?></a>
+			<?php esc_html_e( 'Open a free account easily under 1 minute, no papers or payment required.', 'kwtsms' ); ?>
+			<a href="https://www.kwtsms.com/signup/" target="_blank" rel="noopener noreferrer" style="color:#FFA200;font-weight:600;"><?php esc_html_e( '🚀 Click here to get started ', 'kwtsms' ); ?></a>
 		</p>
 	</div>
 
 	<!-- Balance Display (mirrors Gateway page) -->
 	<div class="kwtsms-balance-bar" id="kwtsms-balance-card"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
-		<?php esc_html_e( 'Available balance:', 'wp-kwtsms' ); ?>
+		<?php esc_html_e( 'Available balance:', 'kwtsms' ); ?>
 		<strong id="kwtsms-balance"><?php echo null !== $bal_available ? esc_html( number_format( (float) $bal_available, 2 ) ) : '—'; ?></strong>
 		&nbsp;|&nbsp;
-		<?php esc_html_e( 'Total purchased:', 'wp-kwtsms' ); ?>
+		<?php esc_html_e( 'Total purchased:', 'kwtsms' ); ?>
 		<span id="kwtsms-balance-purchased"><?php echo ( null !== $bal_purchased && $bal_purchased > 0 ) ? esc_html( number_format( (float) $bal_purchased, 2 ) ) : '—'; ?></span>
-		<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="margin-left:auto;font-size:13px;font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits ', 'wp-kwtsms' ); ?></a>
+		<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener" style="margin-left:auto;font-size:13px;font-weight:600;"><?php esc_html_e( 'Recharge/Buy credits ', 'kwtsms' ); ?></a>
 	</div>
 
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_general_group' ); ?>
 
 		<!-- ===== Login Behaviour ===== -->
-		<h2 class="title"><?php esc_html_e( 'Login Behaviour', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'Login Behaviour', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr>
-				<th scope="row"><label><?php esc_html_e( 'Enable Login OTP', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label><?php esc_html_e( 'Enable Login OTP', 'kwtsms' ); ?></label></th>
 				<td>
 					<label>
 						<input type="checkbox" name="kwtsms_otp_general[login_otp]" value="1" <?php checked( $general['login_otp'], 1 ); ?> />
-						<?php esc_html_e( 'Require OTP on login', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Require OTP on login', 'kwtsms' ); ?>
 					</label>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><label><?php esc_html_e( 'Enable Password Reset OTP', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label><?php esc_html_e( 'Enable Password Reset OTP', 'kwtsms' ); ?></label></th>
 				<td>
 					<label>
 						<input type="checkbox" name="kwtsms_otp_general[reset_otp]" value="1" <?php checked( $general['reset_otp'], 1 ); ?> />
-						<?php esc_html_e( 'Use SMS OTP for password reset (instead of email link)', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Use SMS OTP for password reset (instead of email link)', 'kwtsms' ); ?>
 					</label>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><label for="kwtsms_registration_otp_gate"><?php esc_html_e( 'Enable Registration OTP', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_registration_otp_gate"><?php esc_html_e( 'Enable Registration OTP', 'kwtsms' ); ?></label></th>
 				<td>
 					<select id="kwtsms_registration_otp_gate" name="kwtsms_otp_general[registration_otp_gate]">
-						<option value="disabled" <?php selected( $registration_otp_gate, 'disabled' ); ?>><?php esc_html_e( 'Disabled', 'wp-kwtsms' ); ?></option>
-						<option value="optional" <?php selected( $registration_otp_gate, 'optional' ); ?>><?php esc_html_e( 'Optional (verify phone if provided)', 'wp-kwtsms' ); ?></option>
-						<option value="required" <?php selected( $registration_otp_gate, 'required' ); ?>><?php esc_html_e( 'Required (phone and OTP mandatory)', 'wp-kwtsms' ); ?></option>
+						<option value="disabled" <?php selected( $registration_otp_gate, 'disabled' ); ?>><?php esc_html_e( 'Disabled', 'kwtsms' ); ?></option>
+						<option value="optional" <?php selected( $registration_otp_gate, 'optional' ); ?>><?php esc_html_e( 'Optional (verify phone if provided)', 'kwtsms' ); ?></option>
+						<option value="required" <?php selected( $registration_otp_gate, 'required' ); ?>><?php esc_html_e( 'Required (phone and OTP mandatory)', 'kwtsms' ); ?></option>
 					</select>
-					<p class="description"><?php esc_html_e( 'Require OTP phone verification before creating a new user account. Works for standard WordPress registration and WooCommerce My Account registration.', 'wp-kwtsms' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Require OTP phone verification before creating a new user account. Works for standard WordPress registration and WooCommerce My Account registration.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><label for="kwtsms_welcome_sms_enabled"><?php esc_html_e( 'Enable Welcome SMS', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_welcome_sms_enabled"><?php esc_html_e( 'Enable Welcome SMS', 'kwtsms' ); ?></label></th>
 				<td>
 					<label>
 						<input type="checkbox" name="kwtsms_otp_general[welcome_sms_enabled]" id="kwtsms_welcome_sms_enabled"
 							value="1" <?php checked( ! empty( $general['welcome_sms_enabled'] ) ); ?> />
-						<?php esc_html_e( 'Send a welcome SMS to every new user when they register.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Send a welcome SMS to every new user when they register.', 'kwtsms' ); ?>
 					</label>
 					<p class="description">
 						<?php
 						printf(
 							/* translators: %s: link to Templates page */
-							esc_html__( 'Configure the message text on the %s.', 'wp-kwtsms' ),
-							'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp-templates' ) ) . '">' . esc_html__( 'Templates page', 'wp-kwtsms' ) . '</a>'
+							esc_html__( 'Configure the message text on the %s.', 'kwtsms' ),
+							'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp-templates' ) ) . '">' . esc_html__( 'Templates page', 'kwtsms' ) . '</a>'
 						);
 						?>
 					</p>
@@ -156,13 +156,13 @@ foreach ( $all_countries as $cc ) {
 			</tr>
 
 			<tr>
-				<th scope="row"><label><?php esc_html_e( 'OTP Mode', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label><?php esc_html_e( 'OTP Mode', 'kwtsms' ); ?></label></th>
 				<td>
 					<?php
 					$modes = array(
-						'2fa'          => __( 'Two-Factor Authentication (2FA): password + OTP', 'wp-kwtsms' ),
-						'passwordless' => __( 'Passwordless: phone + OTP only', 'wp-kwtsms' ),
-						'both'         => __( 'Both: users can choose', 'wp-kwtsms' ),
+						'2fa'          => __( 'Two-Factor Authentication (2FA): password + OTP', 'kwtsms' ),
+						'passwordless' => __( 'Passwordless: phone + OTP only', 'kwtsms' ),
+						'both'         => __( 'Both: users can choose', 'kwtsms' ),
 					);
 					foreach ( $modes as $value => $label ) :
 						?>
@@ -177,7 +177,7 @@ foreach ( $all_countries as $cc ) {
 			</tr>
 
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Require OTP for', 'wp-kwtsms' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Require OTP for', 'kwtsms' ); ?></th>
 				<td>
 					<?php foreach ( $all_wp_roles as $role_slug => $role_label ) : ?>
 					<label style="display:block;margin-bottom:4px;">
@@ -189,14 +189,14 @@ foreach ( $all_countries as $cc ) {
 					</label>
 					<?php endforeach; ?>
 					<p class="description">
-						<?php esc_html_e( 'Check roles that must complete OTP verification. Unchecked roles log in directly without OTP. Administrators are unchecked by default to prevent lockout. On multisite, super admins are treated as administrators.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Check roles that must complete OTP verification. Unchecked roles log in directly without OTP. Administrators are unchecked by default to prevent lockout. On multisite, super admins are treated as administrators.', 'kwtsms' ); ?>
 					</p>
 					<?php if ( $no_phone_count > 0 ) : ?>
 					<p class="description" style="margin-top:8px;background:#fff8ed;border-left:3px solid #FFA200;padding:8px 12px;border-radius:0 3px 3px 0;">
 						<?php
 						printf(
 							/* translators: 1: number of users without phone, 2: opening link tag, 3: closing link tag */
-							esc_html__( '%1$d user(s) in OTP-required roles have no phone number saved and will bypass OTP. %2$sAdd phone numbers now.%3$s', 'wp-kwtsms' ),
+							esc_html__( '%1$d user(s) in OTP-required roles have no phone number saved and will bypass OTP. %2$sAdd phone numbers now.%3$s', 'kwtsms' ),
 							(int) $no_phone_count,
 							'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp-users' ) ) . '">',
 							'</a>'
@@ -208,53 +208,53 @@ foreach ( $all_countries as $cc ) {
 			</tr>
 
 			<tr>
-				<th scope="row"><label for="kwtsms_otp_length"><?php esc_html_e( 'OTP Code Length', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_otp_length"><?php esc_html_e( 'OTP Code Length', 'kwtsms' ); ?></label></th>
 				<td>
 					<select name="kwtsms_otp_general[otp_length]" id="kwtsms_otp_length">
-						<option value="4" <?php selected( $general['otp_length'], 4 ); ?>><?php esc_html_e( '4 digits', 'wp-kwtsms' ); ?></option>
-						<option value="6" <?php selected( $general['otp_length'], 6 ); ?>><?php esc_html_e( '6 digits (recommended)', 'wp-kwtsms' ); ?></option>
+						<option value="4" <?php selected( $general['otp_length'], 4 ); ?>><?php esc_html_e( '4 digits', 'kwtsms' ); ?></option>
+						<option value="6" <?php selected( $general['otp_length'], 6 ); ?>><?php esc_html_e( '6 digits (recommended)', 'kwtsms' ); ?></option>
 					</select>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><label for="kwtsms_otp_expiry"><?php esc_html_e( 'Code Expiry', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_otp_expiry"><?php esc_html_e( 'Code Expiry', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="number" name="kwtsms_otp_general[otp_expiry]" id="kwtsms_otp_expiry"
 						value="<?php echo (int) $general['otp_expiry']; ?>" min="1" max="30" class="small-text" />
-					<?php esc_html_e( 'minutes', 'wp-kwtsms' ); ?>
-					<p class="description"><?php esc_html_e( 'Recommended: 5 minutes. Shorter = more secure, longer = more user-friendly.', 'wp-kwtsms' ); ?></p>
+					<?php esc_html_e( 'minutes', 'kwtsms' ); ?>
+					<p class="description"><?php esc_html_e( 'Recommended: 5 minutes. Shorter = more secure, longer = more user-friendly.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><label for="kwtsms_max_attempts"><?php esc_html_e( 'Max Verification Attempts', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_max_attempts"><?php esc_html_e( 'Max Verification Attempts', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="number" name="kwtsms_otp_general[max_attempts]" id="kwtsms_max_attempts"
 						value="<?php echo (int) $general['max_attempts']; ?>" min="1" max="10" class="small-text" />
-					<p class="description"><?php esc_html_e( 'Number of wrong OTP attempts before the code is invalidated.', 'wp-kwtsms' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Number of wrong OTP attempts before the code is invalidated.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><label for="kwtsms_resend_cooldown"><?php esc_html_e( 'Resend Cooldown', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_resend_cooldown"><?php esc_html_e( 'Resend Cooldown', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="number" name="kwtsms_otp_general[resend_cooldown]" id="kwtsms_resend_cooldown"
 						value="<?php echo (int) $general['resend_cooldown']; ?>" min="30" max="600" class="small-text" />
-					<?php esc_html_e( 'seconds', 'wp-kwtsms' ); ?>
-					<p class="description"><?php esc_html_e( 'Minimum time between resend requests per user. Recommended: 120 seconds.', 'wp-kwtsms' ); ?></p>
+					<?php esc_html_e( 'seconds', 'kwtsms' ); ?>
+					<p class="description"><?php esc_html_e( 'Minimum time between resend requests per user. Recommended: 120 seconds.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
 
 		</table>
 
 		<!-- ===== Phone & Country Settings ===== -->
-		<h2 class="title"><?php esc_html_e( 'Phone &amp; Country Settings', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'Phone &amp; Country Settings', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr>
 				<th scope="row">
-					<label for="kwtsms_default_country_code"><?php esc_html_e( 'Default Country Code', 'wp-kwtsms' ); ?></label>
+					<label for="kwtsms_default_country_code"><?php esc_html_e( 'Default Country Code', 'kwtsms' ); ?></label>
 				</th>
 				<td>
 					<select name="kwtsms_otp_general[default_country_code]" id="kwtsms_default_country_code">
@@ -265,12 +265,12 @@ foreach ( $all_countries as $cc ) {
 						</option>
 						<?php endforeach; ?>
 					</select>
-					<p class="description"><?php esc_html_e( 'This is pre-filled as the default dial code on login forms. Users only need to enter their local phone number without the country code. GeoIP detection will override this automatically when available.', 'wp-kwtsms' ); ?></p>
+					<p class="description"><?php esc_html_e( 'This is pre-filled as the default dial code on login forms. Users only need to enter their local phone number without the country code. GeoIP detection will override this automatically when available.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Allowed Countries', 'wp-kwtsms' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Allowed Countries', 'kwtsms' ); ?></th>
 				<td>
 					<div id="kwtsms-allowed-countries-wrap">
 						<div id="kwtsms-allowed-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
@@ -280,7 +280,7 @@ foreach ( $all_countries as $cc ) {
 							<span class="kwtsms-country-tag" style="display:inline-flex;align-items:center;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:3px 8px;font-size:13px;">
 									<?php echo esc_html( $cc_data['name'] . ' (+' . $cc_data['dial'] . ')' ); ?>
 								<button type="button" class="kwtsms-remove-country" data-iso2="<?php echo esc_attr( $iso2 ); ?>"
-									style="background:none;border:none;cursor:pointer;margin-left:6px;color:#dc3232;font-weight:bold;font-size:14px;line-height:1;" aria-label="<?php esc_attr_e( 'Remove', 'wp-kwtsms' ); ?>">
+									style="background:none;border:none;cursor:pointer;margin-left:6px;color:#dc3232;font-weight:bold;font-size:14px;line-height:1;" aria-label="<?php esc_attr_e( 'Remove', 'kwtsms' ); ?>">
 									×
 								</button>
 							</span>
@@ -290,7 +290,7 @@ foreach ( $all_countries as $cc ) {
 
 						<div style="display:flex;gap:8px;align-items:center;">
 							<select id="kwtsms-add-country-select">
-								<option value=""><?php esc_html_e( '— Add a country —', 'wp-kwtsms' ); ?></option>
+								<option value=""><?php esc_html_e( '— Add a country —', 'kwtsms' ); ?></option>
 								<?php foreach ( $all_countries as $cc ) : ?>
 								<option value="<?php echo esc_attr( $cc['iso2'] ); ?>"
 									data-dial="<?php echo esc_attr( $cc['dial'] ); ?>"
@@ -300,7 +300,7 @@ foreach ( $all_countries as $cc ) {
 								<?php endforeach; ?>
 							</select>
 							<button type="button" id="kwtsms-add-country-btn" class="button">
-								<?php esc_html_e( 'Add', 'wp-kwtsms' ); ?>
+								<?php esc_html_e( 'Add', 'kwtsms' ); ?>
 							</button>
 						</div>
 
@@ -310,15 +310,15 @@ foreach ( $all_countries as $cc ) {
 							value="<?php echo esc_attr( wp_json_encode( $allowed_iso2 ) ); ?>" />
 					</div>
 					<p class="description">
-						<?php esc_html_e( 'Controls which countries appear in the OTP login dial-code dropdown and which phone numbers this plugin will accept.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Controls which countries appear in the OTP login dial-code dropdown and which phone numbers this plugin will accept.', 'kwtsms' ); ?>
 					</p>
 					<p class="description" style="margin-top:6px;background:#fff8ed;border-left:3px solid #FFA200;padding:8px 12px;border-radius:0 3px 3px 0;">
-						<strong><?php esc_html_e( 'Important:', 'wp-kwtsms' ); ?></strong>
+						<strong><?php esc_html_e( 'Important:', 'kwtsms' ); ?></strong>
 						<?php
 						printf(
 							/* translators: %s: link to the Gateway page */
-							esc_html__( 'Adding a country here does NOT enable SMS delivery to that country. Delivery depends on which countries are active in your kwtSMS account coverage. Check your %s to see which countries you can currently send to. If a country is listed here but not covered in your account, SMS will silently fail.', 'wp-kwtsms' ),
-							'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ) . '">' . esc_html__( 'Gateway page (SMS Coverage section)', 'wp-kwtsms' ) . '</a>'
+							esc_html__( 'Adding a country here does NOT enable SMS delivery to that country. Delivery depends on which countries are active in your kwtSMS account coverage. Check your %s to see which countries you can currently send to. If a country is listed here but not covered in your account, SMS will silently fail.', 'kwtsms' ),
+							'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ) . '">' . esc_html__( 'Gateway page (SMS Coverage section)', 'kwtsms' ) . '</a>'
 						);
 						?>
 					</p>
@@ -328,48 +328,48 @@ foreach ( $all_countries as $cc ) {
 		</table>
 
 		<!-- ===== Referral Link ===== -->
-		<h2 class="title"><?php esc_html_e( 'Powered-by Footer', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'Powered-by Footer', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr>
-				<th scope="row"><label for="kwtsms_referral_link"><?php esc_html_e( 'Show Referral Link', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_referral_link"><?php esc_html_e( 'Show Referral Link', 'kwtsms' ); ?></label></th>
 				<td>
 					<label>
 						<input type="checkbox" name="kwtsms_otp_general[referral_link]" id="kwtsms_referral_link"
 							value="1" <?php checked( $referral_link ); ?> />
-						<?php esc_html_e( 'Display "SMS by kwtSMS.com" footer on login pages', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Display "SMS by kwtSMS.com" footer on login pages', 'kwtsms' ); ?>
 					</label>
-					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'wp-kwtsms' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
 
 		</table>
 
 		<!-- ===== On Balance Failure ===== -->
-		<h2 class="title"><?php esc_html_e( 'On Balance Failure', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'On Balance Failure', 'kwtsms' ); ?></h2>
 		<p style="margin-top:-8px;color:#555;font-size:13px;">
-			<?php esc_html_e( 'Decides what happens when kwtSMS cannot send an OTP because your SMS credit balance is zero. An admin email is always sent when this condition is first detected.', 'wp-kwtsms' ); ?>
+			<?php esc_html_e( 'Decides what happens when kwtSMS cannot send an OTP because your SMS credit balance is zero. An admin email is always sent when this condition is first detected.', 'kwtsms' ); ?>
 		</p>
 		<table class="form-table" role="presentation">
 
 			<tr>
-				<th scope="row"><?php esc_html_e( 'When credits run out', 'wp-kwtsms' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'When credits run out', 'kwtsms' ); ?></th>
 				<td>
 					<fieldset>
 						<label style="display:block;margin-bottom:10px;">
 							<input type="radio" name="kwtsms_otp_general[balance_failure_mode]" value="block"
 								<?php checked( $balance_failure_mode, 'block' ); ?> />
-							<strong><?php esc_html_e( 'Block logins (Recommended)', 'wp-kwtsms' ); ?></strong>
+							<strong><?php esc_html_e( 'Block logins (Recommended)', 'kwtsms' ); ?></strong>
 							<p class="description" style="margin-left:24px;">
-								<?php esc_html_e( 'Users who require OTP cannot log in until the account is recharged. This keeps OTP enforcement intact and makes the outage visible.', 'wp-kwtsms' ); ?>
+								<?php esc_html_e( 'Users who require OTP cannot log in until the account is recharged. This keeps OTP enforcement intact and makes the outage visible.', 'kwtsms' ); ?>
 							</p>
 						</label>
 						<label style="display:block;">
 							<input type="radio" name="kwtsms_otp_general[balance_failure_mode]" value="allow"
 								<?php checked( $balance_failure_mode, 'allow' ); ?> />
-							<?php esc_html_e( 'Allow login without OTP (password only)', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Allow login without OTP (password only)', 'kwtsms' ); ?>
 							<p class="description" style="margin-left:24px;color:#d63638;">
-								<?php esc_html_e( 'Users bypass OTP and log in with password alone until credits are restored. Choose this only if uninterrupted access is more important than 2FA enforcement.', 'wp-kwtsms' ); ?>
+								<?php esc_html_e( 'Users bypass OTP and log in with password alone until credits are restored. Choose this only if uninterrupted access is more important than 2FA enforcement.', 'kwtsms' ); ?>
 							</p>
 						</label>
 					</fieldset>
@@ -381,17 +381,17 @@ foreach ( $all_countries as $cc ) {
 		<div id="kwtsms-advanced-options" style="display:none;">
 
 		<!-- ===== CAPTCHA ===== -->
-		<h2 class="title"><?php esc_html_e( 'CAPTCHA Protection', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'CAPTCHA Protection', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr>
-				<th scope="row"><label><?php esc_html_e( 'CAPTCHA Provider', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label><?php esc_html_e( 'CAPTCHA Provider', 'kwtsms' ); ?></label></th>
 				<td>
 					<?php
 					$providers = array(
-						'none'      => __( 'None', 'wp-kwtsms' ),
-						'recaptcha' => __( 'Google reCAPTCHA v3 (invisible)', 'wp-kwtsms' ),
-						'turnstile' => __( 'Cloudflare Turnstile', 'wp-kwtsms' ),
+						'none'      => __( 'None', 'kwtsms' ),
+						'recaptcha' => __( 'Google reCAPTCHA v3 (invisible)', 'kwtsms' ),
+						'turnstile' => __( 'Cloudflare Turnstile', 'kwtsms' ),
 					);
 					foreach ( $providers as $value => $label ) :
 						?>
@@ -407,34 +407,34 @@ foreach ( $all_countries as $cc ) {
 			</tr>
 
 			<tr class="kwtsms-captcha-fields kwtsms-recaptcha-fields" style="<?php echo 'recaptcha' !== $captcha_provider ? 'display:none;' : ''; ?>">
-				<th scope="row"><?php esc_html_e( 'reCAPTCHA v3 Keys', 'wp-kwtsms' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'reCAPTCHA v3 Keys', 'kwtsms' ); ?></th>
 				<td>
 					<input type="text" name="kwtsms_otp_general[recaptcha_site_key]"
 						value="<?php echo esc_attr( $general['recaptcha_site_key'] ?? '' ); ?>"
-						class="regular-text" placeholder="<?php esc_attr_e( 'Site Key', 'wp-kwtsms' ); ?>" /><br /><br />
+						class="regular-text" placeholder="<?php esc_attr_e( 'Site Key', 'kwtsms' ); ?>" /><br /><br />
 					<input type="password" name="kwtsms_otp_general[recaptcha_secret_key]"
 						value="<?php echo esc_attr( $general['recaptcha_secret_key'] ?? '' ); ?>"
-						class="regular-text" placeholder="<?php esc_attr_e( 'Secret Key', 'wp-kwtsms' ); ?>" />
+						class="regular-text" placeholder="<?php esc_attr_e( 'Secret Key', 'kwtsms' ); ?>" />
 					<p class="description">
 						<a href="https://www.google.com/recaptcha/admin" target="_blank" rel="noopener noreferrer">
-							<?php esc_html_e( 'Get keys from Google reCAPTCHA Admin Console ', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Get keys from Google reCAPTCHA Admin Console ', 'kwtsms' ); ?>
 						</a>
 					</p>
 				</td>
 			</tr>
 
 			<tr class="kwtsms-captcha-fields kwtsms-turnstile-fields" style="<?php echo 'turnstile' !== $captcha_provider ? 'display:none;' : ''; ?>">
-				<th scope="row"><?php esc_html_e( 'Turnstile Keys', 'wp-kwtsms' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Turnstile Keys', 'kwtsms' ); ?></th>
 				<td>
 					<input type="text" name="kwtsms_otp_general[turnstile_site_key]"
 						value="<?php echo esc_attr( $general['turnstile_site_key'] ?? '' ); ?>"
-						class="regular-text" placeholder="<?php esc_attr_e( 'Site Key', 'wp-kwtsms' ); ?>" /><br /><br />
+						class="regular-text" placeholder="<?php esc_attr_e( 'Site Key', 'kwtsms' ); ?>" /><br /><br />
 					<input type="password" name="kwtsms_otp_general[turnstile_secret_key]"
 						value="<?php echo esc_attr( $general['turnstile_secret_key'] ?? '' ); ?>"
-						class="regular-text" placeholder="<?php esc_attr_e( 'Secret Key', 'wp-kwtsms' ); ?>" />
+						class="regular-text" placeholder="<?php esc_attr_e( 'Secret Key', 'kwtsms' ); ?>" />
 					<p class="description">
 						<a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">
-							<?php esc_html_e( 'Get keys from Cloudflare Dashboard ', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Get keys from Cloudflare Dashboard ', 'kwtsms' ); ?>
 						</a>
 					</p>
 				</td>
@@ -443,19 +443,19 @@ foreach ( $all_countries as $cc ) {
 		</table>
 
 		<!-- ===== Security ===== -->
-		<h2 class="title"><?php esc_html_e( 'Security', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'Security', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr>
 				<th scope="row">
-					<label for="kwtsms_blocked_phones"><?php esc_html_e( 'Blocked Phone Numbers', 'wp-kwtsms' ); ?></label>
+					<label for="kwtsms_blocked_phones"><?php esc_html_e( 'Blocked Phone Numbers', 'kwtsms' ); ?></label>
 				</th>
 				<td>
 					<textarea name="kwtsms_otp_general[blocked_phones]" id="kwtsms_blocked_phones"
 						rows="6" class="large-text code"
 						placeholder="96599000000&#10;96566000000"><?php echo esc_textarea( $blocked_phones ); ?></textarea>
 					<p class="description">
-						<?php esc_html_e( 'One per line or comma-separated, with country code (digits only). These numbers will never receive OTP SMS. Blocked requests return a silent success to prevent enumeration.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'One per line or comma-separated, with country code (digits only). These numbers will never receive OTP SMS. Blocked requests return a silent success to prevent enumeration.', 'kwtsms' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -463,36 +463,36 @@ foreach ( $all_countries as $cc ) {
 		</table>
 
 		<!-- ===== IP Rules ===== -->
-		<h2 class="title"><?php esc_html_e( 'IP Rules', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'IP Rules', 'kwtsms' ); ?></h2>
 		<p style="margin-top:-8px;color:#555;font-size:13px;">
-			<?php esc_html_e( 'One IPv4 or IPv6 address or CIDR per line (e.g. 192.168.1.0/24). Allowlisted IPs skip per-IP rate limiting. Blocklisted IPs receive a silent refusal.', 'wp-kwtsms' ); ?>
+			<?php esc_html_e( 'One IPv4 or IPv6 address or CIDR per line (e.g. 192.168.1.0/24). Allowlisted IPs skip per-IP rate limiting. Blocklisted IPs receive a silent refusal.', 'kwtsms' ); ?>
 		</p>
 		<table class="form-table" role="presentation">
 
 			<tr>
 				<th scope="row">
-					<label for="kwtsms_ip_allowlist"><?php esc_html_e( 'IP Allowlist', 'wp-kwtsms' ); ?></label>
+					<label for="kwtsms_ip_allowlist"><?php esc_html_e( 'IP Allowlist', 'kwtsms' ); ?></label>
 				</th>
 				<td>
 					<textarea name="kwtsms_otp_general[ip_allowlist]" id="kwtsms_ip_allowlist"
 						rows="5" class="large-text code"
 						placeholder="192.168.1.0/24&#10;10.0.0.5"><?php echo esc_textarea( $ip_allowlist ); ?></textarea>
 					<p class="description">
-						<?php esc_html_e( 'These IPs skip the per-IP rate limit and proxy detection (when enabled). OTP is still required.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'These IPs skip the per-IP rate limit and proxy detection (when enabled). OTP is still required.', 'kwtsms' ); ?>
 					</p>
 				</td>
 			</tr>
 
 			<tr>
 				<th scope="row">
-					<label for="kwtsms_ip_blocklist"><?php esc_html_e( 'IP Blocklist', 'wp-kwtsms' ); ?></label>
+					<label for="kwtsms_ip_blocklist"><?php esc_html_e( 'IP Blocklist', 'kwtsms' ); ?></label>
 				</th>
 				<td>
 					<textarea name="kwtsms_otp_general[ip_blocklist]" id="kwtsms_ip_blocklist"
 						rows="5" class="large-text code"
 						placeholder="185.220.101.0/24&#10;45.33.32.156"><?php echo esc_textarea( $ip_blocklist ); ?></textarea>
 					<p class="description">
-						<?php esc_html_e( 'These IPs are silently refused. The response is identical to a rate-limit error to prevent enumeration of this list.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'These IPs are silently refused. The response is identical to a rate-limit error to prevent enumeration of this list.', 'kwtsms' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -500,12 +500,12 @@ foreach ( $all_countries as $cc ) {
 		</table>
 
 		<!-- ===== IPHub Proxy/VPN Detection ===== -->
-		<h2 class="title"><?php esc_html_e( 'Proxy and VPN Detection (IPHub)', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'Proxy and VPN Detection (IPHub)', 'kwtsms' ); ?></h2>
 		<p style="margin-top:-8px;color:#555;font-size:13px;">
 			<?php
 			printf(
 				/* translators: %s: IPHub website link */
-				esc_html__( 'Uses the %s API to identify and act on OTP requests from known proxy or VPN IP addresses. Allowlisted IPs (above) always bypass this check.', 'wp-kwtsms' ),
+				esc_html__( 'Uses the %s API to identify and act on OTP requests from known proxy or VPN IP addresses. Allowlisted IPs (above) always bypass this check.', 'kwtsms' ),
 				'<a href="https://iphub.info/" target="_blank" rel="noopener noreferrer">IPHub</a>'
 			);
 			?>
@@ -513,64 +513,64 @@ foreach ( $all_countries as $cc ) {
 		<table class="form-table" role="presentation">
 
 			<tr>
-				<th scope="row"><label for="kwtsms_iphub_enabled"><?php esc_html_e( 'Enable IPHub Detection', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_iphub_enabled"><?php esc_html_e( 'Enable IPHub Detection', 'kwtsms' ); ?></label></th>
 				<td>
 					<label>
 						<input type="checkbox" name="kwtsms_otp_general[iphub_enabled]" id="kwtsms_iphub_enabled"
 							value="1" <?php checked( $iphub_enabled ); ?> />
-						<?php esc_html_e( 'Check each OTP request IP against the IPHub reputation database.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Check each OTP request IP against the IPHub reputation database.', 'kwtsms' ); ?>
 					</label>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><label for="kwtsms_iphub_api_key"><?php esc_html_e( 'IPHub API Key', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_iphub_api_key"><?php esc_html_e( 'IPHub API Key', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="password" name="kwtsms_otp_general[iphub_api_key]" id="kwtsms_iphub_api_key"
 						value="<?php echo esc_attr( $iphub_api_key ); ?>"
 						class="regular-text" autocomplete="new-password"
-						placeholder="<?php esc_attr_e( 'Paste your IPHub API key here', 'wp-kwtsms' ); ?>" />
+						placeholder="<?php esc_attr_e( 'Paste your IPHub API key here', 'kwtsms' ); ?>" />
 					<p class="description">
 						<a href="https://iphub.info/register" target="_blank" rel="noopener noreferrer">
-							<?php esc_html_e( 'Get a free API key from IPHub.info (up to 1,000 lookups/day on the free plan) ', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Get a free API key from IPHub.info (up to 1,000 lookups/day on the free plan) ', 'kwtsms' ); ?>
 						</a>
 					</p>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><label for="kwtsms_iphub_action_block1"><?php esc_html_e( 'Action for Level 1 (Proxy/VPN)', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_iphub_action_block1"><?php esc_html_e( 'Action for Level 1 (Proxy/VPN)', 'kwtsms' ); ?></label></th>
 				<td>
 					<select name="kwtsms_otp_general[iphub_action_block1]" id="kwtsms_iphub_action_block1">
-						<option value="block" <?php selected( $iphub_action_block1, 'block' ); ?>><?php esc_html_e( 'Block silently (recommended)', 'wp-kwtsms' ); ?></option>
-						<option value="log"   <?php selected( $iphub_action_block1, 'log' ); ?>><?php esc_html_e( 'Log only, allow through', 'wp-kwtsms' ); ?></option>
-						<option value="allow" <?php selected( $iphub_action_block1, 'allow' ); ?>><?php esc_html_e( 'Allow (no action)', 'wp-kwtsms' ); ?></option>
+						<option value="block" <?php selected( $iphub_action_block1, 'block' ); ?>><?php esc_html_e( 'Block silently (recommended)', 'kwtsms' ); ?></option>
+						<option value="log"   <?php selected( $iphub_action_block1, 'log' ); ?>><?php esc_html_e( 'Log only, allow through', 'kwtsms' ); ?></option>
+						<option value="allow" <?php selected( $iphub_action_block1, 'allow' ); ?>><?php esc_html_e( 'Allow (no action)', 'kwtsms' ); ?></option>
 					</select>
-					<p class="description"><?php esc_html_e( 'IP identified as a confirmed proxy or VPN exit node.', 'wp-kwtsms' ); ?></p>
+					<p class="description"><?php esc_html_e( 'IP identified as a confirmed proxy or VPN exit node.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><label for="kwtsms_iphub_action_block2"><?php esc_html_e( 'Action for Level 2 (Mixed)', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_iphub_action_block2"><?php esc_html_e( 'Action for Level 2 (Mixed)', 'kwtsms' ); ?></label></th>
 				<td>
 					<select name="kwtsms_otp_general[iphub_action_block2]" id="kwtsms_iphub_action_block2">
-						<option value="log"   <?php selected( $iphub_action_block2, 'log' ); ?>><?php esc_html_e( 'Log only, allow through (recommended)', 'wp-kwtsms' ); ?></option>
-						<option value="block" <?php selected( $iphub_action_block2, 'block' ); ?>><?php esc_html_e( 'Block silently', 'wp-kwtsms' ); ?></option>
-						<option value="allow" <?php selected( $iphub_action_block2, 'allow' ); ?>><?php esc_html_e( 'Allow (no action)', 'wp-kwtsms' ); ?></option>
+						<option value="log"   <?php selected( $iphub_action_block2, 'log' ); ?>><?php esc_html_e( 'Log only, allow through (recommended)', 'kwtsms' ); ?></option>
+						<option value="block" <?php selected( $iphub_action_block2, 'block' ); ?>><?php esc_html_e( 'Block silently', 'kwtsms' ); ?></option>
+						<option value="allow" <?php selected( $iphub_action_block2, 'allow' ); ?>><?php esc_html_e( 'Allow (no action)', 'kwtsms' ); ?></option>
 					</select>
-					<p class="description"><?php esc_html_e( 'IP from a range that contains a mix of residential and proxy traffic.', 'wp-kwtsms' ); ?></p>
+					<p class="description"><?php esc_html_e( 'IP from a range that contains a mix of residential and proxy traffic.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><label for="kwtsms_iphub_cache_ttl"><?php esc_html_e( 'Cache TTL', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_iphub_cache_ttl"><?php esc_html_e( 'Cache TTL', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="number" name="kwtsms_otp_general[iphub_cache_ttl]" id="kwtsms_iphub_cache_ttl"
 						value="<?php echo (int) $iphub_cache_ttl; ?>"
 						min="3600" max="604800" class="small-text" />
-					<?php esc_html_e( 'seconds', 'wp-kwtsms' ); ?>
+					<?php esc_html_e( 'seconds', 'kwtsms' ); ?>
 					<p class="description">
-						<?php esc_html_e( 'How long to cache each IP reputation result (min: 1 hour = 3600 s, max: 7 days = 604800 s, default: 86400 s = 1 day). Cached results avoid repeated API calls for the same IP.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'How long to cache each IP reputation result (min: 1 hour = 3600 s, max: 7 days = 604800 s, default: 86400 s = 1 day). Cached results avoid repeated API calls for the same IP.', 'kwtsms' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -578,20 +578,20 @@ foreach ( $all_countries as $cc ) {
 		</table>
 
 		<!-- ===== Developer Tools ===== -->
-		<h2 class="title"><?php esc_html_e( 'Developer Tools', 'wp-kwtsms' ); ?></h2>
+		<h2 class="title"><?php esc_html_e( 'Developer Tools', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr>
-				<th scope="row"><label for="kwtsms_debug_logging"><?php esc_html_e( 'Debug Logging', 'wp-kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_debug_logging"><?php esc_html_e( 'Debug Logging', 'kwtsms' ); ?></label></th>
 				<td>
 					<label>
 						<input type="checkbox" name="kwtsms_otp_general[debug_logging]" id="kwtsms_debug_logging"
 							value="1" <?php checked( $debug_logging ); ?> />
-						<?php esc_html_e( 'Enable detailed logging for troubleshooting.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Enable detailed logging for troubleshooting.', 'kwtsms' ); ?>
 					</label>
 					<?php if ( $debug_logging ) : ?>
 					<p class="description" style="color:#d63638;font-weight:600;">
-						<?php esc_html_e( '⚠ Debug Logging is ON, disable this on production sites.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( '⚠ Debug Logging is ON, disable this on production sites.', 'kwtsms' ); ?>
 					</p>
 					<?php endif; ?>
 					<p class="description">
@@ -602,12 +602,12 @@ foreach ( $all_countries as $cc ) {
 						: 'wp-content/kwtsms-debug.log';
 						printf(
 							/* translators: %s: path to the debug log file */
-							esc_html__( 'Log file: %s', 'wp-kwtsms' ),
+							esc_html__( 'Log file: %s', 'kwtsms' ),
 							'<code>' . esc_html( $log_path ) . '</code>'
 						);
 						?>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-help' ) ); ?>">
-							<?php esc_html_e( 'See Help page for troubleshooting guide ', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'See Help page for troubleshooting guide ', 'kwtsms' ); ?>
 						</a>
 					</p>
 				</td>
@@ -621,25 +621,26 @@ foreach ( $all_countries as $cc ) {
 		<div class="kwtsms-advanced-toggle-bar" style="margin:20px 0 4px;padding:12px 16px;background:#f8f8f8;border:1px solid #ddd;border-radius:4px;display:flex;align-items:center;gap:14px;">
 			<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:13px;margin:0;">
 				<input type="checkbox" id="kwtsms-advanced-toggle" style="width:16px;height:16px;cursor:pointer;margin:0;" />
-				<?php esc_html_e( 'Show Advanced Options', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Show Advanced Options', 'kwtsms' ); ?>
 			</label>
-			<span style="color:#888;font-size:12px;"><?php esc_html_e( 'CAPTCHA, Security, IP Rules, Proxy Detection, Developer Tools', 'wp-kwtsms' ); ?></span>
+			<span style="color:#888;font-size:12px;"><?php esc_html_e( 'CAPTCHA, Security, IP Rules, Proxy Detection, Developer Tools', 'kwtsms' ); ?></span>
 		</div>
 
 
-		<?php submit_button( __( 'Save Settings', 'wp-kwtsms' ), 'primary kwtsms-save-btn' ); ?>
+		<?php submit_button( __( 'Save Settings', 'kwtsms' ), 'primary kwtsms-save-btn' ); ?>
 	</form>
 
 </div><!-- /.kwtsms-admin-wrap -->
 
-<script>
+<?php
+$general_page_js = <<<'KWTSMS_JS'
 // Allowed countries tag manager
 (function() {
 	'use strict';
-	const tagsDiv   = document.getElementById('kwtsms-allowed-tags');
-	const input     = document.getElementById('kwtsms-allowed-countries-input');
-	const addSelect = document.getElementById('kwtsms-add-country-select');
-	const addBtn    = document.getElementById('kwtsms-add-country-btn');
+	var tagsDiv   = document.getElementById('kwtsms-allowed-tags');
+	var input     = document.getElementById('kwtsms-allowed-countries-input');
+	var addSelect = document.getElementById('kwtsms-add-country-select');
+	var addBtn    = document.getElementById('kwtsms-add-country-btn');
 	if ( ! tagsDiv || ! input || ! addSelect || ! addBtn ) return;
 
 	function getIso2List() {
@@ -651,23 +652,24 @@ foreach ( $all_countries as $cc ) {
 		input.dispatchEvent(new Event('change', { bubbles: true }));
 	}
 
-	const removeLabel = '<?php echo esc_js( __( 'Remove', 'wp-kwtsms' ) ); ?>';
+	var removeLabel = ( typeof kwtsmsGeneral !== 'undefined' && kwtsmsGeneral.removeLabel )
+		? kwtsmsGeneral.removeLabel : 'Remove';
 
 	function renderTag(iso2, dial, name) {
-		const span = document.createElement('span');
+		var span = document.createElement('span');
 		span.className = 'kwtsms-country-tag';
 		span.style.cssText = 'display:inline-flex;align-items:center;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:3px 8px;font-size:13px;';
 		span.dataset.iso2  = iso2;
 		span.textContent   = name + ' (+' + dial + ')';
-		const btn = document.createElement('button');
+		var btn = document.createElement('button');
 		btn.type      = 'button';
 		btn.className = 'kwtsms-remove-country';
 		btn.dataset.iso2 = iso2;
 		btn.style.cssText = 'background:none;border:none;cursor:pointer;margin-left:6px;color:#dc3232;font-weight:bold;font-size:14px;line-height:1;';
-		btn.textContent = '×';
+		btn.textContent = '\u00d7';
 		btn.setAttribute( 'aria-label', removeLabel );
 		btn.addEventListener('click', function() {
-			const list = getIso2List().filter(function(c) { return c !== iso2; });
+			var list = getIso2List().filter(function(c) { return c !== iso2; });
 			setIso2List(list);
 			span.remove();
 		});
@@ -678,8 +680,8 @@ foreach ( $all_countries as $cc ) {
 	// Bind remove buttons on existing tags.
 	tagsDiv.querySelectorAll('.kwtsms-remove-country').forEach(function(btn) {
 		btn.addEventListener('click', function() {
-			const iso2 = btn.dataset.iso2;
-			const list = getIso2List().filter(function(c) { return c !== iso2; });
+			var iso2 = btn.dataset.iso2;
+			var list = getIso2List().filter(function(c) { return c !== iso2; });
 			setIso2List(list);
 			btn.closest('.kwtsms-country-tag').remove();
 		});
@@ -687,12 +689,12 @@ foreach ( $all_countries as $cc ) {
 
 	// Add button.
 	addBtn.addEventListener('click', function() {
-		const opt  = addSelect.options[addSelect.selectedIndex];
-		const iso2 = opt.value;
-		const dial = opt.dataset.dial;
-		const name = opt.dataset.name;
+		var opt  = addSelect.options[addSelect.selectedIndex];
+		var iso2 = opt.value;
+		var dial = opt.dataset.dial;
+		var name = opt.dataset.name;
 		if (!iso2) return;
-		const list = getIso2List();
+		var list = getIso2List();
 		if (list.indexOf(iso2) !== -1) return; // already added
 		list.push(iso2);
 		setIso2List(list);
@@ -704,11 +706,11 @@ foreach ( $all_countries as $cc ) {
 // Advanced Options toggle
 (function() {
 	'use strict';
-	const toggle = document.getElementById('kwtsms-advanced-toggle');
-	const panel  = document.getElementById('kwtsms-advanced-options');
+	var toggle = document.getElementById('kwtsms-advanced-toggle');
+	var panel  = document.getElementById('kwtsms-advanced-options');
 	if ( ! toggle || ! panel ) return;
 
-	const STORAGE_KEY = 'kwtsms_show_advanced';
+	var STORAGE_KEY = 'kwtsms_show_advanced';
 
 	function applyState(show) {
 		panel.style.display = show ? '' : 'none';
@@ -719,9 +721,19 @@ foreach ( $all_countries as $cc ) {
 	applyState( localStorage.getItem( STORAGE_KEY ) === '1' );
 
 	toggle.addEventListener('change', function() {
-		const show = toggle.checked;
+		var show = toggle.checked;
 		localStorage.setItem( STORAGE_KEY, show ? '1' : '0' );
 		applyState( show );
 	});
 })();
-</script>
+KWTSMS_JS;
+
+wp_localize_script(
+	'kwtsms-admin',
+	'kwtsmsGeneral',
+	array(
+		'removeLabel' => __( 'Remove', 'kwtsms' ),
+	)
+);
+wp_add_inline_script( 'kwtsms-admin', $general_page_js, 'after' );
+?>

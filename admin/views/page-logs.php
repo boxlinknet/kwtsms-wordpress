@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 // phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
 
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'wp-kwtsms' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
 }
 
 $active_tab     = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_history'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -76,12 +76,12 @@ function kwtsms_logs_tab_url( $tab, $extra = array() ) {
  */
 function kwtsms_attempt_result_label( $result ) {
 	$labels = array(
-		'success'      => '<span style="color:#46b450;">' . esc_html__( 'Success', 'wp-kwtsms' ) . '</span>',
-		'wrong_code'   => '<span style="color:#f0ad4e;">' . esc_html__( 'Wrong code', 'wp-kwtsms' ) . '</span>',
-		'expired'      => '<span style="color:#888;">' . esc_html__( 'Expired', 'wp-kwtsms' ) . '</span>',
-		'locked'       => '<span style="color:#dc3232;">' . esc_html__( 'Locked (max attempts)', 'wp-kwtsms' ) . '</span>',
-		'rate_limited' => '<span style="color:#dc3232;">' . esc_html__( 'Rate limited', 'wp-kwtsms' ) . '</span>',
-		'brute_force'  => '<span style="color:#dc3232;font-weight:bold;">' . esc_html__( '⚠ Brute force', 'wp-kwtsms' ) . '</span>',
+		'success'      => '<span style="color:#46b450;">' . esc_html__( 'Success', 'kwtsms' ) . '</span>',
+		'wrong_code'   => '<span style="color:#f0ad4e;">' . esc_html__( 'Wrong code', 'kwtsms' ) . '</span>',
+		'expired'      => '<span style="color:#888;">' . esc_html__( 'Expired', 'kwtsms' ) . '</span>',
+		'locked'       => '<span style="color:#dc3232;">' . esc_html__( 'Locked (max attempts)', 'kwtsms' ) . '</span>',
+		'rate_limited' => '<span style="color:#dc3232;">' . esc_html__( 'Rate limited', 'kwtsms' ) . '</span>',
+		'brute_force'  => '<span style="color:#dc3232;font-weight:bold;">' . esc_html__( '⚠ Brute force', 'kwtsms' ) . '</span>',
 	);
 	return $labels[ $result ] ?? esc_html( $result );
 }
@@ -93,7 +93,7 @@ function kwtsms_attempt_result_label( $result ) {
 
 	<div class="kwtsms-admin-header">
 		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'Logs', 'wp-kwtsms' ); ?></h1>
+		<h1><?php esc_html_e( 'Logs', 'kwtsms' ); ?></h1>
 	</div>
 	<hr class="wp-header-end">
 
@@ -101,16 +101,16 @@ function kwtsms_attempt_result_label( $result ) {
 	<nav class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( kwtsms_logs_tab_url( 'sms_history' ) ); ?>"
 			class="nav-tab <?php echo 'sms_history' === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'SMS History', 'wp-kwtsms' ); ?>
+			<?php esc_html_e( 'SMS History', 'kwtsms' ); ?>
 		</a>
 		<a href="<?php echo esc_url( kwtsms_logs_tab_url( 'attempt_log' ) ); ?>"
 			class="nav-tab <?php echo 'attempt_log' === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'OTP Attempts', 'wp-kwtsms' ); ?>
+			<?php esc_html_e( 'OTP Attempts', 'kwtsms' ); ?>
 		</a>
 		<?php if ( $show_debug_tab ) : ?>
 		<a href="<?php echo esc_url( kwtsms_logs_tab_url( 'debug_log' ) ); ?>"
 			class="nav-tab <?php echo 'debug_log' === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'Debug Log', 'wp-kwtsms' ); ?>
+			<?php esc_html_e( 'Debug Log', 'kwtsms' ); ?>
 		</a>
 		<?php endif; ?>
 	</nav>
@@ -132,14 +132,14 @@ function kwtsms_attempt_result_label( $result ) {
 		?>
 		"
 			class="button">
-			⬇ <?php esc_html_e( 'Export CSV', 'wp-kwtsms' ); ?>
+			⬇ <?php esc_html_e( 'Export CSV', 'kwtsms' ); ?>
 		</a>
 
 		<span style="color:#888;font-size:13px;">
 			<?php
 			printf(
 				/* translators: %d total entries */
-				esc_html__( '%d entries total', 'wp-kwtsms' ),
+				esc_html__( '%d entries total', 'kwtsms' ),
 				(int) $total_entries
 			);
 			?>
@@ -150,18 +150,18 @@ function kwtsms_attempt_result_label( $result ) {
 	<?php if ( 'sms_history' === $active_tab ) : ?>
 	<!-- ===== SMS History Tab ===== -->
 		<?php if ( empty( $page_entries ) ) : ?>
-	<p><?php esc_html_e( 'No SMS history yet.', 'wp-kwtsms' ); ?></p>
+	<p><?php esc_html_e( 'No SMS history yet.', 'kwtsms' ); ?></p>
 	<?php else : ?>
 	<table class="widefat striped kwtsms-log-table">
 		<thead>
 			<tr>
-				<th><?php esc_html_e( 'Date / Time', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'Sender ID', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'Message', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'Phone', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'Type', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'Status', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'Result', 'wp-kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Date / Time', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Sender ID', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Message', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Phone', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Type', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Status', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Result', 'kwtsms' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -173,7 +173,7 @@ function kwtsms_attempt_result_label( $result ) {
 				<td><?php echo esc_html( $entry['phone'] ?? '' ); ?></td>
 				<td><?php echo esc_html( $entry['type'] ?? '' ); ?></td>
 				<td style="color:<?php echo 'sent' === ( $entry['status'] ?? '' ) ? '#46b450' : '#dc3232'; ?>;">
-					<?php echo 'sent' === ( $entry['status'] ?? '' ) ? esc_html__( 'Sent', 'wp-kwtsms' ) : esc_html__( 'Failed', 'wp-kwtsms' ); ?>
+					<?php echo 'sent' === ( $entry['status'] ?? '' ) ? esc_html__( 'Sent', 'kwtsms' ) : esc_html__( 'Failed', 'kwtsms' ); ?>
 				</td>
 				<td>
 					<?php
@@ -183,11 +183,11 @@ function kwtsms_attempt_result_label( $result ) {
 						$gr_code = $gr['code'] ?? '';
 						$gr_msg  = $gr['message'] ?? '';
 						if ( $gr_ok ) {
-							$gr_label = esc_html__( 'OK', 'wp-kwtsms' );
+							$gr_label = esc_html__( 'OK', 'kwtsms' );
 							$gr_color = '#46b450';
 						} else {
 							$parts    = array_filter( array( $gr_code, $gr_msg ) );
-							$gr_label = $parts ? esc_html( implode( ': ', $parts ) ) : esc_html__( 'Error', 'wp-kwtsms' );
+							$gr_label = $parts ? esc_html( implode( ': ', $parts ) ) : esc_html__( 'Error', 'kwtsms' );
 							$gr_color = '#dc3232';
 						}
 						printf( '<span style="color:%s;">%s</span>', esc_attr( $gr_color ), $gr_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -203,17 +203,17 @@ function kwtsms_attempt_result_label( $result ) {
 	<?php elseif ( 'attempt_log' === $active_tab ) : ?>
 	<!-- ===== OTP Attempts Tab ===== -->
 		<?php if ( empty( $page_entries ) ) : ?>
-	<p><?php esc_html_e( 'No OTP attempts logged yet.', 'wp-kwtsms' ); ?></p>
+	<p><?php esc_html_e( 'No OTP attempts logged yet.', 'kwtsms' ); ?></p>
 	<?php else : ?>
 	<table class="widefat striped kwtsms-log-table">
 		<thead>
 			<tr>
-				<th><?php esc_html_e( 'Date / Time', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'User', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'Phone', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'IP Address', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'Action', 'wp-kwtsms' ); ?></th>
-				<th><?php esc_html_e( 'Result', 'wp-kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Date / Time', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'User', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Phone', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'IP Address', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Action', 'kwtsms' ); ?></th>
+				<th><?php esc_html_e( 'Result', 'kwtsms' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -270,14 +270,14 @@ function kwtsms_attempt_result_label( $result ) {
 		?>
 		"
 			class="button">
-			&#11015; <?php esc_html_e( 'Download', 'wp-kwtsms' ); ?>
+			&#11015; <?php esc_html_e( 'Download', 'kwtsms' ); ?>
 		</a>
 
 		<span style="color:#888;font-size:13px;">
 			<?php
 			printf(
 				/* translators: %d: number of log lines */
-				esc_html__( '%d lines total', 'wp-kwtsms' ),
+				esc_html__( '%d lines total', 'kwtsms' ),
 				(int) $total_lines
 			);
 			?>
@@ -292,7 +292,7 @@ function kwtsms_attempt_result_label( $result ) {
 	</div>
 
 		<?php if ( empty( $page_lines ) ) : ?>
-	<p><?php esc_html_e( 'The debug log is empty.', 'wp-kwtsms' ); ?></p>
+	<p><?php esc_html_e( 'The debug log is empty.', 'kwtsms' ); ?></p>
 	<?php else : ?>
 	<pre style="background:#1e1e1e;color:#d4d4d4;font-size:12px;line-height:1.6;padding:16px;border-radius:4px;overflow:auto;max-height:600px;white-space:pre-wrap;">
 		<?php

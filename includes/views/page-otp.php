@@ -43,8 +43,8 @@ if ( $custom_logo_id ) {
 // Referral link settings.
 $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 0 ) : false;
 $page_title            = $is_reset
-	? __( 'Verify Your Identity: Password Reset', 'wp-kwtsms' )
-	: __( 'Enter Your Verification Code', 'wp-kwtsms' );
+	? __( 'Verify Your Identity: Password Reset', 'kwtsms' )
+	: __( 'Enter Your Verification Code', 'kwtsms' );
 
 $masked_phone = '';
 if ( ! empty( $token ) ) {
@@ -79,7 +79,7 @@ if ( ! empty( $token ) ) {
 
 	<div class="kwtsms-otp-box">
 		<h2 class="kwtsms-otp-title">
-			<?php echo esc_html( $is_reset ? __( 'Password Reset', 'wp-kwtsms' ) : __( 'Two-Step Verification', 'wp-kwtsms' ) ); ?>
+			<?php echo esc_html( $is_reset ? __( 'Password Reset', 'kwtsms' ) : __( 'Two-Step Verification', 'kwtsms' ) ); ?>
 		</h2>
 
 		<?php if ( ! empty( $masked_phone ) ) : ?>
@@ -87,7 +87,7 @@ if ( ! empty( $token ) ) {
 			<?php
 			printf(
 				/* translators: %s: partially masked phone number */
-				esc_html__( 'We sent a %1$d-digit code to %2$s', 'wp-kwtsms' ),
+				esc_html__( 'We sent a %1$d-digit code to %2$s', 'kwtsms' ),
 				(int) $otp_length,
 				'<strong>' . esc_html( $masked_phone ) . '</strong>'
 			);
@@ -98,7 +98,7 @@ if ( ! empty( $token ) ) {
 			<?php
 			printf(
 				/* translators: %d: number of digits */
-				esc_html__( 'Enter the %d-digit code sent to your phone.', 'wp-kwtsms' ),
+				esc_html__( 'Enter the %d-digit code sent to your phone.', 'kwtsms' ),
 				(int) $otp_length
 			);
 			?>
@@ -131,7 +131,7 @@ if ( ! empty( $token ) ) {
 
 			<div class="kwtsms-code-group">
 				<label for="kwtsms_code" class="screen-reader-text">
-					<?php esc_html_e( 'Verification code', 'wp-kwtsms' ); ?>
+					<?php esc_html_e( 'Verification code', 'kwtsms' ); ?>
 				</label>
 				<input
 					type="text"
@@ -152,12 +152,12 @@ if ( ! empty( $token ) ) {
 			<div class="kwtsms-trust-device">
 				<label>
 					<input type="checkbox" name="kwtsms_trust_device" value="1" />
-					<?php esc_html_e( 'Trust this device for 30 days', 'wp-kwtsms' ); ?>
+					<?php esc_html_e( 'Trust this device for 30 days', 'kwtsms' ); ?>
 				</label>
 			</div>
 		<?php endif; ?>
 
-		<input type="submit" name="kwtsms_verify" class="button button-primary button-large kwtsms-btn" value="<?php esc_attr_e( 'Verify Code', 'wp-kwtsms' ); ?>" />
+		<input type="submit" name="kwtsms_verify" class="button button-primary button-large kwtsms-btn" value="<?php esc_attr_e( 'Verify Code', 'kwtsms' ); ?>" />
 		</form>
 
 		<div class="kwtsms-resend-wrap">
@@ -175,7 +175,7 @@ if ( ! empty( $token ) ) {
 				<?php
 				printf(
 					/* translators: %d: seconds until resend is allowed */
-					esc_html__( 'Resend code (%d)', 'wp-kwtsms' ),
+					esc_html__( 'Resend code (%d)', 'kwtsms' ),
 					(int) $cooldown
 				);
 				?>
@@ -185,7 +185,7 @@ if ( ! empty( $token ) ) {
 
 		<p class="kwtsms-back-link">
 			<a href="<?php echo esc_url( $login_url ); ?>">
-				← <?php esc_html_e( 'Back to login', 'wp-kwtsms' ); ?>
+				← <?php esc_html_e( 'Back to login', 'kwtsms' ); ?>
 			</a>
 		</p>
 	</div>
@@ -199,7 +199,7 @@ if ( $referral_link_enabled ) :
 	?>
 <p class="kwtsms-powered-by" style="text-align:center;font-size:11px;color:#888;margin-top:16px;">
 	<a href="<?php echo esc_url( $ref_url ); ?>" target="_blank" rel="noopener">
-		<?php esc_html_e( 'SMS service by kwtSMS.com', 'wp-kwtsms' ); ?>
+		<?php esc_html_e( 'SMS service by kwtSMS.com', 'kwtsms' ); ?>
 	</a>
 </p>
 <?php endif; ?>

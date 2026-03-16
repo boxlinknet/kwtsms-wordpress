@@ -218,7 +218,7 @@ class KwtSMS_Woo_Stock {
 		$nonce      = sanitize_key( wp_unslash( $_POST['nonce'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( ! wp_verify_nonce( $nonce, 'kwtsms_bis_' . $product_id ) ) {
-			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -233,7 +233,7 @@ class KwtSMS_Woo_Stock {
 
 		$product = wc_get_product( $product_id );
 		if ( ! $product || 'outofstock' !== $product->get_stock_status() ) {
-			wp_send_json_error( array( 'message' => __( 'Product not available for notification.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Product not available for notification.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -247,7 +247,7 @@ class KwtSMS_Woo_Stock {
 			update_post_meta( $product_id, 'kwtsms_back_in_stock_subscribers', wp_json_encode( $existing ) );
 		}
 
-		wp_send_json_success( array( 'message' => __( 'You will be notified when this product is back in stock.', 'wp-kwtsms' ) ) );
+		wp_send_json_success( array( 'message' => __( 'You will be notified when this product is back in stock.', 'kwtsms' ) ) );
 	}
 
 	/**
@@ -267,41 +267,55 @@ class KwtSMS_Woo_Stock {
 		?>
 		<div id="kwtsms-bis-form" style="margin:16px 0;padding:12px;border:1px solid #ddd;border-radius:4px;">
 			<p style="margin:0 0 8px;font-weight:600;">
-				<?php esc_html_e( 'Notify me when back in stock', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Notify me when back in stock', 'kwtsms' ); ?>
 			</p>
 			<input type="tel"
 				id="kwtsms-bis-phone"
-				placeholder="<?php esc_attr_e( 'Phone number', 'wp-kwtsms' ); ?>"
+				placeholder="<?php esc_attr_e( 'Phone number', 'kwtsms' ); ?>"
 				style="width:100%;padding:8px;margin-bottom:8px;box-sizing:border-box;" />
 			<button type="button" id="kwtsms-bis-submit"
 				style="background:#FFA200;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">
-				<?php esc_html_e( 'Notify Me', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Notify Me', 'kwtsms' ); ?>
 			</button>
 			<span id="kwtsms-bis-msg" style="display:none;margin-left:8px;font-size:13px;"></span>
 		</div>
-		<script>
-		(function() {
-			var btn = document.getElementById('kwtsms-bis-submit');
-			var msg = document.getElementById('kwtsms-bis-msg');
-			var ph  = document.getElementById('kwtsms-bis-phone');
-			if ( ! btn ) { return; }
-			btn.addEventListener('click', function() {
-				var data = new FormData();
-				data.append('action',     'kwtsms_back_in_stock_subscribe');
-				data.append('product_id', '<?php echo esc_js( (string) $product_id ); ?>');
-				data.append('phone',      ph.value);
-				data.append('nonce',      '<?php echo esc_js( $nonce ); ?>');
-				fetch('<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>', {
-					method: 'POST',
-					body: data,
-				}).then( function( r ) { return r.json(); } ).then( function( res ) {
-					msg.style.display = 'inline';
-					msg.style.color   = res.success ? '#46b450' : '#dc3232';
-					msg.textContent   = res.data.message;
-				} );
-			} );
-		})();
-		</script>
+		<?php
+		wp_register_script( 'kwtsms-bis', '', array(), KWTSMS_OTP_VERSION, true );
+		wp_enqueue_script( 'kwtsms-bis' );
+		wp_localize_script(
+			'kwtsms-bis',
+			'kwtSmsBisData',
+			array(
+				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+				'productId' => (string) $product_id,
+				'nonce'     => $nonce,
+			)
+		);
+		wp_add_inline_script(
+			'kwtsms-bis',
+			'(function(){' .
+			'var btn=document.getElementById("kwtsms-bis-submit");' .
+			'var msg=document.getElementById("kwtsms-bis-msg");' .
+			'var ph=document.getElementById("kwtsms-bis-phone");' .
+			'if(!btn){return;}' .
+			'var d=kwtSmsBisData;' .
+			'btn.addEventListener("click",function(){' .
+				'var data=new FormData();' .
+				'data.append("action","kwtsms_back_in_stock_subscribe");' .
+				'data.append("product_id",d.productId);' .
+				'data.append("phone",ph.value);' .
+				'data.append("nonce",d.nonce);' .
+				'fetch(d.ajaxUrl,{method:"POST",body:data})' .
+				'.then(function(r){return r.json();})' .
+				'.then(function(res){' .
+					'msg.style.display="inline";' .
+					'msg.style.color=res.success?"#46b450":"#dc3232";' .
+					'msg.textContent=res.data.message;' .
+				'});' .
+			'});' .
+			'})();'
+		);
+		?>
 		<?php
 	}
 

@@ -10,7 +10,7 @@
  * Author URI:        https://www.kwtsms.com
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       wp-kwtsms
+ * Text Domain:       kwtsms
  * Domain Path:       /languages
  *
  * @package KwtSMS_OTP
@@ -115,7 +115,7 @@ if ( file_exists( KWTSMS_OTP_DIR . 'vendor/yahnis-elsts/plugin-update-checker/pl
 	$kwtsms_update_checker = YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
 		'https://github.com/boxlinknet/kwtsms-wordpress/',
 		KWTSMS_OTP_FILE,
-		'wp-kwtsms'
+		'kwtsms'
 	);
 	$kwtsms_update_checker->setBranch( 'main' );
 	$kwtsms_update_checker->getVcsApi()->enableReleaseAssets();

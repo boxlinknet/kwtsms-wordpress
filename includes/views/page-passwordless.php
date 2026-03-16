@@ -47,7 +47,7 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title><?php echo esc_html( __( 'Login with SMS — ', 'wp-kwtsms' ) . $site_name ); ?></title>
+	<title><?php echo esc_html( __( 'Login with SMS — ', 'kwtsms' ) . $site_name ); ?></title>
 	<?php wp_head(); ?>
 </head>
 <body class="login wp-core-ui">
@@ -60,8 +60,8 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 	</h1>
 
 	<div class="kwtsms-otp-box">
-		<h2 class="kwtsms-otp-title"><?php esc_html_e( 'Login with SMS', 'wp-kwtsms' ); ?></h2>
-		<p class="kwtsms-otp-desc"><?php esc_html_e( 'Enter your registered phone number to receive a one-time login code.', 'wp-kwtsms' ); ?></p>
+		<h2 class="kwtsms-otp-title"><?php esc_html_e( 'Login with SMS', 'kwtsms' ); ?></h2>
+		<p class="kwtsms-otp-desc"><?php esc_html_e( 'Enter your registered phone number to receive a one-time login code.', 'kwtsms' ); ?></p>
 
 		<?php if ( ! empty( $error_message ) ) : ?>
 		<div class="kwtsms-otp-error" role="alert"><?php echo esc_html( $error_message ); ?></div>
@@ -75,7 +75,7 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 			<?php wp_nonce_field( 'kwtsms_passwordless_submit', 'kwtsms_passwordless_nonce' ); ?>
 
 			<label class="screen-reader-text">
-				<?php esc_html_e( 'Phone number', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Phone number', 'kwtsms' ); ?>
 			</label>
 
 			<?php
@@ -114,7 +114,7 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 					</button>
 					<div id="kwtsms-dial-dropdown" class="kwtsms-dial-dropdown" role="listbox" hidden>
 						<input type="text" id="kwtsms-dial-search" class="kwtsms-dial-search"
-							placeholder="<?php esc_attr_e( 'Search country...', 'wp-kwtsms' ); ?>"
+							placeholder="<?php esc_attr_e( 'Search country...', 'kwtsms' ); ?>"
 							autocomplete="off" />
 						<ul id="kwtsms-dial-list">
 							<?php foreach ( $allowed_countries as $c ) : ?>
@@ -140,7 +140,7 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 					name="kwtsms_local_phone"
 					id="kwtsms_local_phone"
 					class="input"
-					placeholder="<?php esc_attr_e( 'Local number', 'wp-kwtsms' ); ?>"
+					placeholder="<?php esc_attr_e( 'Local number', 'kwtsms' ); ?>"
 					autocomplete="tel-national"
 					maxlength="15"
 					required
@@ -151,11 +151,11 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 
 			<?php echo $captcha->render_widget(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
-			<input type="submit" class="button button-primary button-large kwtsms-btn" value="<?php esc_attr_e( 'Send OTP Code', 'wp-kwtsms' ); ?>" />
+			<input type="submit" class="button button-primary button-large kwtsms-btn" value="<?php esc_attr_e( 'Send OTP Code', 'kwtsms' ); ?>" />
 		</form>
 
 		<p class="kwtsms-back-link">
-			<a href="<?php echo esc_url( $login_url ); ?>">← <?php esc_html_e( 'Back to login', 'wp-kwtsms' ); ?></a>
+			<a href="<?php echo esc_url( $login_url ); ?>">← <?php esc_html_e( 'Back to login', 'kwtsms' ); ?></a>
 		</p>
 	</div>
 </div>
@@ -166,7 +166,7 @@ if ( $referral_link_enabled ) :
 	?>
 <p class="kwtsms-powered-by" style="text-align:center;font-size:11px;color:#888;margin-top:16px;">
 	<a href="<?php echo esc_url( $ref_url ); ?>" target="_blank" rel="noopener">
-		<?php esc_html_e( 'SMS service by kwtSMS.com', 'wp-kwtsms' ); ?>
+		<?php esc_html_e( 'SMS service by kwtSMS.com', 'kwtsms' ); ?>
 	</a>
 </p>
 <?php endif; ?>

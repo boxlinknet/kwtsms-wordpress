@@ -115,7 +115,7 @@ class KwtSMS_Elementor {
 			}
 		}
 
-		$error_msg = __( 'Please verify your phone number before submitting this form.', 'wp-kwtsms' );
+		$error_msg = __( 'Please verify your phone number before submitting this form.', 'kwtsms' );
 
 		if ( null !== $phone_field_id ) {
 			$handler->add_error( $phone_field_id, $error_msg );
@@ -155,7 +155,7 @@ class KwtSMS_Elementor {
 
 		$form_name = sanitize_text_field( $record->get_form_settings( 'form_name' ) ?? '' );
 
-		$message = $this->render_confirmation_template( $form_name ? $form_name : __( 'Contact Form', 'wp-kwtsms' ) );
+		$message = $this->render_confirmation_template( $form_name ? $form_name : __( 'Contact Form', 'kwtsms' ) );
 		if ( empty( $message ) ) {
 			return; // Template disabled or missing.
 		}

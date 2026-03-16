@@ -164,7 +164,7 @@ class KwtSMS_Woo {
 		if ( ! empty( $admin_phone ) && in_array( $new_status, (array) $notify_statuses, true ) ) {
 			$admin_msg = sprintf(
 				/* translators: 1: order id 2: customer name 3: status 4: total */
-				__( 'New order #%1$s, %2$s, %3$s, %4$s', 'wp-kwtsms' ),
+				__( 'New order #%1$s, %2$s, %3$s, %4$s', 'kwtsms' ),
 				$order->get_id(),
 				$order->get_formatted_billing_full_name(),
 				wc_get_order_status_name( $new_status ),
@@ -267,7 +267,7 @@ class KwtSMS_Woo {
 		?>
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 			<label for="kwtsms_phone_reg">
-				<?php esc_html_e( 'Phone Number (optional)', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Phone Number (optional)', 'kwtsms' ); ?>
 			</label>
 			<input
 				type="tel"
@@ -276,10 +276,10 @@ class KwtSMS_Woo {
 				id="kwtsms_phone_reg"
 				autocomplete="tel"
 				value="<?php echo esc_attr( $phone ); ?>"
-				placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'wp-kwtsms' ); ?>"
+				placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'kwtsms' ); ?>"
 			/>
 			<span class="description" style="font-size:12px;">
-				<?php esc_html_e( 'Enter with country code. Used for SMS order notifications.', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Enter with country code. Used for SMS order notifications.', 'kwtsms' ); ?>
 			</span>
 		</p>
 		<?php
@@ -365,7 +365,7 @@ class KwtSMS_Woo {
 		// Check if OTP has already been verified for this session.
 		$session_key = $this->get_checkout_session_key();
 		if ( $session_key && get_transient( self::CHECKOUT_OTP_PREFIX . $session_key ) ) {
-			echo '<p style="color:#46b450;font-weight:600;">' . esc_html__( 'Phone verified', 'wp-kwtsms' ) . '</p>';
+			echo '<p style="color:#46b450;font-weight:600;">' . esc_html__( 'Phone verified', 'kwtsms' ) . '</p>';
 			echo '<input type="hidden" name="kwtsms_checkout_verified" value="1" />';
 			return;
 		}
@@ -374,8 +374,8 @@ class KwtSMS_Woo {
 		$nonce = wp_create_nonce( 'kwtsms_otp_nonce' );
 		?>
 		<div id="kwtsms-checkout-otp" <?php echo $cod_only ? 'data-cod-only="1" ' : ''; ?>style="margin-bottom:20px;padding:16px;border:1px solid #ddd;border-radius:4px;background:#fff8f0;">
-			<h4 style="margin:0 0 8px;"><?php esc_html_e( 'Phone Verification', 'wp-kwtsms' ); ?></h4>
-			<p style="font-size:14px;margin:0 0 10px;"><?php esc_html_e( 'We will send an OTP to your billing phone to verify your order.', 'wp-kwtsms' ); ?></p>
+			<h4 style="margin:0 0 8px;"><?php esc_html_e( 'Phone Verification', 'kwtsms' ); ?></h4>
+			<p style="font-size:14px;margin:0 0 10px;"><?php esc_html_e( 'We will send an OTP to your billing phone to verify your order.', 'kwtsms' ); ?></p>
 			<input type="hidden" name="kwtsms_checkout_token" value="<?php echo esc_attr( $token ); ?>" />
 			<input type="hidden" name="kwtsms_checkout_nonce" value="<?php echo esc_attr( $nonce ); ?>" />
 			<input
@@ -384,26 +384,31 @@ class KwtSMS_Woo {
 				inputmode="numeric"
 				pattern="[0-9]*"
 				autocomplete="one-time-code"
-				placeholder="<?php esc_attr_e( 'Enter OTP code (leave blank to receive code first)', 'wp-kwtsms' ); ?>"
+				placeholder="<?php esc_attr_e( 'Enter OTP code (leave blank to receive code first)', 'kwtsms' ); ?>"
 				style="width:100%;padding:8px;margin-top:4px;box-sizing:border-box;"
 			/>
 		</div>
-		<?php if ( $cod_only ) : ?>
-		<script>
-		(function() {
-			var wrap = document.getElementById('kwtsms-checkout-otp');
-			if (!wrap) return;
-			function update() {
-				var chosen = document.querySelector('input[name="payment_method"]:checked');
-				wrap.style.display = (chosen && chosen.value === 'cod') ? '' : 'none';
-			}
-			document.addEventListener('change', function(e) {
-				if (e.target && e.target.name === 'payment_method') update();
-			});
-			update();
-		})();
-		</script>
-		<?php endif; ?>
+		<?php
+		if ( $cod_only ) {
+			wp_register_script( 'kwtsms-checkout-cod', '', array(), KWTSMS_OTP_VERSION, true );
+			wp_enqueue_script( 'kwtsms-checkout-cod' );
+			wp_add_inline_script(
+				'kwtsms-checkout-cod',
+				'(function(){' .
+				'var wrap=document.getElementById("kwtsms-checkout-otp");' .
+				'if(!wrap)return;' .
+				'function update(){' .
+					'var chosen=document.querySelector("input[name=\\"payment_method\\"]:checked");' .
+					'wrap.style.display=(chosen&&chosen.value==="cod")?"":"none";' .
+				'}' .
+				'document.addEventListener("change",function(e){' .
+					'if(e.target&&e.target.name==="payment_method")update();' .
+				'});' .
+				'update();' .
+				'})();'
+			);
+		}
+		?>
 		<?php
 	}
 
@@ -435,7 +440,7 @@ class KwtSMS_Woo {
 		// Nonce check.
 		$nonce = sanitize_key( wp_unslash( $_POST['kwtsms_checkout_nonce'] ?? '' ) );
 		if ( ! wp_verify_nonce( $nonce, 'kwtsms_otp_nonce' ) ) {
-			wc_add_notice( __( 'Security check failed. Please refresh and try again.', 'wp-kwtsms' ), 'error' );
+			wc_add_notice( __( 'Security check failed. Please refresh and try again.', 'kwtsms' ), 'error' );
 			return;
 		}
 
@@ -456,11 +461,11 @@ class KwtSMS_Woo {
 		if ( '' === $otp_code ) {
 			// First (or repeated) submit — enforce per-phone and per-IP rate limits.
 			if ( $this->plugin->otp->is_rate_limited( $normalized, 'checkout' ) ) {
-				wc_add_notice( __( 'Too many OTP requests for this phone number. Please wait before trying again.', 'wp-kwtsms' ), 'error' );
+				wc_add_notice( __( 'Too many OTP requests for this phone number. Please wait before trying again.', 'kwtsms' ), 'error' );
 				return;
 			}
 			if ( $this->plugin->otp->is_ip_rate_limited( 'checkout' ) ) {
-				wc_add_notice( __( 'Too many requests from your connection. Please wait before trying again.', 'wp-kwtsms' ), 'error' );
+				wc_add_notice( __( 'Too many requests from your connection. Please wait before trying again.', 'kwtsms' ), 'error' );
 				return;
 			}
 
@@ -486,20 +491,20 @@ class KwtSMS_Woo {
 
 			// Store the phone so we can verify the same number on the second submit.
 			set_transient( $transient_key . '_pending', $normalized, 15 * MINUTE_IN_SECONDS );
-			wc_add_notice( __( 'An OTP has been sent to your phone. Enter it above and place the order again.', 'wp-kwtsms' ), 'error' );
+			wc_add_notice( __( 'An OTP has been sent to your phone. Enter it above and place the order again.', 'kwtsms' ), 'error' );
 			return; // Prevent order creation on first submit.
 		}
 
 		// Second submit — verify OTP.
 		$stored_phone = get_transient( $transient_key . '_pending' );
 		if ( ! $stored_phone || $stored_phone !== $normalized ) {
-			wc_add_notice( __( 'Session expired. Please refresh and try again.', 'wp-kwtsms' ), 'error' );
+			wc_add_notice( __( 'Session expired. Please refresh and try again.', 'kwtsms' ), 'error' );
 			return;
 		}
 
 		$result = $this->plugin->otp->verify( 'checkout_' . $token, $otp_code, 'checkout' );
 		if ( 'valid' !== $result ) {
-			wc_add_notice( __( 'Incorrect or expired OTP. Please try again.', 'wp-kwtsms' ), 'error' );
+			wc_add_notice( __( 'Incorrect or expired OTP. Please try again.', 'kwtsms' ), 'error' );
 			return;
 		}
 

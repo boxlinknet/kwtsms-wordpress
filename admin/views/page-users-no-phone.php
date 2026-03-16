@@ -95,7 +95,7 @@ $role_colors = array(
 
 	<div class="kwtsms-admin-header">
 		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'Users Without Phone', 'wp-kwtsms' ); ?></h1>
+		<h1><?php esc_html_e( 'Users Without Phone', 'kwtsms' ); ?></h1>
 	</div>
 	<hr class="wp-header-end">
 
@@ -104,13 +104,13 @@ $role_colors = array(
 		<span class="kwtsms-unphone-count" id="kwtsms-unphone-count"><?php echo (int) $user_count; ?></span>
 		<?php if ( $user_count > 0 ) : ?>
 			<div class="kwtsms-unphone-summary-text">
-				<strong><?php esc_html_e( 'Users need a phone number', 'wp-kwtsms' ); ?></strong>
-				<span><?php esc_html_e( 'These users are required to verify via OTP but will bypass it until a phone is saved.', 'wp-kwtsms' ); ?></span>
+				<strong><?php esc_html_e( 'Users need a phone number', 'kwtsms' ); ?></strong>
+				<span><?php esc_html_e( 'These users are required to verify via OTP but will bypass it until a phone is saved.', 'kwtsms' ); ?></span>
 			</div>
 		<?php else : ?>
 			<div class="kwtsms-unphone-summary-text">
-				<strong><?php esc_html_e( 'All users covered', 'wp-kwtsms' ); ?></strong>
-				<span><?php esc_html_e( 'Every user in an OTP-required role has a phone number. OTP is enforced for all of them.', 'wp-kwtsms' ); ?></span>
+				<strong><?php esc_html_e( 'All users covered', 'kwtsms' ); ?></strong>
+				<span><?php esc_html_e( 'Every user in an OTP-required role has a phone number. OTP is enforced for all of them.', 'kwtsms' ); ?></span>
 			</div>
 		<?php endif; ?>
 	</div>
@@ -125,17 +125,17 @@ $role_colors = array(
 			}
 			printf(
 				/* translators: 1: comma-separated role names, 2: link to General Settings */
-				esc_html__( 'Filtered to OTP-required roles: %1$s. Change roles in %2$s.', 'wp-kwtsms' ),
+				esc_html__( 'Filtered to OTP-required roles: %1$s. Change roles in %2$s.', 'kwtsms' ),
 				'<strong>' . esc_html( implode( ', ', $role_name_list ) ) . '</strong>',
-				'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ) . '">' . esc_html__( 'General Settings', 'wp-kwtsms' ) . '</a>'
+				'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ) . '">' . esc_html__( 'General Settings', 'kwtsms' ) . '</a>'
 			);
 			?>
 		<?php else : ?>
 			<?php
 			printf(
 				/* translators: %s: link to General Settings */
-				esc_html__( 'No roles configured — showing all users without a phone. %s', 'wp-kwtsms' ),
-				'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ) . '">' . esc_html__( 'Configure OTP roles.', 'wp-kwtsms' ) . '</a>'
+				esc_html__( 'No roles configured — showing all users without a phone. %s', 'kwtsms' ),
+				'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ) . '">' . esc_html__( 'Configure OTP roles.', 'kwtsms' ) . '</a>'
 			);
 			?>
 		<?php endif; ?>
@@ -147,9 +147,9 @@ $role_colors = array(
 		<thead>
 			<tr>
 				<th scope="col" style="width:34px;padding:10px 8px;"></th>
-				<th scope="col" style="width:190px;"><?php esc_html_e( 'User', 'wp-kwtsms' ); ?></th>
-					<th scope="col" style="width:120px;"><?php esc_html_e( 'Role', 'wp-kwtsms' ); ?></th>
-				<th scope="col" style="width:260px;"><?php esc_html_e( 'Phone Number', 'wp-kwtsms' ); ?></th>
+				<th scope="col" style="width:190px;"><?php esc_html_e( 'User', 'kwtsms' ); ?></th>
+					<th scope="col" style="width:120px;"><?php esc_html_e( 'Role', 'kwtsms' ); ?></th>
+				<th scope="col" style="width:260px;"><?php esc_html_e( 'Phone Number', 'kwtsms' ); ?></th>
 				<th scope="col" style="width:80px;"></th>
 			</tr>
 		</thead>
@@ -184,7 +184,7 @@ $role_colors = array(
 						<input
 							type="tel"
 							class="kwtsms-unphone-input"
-							placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'wp-kwtsms' ); ?>"
+							placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'kwtsms' ); ?>"
 							maxlength="15"
 							data-user-id="<?php echo (int) $user->ID; ?>"
 							autocomplete="off"
@@ -195,7 +195,7 @@ $role_colors = array(
 						<button type="button"
 							class="button button-primary kwtsms-unphone-save-btn"
 							data-user-id="<?php echo (int) $user->ID; ?>">
-							<?php esc_html_e( 'Save', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Save', 'kwtsms' ); ?>
 						</button>
 					</td>
 				</tr>
@@ -207,10 +207,10 @@ $role_colors = array(
 
 	<div class="kwtsms-unphone-empty" id="kwtsms-unphone-empty">
 		<div class="kwtsms-unphone-empty-icon">&#10003;</div>
-		<h3><?php esc_html_e( 'All users are covered', 'wp-kwtsms' ); ?></h3>
-		<p><?php esc_html_e( 'Every user in an OTP-required role has a phone number saved. OTP is fully enforced.', 'wp-kwtsms' ); ?></p>
+		<h3><?php esc_html_e( 'All users are covered', 'kwtsms' ); ?></h3>
+		<p><?php esc_html_e( 'Every user in an OTP-required role has a phone number saved. OTP is fully enforced.', 'kwtsms' ); ?></p>
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>" class="button">
-			<?php esc_html_e( 'Back to General Settings', 'wp-kwtsms' ); ?>
+			<?php esc_html_e( 'Back to General Settings', 'kwtsms' ); ?>
 		</a>
 	</div>
 
@@ -218,107 +218,92 @@ $role_colors = array(
 
 </div><!-- /.kwtsms-admin-wrap -->
 
-<script>
-/* global jQuery */
-( function ( $ ) {
-	'use strict';
+<?php
+wp_localize_script(
+	'kwtsms-admin',
+	'kwtSmsUnphoneData',
+	array(
+		'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+		'nonce'          => $nonce,
+		'defaultDial'    => $default_dial,
+		'generalPageUrl' => admin_url( 'admin.php?page=kwtsms-otp' ),
+		'strings'        => array(
+			'saving'       => __( "Saving\u2026", 'kwtsms' ),
+			'couldNotSave' => __( 'Could not save phone.', 'kwtsms' ),
+			'save'         => __( 'Save', 'kwtsms' ),
+			'requestFail'  => __( 'Request failed. Try again.', 'kwtsms' ),
+			'enterPhone'   => __( 'Please enter a phone number.', 'kwtsms' ),
+			'tooShort'     => __( 'Number too short. Include country code, e.g. 96512345678.', 'kwtsms' ),
+		),
+	)
+);
 
-	var ajaxUrl        = <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
-	var nonce          = <?php echo wp_json_encode( $nonce ); ?>;
-	var defaultDial    = <?php echo wp_json_encode( $default_dial ); ?>;
-	var generalPageUrl = <?php echo wp_json_encode( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>;
-
-	function savePhone( userId, phone, $row ) {
-		var $btn = $row.find( '.kwtsms-unphone-save-btn' );
-		var $msg = $row.find( '.kwtsms-unphone-msg' );
-		var $inp = $row.find( '.kwtsms-unphone-input' );
-
-		$btn.prop( 'disabled', true ).text( <?php echo wp_json_encode( __( 'Saving\u2026', 'wp-kwtsms' ) ); ?> );
-		$msg.text( '' ).removeClass( 'is-error is-ok' );
-		$inp.prop( 'disabled', true );
-
-		$.post( ajaxUrl, {
-			action:  'kwtsms_save_user_phone',
-			nonce:   nonce,
-			user_id: userId,
-			phone:   phone,
-		} )
-		.done( function ( res ) {
-			if ( res.success ) {
-				$row.addClass( 'kwtsms-row-saved' );
-				setTimeout( function () {
-					$row.addClass( 'kwtsms-row-removing' );
-					setTimeout( function () {
-						$row.remove();
-						var remaining = $( '#kwtsms-unphone-tbody tr' ).length;
-						$( '#kwtsms-unphone-count' ).text( remaining );
-						if ( remaining === 0 ) {
-							// All phones saved — redirect to General Settings (not reload:
-							// the page becomes inaccessible once the menu count drops to 0).
-							window.location.href = generalPageUrl;
-						}
-					}, 400 );
-				}, 700 );
-			} else {
-				var errMsg = ( res.data && res.data.message ) ? res.data.message : <?php echo wp_json_encode( __( 'Could not save phone.', 'wp-kwtsms' ) ); ?>;
-				$msg.text( errMsg ).addClass( 'is-error' );
-				$btn.prop( 'disabled', false ).text( <?php echo wp_json_encode( __( 'Save', 'wp-kwtsms' ) ); ?> );
-				$inp.prop( 'disabled', false );
-			}
-		} )
-		.fail( function () {
-			$msg.text( <?php echo wp_json_encode( __( 'Request failed. Try again.', 'wp-kwtsms' ) ); ?> ).addClass( 'is-error' );
-			$btn.prop( 'disabled', false ).text( <?php echo wp_json_encode( __( 'Save', 'wp-kwtsms' ) ); ?> );
-			$inp.prop( 'disabled', false );
-		} );
-	}
-
-	// Digits-only filter: strip any non-digit character as the user types.
-	$( document ).on( 'input', '.kwtsms-unphone-input', function () {
-		var raw     = $( this ).val();
-		var cleaned = raw.replace( /\D/g, '' );
-		if ( raw !== cleaned ) {
-			$( this ).val( cleaned );
-		}
-	} );
-
-	// Save button click.
-	$( document ).on( 'click', '.kwtsms-unphone-save-btn', function () {
-		var userId = $( this ).data( 'user-id' );
-		var $row   = $( '#kwtsms-urow-' + userId );
-		var $inp   = $row.find( '.kwtsms-unphone-input' );
-		var $msg   = $row.find( '.kwtsms-unphone-msg' );
-		var digits = $inp.val().replace( /\D/g, '' );
-
-		$msg.text( '' ).removeClass( 'is-error is-ok' );
-
-		if ( ! digits ) {
-			$msg.text( <?php echo wp_json_encode( __( 'Please enter a phone number.', 'wp-kwtsms' ) ); ?> ).addClass( 'is-error' );
-			return;
-		}
-
-		// Auto-prepend dial code for short (local) numbers.
-		if ( digits.length <= 8 && digits.length >= 5 ) {
-			digits = defaultDial + digits;
-			$inp.val( digits );
-		}
-
-		// Reject numbers that are too short — must be country code + local number (min 10 digits).
-		if ( digits.length < 10 ) {
-			$msg.text( <?php echo wp_json_encode( __( 'Number too short. Include country code, e.g. 96512345678.', 'wp-kwtsms' ) ); ?> ).addClass( 'is-error' );
-			return;
-		}
-
-		savePhone( userId, digits, $row );
-	} );
-
-	// Enter key in input triggers save.
-	$( document ).on( 'keydown', '.kwtsms-unphone-input', function ( e ) {
-		if ( 13 === e.which ) {
-			var userId = $( this ).data( 'user-id' );
-			$( '#kwtsms-urow-' + userId ).find( '.kwtsms-unphone-save-btn' ).trigger( 'click' );
-		}
-	} );
-
-} )( jQuery );
-</script>
+wp_add_inline_script(
+	'kwtsms-admin',
+	'(function($){' .
+	'"use strict";' .
+	'var d=kwtSmsUnphoneData;' .
+	'function savePhone(userId,phone,$row){' .
+		'var $btn=$row.find(".kwtsms-unphone-save-btn");' .
+		'var $msg=$row.find(".kwtsms-unphone-msg");' .
+		'var $inp=$row.find(".kwtsms-unphone-input");' .
+		'$btn.prop("disabled",true).text(d.strings.saving);' .
+		'$msg.text("").removeClass("is-error is-ok");' .
+		'$inp.prop("disabled",true);' .
+		'$.post(d.ajaxUrl,{' .
+			'action:"kwtsms_save_user_phone",' .
+			'nonce:d.nonce,' .
+			'user_id:userId,' .
+			'phone:phone' .
+		'})' .
+		'.done(function(res){' .
+			'if(res.success){' .
+				'$row.addClass("kwtsms-row-saved");' .
+				'setTimeout(function(){' .
+					'$row.addClass("kwtsms-row-removing");' .
+					'setTimeout(function(){' .
+						'$row.remove();' .
+						'var remaining=$("#kwtsms-unphone-tbody tr").length;' .
+						'$("#kwtsms-unphone-count").text(remaining);' .
+						'if(remaining===0){window.location.href=d.generalPageUrl;}' .
+					'},400);' .
+				'},700);' .
+			'}else{' .
+				'var errMsg=(res.data&&res.data.message)?res.data.message:d.strings.couldNotSave;' .
+				'$msg.text(errMsg).addClass("is-error");' .
+				'$btn.prop("disabled",false).text(d.strings.save);' .
+				'$inp.prop("disabled",false);' .
+			'}' .
+		'})' .
+		'.fail(function(){' .
+			'$msg.text(d.strings.requestFail).addClass("is-error");' .
+			'$btn.prop("disabled",false).text(d.strings.save);' .
+			'$inp.prop("disabled",false);' .
+		'});' .
+	'}' .
+	'$(document).on("input",".kwtsms-unphone-input",function(){' .
+		'var raw=$(this).val();' .
+		'var cleaned=raw.replace(/\\D/g,"");' .
+		'if(raw!==cleaned){$(this).val(cleaned);}' .
+	'});' .
+	'$(document).on("click",".kwtsms-unphone-save-btn",function(){' .
+		'var userId=$(this).data("user-id");' .
+		'var $row=$("#kwtsms-urow-"+userId);' .
+		'var $inp=$row.find(".kwtsms-unphone-input");' .
+		'var $msg=$row.find(".kwtsms-unphone-msg");' .
+		'var digits=$inp.val().replace(/\\D/g,"");' .
+		'$msg.text("").removeClass("is-error is-ok");' .
+		'if(!digits){$msg.text(d.strings.enterPhone).addClass("is-error");return;}' .
+		'if(digits.length<=8&&digits.length>=5){digits=d.defaultDial+digits;$inp.val(digits);}' .
+		'if(digits.length<10){$msg.text(d.strings.tooShort).addClass("is-error");return;}' .
+		'savePhone(userId,digits,$row);' .
+	'});' .
+	'$(document).on("keydown",".kwtsms-unphone-input",function(e){' .
+		'if(13===e.which){' .
+			'var userId=$(this).data("user-id");' .
+			'$("#kwtsms-urow-"+userId).find(".kwtsms-unphone-save-btn").trigger("click");' .
+		'}' .
+	'});' .
+	'})(jQuery);'
+);
+?>

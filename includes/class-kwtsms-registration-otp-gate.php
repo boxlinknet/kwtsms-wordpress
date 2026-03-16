@@ -111,10 +111,10 @@ class KwtSMS_Registration_OTP_Gate {
 		}
 
 		$messages = array(
-			'expired'       => __( 'Verification expired. Please register again.', 'wp-kwtsms' ),
-			'security'      => __( 'Security check failed. Please register again.', 'wp-kwtsms' ),
-			'create_failed' => __( 'Account creation failed. Please try again.', 'wp-kwtsms' ),
-			'max_attempts'  => __( 'Too many failed attempts. Please register again.', 'wp-kwtsms' ),
+			'expired'       => __( 'Verification expired. Please register again.', 'kwtsms' ),
+			'security'      => __( 'Security check failed. Please register again.', 'kwtsms' ),
+			'create_failed' => __( 'Account creation failed. Please try again.', 'kwtsms' ),
+			'max_attempts'  => __( 'Too many failed attempts. Please register again.', 'kwtsms' ),
 		);
 
 		if ( isset( $messages[ $error_code ] ) ) {
@@ -156,7 +156,7 @@ class KwtSMS_Registration_OTP_Gate {
 			if ( 'required' === $gate ) {
 				$errors->add(
 					'phone_required',
-					__( 'A phone number is required to register.', 'wp-kwtsms' )
+					__( 'A phone number is required to register.', 'kwtsms' )
 				);
 			}
 			return $errors;
@@ -213,7 +213,7 @@ class KwtSMS_Registration_OTP_Gate {
 			if ( 'required' === $gate ) {
 				$errors->add(
 					'phone_required',
-					__( 'A phone number is required to register.', 'wp-kwtsms' )
+					__( 'A phone number is required to register.', 'kwtsms' )
 				);
 			}
 			return $errors;
@@ -395,7 +395,7 @@ class KwtSMS_Registration_OTP_Gate {
 	private function send_registration_otp( $username, $email, $password, $phone ) {
 		$sms_error = new WP_Error(
 			'sms_send_failed',
-			__( 'Unable to send verification code. Please try again.', 'wp-kwtsms' )
+			__( 'Unable to send verification code. Please try again.', 'kwtsms' )
 		);
 
 		// Normalise phone number.
@@ -521,7 +521,7 @@ class KwtSMS_Registration_OTP_Gate {
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title><?php echo esc_html( __( 'Verify Your Phone Number', 'wp-kwtsms' ) . ' — ' . $site_name ); ?></title>
+	<title><?php echo esc_html( __( 'Verify Your Phone Number', 'kwtsms' ) . ' — ' . $site_name ); ?></title>
 		<?php wp_head(); ?>
 </head>
 <body class="login wp-core-ui">
@@ -534,14 +534,14 @@ class KwtSMS_Registration_OTP_Gate {
 	</h1>
 
 	<div class="kwtsms-otp-box">
-		<h2 class="kwtsms-otp-title"><?php esc_html_e( 'Verify Your Phone Number', 'wp-kwtsms' ); ?></h2>
+		<h2 class="kwtsms-otp-title"><?php esc_html_e( 'Verify Your Phone Number', 'kwtsms' ); ?></h2>
 
 		<?php if ( ! empty( $masked ) ) : ?>
 		<p class="kwtsms-otp-desc">
 			<?php
 			printf(
 				/* translators: 1: number of digits, 2: masked phone number */
-				esc_html__( 'We sent a %1$d-digit code to %2$s', 'wp-kwtsms' ),
+				esc_html__( 'We sent a %1$d-digit code to %2$s', 'kwtsms' ),
 				(int) $otp_length,
 				'<strong>' . esc_html( $masked ) . '</strong>'
 			);
@@ -552,7 +552,7 @@ class KwtSMS_Registration_OTP_Gate {
 			<?php
 			printf(
 				/* translators: %d: number of digits */
-				esc_html__( 'Enter the %d-digit code sent to your phone.', 'wp-kwtsms' ),
+				esc_html__( 'Enter the %d-digit code sent to your phone.', 'kwtsms' ),
 				(int) $otp_length
 			);
 			?>
@@ -570,7 +570,7 @@ class KwtSMS_Registration_OTP_Gate {
 
 			<div class="kwtsms-code-group">
 				<label for="kwtsms_reg_code" class="screen-reader-text">
-					<?php esc_html_e( 'Verification code', 'wp-kwtsms' ); ?>
+					<?php esc_html_e( 'Verification code', 'kwtsms' ); ?>
 				</label>
 				<input
 					type="text"
@@ -588,12 +588,12 @@ class KwtSMS_Registration_OTP_Gate {
 			</div>
 
 			<input type="submit" name="kwtsms_reg_verify" class="button button-primary button-large kwtsms-btn"
-				value="<?php esc_attr_e( 'Verify and Create Account', 'wp-kwtsms' ); ?>" />
+				value="<?php esc_attr_e( 'Verify and Create Account', 'kwtsms' ); ?>" />
 		</form>
 
 		<p class="kwtsms-back-link">
 			<a href="<?php echo esc_url( $login_url ); ?>">
-				<?php esc_html_e( 'Back to login', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Back to login', 'kwtsms' ); ?>
 			</a>
 		</p>
 	</div>

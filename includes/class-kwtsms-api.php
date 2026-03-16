@@ -201,7 +201,7 @@ class KwtSMS_API {
 		if ( isset( $gw['sms_enabled'] ) && empty( $gw['sms_enabled'] ) ) {
 			$err = new WP_Error(
 				'kwtsms_sms_disabled',
-				__( 'SMS sending is disabled. Enable it in kwtSMS > Gateway settings.', 'wp-kwtsms' )
+				__( 'SMS sending is disabled. Enable it in kwtSMS > Gateway settings.', 'kwtsms' )
 			);
 			$this->write_debug_log( 'send()', 'ABORT: SMS sending is disabled (sms_enabled=0)' );
 			return $err;
@@ -211,7 +211,7 @@ class KwtSMS_API {
 		if ( empty( $this->username ) || empty( $this->password ) ) {
 			$err = new WP_Error(
 				'kwtsms_no_credentials',
-				__( 'kwtSMS API credentials are not configured. Go to kwtSMS > Gateway and enter your API username and password.', 'wp-kwtsms' )
+				__( 'kwtSMS API credentials are not configured. Go to kwtSMS > Gateway and enter your API username and password.', 'kwtsms' )
 			);
 			$this->write_debug_log( 'send()', 'ABORT: credentials missing' );
 			return $err;
@@ -224,7 +224,7 @@ class KwtSMS_API {
 		if ( empty( $message ) ) {
 			$err = new WP_Error(
 				'kwtsms_missing_message',
-				__( 'Cannot send SMS: message is empty. Please check your SMS templates in Settings > kwtSMS > Templates.', 'wp-kwtsms' )
+				__( 'Cannot send SMS: message is empty. Please check your SMS templates in Settings > kwtSMS > Templates.', 'kwtsms' )
 			);
 			$this->write_debug_log( 'send()', 'ABORT: message empty' );
 			foreach ( $phones as $p ) {
@@ -252,7 +252,7 @@ class KwtSMS_API {
 		if ( empty( $sender_id ) ) {
 			$err = new WP_Error(
 				'kwtsms_missing_sender_id',
-				__( 'Cannot send SMS: no Sender ID configured. Go to kwtSMS > Gateway, save your API credentials, then choose a Sender ID from the dropdown. Click Save Settings.', 'wp-kwtsms' )
+				__( 'Cannot send SMS: no Sender ID configured. Go to kwtSMS > Gateway, save your API credentials, then choose a Sender ID from the dropdown. Click Save Settings.', 'kwtsms' )
 			);
 			$this->write_debug_log( 'send()', 'ABORT: sender_id empty' );
 			foreach ( $phones as $p ) {
@@ -283,7 +283,7 @@ class KwtSMS_API {
 			$err = new WP_Error(
 				'kwtsms_message_too_long',
 				/* translators: 1: number of pages, 2: max pages allowed */
-				sprintf( __( 'Message is too long (%1$d SMS pages). Maximum is %2$d pages. Shorten the message or split it into multiple sends.', 'wp-kwtsms' ), $pages, self::MAX_SMS_PAGES )
+				sprintf( __( 'Message is too long (%1$d SMS pages). Maximum is %2$d pages. Shorten the message or split it into multiple sends.', 'kwtsms' ), $pages, self::MAX_SMS_PAGES )
 			);
 			$this->write_debug_log( 'send()', "ABORT: message too long ({$pages} pages, max " . self::MAX_SMS_PAGES . ')' );
 			return $err;
@@ -297,7 +297,7 @@ class KwtSMS_API {
 			if ( empty( $raw_phone ) ) {
 				$err = new WP_Error(
 					'kwtsms_missing_phone',
-					__( 'Cannot send SMS: phone number is missing. Please check user phone in their profile.', 'wp-kwtsms' )
+					__( 'Cannot send SMS: phone number is missing. Please check user phone in their profile.', 'kwtsms' )
 				);
 				$this->write_debug_log( 'send()', 'SKIP: empty phone in batch' );
 				self::append_send_log( '?', 'failed', $type );
@@ -347,7 +347,7 @@ class KwtSMS_API {
 		if ( empty( $unique_phones ) ) {
 			$err = new WP_Error(
 				'kwtsms_no_valid_phones',
-				__( 'Cannot send SMS: no valid phone numbers provided.', 'wp-kwtsms' )
+				__( 'Cannot send SMS: no valid phone numbers provided.', 'kwtsms' )
 			);
 			$this->write_debug_log( 'send()', 'ABORT: no valid phones after normalization' );
 			if ( $single_mode ) {
@@ -376,7 +376,7 @@ class KwtSMS_API {
 				if ( '' === $phone_iso2 || ! in_array( $phone_iso2, $allowed_countries, true ) ) {
 					$country_err = new WP_Error(
 						'country_not_allowed',
-						__( 'SMS to this country is not enabled.', 'wp-kwtsms' )
+						__( 'SMS to this country is not enabled.', 'kwtsms' )
 					);
 					$this->write_debug_log(
 						'send()',
@@ -402,7 +402,7 @@ class KwtSMS_API {
 			if ( empty( $unique_phones ) ) {
 				$err = new WP_Error(
 					'country_not_allowed',
-					__( 'SMS to this country is not enabled.', 'wp-kwtsms' )
+					__( 'SMS to this country is not enabled.', 'kwtsms' )
 				);
 				if ( $single_mode ) {
 					return $err;
@@ -670,7 +670,7 @@ class KwtSMS_API {
 
 		return new WP_Error(
 			'no_balance',
-			__( 'Insufficient SMS credits. Recharge at kwtsms.com and try again.', 'wp-kwtsms' )
+			__( 'Insufficient SMS credits. Recharge at kwtsms.com and try again.', 'kwtsms' )
 		);
 	}
 
@@ -1439,7 +1439,7 @@ class KwtSMS_API {
 				'invalid_phone_length',
 				sprintf(
 					/* translators: 1: country name, 2: expected digit count(s), 3: dial code, 4: actual digit count */
-					__( 'Invalid %1$s number: expected %2$s local digits after +%3$s, got %4$d.', 'wp-kwtsms' ),
+					__( 'Invalid %1$s number: expected %2$s local digits after +%3$s, got %4$d.', 'kwtsms' ),
 					$country_name,
 					$expected,
 					$cc,
@@ -1462,7 +1462,7 @@ class KwtSMS_API {
 					'invalid_phone_prefix',
 					sprintf(
 						/* translators: 1: country name, 2: dial code, 3: comma-separated list of valid starting digits */
-						__( 'Invalid %1$s mobile number: local part after +%2$s must start with %3$s.', 'wp-kwtsms' ),
+						__( 'Invalid %1$s mobile number: local part after +%2$s must start with %3$s.', 'kwtsms' ),
 						$country_name,
 						$cc,
 						implode( ', ', $rule['mobile_start'] )
@@ -1513,7 +1513,7 @@ class KwtSMS_API {
 				'invalid_phone',
 				sprintf(
 					/* translators: %s: the entered phone number */
-					__( 'Please enter a valid phone number with country code (e.g. 96598765432). Got: %s', 'wp-kwtsms' ),
+					__( 'Please enter a valid phone number with country code (e.g. 96598765432). Got: %s', 'kwtsms' ),
 					esc_html( $phone )
 				)
 			);
@@ -1641,39 +1641,39 @@ class KwtSMS_API {
 	 */
 	public static function map_error_code( $code ) {
 		$messages = array(
-			'ERR001' => __( 'SMS service is temporarily unavailable. Please try again later.', 'wp-kwtsms' ),
-			'ERR002' => __( 'Gateway configuration error. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR003' => __( 'Gateway authentication failed. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR004' => __( 'SMS gateway is not enabled on this account. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR005' => __( 'SMS gateway account is suspended. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR006' => __( 'Phone number is not valid for SMS delivery.', 'wp-kwtsms' ),
-			'ERR007' => __( 'Too many recipients. Please try again.', 'wp-kwtsms' ),
-			'ERR008' => __( 'The configured sender ID is not allowed. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR009' => __( 'SMS template is empty. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR010' => __( 'Insufficient SMS credits. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR011' => __( 'Insufficient SMS credits. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR012' => __( 'Message is too long. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR013' => __( 'SMS queue is full. Please try again in a few minutes.', 'wp-kwtsms' ),
-			'ERR019' => __( 'Delivery report not found.', 'wp-kwtsms' ),
-			'ERR020' => __( 'Message not found.', 'wp-kwtsms' ),
-			'ERR021' => __( 'Delivery report is not available for this message.', 'wp-kwtsms' ),
-			'ERR022' => __( 'Delivery reports are not ready yet. Please check back in 24 hours.', 'wp-kwtsms' ),
-			'ERR023' => __( 'Could not retrieve delivery report.', 'wp-kwtsms' ),
-			'ERR024' => __( 'Your request was blocked by a security policy. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR025' => __( 'Phone number is not valid. Please enter a valid mobile number with country code.', 'wp-kwtsms' ),
-			'ERR026' => __( 'No SMS coverage for this destination. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR027' => __( 'Message contains unsupported characters. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR028' => __( 'Please wait at least 15 seconds before requesting another code to the same number.', 'wp-kwtsms' ),
-			'ERR029' => __( 'Message not found or message ID is incorrect.', 'wp-kwtsms' ),
-			'ERR030' => __( 'Message is stuck in queue. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR031' => __( 'Message was rejected due to policy violations. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR032' => __( 'Message was rejected as spam. Please contact the site administrator.', 'wp-kwtsms' ),
-			'ERR033' => __( 'No SMS coverage configured. Please contact the site administrator.', 'wp-kwtsms' ),
+			'ERR001' => __( 'SMS service is temporarily unavailable. Please try again later.', 'kwtsms' ),
+			'ERR002' => __( 'Gateway configuration error. Please contact the site administrator.', 'kwtsms' ),
+			'ERR003' => __( 'Gateway authentication failed. Please contact the site administrator.', 'kwtsms' ),
+			'ERR004' => __( 'SMS gateway is not enabled on this account. Please contact the site administrator.', 'kwtsms' ),
+			'ERR005' => __( 'SMS gateway account is suspended. Please contact the site administrator.', 'kwtsms' ),
+			'ERR006' => __( 'Phone number is not valid for SMS delivery.', 'kwtsms' ),
+			'ERR007' => __( 'Too many recipients. Please try again.', 'kwtsms' ),
+			'ERR008' => __( 'The configured sender ID is not allowed. Please contact the site administrator.', 'kwtsms' ),
+			'ERR009' => __( 'SMS template is empty. Please contact the site administrator.', 'kwtsms' ),
+			'ERR010' => __( 'Insufficient SMS credits. Please contact the site administrator.', 'kwtsms' ),
+			'ERR011' => __( 'Insufficient SMS credits. Please contact the site administrator.', 'kwtsms' ),
+			'ERR012' => __( 'Message is too long. Please contact the site administrator.', 'kwtsms' ),
+			'ERR013' => __( 'SMS queue is full. Please try again in a few minutes.', 'kwtsms' ),
+			'ERR019' => __( 'Delivery report not found.', 'kwtsms' ),
+			'ERR020' => __( 'Message not found.', 'kwtsms' ),
+			'ERR021' => __( 'Delivery report is not available for this message.', 'kwtsms' ),
+			'ERR022' => __( 'Delivery reports are not ready yet. Please check back in 24 hours.', 'kwtsms' ),
+			'ERR023' => __( 'Could not retrieve delivery report.', 'kwtsms' ),
+			'ERR024' => __( 'Your request was blocked by a security policy. Please contact the site administrator.', 'kwtsms' ),
+			'ERR025' => __( 'Phone number is not valid. Please enter a valid mobile number with country code.', 'kwtsms' ),
+			'ERR026' => __( 'No SMS coverage for this destination. Please contact the site administrator.', 'kwtsms' ),
+			'ERR027' => __( 'Message contains unsupported characters. Please contact the site administrator.', 'kwtsms' ),
+			'ERR028' => __( 'Please wait at least 15 seconds before requesting another code to the same number.', 'kwtsms' ),
+			'ERR029' => __( 'Message not found or message ID is incorrect.', 'kwtsms' ),
+			'ERR030' => __( 'Message is stuck in queue. Please contact the site administrator.', 'kwtsms' ),
+			'ERR031' => __( 'Message was rejected due to policy violations. Please contact the site administrator.', 'kwtsms' ),
+			'ERR032' => __( 'Message was rejected as spam. Please contact the site administrator.', 'kwtsms' ),
+			'ERR033' => __( 'No SMS coverage configured. Please contact the site administrator.', 'kwtsms' ),
 		);
 
 		return isset( $messages[ $code ] )
 			? $messages[ $code ]
-			: /* translators: %s: internal error code */ sprintf( __( 'An unexpected error occurred (%s). Please try again.', 'wp-kwtsms' ), esc_html( $code ) );
+			: /* translators: %s: internal error code */ sprintf( __( 'An unexpected error occurred (%s). Please try again.', 'kwtsms' ), esc_html( $code ) );
 	}
 
 	// =========================================================================
@@ -1695,7 +1695,7 @@ class KwtSMS_API {
 		if ( empty( $this->username ) || empty( $this->password ) ) {
 			$err = new WP_Error(
 				'kwtsms_no_credentials',
-				__( 'kwtSMS API credentials are not configured. Please go to Settings  kwtSMS  Gateway and enter your API username and password.', 'wp-kwtsms' )
+				__( 'kwtSMS API credentials are not configured. Please go to Settings  kwtSMS  Gateway and enter your API username and password.', 'kwtsms' )
 			);
 			$this->write_debug_log( "request({$endpoint})", 'ABORT: credentials missing (username or password empty)' );
 			return $err;
@@ -1733,7 +1733,7 @@ class KwtSMS_API {
 		if ( is_wp_error( $response ) ) {
 			$err = new WP_Error(
 				'kwtsms_http_error',
-				__( 'Could not connect to the SMS gateway. Please check your internet connection.', 'wp-kwtsms' )
+				__( 'Could not connect to the SMS gateway. Please check your internet connection.', 'kwtsms' )
 			);
 			$this->write_debug_log( "request({$endpoint})", 'HTTP error: ' . $response->get_error_message() );
 			return $err;
@@ -1749,7 +1749,7 @@ class KwtSMS_API {
 		if ( null === $data ) {
 			$err = new WP_Error(
 				'kwtsms_invalid_response',
-				/* translators: %d: HTTP status code */ sprintf( __( 'Unexpected response from SMS gateway (HTTP %d). This may indicate a server-side issue at kwtsms.com.', 'wp-kwtsms' ), (int) $http_code )
+				/* translators: %d: HTTP status code */ sprintf( __( 'Unexpected response from SMS gateway (HTTP %d). This may indicate a server-side issue at kwtsms.com.', 'kwtsms' ), (int) $http_code )
 			);
 			$this->write_debug_log( "request({$endpoint})", "JSON decode failed. Raw: {$raw_body}" );
 			return $err;

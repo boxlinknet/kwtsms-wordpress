@@ -122,19 +122,19 @@ class KwtSMS_Login_OTP {
 		if ( $this->plugin->otp->is_rate_limited( $phone, 'login', $user->ID ) ) {
 			return new WP_Error(
 				'kwtsms_rate_limited',
-				__( 'Too many OTP requests for this number. Please wait a few minutes before trying again.', 'wp-kwtsms' )
+				__( 'Too many OTP requests for this number. Please wait a few minutes before trying again.', 'kwtsms' )
 			);
 		}
 		if ( $this->plugin->otp->is_ip_rate_limited( 'login', $user->ID, $phone ) ) {
 			return new WP_Error(
 				'kwtsms_rate_limited',
-				__( 'Too many OTP requests from this location. Please wait a few minutes before trying again.', 'wp-kwtsms' )
+				__( 'Too many OTP requests from this location. Please wait a few minutes before trying again.', 'kwtsms' )
 			);
 		}
 		if ( $this->plugin->otp->is_user_rate_limited( $user->ID, 'login', $phone ) ) {
 			return new WP_Error(
 				'kwtsms_rate_limited',
-				__( 'Too many OTP requests for this account. Please wait a few minutes before trying again.', 'wp-kwtsms' )
+				__( 'Too many OTP requests for this account. Please wait a few minutes before trying again.', 'kwtsms' )
 			);
 		}
 
@@ -178,7 +178,7 @@ class KwtSMS_Login_OTP {
 					}
 					return new WP_Error(
 						'kwtsms_sms_failed',
-						__( 'Your verification code could not be sent. Please contact the site administrator.', 'wp-kwtsms' )
+						__( 'Your verification code could not be sent. Please contact the site administrator.', 'kwtsms' )
 					);
 				}
 
@@ -282,7 +282,7 @@ class KwtSMS_Login_OTP {
 		printf(
 			'<p style="text-align:center;margin-top:10px;"><a href="%s">%s</a></p>',
 			esc_url( add_query_arg( 'action', 'kwtsms_passwordless', wp_login_url() ) ),
-			esc_html__( 'Login with SMS OTP', 'wp-kwtsms' )
+			esc_html__( 'Login with SMS OTP', 'kwtsms' )
 		);
 	}
 
@@ -304,20 +304,20 @@ class KwtSMS_Login_OTP {
 				'kwtsms_otp_submit'
 			)
 		) {
-			wp_die( esc_html__( 'Security check failed. Please go back and try again.', 'wp-kwtsms' ) );
+			wp_die( esc_html__( 'Security check failed. Please go back and try again.', 'kwtsms' ) );
 		}
 
 		// Retrieve session token from cookie.
 		$token = $this->get_partial_auth_token();
 		if ( empty( $token ) ) {
-			$this->render_otp_page( __( 'Session expired. Please log in again.', 'wp-kwtsms' ) );
+			$this->render_otp_page( __( 'Session expired. Please log in again.', 'kwtsms' ) );
 			exit;
 		}
 
 		$partial = get_transient( 'kwtsms_partial_auth_' . $token );
 		if ( ! $partial ) {
 			$this->clear_partial_auth_cookie();
-			$this->render_otp_page( __( 'Session expired. Please log in again.', 'wp-kwtsms' ) );
+			$this->render_otp_page( __( 'Session expired. Please log in again.', 'kwtsms' ) );
 			exit;
 		}
 
@@ -344,7 +344,7 @@ class KwtSMS_Login_OTP {
 
 		// Empty code — no point calling verify.
 		if ( '' === $submitted ) {
-			$this->render_otp_page( __( 'Please enter your verification code.', 'wp-kwtsms' ), $token );
+			$this->render_otp_page( __( 'Please enter your verification code.', 'kwtsms' ), $token );
 			exit;
 		}
 
@@ -362,7 +362,7 @@ class KwtSMS_Login_OTP {
 				if ( 0 === $remaining ) {
 					// Transient expired between verify() and get_remaining_attempts() — treat as expired.
 					$this->render_otp_page(
-						__( 'Your code has expired. Click "Resend" to get a new one.', 'wp-kwtsms' ),
+						__( 'Your code has expired. Click "Resend" to get a new one.', 'kwtsms' ),
 						$token
 					);
 				} else {
@@ -373,7 +373,7 @@ class KwtSMS_Login_OTP {
 								'Incorrect code. %d attempt remaining.',
 								'Incorrect code. %d attempts remaining.',
 								$remaining,
-								'wp-kwtsms'
+								'kwtsms'
 							),
 							$remaining
 						),
@@ -384,7 +384,7 @@ class KwtSMS_Login_OTP {
 
 			case 'expired':
 				$this->render_otp_page(
-					__( 'Your code has expired. Click "Resend" to get a new one.', 'wp-kwtsms' ),
+					__( 'Your code has expired. Click "Resend" to get a new one.', 'kwtsms' ),
 					$token
 				);
 				exit;
@@ -393,12 +393,12 @@ class KwtSMS_Login_OTP {
 				delete_transient( 'kwtsms_partial_auth_' . $token );
 				$this->clear_partial_auth_cookie();
 				$this->render_otp_page(
-					__( 'Too many incorrect attempts. Please log in again to request a new code.', 'wp-kwtsms' )
+					__( 'Too many incorrect attempts. Please log in again to request a new code.', 'kwtsms' )
 				);
 				exit;
 
 			default:
-				$this->render_otp_page( __( 'Something went wrong. Please try again.', 'wp-kwtsms' ), $token );
+				$this->render_otp_page( __( 'Something went wrong. Please try again.', 'kwtsms' ), $token );
 				exit;
 		}
 	}
@@ -455,7 +455,7 @@ class KwtSMS_Login_OTP {
 				'kwtsms_passwordless_submit'
 			)
 		) {
-			wp_die( esc_html__( 'Security check failed. Please go back and try again.', 'wp-kwtsms' ) );
+			wp_die( esc_html__( 'Security check failed. Please go back and try again.', 'kwtsms' ) );
 		}
 
 		// CAPTCHA verification.
@@ -478,19 +478,19 @@ class KwtSMS_Login_OTP {
 		// Rate-limit checks: per-phone and per-IP (no user_id known yet).
 		if ( $this->plugin->otp->is_rate_limited( $normalized, 'passwordless' ) ) {
 			$this->render_passwordless_page(
-				__( 'Too many requests. Please wait a few minutes before trying again.', 'wp-kwtsms' )
+				__( 'Too many requests. Please wait a few minutes before trying again.', 'kwtsms' )
 			);
 			exit;
 		}
 		if ( $this->plugin->otp->is_ip_rate_limited( 'passwordless', null, $normalized ) ) {
 			$this->render_passwordless_page(
-				__( 'Too many requests from this location. Please wait a few minutes before trying again.', 'wp-kwtsms' )
+				__( 'Too many requests from this location. Please wait a few minutes before trying again.', 'kwtsms' )
 			);
 			exit;
 		}
 
 		// Generic response — prevents phone enumeration.
-		$generic_message = __( 'If an account is associated with this number, an OTP will be sent shortly.', 'wp-kwtsms' );
+		$generic_message = __( 'If an account is associated with this number, an OTP will be sent shortly.', 'kwtsms' );
 
 		// Look up user by kwtsms_phone meta.
 		$users = get_users(
@@ -532,7 +532,7 @@ class KwtSMS_Login_OTP {
 		// Per-account rate-limit check now that user_id is known.
 		if ( $this->plugin->otp->is_user_rate_limited( $user_id, 'passwordless', $normalized ) ) {
 			$this->render_passwordless_page(
-				__( 'Too many requests. Please wait a few minutes before trying again.', 'wp-kwtsms' )
+				__( 'Too many requests. Please wait a few minutes before trying again.', 'kwtsms' )
 			);
 			exit;
 		}
@@ -562,7 +562,7 @@ class KwtSMS_Login_OTP {
 
 				// Gateway not configured — show actionable error on the phone form.
 				if ( in_array( $error_code, array( 'kwtsms_no_credentials', 'kwtsms_missing_sender_id' ), true ) ) {
-					$this->render_passwordless_page( __( 'SMS login is not available. Please contact the site administrator.', 'wp-kwtsms' ) );
+					$this->render_passwordless_page( __( 'SMS login is not available. Please contact the site administrator.', 'kwtsms' ) );
 					exit;
 				}
 
@@ -571,7 +571,7 @@ class KwtSMS_Login_OTP {
 					$this->notify_admin_no_balance();
 					$mode = $this->plugin->settings->get( 'general.balance_failure_mode', 'block' );
 					if ( 'allow' !== $mode ) {
-						$this->render_passwordless_page( __( 'Your verification code could not be sent. Please contact the site administrator.', 'wp-kwtsms' ) );
+						$this->render_passwordless_page( __( 'Your verification code could not be sent. Please contact the site administrator.', 'kwtsms' ) );
 						exit;
 					}
 					// 'allow' mode — fall through and show OTP screen (user will not receive a code
@@ -714,18 +714,18 @@ class KwtSMS_Login_OTP {
 
 		$subject = sprintf(
 			/* translators: %s: site name */
-			__( '[%s] kwtSMS: OTP delivery failed — account balance is zero', 'wp-kwtsms' ),
+			__( '[%s] kwtSMS: OTP delivery failed — account balance is zero', 'kwtsms' ),
 			$site_name
 		);
 
 		$mode             = $this->plugin->settings->get( 'general.balance_failure_mode', 'block' );
 		$mode_description = ( 'allow' === $mode )
-			? __( 'Users are currently allowed to log in without OTP (password only) until credits are restored.', 'wp-kwtsms' )
-			: __( 'Users who require OTP cannot log in until the account is recharged.', 'wp-kwtsms' );
+			? __( 'Users are currently allowed to log in without OTP (password only) until credits are restored.', 'kwtsms' )
+			: __( 'Users who require OTP cannot log in until the account is recharged.', 'kwtsms' );
 
 		$message = sprintf(
 			/* translators: 1: site name, 2: gateway URL, 3: recharge URL, 4: behavior description */
-			__( 'Hello,\n\nkwtSMS on %1$s could not send OTP verification codes because your account has no SMS credits.\n\n%4$s\n\nTo restore OTP, please top up your kwtSMS account:\n%3$s\n\nOnce recharged, OTP will resume automatically. You can also check your current balance on the Gateway settings page:\n%2$s\n\nThis is an automated alert from the kwtSMS WordPress plugin.', 'wp-kwtsms' ),
+			__( 'Hello,\n\nkwtSMS on %1$s could not send OTP verification codes because your account has no SMS credits.\n\n%4$s\n\nTo restore OTP, please top up your kwtSMS account:\n%3$s\n\nOnce recharged, OTP will resume automatically. You can also check your current balance on the Gateway settings page:\n%2$s\n\nThis is an automated alert from the kwtSMS WordPress plugin.', 'kwtsms' ),
 			$site_name,
 			$gateway_url,
 			$recharge_url,

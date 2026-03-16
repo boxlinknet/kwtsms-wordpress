@@ -119,7 +119,7 @@ class KwtSMS_GravityForms {
 				foreach ( $form['fields'] as &$field ) {
 					if ( $this->is_phone_field( $field ) ) {
 						$field->failed_validation  = true;
-						$field->validation_message = __( 'Please verify your phone number before submitting this form.', 'wp-kwtsms' );
+						$field->validation_message = __( 'Please verify your phone number before submitting this form.', 'kwtsms' );
 						break;
 					}
 				}

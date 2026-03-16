@@ -15,31 +15,31 @@ defined( 'ABSPATH' ) || exit;
 $templates = $this->plugin->settings->get_all_templates();
 
 $template_labels = array(
-	'login_otp'   => __( 'Login OTP', 'wp-kwtsms' ),
-	'reset_otp'   => __( 'Password Reset OTP', 'wp-kwtsms' ),
-	'welcome_sms' => __( 'Welcome SMS', 'wp-kwtsms' ),
+	'login_otp'   => __( 'Login OTP', 'kwtsms' ),
+	'reset_otp'   => __( 'Password Reset OTP', 'kwtsms' ),
+	'welcome_sms' => __( 'Welcome SMS', 'kwtsms' ),
 );
 
 $template_descriptions = array(
-	'login_otp'   => __( 'Sent when a user requests a login OTP code.', 'wp-kwtsms' ),
-	'reset_otp'   => __( 'Sent when a user requests a password reset via OTP.', 'wp-kwtsms' ),
-	'welcome_sms' => __( 'Sent after a new user account is created. (Optional)', 'wp-kwtsms' ),
+	'login_otp'   => __( 'Sent when a user requests a login OTP code.', 'kwtsms' ),
+	'reset_otp'   => __( 'Sent when a user requests a password reset via OTP.', 'kwtsms' ),
+	'welcome_sms' => __( 'Sent after a new user account is created. (Optional)', 'kwtsms' ),
 );
 
 $template_placeholders = array(
 	'login_otp'   => array(
-		'{otp}'            => __( 'The generated OTP code', 'wp-kwtsms' ),
-		'{site_name}'      => __( 'Your WordPress site name', 'wp-kwtsms' ),
-		'{expiry_minutes}' => __( 'OTP validity period in minutes', 'wp-kwtsms' ),
+		'{otp}'            => __( 'The generated OTP code', 'kwtsms' ),
+		'{site_name}'      => __( 'Your WordPress site name', 'kwtsms' ),
+		'{expiry_minutes}' => __( 'OTP validity period in minutes', 'kwtsms' ),
 	),
 	'reset_otp'   => array(
-		'{otp}'            => __( 'The generated OTP code', 'wp-kwtsms' ),
-		'{site_name}'      => __( 'Your WordPress site name', 'wp-kwtsms' ),
-		'{expiry_minutes}' => __( 'OTP validity period in minutes', 'wp-kwtsms' ),
+		'{otp}'            => __( 'The generated OTP code', 'kwtsms' ),
+		'{site_name}'      => __( 'Your WordPress site name', 'kwtsms' ),
+		'{expiry_minutes}' => __( 'OTP validity period in minutes', 'kwtsms' ),
 	),
 	'welcome_sms' => array(
-		'{name}'      => __( 'User display name', 'wp-kwtsms' ),
-		'{site_name}' => __( 'Your WordPress site name', 'wp-kwtsms' ),
+		'{name}'      => __( 'User display name', 'kwtsms' ),
+		'{site_name}' => __( 'Your WordPress site name', 'kwtsms' ),
 	),
 );
 
@@ -70,7 +70,7 @@ function kwtsms_templates_tab_url( $tab ) {
 
 	<div class="kwtsms-admin-header">
 		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
-		<h1><?php esc_html_e( 'SMS Templates', 'wp-kwtsms' ); ?></h1>
+		<h1><?php esc_html_e( 'SMS Templates', 'kwtsms' ); ?></h1>
 	</div>
 	<hr class="wp-header-end">
 
@@ -99,7 +99,7 @@ function kwtsms_templates_tab_url( $tab ) {
 		<div class="kwtsms-tab-section"<?php echo $is_active ? ' style="margin-top:16px;"' : ' style="display:none;"'; ?>>
 
 			<div class="kwtsms-placeholder-help">
-				<strong><?php esc_html_e( 'Available placeholders:', 'wp-kwtsms' ); ?></strong>
+				<strong><?php esc_html_e( 'Available placeholders:', 'kwtsms' ); ?></strong>
 				<ul style="margin:6px 0 0 16px;list-style:disc;">
 					<?php foreach ( $template_placeholders[ $key ] as $placeholder => $desc ) : ?>
 					<li>
@@ -118,8 +118,8 @@ function kwtsms_templates_tab_url( $tab ) {
 
 				<div class="kwtsms-lang-tabs">
 					<div class="kwtsms-tab-nav">
-						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms' ); ?></button>
-						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'kwtsms' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'kwtsms' ); ?></button>
 					</div>
 					<div class="kwtsms-tab-pane" data-tab="en">
 						<div class="kwtsms-textarea-wrap">
@@ -132,8 +132,8 @@ function kwtsms_templates_tab_url( $tab ) {
 								data-lang="en"
 							><?php echo esc_textarea( $tpl['en'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="tpl_<?php echo esc_attr( $key ); ?>_en">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
 							</div>
 						</div>
 					</div>
@@ -148,8 +148,8 @@ function kwtsms_templates_tab_url( $tab ) {
 								data-lang="ar"
 							><?php echo esc_textarea( $tpl['ar'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="tpl_<?php echo esc_attr( $key ); ?>_ar">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
 							</div>
 						</div>
 					</div>
@@ -157,13 +157,13 @@ function kwtsms_templates_tab_url( $tab ) {
 				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
 					<button type="button" class="button kwtsms-reset-template"
 						data-key="<?php echo esc_attr( $key ); ?>">
-						&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms' ); ?>
+						&#8635; <?php esc_html_e( 'Reset to Default', 'kwtsms' ); ?>
 					</button>
 				</div>
 			</div>
 		</div>
 		<?php endforeach; ?>
 
-		<?php submit_button( __( 'Save Templates', 'wp-kwtsms' ), 'primary kwtsms-save-btn' ); ?>
+		<?php submit_button( __( 'Save Templates', 'kwtsms' ), 'primary kwtsms-save-btn' ); ?>
 	</form>
 </div>

@@ -147,7 +147,7 @@ class KwtSMS_Plugin {
 			'%s' .
 			'</a></p>',
 			esc_url( $ref_url ),
-			esc_html__( 'SMS by kwtSMS.com', 'wp-kwtsms' )
+			esc_html__( 'SMS by kwtSMS.com', 'kwtsms' )
 		);
 	}
 
@@ -297,7 +297,7 @@ class KwtSMS_Plugin {
 		$raw_phone = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
 		$form_id   = absint( $_POST['form_id'] ?? 0 );
 		if ( empty( $raw_phone ) ) {
-			wp_send_json_error( array( 'message' => __( 'Phone number is required.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Phone number is required.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -311,11 +311,11 @@ class KwtSMS_Plugin {
 		// Rate limit: per-phone and per-IP to prevent SMS credit exhaustion.
 		// user_id = 0 because form gate is used by guests (not logged-in users).
 		if ( $this->otp->is_rate_limited( $normalized, 'form_otp', 0 ) ) {
-			wp_send_json_error( array( 'message' => __( 'Too many requests. Please try again later.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Too many requests. Please try again later.', 'kwtsms' ) ) );
 			return;
 		}
 		if ( $this->otp->is_ip_rate_limited( 'form_otp', 0, $normalized ) ) {
-			wp_send_json_error( array( 'message' => __( 'Too many requests. Please try again later.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Too many requests. Please try again later.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -344,7 +344,7 @@ class KwtSMS_Plugin {
 		/* translators: 1: site name, 2: OTP code */
 		$message = sprintf(
 			/* translators: 1: site name, 2: OTP code */
-			__( '%1$s: Your verification code is %2$s. Valid for 15 minutes.', 'wp-kwtsms' ),
+			__( '%1$s: Your verification code is %2$s. Valid for 15 minutes.', 'kwtsms' ),
 			$site_name,
 			$otp_code
 		);
@@ -390,13 +390,13 @@ class KwtSMS_Plugin {
 		$code  = sanitize_text_field( wp_unslash( $_POST['code'] ?? '' ) );
 
 		if ( empty( $token ) || empty( $code ) ) {
-			wp_send_json_error( array( 'message' => __( 'Token and code are required.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Token and code are required.', 'kwtsms' ) ) );
 			return;
 		}
 
 		// Validate token format (must be 32 lowercase hex chars).
 		if ( ! preg_match( '/^[0-9a-f]{32}$/', $token ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid token.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid token.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -404,7 +404,7 @@ class KwtSMS_Plugin {
 		$data          = get_transient( $transient_key );
 
 		if ( ! is_array( $data ) ) {
-			wp_send_json_error( array( 'message' => __( 'Session expired. Please request a new code.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Session expired. Please request a new code.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -412,7 +412,7 @@ class KwtSMS_Plugin {
 		$attempts = (int) ( $data['attempts'] ?? 0 );
 		if ( $attempts >= 5 ) {
 			delete_transient( $transient_key );
-			wp_send_json_error( array( 'message' => __( 'Too many incorrect attempts. Please request a new code.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Too many incorrect attempts. Please request a new code.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -421,7 +421,7 @@ class KwtSMS_Plugin {
 			// Wrong code — increment attempt counter and persist.
 			$data['attempts'] = $attempts + 1;
 			set_transient( $transient_key, $data, 900 );
-			wp_send_json_error( array( 'message' => __( 'Incorrect code. Please try again.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Incorrect code. Please try again.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -429,7 +429,7 @@ class KwtSMS_Plugin {
 		$data['verified'] = true;
 		set_transient( $transient_key, $data, 900 );
 
-		wp_send_json_success( array( 'message' => __( 'Phone number verified successfully.', 'wp-kwtsms' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Phone number verified successfully.', 'kwtsms' ) ) );
 	}
 
 	// =========================================================================
@@ -474,19 +474,19 @@ class KwtSMS_Plugin {
 				'nonce'           => wp_create_nonce( 'kwtsms_form_otp_nonce' ),
 				'defaultDialCode' => KwtSMS_API::get_default_dial_code(),
 				'strings'         => array(
-					'enterPhone'       => __( 'Enter your phone number to verify', 'wp-kwtsms' ),
-					'sendCode'         => __( 'Send Code', 'wp-kwtsms' ),
-					'sending'          => __( 'Sending...', 'wp-kwtsms' ),
-					'enterCode'        => __( 'Enter the code sent to your phone', 'wp-kwtsms' ),
-					'verifyCode'       => __( 'Verify', 'wp-kwtsms' ),
-					'verifying'        => __( 'Verifying...', 'wp-kwtsms' ),
-					'verified'         => __( 'Phone verified!', 'wp-kwtsms' ),
-					'resend'           => __( 'Resend Code', 'wp-kwtsms' ),
-					'close'            => __( 'Cancel', 'wp-kwtsms' ),
-					'phonePlaceholder' => __( 'e.g. 96598765432', 'wp-kwtsms' ),
-					'codePlaceholder'  => __( '6-digit code', 'wp-kwtsms' ),
-					'modalTitle'       => __( 'Phone Verification Required', 'wp-kwtsms' ),
-					'verifiedMsg'      => __( 'Your phone has been verified. Submitting form...', 'wp-kwtsms' ),
+					'enterPhone'       => __( 'Enter your phone number to verify', 'kwtsms' ),
+					'sendCode'         => __( 'Send Code', 'kwtsms' ),
+					'sending'          => __( 'Sending...', 'kwtsms' ),
+					'enterCode'        => __( 'Enter the code sent to your phone', 'kwtsms' ),
+					'verifyCode'       => __( 'Verify', 'kwtsms' ),
+					'verifying'        => __( 'Verifying...', 'kwtsms' ),
+					'verified'         => __( 'Phone verified!', 'kwtsms' ),
+					'resend'           => __( 'Resend Code', 'kwtsms' ),
+					'close'            => __( 'Cancel', 'kwtsms' ),
+					'phonePlaceholder' => __( 'e.g. 96598765432', 'kwtsms' ),
+					'codePlaceholder'  => __( '6-digit code', 'kwtsms' ),
+					'modalTitle'       => __( 'Phone Verification Required', 'kwtsms' ),
+					'verifiedMsg'      => __( 'Your phone has been verified. Submitting form...', 'kwtsms' ),
 				),
 			)
 		);
@@ -504,7 +504,7 @@ class KwtSMS_Plugin {
 		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'kwtsms' ) ), 403 );
 			return;
 		}
 
@@ -512,7 +512,7 @@ class KwtSMS_Plugin {
 		$password = sanitize_text_field( wp_unslash( $_POST['password'] ?? '' ) );
 
 		if ( empty( $username ) || empty( $password ) ) {
-			wp_send_json_error( array( 'message' => __( 'Username and password are required.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Username and password are required.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -652,7 +652,7 @@ class KwtSMS_Plugin {
 		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'kwtsms' ) ), 403 );
 			return;
 		}
 
@@ -661,7 +661,7 @@ class KwtSMS_Plugin {
 		$password = $gw['api_password'] ?? '';
 
 		if ( empty( $username ) || empty( $password ) ) {
-			wp_send_json_error( array( 'message' => __( 'No API credentials saved. Please save your credentials first.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'No API credentials saved. Please save your credentials first.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -719,7 +719,7 @@ class KwtSMS_Plugin {
 		}
 
 		if ( empty( $session_token ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid session.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid session.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -729,13 +729,13 @@ class KwtSMS_Plugin {
 			$template_id   = 'reset_otp';
 			$sms_action    = 'reset';
 			$otp_action    = 'reset';
-			$expired_msg   = __( 'Session expired. Please start the password reset process again.', 'wp-kwtsms' );
+			$expired_msg   = __( 'Session expired. Please start the password reset process again.', 'kwtsms' );
 		} else {
 			$transient_key = 'kwtsms_partial_auth_' . $session_token;
 			$template_id   = 'login_otp';
 			$sms_action    = 'login';
 			$otp_action    = 'login';
-			$expired_msg   = __( 'Session expired. Please log in again.', 'wp-kwtsms' );
+			$expired_msg   = __( 'Session expired. Please log in again.', 'kwtsms' );
 		}
 
 		// Retrieve session to find the user.
@@ -749,7 +749,7 @@ class KwtSMS_Plugin {
 		$phone   = get_user_meta( $user_id, 'kwtsms_phone', true );
 
 		if ( empty( $phone ) ) {
-			wp_send_json_error( array( 'message' => __( 'No phone number on this account.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'No phone number on this account.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -757,7 +757,7 @@ class KwtSMS_Plugin {
 		if ( $this->otp->is_rate_limited( $phone ) ) {
 			wp_send_json_error(
 				array(
-					'message'  => __( 'Too many requests. Please wait before trying again.', 'wp-kwtsms' ),
+					'message'  => __( 'Too many requests. Please wait before trying again.', 'kwtsms' ),
 					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 				)
 			);
@@ -766,7 +766,7 @@ class KwtSMS_Plugin {
 		if ( $this->otp->is_ip_rate_limited( $otp_action, $user_id, $phone ) ) {
 			wp_send_json_error(
 				array(
-					'message'  => __( 'Too many requests from this location. Please wait before trying again.', 'wp-kwtsms' ),
+					'message'  => __( 'Too many requests from this location. Please wait before trying again.', 'kwtsms' ),
 					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 				)
 			);
@@ -775,7 +775,7 @@ class KwtSMS_Plugin {
 		if ( $this->otp->is_user_rate_limited( $user_id, $otp_action, $phone ) ) {
 			wp_send_json_error(
 				array(
-					'message'  => __( 'Too many requests for this account. Please wait before trying again.', 'wp-kwtsms' ),
+					'message'  => __( 'Too many requests for this account. Please wait before trying again.', 'kwtsms' ),
 					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 				)
 			);
@@ -787,7 +787,7 @@ class KwtSMS_Plugin {
 			$this->api->write_debug_log( 'form_otp', 'Blocked phone attempted OTP: ' . $phone );
 			wp_send_json_success(
 				array(
-					'message'  => __( 'A new code has been sent to your phone.', 'wp-kwtsms' ),
+					'message'  => __( 'A new code has been sent to your phone.', 'kwtsms' ),
 					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 				)
 			);
@@ -799,7 +799,7 @@ class KwtSMS_Plugin {
 		if ( $this->otp->is_send_cooldown_active( $user_id, $otp_action ) ) {
 			wp_send_json_error(
 				array(
-					'message'  => __( 'Please wait before requesting another code.', 'wp-kwtsms' ),
+					'message'  => __( 'Please wait before requesting another code.', 'kwtsms' ),
 					'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 				)
 			);
@@ -829,7 +829,7 @@ class KwtSMS_Plugin {
 
 		wp_send_json_success(
 			array(
-				'message'  => __( 'A new code has been sent to your phone.', 'wp-kwtsms' ),
+				'message'  => __( 'A new code has been sent to your phone.', 'kwtsms' ),
 				'cooldown' => $this->settings->get( 'general.resend_cooldown', 60 ),
 			)
 		);
@@ -873,19 +873,19 @@ class KwtSMS_Plugin {
 		$nonce    = wp_create_nonce( 'kwtsms_profile_nonce' );
 		$ajax_url = admin_url( 'admin-ajax.php' );
 		?>
-		<h2><?php esc_html_e( 'Trusted Devices', 'wp-kwtsms' ); ?></h2>
+		<h2><?php esc_html_e( 'Trusted Devices', 'kwtsms' ); ?></h2>
 		<table class="form-table" id="kwtsms-trusted-devices-table" data-user-id="<?php echo esc_attr( (string) $user->ID ); ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>" data-ajax="<?php echo esc_url( $ajax_url ); ?>">
 			<tbody>
 			<?php if ( empty( $devices ) ) : ?>
 				<tr>
 					<td colspan="3">
-						<em><?php esc_html_e( 'No trusted devices.', 'wp-kwtsms' ); ?></em>
+						<em><?php esc_html_e( 'No trusted devices.', 'kwtsms' ); ?></em>
 					</td>
 				</tr>
 			<?php else : ?>
 				<tr>
-					<th><?php esc_html_e( 'Last seen', 'wp-kwtsms' ); ?></th>
-					<th><?php esc_html_e( 'Device', 'wp-kwtsms' ); ?></th>
+					<th><?php esc_html_e( 'Last seen', 'kwtsms' ); ?></th>
+					<th><?php esc_html_e( 'Device', 'kwtsms' ); ?></th>
 					<th></th>
 				</tr>
 				<?php foreach ( $devices as $device ) : ?>
@@ -895,7 +895,7 @@ class KwtSMS_Plugin {
 						echo esc_html(
 							sprintf(
 								/* translators: %s: human-readable time difference */
-								__( '%s ago', 'wp-kwtsms' ),
+								__( '%s ago', 'kwtsms' ),
 								human_time_diff( (int) $device['last_seen'] )
 							)
 						);
@@ -904,7 +904,7 @@ class KwtSMS_Plugin {
 					<td><?php echo esc_html( substr( $device['ua'], 0, 60 ) ); ?></td>
 					<td>
 						<button type="button" class="button button-small kwtsms-revoke-device">
-							<?php esc_html_e( 'Revoke', 'wp-kwtsms' ); ?>
+							<?php esc_html_e( 'Revoke', 'kwtsms' ); ?>
 						</button>
 					</td>
 				</tr>
@@ -915,59 +915,55 @@ class KwtSMS_Plugin {
 		<?php if ( ! empty( $devices ) ) : ?>
 		<p>
 			<a href="#" id="kwtsms-revoke-all-devices">
-				<?php esc_html_e( 'Revoke all trusted devices', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Revoke all trusted devices', 'kwtsms' ); ?>
 			</a>
 		</p>
 		<?php endif; ?>
-		<script>
-		(function () {
-			var table = document.getElementById('kwtsms-trusted-devices-table');
-			if (!table) return;
-			var userId   = table.dataset.userId;
-			var nonce    = table.dataset.nonce;
-			var ajaxUrl  = table.dataset.ajax;
-
-			// Revoke single device.
-			table.addEventListener('click', function (e) {
-				if (!e.target.classList.contains('kwtsms-revoke-device')) return;
-				e.preventDefault();
-				var row  = e.target.closest('.kwtsms-device-row');
-				var hash = row ? row.dataset.hash : '';
-				if (!hash) return;
-				var fd = new FormData();
-				fd.append('action',     'kwtsms_revoke_device');
-				fd.append('nonce',      nonce);
-				fd.append('user_id',    userId);
-				fd.append('token_hash', hash);
-				fetch(ajaxUrl, { method: 'POST', body: fd })
-					.then(function (r) { return r.json(); })
-					.then(function (json) {
-						if (json.success && row) { row.remove(); }
-					});
-			});
-
-			// Revoke all.
-			var revokeAll = document.getElementById('kwtsms-revoke-all-devices');
-			if (revokeAll) {
-				revokeAll.addEventListener('click', function (e) {
-					e.preventDefault();
-					var fd = new FormData();
-					fd.append('action',  'kwtsms_revoke_all_devices');
-					fd.append('nonce',   nonce);
-					fd.append('user_id', userId);
-					fetch(ajaxUrl, { method: 'POST', body: fd })
-						.then(function (r) { return r.json(); })
-						.then(function (json) {
-							if (json.success) {
-								// Remove all device rows and the revoke-all link.
-								table.querySelectorAll('.kwtsms-device-row').forEach(function (r) { r.remove(); });
-								revokeAll.parentElement.remove();
-							}
-						});
-				});
-			}
-		}());
-		</script>
+		<?php
+		wp_add_inline_script(
+			'common',
+			'(function(){' .
+			'var table=document.getElementById("kwtsms-trusted-devices-table");' .
+			'if(!table)return;' .
+			'var userId=table.dataset.userId;' .
+			'var nonce=table.dataset.nonce;' .
+			'var ajaxUrl=table.dataset.ajax;' .
+			'table.addEventListener("click",function(e){' .
+				'if(!e.target.classList.contains("kwtsms-revoke-device"))return;' .
+				'e.preventDefault();' .
+				'var row=e.target.closest(".kwtsms-device-row");' .
+				'var hash=row?row.dataset.hash:"";' .
+				'if(!hash)return;' .
+				'var fd=new FormData();' .
+				'fd.append("action","kwtsms_revoke_device");' .
+				'fd.append("nonce",nonce);' .
+				'fd.append("user_id",userId);' .
+				'fd.append("token_hash",hash);' .
+				'fetch(ajaxUrl,{method:"POST",body:fd})' .
+					'.then(function(r){return r.json();})' .
+					'.then(function(json){if(json.success&&row){row.remove();}});' .
+			'});' .
+			'var revokeAll=document.getElementById("kwtsms-revoke-all-devices");' .
+			'if(revokeAll){' .
+				'revokeAll.addEventListener("click",function(e){' .
+					'e.preventDefault();' .
+					'var fd=new FormData();' .
+					'fd.append("action","kwtsms_revoke_all_devices");' .
+					'fd.append("nonce",nonce);' .
+					'fd.append("user_id",userId);' .
+					'fetch(ajaxUrl,{method:"POST",body:fd})' .
+						'.then(function(r){return r.json();})' .
+						'.then(function(json){' .
+							'if(json.success){' .
+								'table.querySelectorAll(".kwtsms-device-row").forEach(function(r){r.remove();});' .
+								'revokeAll.parentElement.remove();' .
+							'}' .
+						'});' .
+				'});' .
+			'}' .
+			'}());'
+		);
+		?>
 		<?php
 	}
 
@@ -984,13 +980,13 @@ class KwtSMS_Plugin {
 
 		$target_user_id = absint( $_POST['user_id'] ?? 0 );
 		if ( ! current_user_can( 'edit_user', $target_user_id ) ) {
-			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'kwtsms' ) ), 403 );
 			return;
 		}
 
 		$token_hash = sanitize_text_field( wp_unslash( $_POST['token_hash'] ?? '' ) );
 		if ( empty( $token_hash ) || ! preg_match( '/^[0-9a-f]{64}$/', $token_hash ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid token hash.', 'wp-kwtsms' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid token hash.', 'kwtsms' ) ) );
 			return;
 		}
 
@@ -1011,7 +1007,7 @@ class KwtSMS_Plugin {
 
 		$target_user_id = absint( $_POST['user_id'] ?? 0 );
 		if ( ! current_user_can( 'edit_user', $target_user_id ) ) {
-			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'kwtsms' ) ), 403 );
 			return;
 		}
 
@@ -1028,7 +1024,7 @@ class KwtSMS_Plugin {
 		check_ajax_referer( 'kwtsms_admin_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'wp-kwtsms' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'kwtsms' ) ), 403 );
 			return;
 		}
 
@@ -1051,7 +1047,7 @@ class KwtSMS_Plugin {
 		if ( strlen( $normalized ) < 10 ) {
 			wp_send_json_error(
 				array(
-					'message' => __( 'Phone number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits, 11 digits total).', 'wp-kwtsms' ),
+					'message' => __( 'Phone number is too short. Enter the country code followed by the full local number, e.g. 96512345678 (Kuwait: 965 + 8 digits, 11 digits total).', 'kwtsms' ),
 				)
 			);
 			return;

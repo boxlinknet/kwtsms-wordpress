@@ -25,54 +25,54 @@ defined( 'ABSPATH' ) || exit;
 // Per-integration configuration.
 $configs = array(
 	'cf7'       => array(
-		'label'        => __( 'Contact Form 7', 'wp-kwtsms' ),
+		'label'        => __( 'Contact Form 7', 'kwtsms' ),
 		'enabled_key'  => 'cf7_enabled',
 		'mode_key'     => 'cf7_mode',
 		'tpl_key'      => 'cf7_confirmation',
 		'placeholders' => '{site_name}, {form_name}',
-		'tip'          => __( 'Setup tip: add a tel field named kwtsms_phone to your CF7 form:', 'wp-kwtsms' ),
+		'tip'          => __( 'Setup tip: add a tel field named kwtsms_phone to your CF7 form:', 'kwtsms' ),
 		'tip_code'     => '[tel kwtsms_phone placeholder "e.g. 96598765432"]',
 	),
 	'wpforms'   => array(
-		'label'        => __( 'WPForms', 'wp-kwtsms' ),
+		'label'        => __( 'WPForms', 'kwtsms' ),
 		'enabled_key'  => 'wpforms_enabled',
 		'mode_key'     => 'wpforms_mode',
 		'tpl_key'      => 'wpforms_confirmation',
 		'placeholders' => '{site_name}, {form_name}',
-		'tip'          => __( 'WPForms automatically detects Phone fields. Add a Phone field to your form to enable SMS delivery.', 'wp-kwtsms' ),
+		'tip'          => __( 'WPForms automatically detects Phone fields. Add a Phone field to your form to enable SMS delivery.', 'kwtsms' ),
 		'tip_code'     => '',
 	),
 	'elementor' => array(
-		'label'        => __( 'Elementor', 'wp-kwtsms' ),
+		'label'        => __( 'Elementor', 'kwtsms' ),
 		'enabled_key'  => 'elementor_enabled',
 		'mode_key'     => 'elementor_mode',
 		'tpl_key'      => 'elementor_confirmation',
 		'placeholders' => '{site_name}, {form_name}',
-		'tip'          => __( 'Add a Tel/Phone field to your Elementor Pro form. The field will be auto-detected.', 'wp-kwtsms' ),
+		'tip'          => __( 'Add a Tel/Phone field to your Elementor Pro form. The field will be auto-detected.', 'kwtsms' ),
 		'tip_code'     => '',
 	),
 	'gf'        => array(
-		'label'        => __( 'Gravity Forms', 'wp-kwtsms' ),
+		'label'        => __( 'Gravity Forms', 'kwtsms' ),
 		'enabled_key'  => 'gf_enabled',
 		'mode_key'     => 'gf_mode',
 		'tpl_key'      => 'gf_confirmation',
 		'placeholders' => '{form_name}, {phone}',
-		'tip'          => __( 'Add a Phone field (type=phone) to your Gravity Form. kwtSMS will detect it automatically.', 'wp-kwtsms' ),
+		'tip'          => __( 'Add a Phone field (type=phone) to your Gravity Form. kwtSMS will detect it automatically.', 'kwtsms' ),
 		'tip_code'     => '',
 	),
 	'nf'        => array(
-		'label'        => __( 'Ninja Forms', 'wp-kwtsms' ),
+		'label'        => __( 'Ninja Forms', 'kwtsms' ),
 		'enabled_key'  => 'nf_enabled',
 		'mode_key'     => 'nf_mode',
 		'tpl_key'      => 'nf_confirmation',
 		'placeholders' => '{form_name}, {phone}',
-		'tip'          => __( 'Add a Phone field (type=tel) to your Ninja Form. kwtSMS will detect it automatically.', 'wp-kwtsms' ),
+		'tip'          => __( 'Add a Phone field (type=tel) to your Ninja Form. kwtSMS will detect it automatically.', 'kwtsms' ),
 		'tip_code'     => '',
 	),
 );
 
 if ( ! isset( $configs[ $int_key ] ) ) {
-	wp_die( esc_html__( 'Unknown integration.', 'wp-kwtsms' ) );
+	wp_die( esc_html__( 'Unknown integration.', 'kwtsms' ) );
 }
 
 $cfg = $configs[ $int_key ];
@@ -98,7 +98,7 @@ $tpl          = $templates[ $tpl_key ] ?? array(
 );
 
 /* translators: %s: integration label e.g. "WPForms" */
-$page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
+$page_title = sprintf( __( '%s Settings', 'kwtsms' ), $label );
 ?>
 <div class="wrap kwtsms-admin-wrap">
 
@@ -108,7 +108,7 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 		<img src="<?php echo esc_url( KWTSMS_OTP_URL . 'admin/images/kwtsms_logo_60.png' ); ?>" alt="kwtSMS" class="kwtsms-logo" />
 		<h1><?php echo esc_html( $page_title ); ?></h1>
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-integrations' ) ); ?>" class="button" style="margin-left:16px;align-self:center;">
-			&larr; <?php esc_html_e( 'All Integrations', 'wp-kwtsms' ); ?>
+			&larr; <?php esc_html_e( 'All Integrations', 'kwtsms' ); ?>
 		</a>
 	</div>
 	<hr class="wp-header-end">
@@ -125,20 +125,20 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 					<h3>
 					<?php
 					/* translators: %s: integration name (e.g. WooCommerce) */
-					echo esc_html( sprintf( __( '%s Integration', 'wp-kwtsms' ), $label ) );
+					echo esc_html( sprintf( __( '%s Integration', 'kwtsms' ), $label ) );
 					?>
 					</h3>
 				</div>
 				<p class="description">
 					<?php
 					/* translators: %s: integration name (e.g. WooCommerce) */
-					echo esc_html( sprintf( __( 'Send a confirmation SMS after a %s form is submitted successfully.', 'wp-kwtsms' ), $label ) );
+					echo esc_html( sprintf( __( 'Send a confirmation SMS after a %s form is submitted successfully.', 'kwtsms' ), $label ) );
 					?>
 				</p>
 
 				<table class="form-table" style="margin-top:12px;">
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Enable Integration', 'wp-kwtsms' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'Enable Integration', 'kwtsms' ); ?></th>
 						<td>
 							<label class="kwtsms-toggle">
 								<input type="checkbox"
@@ -148,14 +148,14 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 								<span>
 								<?php
 								/* translators: %s: integration name (e.g. WooCommerce) */
-								echo esc_html( sprintf( __( 'Enable %s SMS Integration', 'wp-kwtsms' ), $label ) );
+								echo esc_html( sprintf( __( 'Enable %s SMS Integration', 'kwtsms' ), $label ) );
 								?>
 								</span>
 							</label>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Integration Mode', 'wp-kwtsms' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'Integration Mode', 'kwtsms' ); ?></th>
 						<td>
 							<fieldset>
 								<label style="display:block;margin-bottom:6px;">
@@ -163,21 +163,21 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 										name="kwtsms_otp_integrations[<?php echo esc_attr( $mode_key ); ?>]"
 										value="notification"
 										<?php checked( $current_mode, 'notification' ); ?> />
-									<strong><?php esc_html_e( 'Notification', 'wp-kwtsms' ); ?></strong>:
-									<?php esc_html_e( 'Send a confirmation SMS after form submit.', 'wp-kwtsms' ); ?>
+									<strong><?php esc_html_e( 'Notification', 'kwtsms' ); ?></strong>:
+									<?php esc_html_e( 'Send a confirmation SMS after form submit.', 'kwtsms' ); ?>
 								</label>
 								<label style="display:block;">
 									<input type="radio"
 										name="kwtsms_otp_integrations[<?php echo esc_attr( $mode_key ); ?>]"
 										value="gate"
 										<?php checked( $current_mode, 'gate' ); ?> />
-									<strong><?php esc_html_e( 'OTP Gate', 'wp-kwtsms' ); ?></strong>:
-									<?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'wp-kwtsms' ); ?>
+									<strong><?php esc_html_e( 'OTP Gate', 'kwtsms' ); ?></strong>:
+									<?php esc_html_e( 'Block submission until the phone number is verified via OTP.', 'kwtsms' ); ?>
 								</label>
 							</fieldset>
 							<?php if ( 'gate' === $current_mode ) : ?>
 							<div class="notice notice-info inline" style="margin:8px 0 0;">
-								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'wp-kwtsms' ); ?></p>
+								<p><?php esc_html_e( 'OTP Gate is active. Visitors must verify their phone number before this form submits.', 'kwtsms' ); ?></p>
 							</div>
 							<?php endif; ?>
 						</td>
@@ -201,34 +201,34 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 
 			<div class="kwtsms-template-card">
 				<div class="kwtsms-template-card-header">
-					<h3><?php esc_html_e( 'Form Submission Confirmation', 'wp-kwtsms' ); ?></h3>
+					<h3><?php esc_html_e( 'Form Submission Confirmation', 'kwtsms' ); ?></h3>
 				</div>
-				<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful form submission.', 'wp-kwtsms' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful form submission.', 'kwtsms' ); ?></p>
 
 				<table class="form-table" style="margin-bottom:0;">
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Enable Template', 'wp-kwtsms' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'Enable Template', 'kwtsms' ); ?></th>
 						<td>
 							<label class="kwtsms-toggle">
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[<?php echo esc_attr( $tpl_key ); ?>][enabled]"
 									value="1"
 									<?php checked( ! empty( $tpl['enabled'] ) ); ?> />
-								<span><?php esc_html_e( 'Send confirmation SMS after form submission', 'wp-kwtsms' ); ?></span>
+								<span><?php esc_html_e( 'Send confirmation SMS after form submission', 'kwtsms' ); ?></span>
 							</label>
 						</td>
 					</tr>
 				</table>
 
 				<p class="description" style="margin-top:4px;">
-					<strong><?php esc_html_e( 'Placeholders:', 'wp-kwtsms' ); ?></strong>
+					<strong><?php esc_html_e( 'Placeholders:', 'kwtsms' ); ?></strong>
 					<code><?php echo esc_html( $cfg['placeholders'] ); ?></code>
 				</p>
 
 				<div class="kwtsms-lang-tabs">
 					<div class="kwtsms-tab-nav">
-						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'wp-kwtsms' ); ?></button>
-						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'wp-kwtsms' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn is-active" data-tab="en"><?php esc_html_e( 'English', 'kwtsms' ); ?></button>
+						<button type="button" class="kwtsms-tab-btn" data-tab="ar"><?php esc_html_e( 'Arabic', 'kwtsms' ); ?></button>
 					</div>
 					<div class="kwtsms-tab-pane" data-tab="en">
 						<div class="kwtsms-textarea-wrap">
@@ -241,8 +241,8 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 								data-lang="en"
 							><?php echo esc_textarea( $tpl['en'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $tpl_key ); ?>_en">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
 							</div>
 						</div>
 					</div>
@@ -257,8 +257,8 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 								data-lang="ar"
 							><?php echo esc_textarea( $tpl['ar'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $tpl_key ); ?>_ar">
-								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'wp-kwtsms' ); ?>
-								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'wp-kwtsms' ); ?>
+								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
+								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
 							</div>
 						</div>
 					</div>
@@ -266,14 +266,14 @@ $page_title = sprintf( __( '%s Settings', 'wp-kwtsms' ), $label );
 				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
 					<button type="button" class="button kwtsms-reset-template"
 						data-key="<?php echo esc_attr( $tpl_key ); ?>">
-						&#8635; <?php esc_html_e( 'Reset to Default', 'wp-kwtsms' ); ?>
+						&#8635; <?php esc_html_e( 'Reset to Default', 'kwtsms' ); ?>
 					</button>
 				</div>
 			</div>
 
 		</div><!-- /.kwtsms-tab-section[template] -->
 
-		<?php submit_button( __( 'Save Settings', 'wp-kwtsms' ), 'primary kwtsms-save-btn' ); ?>
+		<?php submit_button( __( 'Save Settings', 'kwtsms' ), 'primary kwtsms-save-btn' ); ?>
 
 	</form>
 

@@ -108,7 +108,7 @@ class KwtSMS_NinjaForms {
 			// Attach the error to the first phone field; NF surfaces it inline.
 			foreach ( $fields as &$field ) {
 				if ( $this->is_phone_field( $field ) ) {
-					$field['errors']['verify'] = __( 'Please verify your phone number before submitting this form.', 'wp-kwtsms' );
+					$field['errors']['verify'] = __( 'Please verify your phone number before submitting this form.', 'kwtsms' );
 					break;
 				}
 			}

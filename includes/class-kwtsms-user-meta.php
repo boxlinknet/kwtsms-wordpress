@@ -81,11 +81,11 @@ class KwtSMS_User_Meta {
 			$selected_dial = $cc_by_iso2[ $default_iso2 ]['dial'];
 		}
 		?>
-		<h3><?php esc_html_e( 'SMS OTP Authentication', 'wp-kwtsms' ); ?></h3>
+		<h3><?php esc_html_e( 'SMS OTP Authentication', 'kwtsms' ); ?></h3>
 		<table class="form-table" role="presentation">
 			<tr>
 				<th>
-					<label for="kwtsms_local_phone"><?php esc_html_e( 'Phone Number (for SMS OTP)', 'wp-kwtsms' ); ?></label>
+					<label for="kwtsms_local_phone"><?php esc_html_e( 'Phone Number (for SMS OTP)', 'kwtsms' ); ?></label>
 				</th>
 				<td>
 					<?php wp_nonce_field( 'kwtsms_save_phone_' . $user->ID, 'kwtsms_phone_nonce' ); ?>
@@ -105,7 +105,7 @@ class KwtSMS_User_Meta {
 							id="kwtsms_local_phone"
 							value="<?php echo esc_attr( $local_number ); ?>"
 							class="regular-text"
-							placeholder="<?php esc_attr_e( 'Local number', 'wp-kwtsms' ); ?>"
+							placeholder="<?php esc_attr_e( 'Local number', 'kwtsms' ); ?>"
 							style="flex:1;"
 						/>
 					</div>
@@ -113,36 +113,39 @@ class KwtSMS_User_Meta {
 					<input type="hidden" name="kwtsms_phone" id="kwtsms_phone_combined" value="<?php echo esc_attr( $phone ); ?>" />
 
 					<p class="description">
-						<?php esc_html_e( 'Enter your phone number with country code. Used to receive OTP codes for login and password reset.', 'wp-kwtsms' ); ?>
+						<?php esc_html_e( 'Enter your phone number with country code. Used to receive OTP codes for login and password reset.', 'kwtsms' ); ?>
 					</p>
 					<?php if ( ! empty( $phone ) ) : ?>
 						<p class="description">
-							<strong><?php esc_html_e( 'Saved:', 'wp-kwtsms' ); ?></strong>
+							<strong><?php esc_html_e( 'Saved:', 'kwtsms' ); ?></strong>
 							<code><?php echo esc_html( $phone ); ?></code>
 						</p>
 					<?php endif; ?>
 
-					<script>
-					(function() {
-						var dialSelect = document.getElementById('kwtsms_dial_code');
-						var localInput = document.getElementById('kwtsms_local_phone');
-						var combined   = document.getElementById('kwtsms_phone_combined');
-						function update() {
-							var dial  = dialSelect.value.replace(/\D/g, '');
-							var local = localInput.value.replace(/^0+/, '').replace(/\D/g, '');
-							// Strip leading dial code if user typed the full international number.
-							if ( dial && local.indexOf( dial ) === 0 ) {
-								local = local.slice( dial.length );
-							}
-							combined.value = local ? (dial + local) : '';
-						}
-						if (dialSelect && localInput && combined) {
-							dialSelect.addEventListener('change', update);
-							localInput.addEventListener('input', update);
-							update(); // initial sync
-						}
-					})();
-					</script>
+					<?php
+					$phone_combiner_js = '(function() {'
+						. ' var dialSelect = document.getElementById("kwtsms_dial_code");'
+						. ' var localInput = document.getElementById("kwtsms_local_phone");'
+						. ' var combined   = document.getElementById("kwtsms_phone_combined");'
+						. ' function update() {'
+						. '  var dial  = dialSelect.value.replace(/\\D/g, "");'
+						. '  var local = localInput.value.replace(/^0+/, "").replace(/\\D/g, "");'
+						. '  if ( dial && local.indexOf( dial ) === 0 ) {'
+						. '   local = local.slice( dial.length );'
+						. '  }'
+						. '  combined.value = local ? (dial + local) : "";'
+						. ' }'
+						. ' if (dialSelect && localInput && combined) {'
+						. '  dialSelect.addEventListener("change", update);'
+						. '  localInput.addEventListener("input", update);'
+						. '  update();'
+						. ' }'
+						. '})();';
+
+					wp_register_script( 'kwtsms-phone-combiner', '', array(), KWTSMS_OTP_VERSION, true );
+					wp_enqueue_script( 'kwtsms-phone-combiner' );
+					wp_add_inline_script( 'kwtsms-phone-combiner', $phone_combiner_js, 'after' );
+					?>
 				</td>
 			</tr>
 		</table>
@@ -237,7 +240,7 @@ class KwtSMS_User_Meta {
 		?>
 		<p>
 			<label for="kwtsms_phone_reg">
-				<?php esc_html_e( 'Phone Number (optional)', 'wp-kwtsms' ); ?><br />
+				<?php esc_html_e( 'Phone Number (optional)', 'kwtsms' ); ?><br />
 				<input
 					type="tel"
 					name="kwtsms_phone_reg"
@@ -250,7 +253,7 @@ class KwtSMS_User_Meta {
 				/>
 			</label>
 			<span class="description">
-				<?php esc_html_e( 'Enter your phone with country code. Used for SMS verification.', 'wp-kwtsms' ); ?>
+				<?php esc_html_e( 'Enter your phone with country code. Used for SMS verification.', 'kwtsms' ); ?>
 			</span>
 		</p>
 		<?php

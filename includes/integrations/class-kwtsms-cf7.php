@@ -106,7 +106,7 @@ class KwtSMS_CF7 {
 			// Attach an invalidation message so CF7 shows a user-facing error.
 			if ( is_a( $submission, 'WPCF7_Submission' ) ) {
 				$submission->set_response(
-					__( 'Please verify your phone number before submitting this form.', 'wp-kwtsms' )
+					__( 'Please verify your phone number before submitting this form.', 'kwtsms' )
 				);
 			}
 
