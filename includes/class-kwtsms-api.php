@@ -149,6 +149,41 @@ class KwtSMS_API {
 	 *
 	 * @return array{msg_id: string, balance_after: float|null}|array{sent: int, failed: int, total: int, batches: array, balance_after: float|null, errors: array}|WP_Error
 	 */
+	/**
+	 * Maximum SMS pages allowed per message (kwtsms API limit).
+	 *
+	 * @var int
+	 */
+	const MAX_SMS_PAGES = 7;
+
+	/**
+	 * Calculate how many SMS pages a message will consume.
+	 *
+	 * Any non-GSM character (Arabic, emoji remnants, Unicode) forces the
+	 * entire message into UCS-2 encoding with shorter page limits.
+	 *
+	 * @param string $message Cleaned message text.
+	 *
+	 * @return int Number of SMS pages.
+	 */
+	public static function count_sms_pages( $message ) {
+		$len = mb_strlen( $message, 'UTF-8' );
+		if ( 0 === $len ) {
+			return 0;
+		}
+
+		// Check if message is pure GSM-7 (ASCII + basic Latin).
+		$is_gsm = 1 === preg_match( '/\A[\x20-\x7E\n\r]*\z/', $message );
+
+		if ( $is_gsm ) {
+			// GSM-7: 160 chars for 1 page, 153 per page for multi-page.
+			return ( $len <= 160 ) ? 1 : (int) ceil( $len / 153 );
+		}
+
+		// UCS-2 (Arabic, Unicode): 70 chars for 1 page, 67 per page for multi-page.
+		return ( $len <= 70 ) ? 1 : (int) ceil( $len / 67 );
+	}
+
 	public function send( $phones, $sender_id, $message, $type = 'login' ) {
 		$single_mode = ! is_array( $phones );
 
@@ -158,6 +193,29 @@ class KwtSMS_API {
 		}
 
 		$this->write_debug_log( 'send()', "type={$type} phones=" . count( $phones ) . " sender={$sender_id}" );
+
+		// ── Global SMS kill switch ───────────────────────────────────────────
+		// Default to enabled (1) when the key doesn't exist yet, so existing
+		// installations are not broken by this upgrade.
+		$gw = get_option( 'kwtsms_otp_gateway', array() );
+		if ( isset( $gw['sms_enabled'] ) && empty( $gw['sms_enabled'] ) ) {
+			$err = new WP_Error(
+				'kwtsms_sms_disabled',
+				__( 'SMS sending is disabled. Enable it in kwtSMS > Gateway settings.', 'wp-kwtsms' )
+			);
+			$this->write_debug_log( 'send()', 'ABORT: SMS sending is disabled (sms_enabled=0)' );
+			return $err;
+		}
+
+		// ── Credentials check (fail fast) ────────────────────────────────────
+		if ( empty( $this->username ) || empty( $this->password ) ) {
+			$err = new WP_Error(
+				'kwtsms_no_credentials',
+				__( 'kwtSMS API credentials are not configured. Go to kwtSMS > Gateway and enter your API username and password.', 'wp-kwtsms' )
+			);
+			$this->write_debug_log( 'send()', 'ABORT: credentials missing' );
+			return $err;
+		}
 
 		// ── Clean message ────────────────────────────────────────────────────
 		$message = self::clean_message( $message );
@@ -217,6 +275,18 @@ class KwtSMS_API {
 				'balance_after' => null,
 				'errors'        => array( $err ),
 			);
+		}
+
+		// ── Message length check (max 7 SMS pages) ──────────────────────────
+		$pages = self::count_sms_pages( $message );
+		if ( $pages > self::MAX_SMS_PAGES ) {
+			$err = new WP_Error(
+				'kwtsms_message_too_long',
+				/* translators: 1: number of pages, 2: max pages allowed */
+				sprintf( __( 'Message is too long (%1$d SMS pages). Maximum is %2$d pages. Shorten the message or split it into multiple sends.', 'wp-kwtsms' ), $pages, self::MAX_SMS_PAGES )
+			);
+			$this->write_debug_log( 'send()', "ABORT: message too long ({$pages} pages, max " . self::MAX_SMS_PAGES . ')' );
+			return $err;
 		}
 
 		// ── Normalize, deduplicate, and validate phones ──────────────────────
@@ -382,6 +452,12 @@ class KwtSMS_API {
 		$balance_after = null;
 
 		foreach ( $chunks as $chunk_index => $chunk ) {
+			// Throttle: 500ms delay between batches to stay under the API rate
+			// limit (max 5 req/s, recommended max 2/s). Skip delay on first batch.
+			if ( $chunk_index > 0 ) {
+				usleep( 500000 );
+			}
+
 			$payload = array(
 				'sender'  => $sender_id,
 				'mobile'  => implode( ',', $chunk ),
@@ -556,13 +632,9 @@ class KwtSMS_API {
 	 * Check whether the account has sufficient balance before sending an SMS.
 	 *
 	 * Logic:
-	 *   1. If no balance is saved yet (null), allow — the balance simply hasn't
-	 *      been fetched. The send will fail at the API level if truly out of credits.
-	 *   2. If saved available > 0, allow immediately without an extra API call.
-	 *   3. If saved available <= 0, make one live API call to double-check.
-	 *      a. If the API is unreachable (WP_Error), allow — better to attempt.
-	 *      b. If live available > 0, update saved balance and allow.
-	 *      c. If live available <= 0, return WP_Error with a user-friendly message.
+	 *   1. If the cached balance is null or stale (>24h), refresh via live API.
+	 *   2. If cached available > 0, allow immediately.
+	 *   3. If cached available <= 0, block with a clear recharge message.
 	 *
 	 * @return true|WP_Error True if sending is allowed; WP_Error if insufficient credits.
 	 */
@@ -592,42 +664,15 @@ class KwtSMS_API {
 			return true;
 		}
 
-		// Saved balance is 0 or negative — double-check via a live API call.
-		// Throttle re-checks to once every minute so a burst of simultaneous
-		// login attempts does not fan out into dozens of /balance/ calls.
-		$recheck_key = 'kwtsms_balance_recheck_blocked';
-		if ( get_transient( $recheck_key ) ) {
-			// A re-check already confirmed zero balance recently — block immediately.
-			return new WP_Error(
-				'no_balance',
-				__( 'Insufficient SMS credits. Please top up your kwtsms account.', 'wp-kwtsms' )
-			);
-		}
-
-		$live = $this->get_balance();
-
-		// API unreachable — allow the attempt (fail gracefully at API level).
-		if ( is_wp_error( $live ) ) {
-			return true;
-		}
-
-		// Persist the refreshed balance.
-		self::update_saved_balance( $live['available'], $live['purchased'] );
-
-		if ( $live['available'] <= 0 ) {
-			// Cache the confirmed-zero result so subsequent attempts within the
-			// next 2 minutes skip the live check entirely.
-			set_transient( $recheck_key, 1, MINUTE_IN_SECONDS );
-			return new WP_Error(
-				'no_balance',
-				__( 'Insufficient SMS credits. Please top up your kwtsms account.', 'wp-kwtsms' )
-			);
-		}
-
-		// Balance is positive — delete any stale "confirmed zero" transient so
-		// future checks don't incorrectly skip sends.
-		delete_transient( $recheck_key );
-		return true;
+		// Zero or negative balance: block with a clear recharge message.
+		// No live API call here. The cached value is kept current by the 24h
+		// stale refresh above and the balance-after update on every send.
+		// If the admin topped up externally, the next stale refresh will pick
+		// it up, or they can force-refresh from the Gateway settings page.
+		return new WP_Error(
+			'no_balance',
+			__( 'Insufficient SMS credits. Recharge at kwtsms.com and try again.', 'wp-kwtsms' )
+		);
 	}
 
 	/**

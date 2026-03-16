@@ -587,6 +587,7 @@ class KwtSMS_Admin {
 		}
 
 		return array(
+			'sms_enabled'          => ! empty( $raw['sms_enabled'] ) ? 1 : 0,
 			'api_username'         => $api_username_raw,
 			'api_password'         => $api_password_raw,
 			'sender_id'            => $sender_id_out,

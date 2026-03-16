@@ -146,6 +146,26 @@ $_api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NONE', 'N/
 		<!-- Dependent sections — hidden until credentials are verified -->
 		<div id="kwtsms-verified-sections"<?php echo $credentials_verified ? '' : ' style="display:none;"'; ?>>
 
+		<!-- ===== SMS Sending ===== -->
+		<h2 class="title"><?php esc_html_e( 'SMS Sending', 'wp-kwtsms' ); ?></h2>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="kwtsms_sms_enabled"><?php esc_html_e( 'Enable SMS Sending', 'wp-kwtsms' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_gateway[sms_enabled]" id="kwtsms_sms_enabled"
+							value="1" <?php checked( ! empty( $gateway['sms_enabled'] ) ); ?> />
+						<?php esc_html_e( 'When disabled, no SMS messages are sent. OTP login, notifications, and all integrations are paused.', 'wp-kwtsms' ); ?>
+					</label>
+					<?php if ( empty( $gateway['sms_enabled'] ) ) : ?>
+					<p class="description" style="color:#d63638;font-weight:600;">
+						<?php esc_html_e( 'SMS sending is currently OFF. No messages will be sent until you enable this.', 'wp-kwtsms' ); ?>
+					</p>
+					<?php endif; ?>
+				</td>
+			</tr>
+		</table>
+
 		<!-- ===== Test Mode ===== -->
 		<h2 class="title"><?php esc_html_e( 'Test Mode', 'wp-kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">

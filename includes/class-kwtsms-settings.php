@@ -57,6 +57,7 @@ class KwtSMS_Settings {
 			'iphub_cache_ttl'       => 86400,    // Transient TTL for cached IP reputation results (default: 1 day = 86400 s).
 		),
 		'gateway'      => array(
+			'sms_enabled'          => 1,          // Global SMS sending toggle.
 			'api_username'         => '',
 			'api_password'         => '',
 			'sender_id'            => '',
