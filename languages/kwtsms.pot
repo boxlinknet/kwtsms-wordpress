@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the kwtSMS plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: wp-kwtsms 2.8.0\n"
+"Project-Id-Version: kwtsms 2.8.0\n"
 "Report-Msgid-Bugs-To: https://www.kwtsms.com\n"
 "POT-Creation-Date: 2026-02-28 07:40+0000\n"
 "MIME-Version: 1.0\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Generator: kwtsms-make-pot\n"
-"X-Domain: wp-kwtsms\n"
+"X-Domain: kwtsms\n"
 
 #: admin/class-kwtsms-admin.php:65
 #: admin/class-kwtsms-admin.php:66

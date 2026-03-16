@@ -40,3 +40,4 @@ tests/
 
 # Docker local test environment
 docker/
+*.zip
