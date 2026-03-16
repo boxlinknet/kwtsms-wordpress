@@ -567,15 +567,27 @@ class KwtSMS_API {
 	 * @return true|WP_Error True if sending is allowed; WP_Error if insufficient credits.
 	 */
 	public function check_balance_before_send() {
-		$gw        = get_option( 'kwtsms_otp_gateway', array() );
-		$available = $gw['balance_available'] ?? null;
+		$gw         = get_option( 'kwtsms_otp_gateway', array() );
+		$available  = $gw['balance_available'] ?? null;
+		$updated_at = $gw['balance_updated_at'] ?? null;
 
-		// Not loaded yet — allow the attempt.
-		if ( null === $available ) {
-			return true;
+		// If balance has never been fetched or is older than 24 hours, refresh
+		// from the live API so the cached value stays current.
+		$is_stale = ( null === $updated_at ) || ( ( time() - (int) $updated_at ) > DAY_IN_SECONDS );
+
+		if ( null === $available || $is_stale ) {
+			$live = $this->get_balance();
+			if ( ! is_wp_error( $live ) ) {
+				self::update_saved_balance( $live['available'], $live['purchased'] );
+				$available = $live['available'];
+			} elseif ( null === $available ) {
+				// First run, API unreachable: allow the attempt.
+				return true;
+			}
+			// If stale but API unreachable, continue with the cached value.
 		}
 
-		// Positive balance — allow immediately.
+		// Positive balance: allow immediately.
 		if ( (float) $available > 0 ) {
 			return true;
 		}
