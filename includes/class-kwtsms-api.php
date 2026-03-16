@@ -631,44 +631,43 @@ class KwtSMS_API {
 	/**
 	 * Check whether the account has sufficient balance before sending an SMS.
 	 *
-	 * Logic:
-	 *   1. If the cached balance is null or stale (>24h), refresh via live API.
-	 *   2. If cached available > 0, allow immediately.
-	 *   3. If cached available <= 0, block with a clear recharge message.
+	 * Logic (timestamp first, then balance):
+	 *   1. Read cached timestamp. If null or older than 24h, refresh via live API.
+	 *   2. After refresh (or if fresh), read the balance value.
+	 *   3. If balance > 0, allow. If balance <= 0, block with recharge message.
 	 *
 	 * @return true|WP_Error True if sending is allowed; WP_Error if insufficient credits.
 	 */
 	public function check_balance_before_send() {
 		$gw         = get_option( 'kwtsms_otp_gateway', array() );
-		$available  = $gw['balance_available'] ?? null;
 		$updated_at = $gw['balance_updated_at'] ?? null;
 
-		// If balance has never been fetched or is older than 24 hours, refresh
-		// from the live API so the cached value stays current.
+		// ── Step 1: Check timestamp, refresh if stale ────────────────────────
 		$is_stale = ( null === $updated_at ) || ( ( time() - (int) $updated_at ) > DAY_IN_SECONDS );
 
-		if ( null === $available || $is_stale ) {
+		if ( $is_stale ) {
 			$live = $this->get_balance();
 			if ( ! is_wp_error( $live ) ) {
 				self::update_saved_balance( $live['available'], $live['purchased'] );
-				$available = $live['available'];
-			} elseif ( null === $available ) {
-				// First run, API unreachable: allow the attempt.
-				return true;
+				// Re-read the option so $available reflects the fresh value.
+				$gw = get_option( 'kwtsms_otp_gateway', array() );
 			}
-			// If stale but API unreachable, continue with the cached value.
+			// If API unreachable, fall through to use whatever cached value exists.
 		}
 
-		// Positive balance: allow immediately.
+		// ── Step 2: Use the (now-current) cached balance ─────────────────────
+		$available = $gw['balance_available'] ?? null;
+
+		// No balance has ever been recorded: allow the attempt so the first
+		// send can go through and populate balance-after.
+		if ( null === $available ) {
+			return true;
+		}
+
 		if ( (float) $available > 0 ) {
 			return true;
 		}
 
-		// Zero or negative balance: block with a clear recharge message.
-		// No live API call here. The cached value is kept current by the 24h
-		// stale refresh above and the balance-after update on every send.
-		// If the admin topped up externally, the next stale refresh will pick
-		// it up, or they can force-refresh from the Gateway settings page.
 		return new WP_Error(
 			'no_balance',
 			__( 'Insufficient SMS credits. Recharge at kwtsms.com and try again.', 'wp-kwtsms' )
