@@ -26,6 +26,10 @@ class KwtSMS_User_Meta {
 		add_action( 'edit_user_profile_update', array( $this, 'save_phone_field' ) );
 		add_action( 'admin_notices', array( $this, 'show_phone_error_notice' ) );
 
+		// Admin Add New User page (wp-admin/user-new.php).
+		add_action( 'user_new_form', array( $this, 'render_add_new_user_phone_field' ) );
+		add_action( 'user_register', array( $this, 'save_add_new_user_phone' ) );
+
 		add_action( 'register_form', array( $this, 'render_registration_phone_field' ) );
 		add_filter( 'registration_errors', array( $this, 'validate_registration_phone' ), 10, 3 );
 		add_action( 'user_register', array( $this, 'save_registration_phone' ) );
@@ -226,6 +230,85 @@ class KwtSMS_User_Meta {
 			'<div class="notice notice-error is-dismissible"><p>%s</p></div>',
 			esc_html( $msg )
 		);
+	}
+
+	/**
+	 * Render a simplified phone input on the admin Add New User page.
+	 *
+	 * Hooked to `user_new_form` which fires on wp-admin/user-new.php.
+	 * Uses a single text input (no country dropdown) since admins are expected
+	 * to enter the full international number.
+	 *
+	 * @param string $context Either 'add-new-user' or 'add-existing-user'.
+	 */
+	public function render_add_new_user_phone_field( $context ) {
+		if ( 'add-new-user' !== $context ) {
+			return;
+		}
+		wp_nonce_field( 'kwtsms_add_new_user_phone', 'kwtsms_add_new_user_phone_nonce' );
+		?>
+		<table class="form-table" role="presentation">
+			<tr class="form-field">
+				<th scope="row">
+					<label for="kwtsms_phone_new_user"><?php esc_html_e( 'Phone Number (SMS OTP)', 'kwtsms' ); ?></label>
+				</th>
+				<td>
+					<input
+						type="tel"
+						name="kwtsms_phone_new_user"
+						id="kwtsms_phone_new_user"
+						class="regular-text"
+						value=""
+						autocomplete="tel"
+						placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'kwtsms' ); ?>"
+					/>
+					<p class="description">
+						<?php esc_html_e( 'Optional. Full international phone number (digits only, no + or spaces).', 'kwtsms' ); ?>
+					</p>
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
+	/**
+	 * Save the phone number when an admin creates a new user.
+	 *
+	 * Hooked to `user_register`. Checks for the admin Add New User nonce
+	 * to distinguish from front-end registration (which uses a separate handler).
+	 *
+	 * @param int $user_id Newly created user ID.
+	 */
+	public function save_add_new_user_phone( $user_id ) {
+		if ( ! isset( $_POST['kwtsms_add_new_user_phone_nonce'] ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce(
+			sanitize_key( wp_unslash( $_POST['kwtsms_add_new_user_phone_nonce'] ) ),
+			'kwtsms_add_new_user_phone'
+		) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'create_users' ) ) {
+			return;
+		}
+
+		$raw_phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_new_user'] ?? '' ) );
+
+		if ( '' === $raw_phone ) {
+			return;
+		}
+
+		$raw_phone  = KwtSMS_API::prepend_country_code_if_local( $raw_phone, KwtSMS_API::get_default_dial_code() );
+		$normalized = KwtSMS_API::normalize_phone( $raw_phone );
+
+		if ( is_wp_error( $normalized ) ) {
+			return; // Silently skip invalid numbers on admin creation.
+		}
+
+		update_user_meta( $user_id, 'kwtsms_phone', $normalized );
 	}
 
 	/**

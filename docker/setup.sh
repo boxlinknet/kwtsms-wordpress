@@ -139,6 +139,11 @@ $WP option update kwtsms_otp_general \
   '{"login_otp":1,"reset_otp":1,"otp_mode":"2fa","otp_required_roles":["editor","author","contributor","subscriber","customer","shop_manager"],"otp_length":6,"otp_expiry":5,"max_attempts":3,"debug_logging":1}' \
   --format=json 2>/dev/null || true
 
+# Admin event alerts (keys must match DEFAULTS in class-kwtsms-settings.php).
+$WP option update kwtsms_otp_alerts \
+  '{"admin_phones":"96598765432","user_register":1,"wp_login":0,"post_published":1,"comment_posted":1,"core_update":1}' \
+  --format=json 2>/dev/null || true
+
 # ---------------------------------------------------------------------------
 # Step 9: Test users (all password Test@12345)
 # ---------------------------------------------------------------------------
