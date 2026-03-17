@@ -142,13 +142,14 @@ class KwtSMS_Reset_OTP {
 			exit;
 		}
 
-		// Generate OTP — reuses existing valid code if one was sent recently.
-		$otp_code = $this->plugin->otp->generate( $resolved_user->ID, 'reset' );
-
-		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
+		// Send SMS only if outside the send-cooldown (prevents double-send on double-click/race).
+		// Cooldown is set BEFORE sending so concurrent requests see the lock immediately.
 		if ( ! $this->plugin->otp->is_send_cooldown_active( $resolved_user->ID, 'reset' ) ) {
-			$message = $this->plugin->otp->build_message( $otp_code, 'reset_otp' );
-			$result  = $this->plugin->api->send(
+			$this->plugin->otp->set_send_cooldown( $resolved_user->ID, 'reset' );
+
+			$otp_code = $this->plugin->otp->generate( $resolved_user->ID, 'reset' );
+			$message  = $this->plugin->otp->build_message( $otp_code, 'reset_otp' );
+			$result   = $this->plugin->api->send(
 				$phone,
 				$this->plugin->settings->get( 'gateway.sender_id', '' ),
 				$message,
@@ -160,8 +161,6 @@ class KwtSMS_Reset_OTP {
 				// Fail gracefully — fall back to email reset.
 				return;
 			}
-
-			$this->plugin->otp->set_send_cooldown( $resolved_user->ID, 'reset' );
 		}
 
 		// Sliding-window counters are recorded inside is_rate_limited(),

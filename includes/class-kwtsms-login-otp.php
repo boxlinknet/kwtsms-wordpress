@@ -152,13 +152,15 @@ class KwtSMS_Login_OTP {
 			return new WP_Error( 'kwtsms_otp_required', '' );
 		}
 
-		// Generate OTP — reuses existing valid code if one was sent recently.
-		$otp_code = $this->plugin->otp->generate( $user->ID, 'login' );
-
-		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
+		// Send SMS only if outside the send-cooldown (prevents double-send on double-click/race).
+		// Cooldown is set BEFORE sending so concurrent requests see the lock immediately.
 		if ( ! $this->plugin->otp->is_send_cooldown_active( $user->ID, 'login' ) ) {
-			$message = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
-			$result  = $this->plugin->api->send(
+			$this->plugin->otp->set_send_cooldown( $user->ID, 'login' );
+
+			// Generate OTP — reuses existing valid code if one was sent recently.
+			$otp_code = $this->plugin->otp->generate( $user->ID, 'login' );
+			$message  = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
+			$result   = $this->plugin->api->send(
 				$phone,
 				$this->plugin->settings->get( 'gateway.sender_id', '' ),
 				$message,
@@ -189,11 +191,16 @@ class KwtSMS_Login_OTP {
 					);
 				}
 
+				// Country blocked or SMS disabled — user's phone is in a disallowed country.
+				// Do NOT fail-open: show OTP page but with no valid transient (anti-enumeration).
+				if ( in_array( $error_code, array( 'kwtsms_country_blocked', 'kwtsms_sms_disabled' ), true ) ) {
+					return new WP_Error( 'kwtsms_otp_required', '' );
+				}
+
 				// Temporary failure (network, API down) — fail-open to avoid lockout.
 				return $user;
 			}
 
-			$this->plugin->otp->set_send_cooldown( $user->ID, 'login' );
 		}
 
 		// Sliding-window counters are recorded inside is_rate_limited(),
@@ -558,13 +565,14 @@ class KwtSMS_Login_OTP {
 			exit;
 		}
 
-		// Generate OTP — reuses existing valid code if one was sent recently.
-		$otp_code = $this->plugin->otp->generate( $user_id, 'passwordless' );
-
-		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
+		// Send SMS only if outside the send-cooldown (prevents double-send on double-click/race).
+		// Cooldown is set BEFORE sending so concurrent requests see the lock immediately.
 		if ( ! $this->plugin->otp->is_send_cooldown_active( $user_id, 'passwordless' ) ) {
-			$message = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
-			$result  = $this->plugin->api->send(
+			$this->plugin->otp->set_send_cooldown( $user_id, 'passwordless' );
+
+			$otp_code = $this->plugin->otp->generate( $user_id, 'passwordless' );
+			$message  = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
+			$result   = $this->plugin->api->send(
 				$normalized,
 				$this->plugin->settings->get( 'gateway.sender_id', '' ),
 				$message,
@@ -595,8 +603,6 @@ class KwtSMS_Login_OTP {
 
 				// Temporary failure — proceed to OTP screen; user cannot complete it
 				// but is not logged in either, which is safer than showing nothing.
-			} else {
-				$this->plugin->otp->set_send_cooldown( $user_id, 'passwordless' );
 			}
 		}
 
