@@ -463,7 +463,7 @@ class KwtSMS_OTP_Engine {
 	 * differences (e.g. spaces, dashes) do not affect matching.
 	 *
 	 * Made public so call sites (login, passwordless, reset, resend) can check
-	 * the block list before calling generate() + send_sms() directly.
+	 * the block list before calling generate() + send() directly.
 	 *
 	 * @param string $phone Normalised phone number (digits only).
 	 *

@@ -137,7 +137,7 @@ class KwtSMS_API {
 	 * balance check, and batching (max 200 phones per API request).
 	 *
 	 * Single mode: when $phones is a string, returns the same format as the
-	 * legacy send_sms() for backward compatibility with all existing callers.
+	 * legacy format for backward compatibility with all existing callers.
 	 *
 	 * Multi mode: when $phones is an array, returns an aggregate result with
 	 * sent/failed counts, per-batch details, and any errors encountered.
@@ -821,7 +821,7 @@ class KwtSMS_API {
 	}
 
 	// =========================================================================
-	// Message sanitisation (static — used by send_sms and build_message)
+	// Message sanitisation (static — used by send() and build_message)
 	// =========================================================================
 
 	/**
@@ -1799,7 +1799,7 @@ class KwtSMS_API {
 	/**
 	 * Write an entry to the debug log file.
 	 *
-	 * @param string $context Short label for the log entry (e.g. 'send_sms', 'verify').
+	 * @param string $context Short label for the log entry (e.g. 'send', 'verify').
 	 * @param string $message Log message text.
 	 */
 	public function write_debug_log( $context, $message ) {

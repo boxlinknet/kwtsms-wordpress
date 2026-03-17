@@ -1083,7 +1083,7 @@ class KwtSMS_Plugin {
 
 		$is_test_mode = (bool) $this->settings->get( 'gateway.test_mode', false );
 
-		// Re-read the gateway option to pick up any balance update made by send_sms().
+		// Re-read the gateway option to pick up any balance update made by send().
 		$gw_option = get_option( 'kwtsms_otp_gateway', array() );
 
 		wp_send_json_success(
