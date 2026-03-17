@@ -131,6 +131,17 @@ class KwtSMS_Reset_OTP {
 			exit;
 		}
 
+		// IP blocklist: silently pretend success (anti-enumeration).
+		$client_ip = $this->plugin->otp->get_client_ip();
+		if ( '' !== $client_ip && $this->plugin->otp->is_ip_blocklisted( $client_ip ) ) {
+			$this->plugin->api->write_debug_log( 'reset_otp', 'Blocklisted IP attempted OTP: ' . $client_ip );
+			add_filter( 'send_retrieve_password_email', '__return_false' );
+			wp_safe_redirect(
+				add_query_arg( 'action', 'kwtsms_reset_otp', wp_login_url() )
+			);
+			exit;
+		}
+
 		// Generate OTP — reuses existing valid code if one was sent recently.
 		$otp_code = $this->plugin->otp->generate( $resolved_user->ID, 'reset' );
 

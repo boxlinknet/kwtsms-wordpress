@@ -388,6 +388,10 @@ class KwtSMS_Settings {
 			if ( ! empty( $saved_tpl['ar'] ) ) {
 				$resolved['ar'] = $saved_tpl['ar'];
 			}
+			// Merge the saved 'enabled' flag so admins can enable/disable individual templates.
+			if ( isset( $saved_tpl['enabled'] ) ) {
+				$resolved['enabled'] = (int) $saved_tpl['enabled'];
+			}
 			$merged[ $key ] = $resolved;
 		}
 

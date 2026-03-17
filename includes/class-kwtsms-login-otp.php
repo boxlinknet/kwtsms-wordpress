@@ -145,6 +145,13 @@ class KwtSMS_Login_OTP {
 			return new WP_Error( 'kwtsms_otp_required', '' );
 		}
 
+		// IP blocklist: silently pretend success (anti-enumeration, same as phone block).
+		$client_ip = $this->plugin->otp->get_client_ip();
+		if ( '' !== $client_ip && $this->plugin->otp->is_ip_blocklisted( $client_ip ) ) {
+			$this->plugin->api->write_debug_log( 'login_otp', 'Blocklisted IP attempted OTP: ' . $client_ip );
+			return new WP_Error( 'kwtsms_otp_required', '' );
+		}
+
 		// Generate OTP — reuses existing valid code if one was sent recently.
 		$otp_code = $this->plugin->otp->generate( $user->ID, 'login' );
 
@@ -539,6 +546,14 @@ class KwtSMS_Login_OTP {
 
 		// Anti-enumeration: silently succeed for blocked phones without sending SMS.
 		if ( $this->plugin->otp->is_phone_blocked( $normalized ) ) {
+			$this->render_passwordless_page( '', $generic_message );
+			exit;
+		}
+
+		// IP blocklist: silently pretend success (anti-enumeration).
+		$client_ip = $this->plugin->otp->get_client_ip();
+		if ( '' !== $client_ip && $this->plugin->otp->is_ip_blocklisted( $client_ip ) ) {
+			$this->plugin->api->write_debug_log( 'passwordless', 'Blocklisted IP attempted OTP: ' . $client_ip );
 			$this->render_passwordless_page( '', $generic_message );
 			exit;
 		}

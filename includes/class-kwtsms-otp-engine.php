@@ -847,7 +847,7 @@ class KwtSMS_OTP_Engine {
 	 *
 	 * @return string Validated IP address, or empty string.
 	 */
-	private function get_client_ip() {
+	public function get_client_ip() {
 		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 
 		// Only trust proxy headers when REMOTE_ADDR is a known private/loopback range.
