@@ -40,6 +40,7 @@ foreach ( $kwtsms_options as $kwtsms_option ) {
 // 2. Remove user phone meta.
 // -------------------------------------------------------------------------
 delete_metadata( 'user', 0, 'kwtsms_phone', '', true );
+delete_metadata( 'user', 0, 'kwtsms_dismissed_version', '', true );
 
 // -------------------------------------------------------------------------
 // 3. Remove transients (OTPs, partial auths, rate limiters).

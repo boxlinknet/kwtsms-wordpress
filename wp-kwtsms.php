@@ -98,6 +98,9 @@ register_activation_hook( KWTSMS_OTP_FILE, 'kwtsms_otp_activate' );
 function kwtsms_otp_deactivate() {
 	// Clear the cart abandonment cron job on deactivation.
 	wp_clear_scheduled_hook( 'kwtsms_check_abandoned_carts' );
+
+	// Clear the daily version check cron.
+	KwtSMS_Version_Check::unschedule();
 }
 register_deactivation_hook( KWTSMS_OTP_FILE, 'kwtsms_otp_deactivate' );
 
