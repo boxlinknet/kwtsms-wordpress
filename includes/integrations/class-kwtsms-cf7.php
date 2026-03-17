@@ -160,18 +160,21 @@ class KwtSMS_CF7 {
 
 		$phone = $this->get_submission_phone();
 		if ( empty( $phone ) ) {
+			$this->plugin->api->write_debug_log( 'cf7', 'Skipped CF7 confirmation SMS for form "' . sanitize_text_field( $cf7->title() ) . '": no phone field value found' );
 			return;
 		}
 
 		$phone      = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $phone );
 		if ( is_wp_error( $normalized ) ) {
+			$this->plugin->api->write_debug_log( 'cf7', 'Skipped CF7 confirmation SMS for form "' . sanitize_text_field( $cf7->title() ) . '": phone normalization failed (' . $normalized->get_error_message() . ')' );
 			return;
 		}
 
 		$message = $this->render_confirmation_template( sanitize_text_field( $cf7->title() ) );
 		if ( empty( $message ) ) {
-			return; // Template disabled or missing.
+			$this->plugin->api->write_debug_log( 'cf7', 'Skipped CF7 confirmation SMS for form "' . sanitize_text_field( $cf7->title() ) . '": template disabled or missing' );
+			return;
 		}
 
 		$this->plugin->api->send_sms(

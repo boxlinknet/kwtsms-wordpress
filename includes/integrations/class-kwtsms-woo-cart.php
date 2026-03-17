@@ -191,6 +191,7 @@ class KwtSMS_Woo_Cart {
 		$tpl       = isset( $templates['woo_tpl_cart_abandon'] ) ? $templates['woo_tpl_cart_abandon'] : array();
 
 		if ( empty( $tpl['en'] ) ) {
+			$this->plugin->api->write_debug_log( 'cart_abandon', 'Skipped cart recovery SMS for phone ' . $cart['phone'] . ': template empty or missing' );
 			return false;
 		}
 

@@ -124,6 +124,7 @@ class KwtSMS_Woo {
 			$order = wc_get_order( $order_id );
 		}
 		if ( ! $order ) {
+			$this->plugin->api->write_debug_log( 'woo_order', 'Skipped order status SMS: could not load order #' . $order_id );
 			return;
 		}
 
@@ -143,12 +144,14 @@ class KwtSMS_Woo {
 		}
 
 		if ( empty( $phone ) ) {
-			return; // No phone — skip.
+			$this->plugin->api->write_debug_log( 'woo_order', 'Skipped order status SMS for order #' . $order->get_order_number() . ': no phone on file (user_id=' . $user_id . ')' );
+			return;
 		}
 
 		$message = $this->build_order_message( $new_status, $order );
 		if ( empty( $message ) ) {
-			return; // Status not in our notification set.
+			$this->plugin->api->write_debug_log( 'woo_order', 'Skipped order status SMS for order #' . $order->get_order_number() . ': template disabled or not configured for status "' . $new_status . '"' );
+			return;
 		}
 
 		$this->plugin->api->send_sms(

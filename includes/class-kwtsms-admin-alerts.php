@@ -86,6 +86,7 @@ class KwtSMS_Admin_Alerts {
 	public function on_user_register( $user_id ) {
 		$user = get_userdata( (int) $user_id );
 		if ( ! $user ) {
+			$this->plugin->api->write_debug_log( 'admin_alert', 'Skipped user_register alert: could not load user #' . $user_id );
 			return;
 		}
 
@@ -159,6 +160,7 @@ class KwtSMS_Admin_Alerts {
 
 		$comment = get_comment( (int) $comment_id );
 		if ( ! $comment ) {
+			$this->plugin->api->write_debug_log( 'admin_alert', 'Skipped comment_posted alert: could not load comment #' . $comment_id );
 			return;
 		}
 
@@ -213,12 +215,14 @@ class KwtSMS_Admin_Alerts {
 	private function send_to_all_admins( $tpl_key, array $placeholders ) {
 		$tpl = $this->plugin->settings->get( 'alerts.' . $tpl_key, array() );
 		if ( ! is_array( $tpl ) ) {
+			$this->plugin->api->write_debug_log( 'admin_alert', 'Skipped alert (' . $tpl_key . '): template setting is not an array' );
 			return;
 		}
 
 		// Always use English for admin-facing messages.
 		$message = (string) ( $tpl['en'] ?? '' );
 		if ( '' === $message ) {
+			$this->plugin->api->write_debug_log( 'admin_alert', 'Skipped alert (' . $tpl_key . '): template message is empty' );
 			return;
 		}
 		$message = str_replace( array_keys( $placeholders ), array_values( $placeholders ), $message );

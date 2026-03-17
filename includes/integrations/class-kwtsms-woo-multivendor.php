@@ -82,11 +82,13 @@ class KwtSMS_Woo_Multivendor {
 			$order = wc_get_order( $order_id );
 		}
 		if ( ! $order ) {
+			$this->plugin->api->write_debug_log( 'woo_instant_order', 'Skipped instant order SMS: could not load order #' . $order_id );
 			return;
 		}
 
 		$admin_phone = (string) $this->plugin->settings->get( 'integrations.woo_instant_order_phone', '' );
 		if ( '' === trim( $admin_phone ) ) {
+			$this->plugin->api->write_debug_log( 'woo_instant_order', 'Skipped instant order SMS for order #' . $order->get_order_number() . ': no admin phone configured' );
 			return;
 		}
 
@@ -103,6 +105,7 @@ class KwtSMS_Woo_Multivendor {
 		);
 
 		if ( '' === $message ) {
+			$this->plugin->api->write_debug_log( 'woo_instant_order', 'Skipped instant order SMS for order #' . $order->get_order_number() . ': template empty or missing' );
 			return;
 		}
 
@@ -131,6 +134,7 @@ class KwtSMS_Woo_Multivendor {
 			$order = wc_get_order( $order_id );
 		}
 		if ( ! $order ) {
+			$this->plugin->api->write_debug_log( 'vendor_sms', 'Skipped vendor SMS: could not load order #' . $order_id );
 			return;
 		}
 
@@ -166,6 +170,8 @@ class KwtSMS_Woo_Multivendor {
 
 			if ( '' !== $message ) {
 				$this->plugin->api->send_sms( $vendor_phone, $sender_id, $message, 'woo_vendor' );
+			} else {
+				$this->plugin->api->write_debug_log( 'vendor_sms', 'Skipped vendor SMS for vendor ID ' . $vendor_id . ' on order #' . $order->get_order_number() . ': template empty or missing' );
 			}
 
 			$notified[] = $vendor_id;

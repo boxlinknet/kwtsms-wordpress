@@ -140,24 +140,27 @@ class KwtSMS_Elementor {
 	 * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $handler The form AJAX handler.
 	 */
 	public function send_confirmation_sms( $record, $handler ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
-		$fields = $record->get( 'fields' );
-		$phone  = $this->extract_phone( $fields );
+		$fields    = $record->get( 'fields' );
+		$phone     = $this->extract_phone( $fields );
+		$form_name = sanitize_text_field( $record->get_form_settings( 'form_name' ) ?? '' );
+		$form_label = $form_name ? $form_name : __( 'Contact Form', 'kwtsms' );
 
 		if ( empty( $phone ) ) {
+			$this->plugin->api->write_debug_log( 'elementor', 'Skipped Elementor confirmation SMS for form "' . $form_label . '": no phone field value found' );
 			return;
 		}
 
 		$phone      = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $phone );
 		if ( is_wp_error( $normalized ) ) {
+			$this->plugin->api->write_debug_log( 'elementor', 'Skipped Elementor confirmation SMS for form "' . $form_label . '": phone normalization failed (' . $normalized->get_error_message() . ')' );
 			return;
 		}
 
-		$form_name = sanitize_text_field( $record->get_form_settings( 'form_name' ) ?? '' );
-
-		$message = $this->render_confirmation_template( $form_name ? $form_name : __( 'Contact Form', 'kwtsms' ) );
+		$message = $this->render_confirmation_template( $form_label );
 		if ( empty( $message ) ) {
-			return; // Template disabled or missing.
+			$this->plugin->api->write_debug_log( 'elementor', 'Skipped Elementor confirmation SMS for form "' . $form_label . '": template disabled or missing' );
+			return;
 		}
 
 		$this->plugin->api->send_sms(

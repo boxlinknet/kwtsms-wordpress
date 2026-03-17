@@ -113,6 +113,7 @@ class KwtSMS_Woo_Stock {
 	public function on_backorder( $args ) {
 		$product = $args['product'] ?? null;
 		if ( ! $product instanceof WC_Product ) {
+			$this->plugin->api->write_debug_log( 'woo_stock', 'Skipped backorder alert: product object not available in hook args' );
 			return;
 		}
 		$this->send_admin_stock_sms(
@@ -176,11 +177,13 @@ class KwtSMS_Woo_Stock {
 
 		$raw_subs = get_post_meta( $product_id, 'kwtsms_back_in_stock_subscribers', true );
 		if ( empty( $raw_subs ) ) {
+			$this->plugin->api->write_debug_log( 'back_in_stock', 'Product #' . $product_id . ' is back in stock but has no subscribers' );
 			return;
 		}
 
 		$subscribers = json_decode( $raw_subs, true );
 		if ( ! is_array( $subscribers ) || empty( $subscribers ) ) {
+			$this->plugin->api->write_debug_log( 'back_in_stock', 'Product #' . $product_id . ' is back in stock but subscriber list is empty or malformed' );
 			return;
 		}
 
@@ -192,6 +195,7 @@ class KwtSMS_Woo_Stock {
 			)
 		);
 		if ( '' === $tpl ) {
+			$this->plugin->api->write_debug_log( 'back_in_stock', 'Product #' . $product_id . ' is back in stock with ' . count( $subscribers ) . ' subscriber(s) but template is empty or missing' );
 			return;
 		}
 
@@ -332,11 +336,13 @@ class KwtSMS_Woo_Stock {
 	private function send_admin_stock_sms( $tpl_key, array $placeholders ) {
 		$admin_phone = (string) $this->plugin->settings->get( 'integrations.woo_stock_admin_phone', '' );
 		if ( '' === trim( $admin_phone ) ) {
+			$this->plugin->api->write_debug_log( 'woo_stock', 'Skipped stock alert (' . $tpl_key . '): no admin phone configured' );
 			return;
 		}
 
 		$message = $this->build_stock_message( $tpl_key, $placeholders );
 		if ( '' === $message ) {
+			$this->plugin->api->write_debug_log( 'woo_stock', 'Skipped stock alert (' . $tpl_key . '): template empty or missing' );
 			return;
 		}
 

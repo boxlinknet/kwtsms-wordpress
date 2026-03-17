@@ -105,7 +105,7 @@ class KwtSMS_Login_OTP {
 
 		// If user has no phone, honour admin setting for bypass.
 		if ( empty( $phone ) ) {
-			// For now: skip 2FA, let them log in without OTP.
+			$this->plugin->api->write_debug_log( 'login_otp', 'Bypassed 2FA for user #' . $user->ID . ' (' . $user->user_login . '): no phone number on file' );
 			return $user;
 		}
 

@@ -187,12 +187,14 @@ class KwtSMS_Plugin {
 		}
 
 		if ( '' === $phone ) {
+			$this->api->write_debug_log( 'welcome_sms', 'Skipped welcome SMS for user #' . $user_id . ': no phone number found' );
 			return;
 		}
 
 		$phone = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
 		$phone = KwtSMS_API::normalize_phone( $phone );
 		if ( is_wp_error( $phone ) ) {
+			$this->api->write_debug_log( 'welcome_sms', 'Skipped welcome SMS for user #' . $user_id . ': phone normalization failed' );
 			return;
 		}
 

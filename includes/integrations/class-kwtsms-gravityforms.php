@@ -152,22 +152,24 @@ class KwtSMS_GravityForms {
 	 * @param array $form  The GF form configuration array.
 	 */
 	public function send_notification( $entry, $form ) {
-		$phone = $this->extract_phone_from_entry( $entry, $form );
+		$phone      = $this->extract_phone_from_entry( $entry, $form );
+		$form_title = sanitize_text_field( $form['title'] ?? '' );
 		if ( empty( $phone ) ) {
+			$this->plugin->api->write_debug_log( 'gravityforms', 'Skipped Gravity Forms confirmation SMS for form "' . $form_title . '": no phone field value found' );
 			return;
 		}
 
 		$phone      = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
 		$normalized = KwtSMS_API::normalize_phone( $phone );
 		if ( is_wp_error( $normalized ) ) {
+			$this->plugin->api->write_debug_log( 'gravityforms', 'Skipped Gravity Forms confirmation SMS for form "' . $form_title . '": phone normalization failed (' . $normalized->get_error_message() . ')' );
 			return;
 		}
 
-		$form_title = sanitize_text_field( $form['title'] ?? '' );
-
 		$message = $this->render_confirmation_template( $form_title, $phone );
 		if ( empty( $message ) ) {
-			return; // Template disabled or missing.
+			$this->plugin->api->write_debug_log( 'gravityforms', 'Skipped Gravity Forms confirmation SMS for form "' . $form_title . '": template disabled or missing' );
+			return;
 		}
 
 		$this->plugin->api->send_sms(

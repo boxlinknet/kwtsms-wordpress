@@ -99,7 +99,7 @@ class KwtSMS_Reset_OTP {
 		$phone = get_user_meta( $resolved_user->ID, 'kwtsms_phone', true );
 
 		if ( empty( $phone ) ) {
-			// No phone — fall back to email reset.
+			$this->plugin->api->write_debug_log( 'reset_otp', 'Falling back to email reset for user #' . $resolved_user->ID . ' (' . $resolved_user->user_login . '): no phone number on file' );
 			return;
 		}
 
