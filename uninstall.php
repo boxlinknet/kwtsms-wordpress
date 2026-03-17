@@ -20,7 +20,7 @@ global $wpdb;
 // -------------------------------------------------------------------------
 // 1. Remove all plugin options.
 // -------------------------------------------------------------------------
-$options = array(
+$kwtsms_options = array(
 	'kwtsms_otp_general',
 	'kwtsms_otp_gateway',
 	'kwtsms_otp_templates',
@@ -30,10 +30,10 @@ $options = array(
 	'kwtsms_otp_attempt_log',
 );
 
-foreach ( $options as $option ) {
-	delete_option( $option );
+foreach ( $kwtsms_options as $kwtsms_option ) {
+	delete_option( $kwtsms_option );
 	// Also remove from multisite if applicable.
-	delete_site_option( $option );
+	delete_site_option( $kwtsms_option );
 }
 
 // -------------------------------------------------------------------------

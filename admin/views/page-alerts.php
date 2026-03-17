@@ -12,12 +12,12 @@
 defined( 'ABSPATH' ) || exit;
 
 // phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
-$settings = $this->plugin->settings;
+$kwtsms_settings = $this->plugin->settings;
 // array_replace_recursive merges nested template arrays (en/ar) correctly.
 // The + operator only works for flat arrays; alerts has nested tpl_* sub-arrays.
-$alerts = array_replace_recursive( KwtSMS_Settings::DEFAULTS['alerts'], (array) $settings->get( 'alerts' ) );
+$kwtsms_alerts = array_replace_recursive( KwtSMS_Settings::DEFAULTS['alerts'], (array) $kwtsms_settings->get( 'alerts' ) );
 
-$events = array(
+$kwtsms_events = array(
 	'user_register'  => __( 'New User Registered', 'kwtsms' ),
 	'wp_login'       => __( 'User Login', 'kwtsms' ),
 	'post_published' => __( 'Post Published', 'kwtsms' ),
@@ -25,7 +25,7 @@ $events = array(
 	'core_update'    => __( 'WordPress Core Updated', 'kwtsms' ),
 );
 
-$tpl_placeholders = array(
+$kwtsms_tpl_placeholders = array(
 	'tpl_user_register'  => '{site_name}, {username}, {email}',
 	'tpl_wp_login'       => '{site_name}, {username}',
 	'tpl_post_published' => '{site_name}, {post_title}',
@@ -56,7 +56,7 @@ $tpl_placeholders = array(
 				<td>
 					<input type="text" id="kwtsms-admin-phones"
 						name="kwtsms_otp_alerts[admin_phones]"
-						value="<?php echo esc_attr( $alerts['admin_phones'] ); ?>"
+						value="<?php echo esc_attr( $kwtsms_alerts['admin_phones'] ); ?>"
 						class="regular-text"
 						placeholder="96598765432, 96512345678">
 					<p class="description"><?php esc_html_e( 'Comma-separated phone numbers with country code. All enabled alert types are sent to every number listed here.', 'kwtsms' ); ?></p>
@@ -70,15 +70,15 @@ $tpl_placeholders = array(
 			<?php esc_html_e( 'Enable or disable each event alert. Configure the message text in the Templates section below.', 'kwtsms' ); ?>
 		</p>
 		<table class="form-table" role="presentation">
-			<?php foreach ( $events as $event_key => $event_label ) : ?>
+			<?php foreach ( $kwtsms_events as $kwtsms_event_key => $kwtsms_event_label ) : ?>
 			<tr>
-				<th scope="row"><?php echo esc_html( $event_label ); ?></th>
+				<th scope="row"><?php echo esc_html( $kwtsms_event_label ); ?></th>
 				<td>
 					<label class="kwtsms-toggle">
 						<input type="checkbox"
-							name="kwtsms_otp_alerts[<?php echo esc_attr( $event_key ); ?>]"
+							name="kwtsms_otp_alerts[<?php echo esc_attr( $kwtsms_event_key ); ?>]"
 							value="1"
-							<?php checked( ! empty( $alerts[ $event_key ] ) ); ?>>
+							<?php checked( ! empty( $kwtsms_alerts[ $kwtsms_event_key ] ) ); ?>>
 						<?php esc_html_e( 'Enabled', 'kwtsms' ); ?>
 					</label>
 				</td>
@@ -93,22 +93,22 @@ $tpl_placeholders = array(
 		</p>
 
 		<?php
-		foreach ( $events as $event_key => $event_label ) :
-			$tpl_key     = 'tpl_' . $event_key;
-			$tpl         = is_array( $alerts[ $tpl_key ] ) ? $alerts[ $tpl_key ] : array(
+		foreach ( $kwtsms_events as $kwtsms_event_key => $kwtsms_event_label ) :
+			$kwtsms_tpl_key     = 'tpl_' . $kwtsms_event_key;
+			$kwtsms_tpl         = is_array( $kwtsms_alerts[ $kwtsms_tpl_key ] ) ? $kwtsms_alerts[ $kwtsms_tpl_key ] : array(
 				'en' => '',
 				'ar' => '',
 			);
-			$default_tpl = KwtSMS_Settings::DEFAULTS['alerts'][ $tpl_key ] ?? array(
+			$kwtsms_default_tpl = KwtSMS_Settings::DEFAULTS['alerts'][ $kwtsms_tpl_key ] ?? array(
 				'en' => '',
 				'ar' => '',
 			);
-			$en_id       = 'alerts_' . $event_key . '_en';
-			$ar_id       = 'alerts_' . $event_key . '_ar';
+			$kwtsms_en_id       = 'alerts_' . $kwtsms_event_key . '_en';
+			$kwtsms_ar_id       = 'alerts_' . $kwtsms_event_key . '_ar';
 			?>
 		<div class="kwtsms-template-card">
 			<div class="kwtsms-template-card-header">
-				<h3><?php echo esc_html( $event_label ); ?></h3>
+				<h3><?php echo esc_html( $kwtsms_event_label ); ?></h3>
 			</div>
 
 			<p class="description" style="margin:0 0 12px;">
@@ -116,7 +116,7 @@ $tpl_placeholders = array(
 				printf(
 					/* translators: %s: comma-separated list of placeholder names */
 					esc_html__( 'Available placeholders: %s', 'kwtsms' ),
-					'<code>' . esc_html( $tpl_placeholders[ $tpl_key ] ) . '</code>'
+					'<code>' . esc_html( $kwtsms_tpl_placeholders[ $kwtsms_tpl_key ] ) . '</code>'
 				);
 				?>
 			</p>
@@ -129,14 +129,14 @@ $tpl_placeholders = array(
 				<div class="kwtsms-tab-pane" data-tab="en">
 					<div class="kwtsms-textarea-wrap">
 						<textarea
-							name="kwtsms_otp_alerts[<?php echo esc_attr( $tpl_key ); ?>_en]"
-							id="<?php echo esc_attr( $en_id ); ?>"
+							name="kwtsms_otp_alerts[<?php echo esc_attr( $kwtsms_tpl_key ); ?>_en]"
+							id="<?php echo esc_attr( $kwtsms_en_id ); ?>"
 							class="large-text kwtsms-sms-textarea"
 							rows="3"
 							dir="ltr"
 							data-lang="en"
-						><?php echo esc_textarea( $tpl['en'] ? $tpl['en'] : $default_tpl['en'] ); ?></textarea>
-						<div class="kwtsms-char-counter" data-target="<?php echo esc_attr( $en_id ); ?>">
+						><?php echo esc_textarea( $kwtsms_tpl['en'] ? $kwtsms_tpl['en'] : $kwtsms_default_tpl['en'] ); ?></textarea>
+						<div class="kwtsms-char-counter" data-target="<?php echo esc_attr( $kwtsms_en_id ); ?>">
 							<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 							&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
 						</div>
@@ -145,14 +145,14 @@ $tpl_placeholders = array(
 				<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
 					<div class="kwtsms-textarea-wrap">
 						<textarea
-							name="kwtsms_otp_alerts[<?php echo esc_attr( $tpl_key ); ?>_ar]"
-							id="<?php echo esc_attr( $ar_id ); ?>"
+							name="kwtsms_otp_alerts[<?php echo esc_attr( $kwtsms_tpl_key ); ?>_ar]"
+							id="<?php echo esc_attr( $kwtsms_ar_id ); ?>"
 							class="large-text kwtsms-sms-textarea"
 							rows="3"
 							dir="rtl"
 							data-lang="ar"
-						><?php echo esc_textarea( $tpl['ar'] ? $tpl['ar'] : $default_tpl['ar'] ); ?></textarea>
-						<div class="kwtsms-char-counter" data-target="<?php echo esc_attr( $ar_id ); ?>">
+						><?php echo esc_textarea( $kwtsms_tpl['ar'] ? $kwtsms_tpl['ar'] : $kwtsms_default_tpl['ar'] ); ?></textarea>
+						<div class="kwtsms-char-counter" data-target="<?php echo esc_attr( $kwtsms_ar_id ); ?>">
 							<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 							&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
 						</div>
@@ -162,7 +162,7 @@ $tpl_placeholders = array(
 
 			<div class="kwtsms-reset-wrap" style="margin-top:8px;">
 				<button type="button" class="button kwtsms-reset-template"
-					data-key="<?php echo esc_attr( $tpl_key ); ?>">
+					data-key="<?php echo esc_attr( $kwtsms_tpl_key ); ?>">
 					&#8635; <?php esc_html_e( 'Reset to Default', 'kwtsms' ); ?>
 				</button>
 			</div>

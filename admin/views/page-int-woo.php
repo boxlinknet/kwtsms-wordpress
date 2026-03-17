@@ -16,16 +16,16 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
 
-$settings   = $this->plugin->settings;
-$int        = array_merge(
+$kwtsms_settings   = $this->plugin->settings;
+$kwtsms_int        = array_merge(
 	KwtSMS_Settings::DEFAULTS['integrations'],
-	(array) $settings->get( 'integrations' )
+	(array) $kwtsms_settings->get( 'integrations' )
 );
-$templates  = $settings->get_all_integration_templates();
-$woo_active = class_exists( 'WooCommerce' );
+$kwtsms_templates  = $kwtsms_settings->get_all_integration_templates();
+$kwtsms_woo_active = class_exists( 'WooCommerce' );
 
 // WooCommerce order-status template definitions.
-$woo_template_defs = array(
+$kwtsms_woo_template_defs = array(
 	'woo_processing' => array(
 		'tab_label'    => __( 'Processing', 'kwtsms' ),
 		'label'        => __( 'New Order / Order Confirmed (Processing)', 'kwtsms' ),
@@ -70,8 +70,8 @@ $woo_template_defs = array(
 	),
 );
 
-$valid_tabs = array_merge( array( 'stock_alerts', 'multivendor', 'cart_abandonment' ), array_keys( $woo_template_defs ) );
-$active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$kwtsms_valid_tabs = array_merge( array( 'stock_alerts', 'multivendor', 'cart_abandonment' ), array_keys( $kwtsms_woo_template_defs ) );
+$kwtsms_active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $kwtsms_valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	? sanitize_key( $_GET['tab'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	: 'woo_processing';
 
@@ -92,7 +92,7 @@ function kwtsms_woo_tab_url( $tab ) {
 }
 
 // Status enable/disable checklist used in the Settings tab.
-$customer_status_labels = array(
+$kwtsms_customer_status_labels = array(
 	'woo_processing' => array(
 		'label' => __( 'New Order / Order Confirmed (Processing)', 'kwtsms' ),
 		'hint'  => __( "Fires immediately when a paid order is placed (credit card, PayPal, COD). This is the main 'new order' notification.", 'kwtsms' ),
@@ -136,7 +136,7 @@ $customer_status_labels = array(
 	</div>
 	<hr class="wp-header-end">
 
-	<?php if ( ! $woo_active ) : ?>
+	<?php if ( ! $kwtsms_woo_active ) : ?>
 	<div class="notice notice-warning inline" style="margin:16px 0;">
 		<p><?php esc_html_e( 'WooCommerce is not installed or activated. The settings below will be saved and applied once WooCommerce is active.', 'kwtsms' ); ?></p>
 	</div>
@@ -145,11 +145,11 @@ $customer_status_labels = array(
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_integrations_group' ); ?>
 		<?php
-		$save_section = in_array( $active_tab, array( 'stock_alerts', 'multivendor', 'cart_abandonment' ), true )
-			? $active_tab
+		$kwtsms_save_section = in_array( $kwtsms_active_tab, array( 'stock_alerts', 'multivendor', 'cart_abandonment' ), true )
+			? $kwtsms_active_tab
 			: 'woo';
 		?>
-		<input type="hidden" name="kwtsms_otp_integrations[_save_section]" value="<?php echo esc_attr( $save_section ); ?>" />
+		<input type="hidden" name="kwtsms_otp_integrations[_save_section]" value="<?php echo esc_attr( $kwtsms_save_section ); ?>" />
 
 		<!-- ===== Settings (always visible) ===== -->
 		<div class="kwtsms-template-card">
@@ -168,7 +168,7 @@ $customer_status_labels = array(
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_enabled]"
 									value="1"
-									<?php checked( $int['woo_enabled'], 1 ); ?> />
+									<?php checked( $kwtsms_int['woo_enabled'], 1 ); ?> />
 								<?php esc_html_e( 'Enable WooCommerce SMS Integration', 'kwtsms' ); ?>
 							</label>
 						</td>
@@ -181,7 +181,7 @@ $customer_status_labels = array(
 									name="kwtsms_otp_integrations[woo_checkout_otp]"
 									id="kwtsms-checkout-otp-toggle"
 									value="1"
-									<?php checked( $int['woo_checkout_otp'], 1 ); ?> />
+									<?php checked( $kwtsms_int['woo_checkout_otp'], 1 ); ?> />
 								<?php esc_html_e( 'Require OTP verification before placing an order', 'kwtsms' ); ?>
 							</label>
 							<p class="description">
@@ -189,14 +189,14 @@ $customer_status_labels = array(
 							</p>
 						</td>
 					</tr>
-					<tr id="kwtsms-cod-only-row"<?php echo empty( $int['woo_checkout_otp'] ) ? ' style="display:none;"' : ''; ?>>
+					<tr id="kwtsms-cod-only-row"<?php echo empty( $kwtsms_int['woo_checkout_otp'] ) ? ' style="display:none;"' : ''; ?>>
 						<th scope="row"><?php esc_html_e( 'COD Only', 'kwtsms' ); ?></th>
 						<td>
 							<label class="kwtsms-toggle">
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_checkout_otp_cod_only]"
 									value="1"
-									<?php checked( ! empty( $int['woo_checkout_otp_cod_only'] ) ); ?> />
+									<?php checked( ! empty( $kwtsms_int['woo_checkout_otp_cod_only'] ) ); ?> />
 								<span><?php esc_html_e( 'Require OTP only for Cash on Delivery orders', 'kwtsms' ); ?></span>
 							</label>
 							<p class="description"><?php esc_html_e( 'When enabled, card and other payment methods bypass the OTP gate. Only COD customers must verify.', 'kwtsms' ); ?></p>
@@ -228,18 +228,18 @@ $customer_status_labels = array(
 						<th scope="row"><?php esc_html_e( 'Enabled statuses', 'kwtsms' ); ?></th>
 						<td>
 							<?php
-							foreach ( $customer_status_labels as $csl_key => $csl_def ) :
-								$csl_tpl = $templates[ $csl_key ] ?? array( 'enabled' => 0 );
+							foreach ( $kwtsms_customer_status_labels as $kwtsms_csl_key => $kwtsms_csl_def ) :
+								$kwtsms_csl_tpl = $kwtsms_templates[ $kwtsms_csl_key ] ?? array( 'enabled' => 0 );
 								?>
 							<div style="margin-bottom:10px;">
 								<label style="display:block;">
 									<input type="checkbox"
-										name="kwtsms_otp_integrations[<?php echo esc_attr( $csl_key ); ?>][enabled]"
+										name="kwtsms_otp_integrations[<?php echo esc_attr( $kwtsms_csl_key ); ?>][enabled]"
 										value="1"
-										<?php checked( $csl_tpl['enabled'], 1 ); ?> />
-									<strong><?php echo esc_html( $csl_def['label'] ); ?></strong>
+										<?php checked( $kwtsms_csl_tpl['enabled'], 1 ); ?> />
+									<strong><?php echo esc_html( $kwtsms_csl_def['label'] ); ?></strong>
 								</label>
-								<p class="description" style="margin:2px 0 0 20px;"><?php echo esc_html( $csl_def['hint'] ); ?></p>
+								<p class="description" style="margin:2px 0 0 20px;"><?php echo esc_html( $kwtsms_csl_def['hint'] ); ?></p>
 							</div>
 							<?php endforeach; ?>
 							<p class="description">
@@ -263,7 +263,7 @@ $customer_status_labels = array(
 						<td>
 							<input type="text"
 								name="kwtsms_otp_integrations[woo_admin_phone]"
-								value="<?php echo esc_attr( $int['woo_admin_phone'] ?? '' ); ?>"
+								value="<?php echo esc_attr( $kwtsms_int['woo_admin_phone'] ?? '' ); ?>"
 								class="regular-text"
 								placeholder="<?php esc_attr_e( 'e.g. 96598765432, 96599220333', 'kwtsms' ); ?>" />
 							<p class="description"><?php esc_html_e( 'Comma-separated list of phone numbers (with country code) to receive admin notifications.', 'kwtsms' ); ?></p>
@@ -273,8 +273,8 @@ $customer_status_labels = array(
 						<th scope="row"><?php esc_html_e( 'Notify admin for statuses', 'kwtsms' ); ?></th>
 						<td>
 							<?php
-							$admin_notify_statuses = $int['woo_notify_admin_statuses'] ?? array();
-							$status_options        = array(
+							$kwtsms_admin_notify_statuses = $kwtsms_int['woo_notify_admin_statuses'] ?? array();
+							$kwtsms_status_options        = array(
 								'processing' => __( 'New Order / Order Confirmed (Processing)', 'kwtsms' ),
 								'pending'    => __( 'New Order — Awaiting Payment (Pending)', 'kwtsms' ),
 								'failed'     => __( 'Payment Failed — Order Not Confirmed', 'kwtsms' ),
@@ -283,14 +283,14 @@ $customer_status_labels = array(
 								'cancelled'  => __( 'Order Cancelled', 'kwtsms' ),
 								'refunded'   => __( 'Order Refunded', 'kwtsms' ),
 							);
-							foreach ( $status_options as $slug => $label ) :
+							foreach ( $kwtsms_status_options as $kwtsms_slug => $kwtsms_label ) :
 								?>
 							<label style="display:block;margin-bottom:4px;">
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_notify_admin_statuses][]"
-									value="<?php echo esc_attr( $slug ); ?>"
-									<?php checked( in_array( $slug, (array) $admin_notify_statuses, true ) ); ?> />
-								<?php echo esc_html( $label ); ?>
+									value="<?php echo esc_attr( $kwtsms_slug ); ?>"
+									<?php checked( in_array( $kwtsms_slug, (array) $kwtsms_admin_notify_statuses, true ) ); ?> />
+								<?php echo esc_html( $kwtsms_label ); ?>
 							</label>
 							<?php endforeach; ?>
 							<p class="description"><?php esc_html_e( 'Select which status changes trigger an admin SMS notification.', 'kwtsms' ); ?></p>
@@ -302,25 +302,25 @@ $customer_status_labels = array(
 		<!-- ===== Order Status Template Tabs ===== -->
 		<nav class="nav-tab-wrapper" style="margin-top:24px;">
 			<a href="<?php echo esc_url( kwtsms_woo_tab_url( 'stock_alerts' ) ); ?>"
-				class="nav-tab <?php echo 'stock_alerts' === $active_tab ? 'nav-tab-active' : ''; ?>">
+				class="nav-tab <?php echo 'stock_alerts' === $kwtsms_active_tab ? 'nav-tab-active' : ''; ?>">
 				<?php esc_html_e( 'Stock Alerts', 'kwtsms' ); ?>
 			</a>
 			<a href="<?php echo esc_url( kwtsms_woo_tab_url( 'multivendor' ) ); ?>"
-				class="nav-tab <?php echo 'multivendor' === $active_tab ? 'nav-tab-active' : ''; ?>">
+				class="nav-tab <?php echo 'multivendor' === $kwtsms_active_tab ? 'nav-tab-active' : ''; ?>">
 				<?php esc_html_e( 'Multivendor', 'kwtsms' ); ?>
 			</a>
 			<a href="<?php echo esc_url( kwtsms_woo_tab_url( 'cart_abandonment' ) ); ?>"
-				class="nav-tab <?php echo 'cart_abandonment' === $active_tab ? 'nav-tab-active' : ''; ?>">
+				class="nav-tab <?php echo 'cart_abandonment' === $kwtsms_active_tab ? 'nav-tab-active' : ''; ?>">
 				<?php esc_html_e( 'Cart Abandonment', 'kwtsms' ); ?>
 			</a>
-			<?php foreach ( $woo_template_defs as $key => $def ) : ?>
-			<a href="<?php echo esc_url( kwtsms_woo_tab_url( $key ) ); ?>"
-				class="nav-tab <?php echo $key === $active_tab ? 'nav-tab-active' : ''; ?>">
-				<?php echo esc_html( $def['tab_label'] ); ?>
+			<?php foreach ( $kwtsms_woo_template_defs as $kwtsms_key => $kwtsms_def ) : ?>
+			<a href="<?php echo esc_url( kwtsms_woo_tab_url( $kwtsms_key ) ); ?>"
+				class="nav-tab <?php echo $kwtsms_key === $kwtsms_active_tab ? 'nav-tab-active' : ''; ?>">
+				<?php echo esc_html( $kwtsms_def['tab_label'] ); ?>
 			</a>
 			<?php endforeach; ?>
 		</nav>
-		<?php if ( 'stock_alerts' === $active_tab ) : ?>
+		<?php if ( 'stock_alerts' === $kwtsms_active_tab ) : ?>
 		<div class="kwtsms-tab-section">
 
 			<!-- Stock Admin Phone -->
@@ -337,7 +337,7 @@ $customer_status_labels = array(
 						<td>
 							<input type="text"
 								name="kwtsms_otp_integrations[woo_stock_admin_phone]"
-								value="<?php echo esc_attr( $int['woo_stock_admin_phone'] ?? '' ); ?>"
+								value="<?php echo esc_attr( $kwtsms_int['woo_stock_admin_phone'] ?? '' ); ?>"
 								class="regular-text"
 								placeholder="<?php esc_attr_e( 'e.g. 96598765432, 96599220333', 'kwtsms' ); ?>" />
 							<p class="description"><?php esc_html_e( 'Comma-separated list of phone numbers (with country code) to receive stock notifications.', 'kwtsms' ); ?></p>
@@ -366,14 +366,14 @@ $customer_status_labels = array(
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_low_stock_enabled]"
 									value="1"
-									<?php checked( ! empty( $int['woo_low_stock_enabled'] ) ); ?> />
+									<?php checked( ! empty( $kwtsms_int['woo_low_stock_enabled'] ) ); ?> />
 								<?php esc_html_e( 'Send SMS on low stock', 'kwtsms' ); ?>
 							</label>
 						</td>
 					</tr>
 				</table>
 				<?php
-				$tpl_ls = $templates['woo_tpl_low_stock'] ?? array(
+				$kwtsms_tpl_ls = $kwtsms_templates['woo_tpl_low_stock'] ?? array(
 					'en' => '',
 					'ar' => '',
 				);
@@ -392,7 +392,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="ltr"
 								data-lang="en"
-							><?php echo esc_textarea( $tpl_ls['en'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_ls['en'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_low_stock_en">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -408,7 +408,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="rtl"
 								data-lang="ar"
-							><?php echo esc_textarea( $tpl_ls['ar'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_ls['ar'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_low_stock_ar">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -444,14 +444,14 @@ $customer_status_labels = array(
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_no_stock_enabled]"
 									value="1"
-									<?php checked( ! empty( $int['woo_no_stock_enabled'] ) ); ?> />
+									<?php checked( ! empty( $kwtsms_int['woo_no_stock_enabled'] ) ); ?> />
 								<?php esc_html_e( 'Send SMS on out of stock', 'kwtsms' ); ?>
 							</label>
 						</td>
 					</tr>
 				</table>
 				<?php
-				$tpl_ns = $templates['woo_tpl_no_stock'] ?? array(
+				$kwtsms_tpl_ns = $kwtsms_templates['woo_tpl_no_stock'] ?? array(
 					'en' => '',
 					'ar' => '',
 				);
@@ -470,7 +470,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="ltr"
 								data-lang="en"
-							><?php echo esc_textarea( $tpl_ns['en'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_ns['en'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_no_stock_en">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -486,7 +486,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="rtl"
 								data-lang="ar"
-							><?php echo esc_textarea( $tpl_ns['ar'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_ns['ar'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_no_stock_ar">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -522,14 +522,14 @@ $customer_status_labels = array(
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_backorder_enabled]"
 									value="1"
-									<?php checked( ! empty( $int['woo_backorder_enabled'] ) ); ?> />
+									<?php checked( ! empty( $kwtsms_int['woo_backorder_enabled'] ) ); ?> />
 								<?php esc_html_e( 'Send SMS on backorder', 'kwtsms' ); ?>
 							</label>
 						</td>
 					</tr>
 				</table>
 				<?php
-				$tpl_bo = $templates['woo_tpl_backorder'] ?? array(
+				$kwtsms_tpl_bo = $kwtsms_templates['woo_tpl_backorder'] ?? array(
 					'en' => '',
 					'ar' => '',
 				);
@@ -548,7 +548,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="ltr"
 								data-lang="en"
-							><?php echo esc_textarea( $tpl_bo['en'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_bo['en'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_backorder_en">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -564,7 +564,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="rtl"
 								data-lang="ar"
-							><?php echo esc_textarea( $tpl_bo['ar'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_bo['ar'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_backorder_ar">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -600,14 +600,14 @@ $customer_status_labels = array(
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_new_product_enabled]"
 									value="1"
-									<?php checked( ! empty( $int['woo_new_product_enabled'] ) ); ?> />
+									<?php checked( ! empty( $kwtsms_int['woo_new_product_enabled'] ) ); ?> />
 								<?php esc_html_e( 'Send SMS when a new product is published', 'kwtsms' ); ?>
 							</label>
 						</td>
 					</tr>
 				</table>
 				<?php
-				$tpl_np = $templates['woo_tpl_new_product'] ?? array(
+				$kwtsms_tpl_np = $kwtsms_templates['woo_tpl_new_product'] ?? array(
 					'en' => '',
 					'ar' => '',
 				);
@@ -626,7 +626,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="ltr"
 								data-lang="en"
-							><?php echo esc_textarea( $tpl_np['en'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_np['en'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_new_product_en">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -642,7 +642,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="rtl"
 								data-lang="ar"
-							><?php echo esc_textarea( $tpl_np['ar'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_np['ar'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_new_product_ar">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -678,14 +678,14 @@ $customer_status_labels = array(
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_back_in_stock_enabled]"
 									value="1"
-									<?php checked( ! empty( $int['woo_back_in_stock_enabled'] ) ); ?> />
+									<?php checked( ! empty( $kwtsms_int['woo_back_in_stock_enabled'] ) ); ?> />
 								<?php esc_html_e( 'Enable back-in-stock subscriber notifications', 'kwtsms' ); ?>
 							</label>
 						</td>
 					</tr>
 				</table>
 				<?php
-				$tpl_bis = $templates['woo_tpl_back_in_stock'] ?? array(
+				$kwtsms_tpl_bis = $kwtsms_templates['woo_tpl_back_in_stock'] ?? array(
 					'en' => '',
 					'ar' => '',
 				);
@@ -704,7 +704,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="ltr"
 								data-lang="en"
-							><?php echo esc_textarea( $tpl_bis['en'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_bis['en'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_back_in_stock_en">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -720,7 +720,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="rtl"
 								data-lang="ar"
-							><?php echo esc_textarea( $tpl_bis['ar'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_bis['ar'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_back_in_stock_ar">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -738,7 +738,7 @@ $customer_status_labels = array(
 
 		</div><!-- /.kwtsms-tab-section[stock_alerts] -->
 		<?php endif; ?>
-		<?php if ( 'multivendor' === $active_tab ) : ?>
+		<?php if ( 'multivendor' === $kwtsms_active_tab ) : ?>
 		<div class="kwtsms-tab-section">
 
 			<!-- Instant Order Alert -->
@@ -761,7 +761,7 @@ $customer_status_labels = array(
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_instant_order_enabled]"
 									value="1"
-									<?php checked( ! empty( $int['woo_instant_order_enabled'] ) ); ?> />
+									<?php checked( ! empty( $kwtsms_int['woo_instant_order_enabled'] ) ); ?> />
 								<?php esc_html_e( 'Send SMS on new order', 'kwtsms' ); ?>
 							</label>
 						</td>
@@ -771,7 +771,7 @@ $customer_status_labels = array(
 						<td>
 							<input type="text"
 								name="kwtsms_otp_integrations[woo_instant_order_phone]"
-								value="<?php echo esc_attr( $int['woo_instant_order_phone'] ?? '' ); ?>"
+								value="<?php echo esc_attr( $kwtsms_int['woo_instant_order_phone'] ?? '' ); ?>"
 								class="regular-text"
 								placeholder="<?php esc_attr_e( 'e.g. 96598765432, 96599220333', 'kwtsms' ); ?>" />
 							<p class="description"><?php esc_html_e( 'Comma-separated list of phone numbers (with country code) to receive instant order alerts.', 'kwtsms' ); ?></p>
@@ -779,7 +779,7 @@ $customer_status_labels = array(
 					</tr>
 				</table>
 				<?php
-				$tpl_io = $templates['woo_tpl_instant_order'] ?? array(
+				$kwtsms_tpl_io = $kwtsms_templates['woo_tpl_instant_order'] ?? array(
 					'en' => '',
 					'ar' => '',
 				);
@@ -798,7 +798,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="ltr"
 								data-lang="en"
-							><?php echo esc_textarea( $tpl_io['en'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_io['en'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_instant_order_en">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -814,7 +814,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="rtl"
 								data-lang="ar"
-							><?php echo esc_textarea( $tpl_io['ar'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_io['ar'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_instant_order_ar">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -853,14 +853,14 @@ $customer_status_labels = array(
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_vendor_sms_enabled]"
 									value="1"
-									<?php checked( ! empty( $int['woo_vendor_sms_enabled'] ) ); ?> />
+									<?php checked( ! empty( $kwtsms_int['woo_vendor_sms_enabled'] ) ); ?> />
 								<?php esc_html_e( 'Send SMS to vendors on new order', 'kwtsms' ); ?>
 							</label>
 						</td>
 					</tr>
 				</table>
 				<?php
-				$tpl_vno = $templates['woo_tpl_vendor_new_order'] ?? array(
+				$kwtsms_tpl_vno = $kwtsms_templates['woo_tpl_vendor_new_order'] ?? array(
 					'en' => '',
 					'ar' => '',
 				);
@@ -879,7 +879,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="ltr"
 								data-lang="en"
-							><?php echo esc_textarea( $tpl_vno['en'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_vno['en'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_vendor_new_order_en">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -895,7 +895,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="rtl"
 								data-lang="ar"
-							><?php echo esc_textarea( $tpl_vno['ar'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_vno['ar'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_vendor_new_order_ar">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -913,7 +913,7 @@ $customer_status_labels = array(
 
 		</div><!-- /.kwtsms-tab-section[multivendor] -->
 		<?php endif; ?>
-		<?php if ( 'cart_abandonment' === $active_tab ) : ?>
+		<?php if ( 'cart_abandonment' === $kwtsms_active_tab ) : ?>
 		<div class="kwtsms-tab-section">
 
 			<!-- Cart Abandonment Settings -->
@@ -932,7 +932,7 @@ $customer_status_labels = array(
 								<input type="checkbox"
 									name="kwtsms_otp_integrations[woo_cart_abandon_enabled]"
 									value="1"
-									<?php checked( ! empty( $int['woo_cart_abandon_enabled'] ) ); ?> />
+									<?php checked( ! empty( $kwtsms_int['woo_cart_abandon_enabled'] ) ); ?> />
 								<?php esc_html_e( 'Enable cart abandonment recovery SMS', 'kwtsms' ); ?>
 							</label>
 						</td>
@@ -942,7 +942,7 @@ $customer_status_labels = array(
 						<td>
 							<input type="number"
 								name="kwtsms_otp_integrations[woo_cart_abandon_delay]"
-								value="<?php echo absint( $int['woo_cart_abandon_delay'] ?? 60 ); ?>"
+								value="<?php echo absint( $kwtsms_int['woo_cart_abandon_delay'] ?? 60 ); ?>"
 								min="1"
 								class="small-text" />
 							<p class="description"><?php esc_html_e( 'Minutes of inactivity before the recovery SMS is sent.', 'kwtsms' ); ?></p>
@@ -953,7 +953,7 @@ $customer_status_labels = array(
 						<td>
 							<input type="number"
 								name="kwtsms_otp_integrations[woo_cart_abandon_coupon]"
-								value="<?php echo absint( $int['woo_cart_abandon_coupon'] ?? 10 ); ?>"
+								value="<?php echo absint( $kwtsms_int['woo_cart_abandon_coupon'] ?? 10 ); ?>"
 								min="0"
 								max="100"
 								class="small-text" />
@@ -965,7 +965,7 @@ $customer_status_labels = array(
 						<td>
 							<input type="number"
 								name="kwtsms_otp_integrations[woo_cart_abandon_expiry]"
-								value="<?php echo absint( $int['woo_cart_abandon_expiry'] ?? 48 ); ?>"
+								value="<?php echo absint( $kwtsms_int['woo_cart_abandon_expiry'] ?? 48 ); ?>"
 								min="1"
 								class="small-text" />
 							<p class="description"><?php esc_html_e( 'Hours until the generated coupon expires.', 'kwtsms' ); ?></p>
@@ -987,7 +987,7 @@ $customer_status_labels = array(
 					<code>{site_name}, {first_name}, {cart_total}, {coupon_code}, {discount}, {cart_url}</code>
 				</p>
 				<?php
-				$tpl_ca = $templates['woo_tpl_cart_abandon'] ?? array(
+				$kwtsms_tpl_ca = $kwtsms_templates['woo_tpl_cart_abandon'] ?? array(
 					'en' => '',
 					'ar' => '',
 				);
@@ -1006,7 +1006,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="ltr"
 								data-lang="en"
-							><?php echo esc_textarea( $tpl_ca['en'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_ca['en'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_cart_abandon_en">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -1022,7 +1022,7 @@ $customer_status_labels = array(
 								rows="3"
 								dir="rtl"
 								data-lang="ar"
-							><?php echo esc_textarea( $tpl_ca['ar'] ); ?></textarea>
+							><?php echo esc_textarea( $kwtsms_tpl_ca['ar'] ); ?></textarea>
 							<div class="kwtsms-char-counter" data-target="int_woo_tpl_cart_abandon_ar">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
@@ -1042,24 +1042,24 @@ $customer_status_labels = array(
 		<?php endif; ?>
 
 		<?php
-		foreach ( $woo_template_defs as $key => $def ) :
-			$tpl       = $templates[ $key ] ?? array(
+		foreach ( $kwtsms_woo_template_defs as $kwtsms_key => $kwtsms_def ) :
+			$kwtsms_tpl       = $kwtsms_templates[ $kwtsms_key ] ?? array(
 				'enabled' => 0,
 				'en'      => '',
 				'ar'      => '',
 			);
-			$is_active = ( $key === $active_tab );
+			$kwtsms_is_active = ( $kwtsms_key === $kwtsms_active_tab );
 			?>
-		<div class="kwtsms-tab-section"<?php echo $is_active ? '' : ' style="display:none;"'; ?>>
+		<div class="kwtsms-tab-section"<?php echo $kwtsms_is_active ? '' : ' style="display:none;"'; ?>>
 
 			<div class="kwtsms-template-card">
 				<div class="kwtsms-template-card-header">
-					<h3><?php echo esc_html( $def['label'] ); ?></h3>
+					<h3><?php echo esc_html( $kwtsms_def['label'] ); ?></h3>
 				</div>
-				<p class="description"><?php echo esc_html( $def['description'] ); ?></p>
+				<p class="description"><?php echo esc_html( $kwtsms_def['description'] ); ?></p>
 				<p class="description" style="margin-top:4px;">
 					<strong><?php esc_html_e( 'Placeholders:', 'kwtsms' ); ?></strong>
-					<code><?php echo esc_html( $def['placeholders'] ); ?></code>
+					<code><?php echo esc_html( $kwtsms_def['placeholders'] ); ?></code>
 				</p>
 
 				<div class="kwtsms-lang-tabs">
@@ -1070,14 +1070,14 @@ $customer_status_labels = array(
 					<div class="kwtsms-tab-pane" data-tab="en">
 						<div class="kwtsms-textarea-wrap">
 							<textarea
-								name="kwtsms_otp_integrations[<?php echo esc_attr( $key ); ?>][en]"
-								id="int_<?php echo esc_attr( $key ); ?>_en"
+								name="kwtsms_otp_integrations[<?php echo esc_attr( $kwtsms_key ); ?>][en]"
+								id="int_<?php echo esc_attr( $kwtsms_key ); ?>_en"
 								class="large-text kwtsms-sms-textarea"
 								rows="3"
 								dir="ltr"
 								data-lang="en"
-							><?php echo esc_textarea( $tpl['en'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $key ); ?>_en">
+							><?php echo esc_textarea( $kwtsms_tpl['en'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $kwtsms_key ); ?>_en">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
 							</div>
@@ -1086,14 +1086,14 @@ $customer_status_labels = array(
 					<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
 						<div class="kwtsms-textarea-wrap">
 							<textarea
-								name="kwtsms_otp_integrations[<?php echo esc_attr( $key ); ?>][ar]"
-								id="int_<?php echo esc_attr( $key ); ?>_ar"
+								name="kwtsms_otp_integrations[<?php echo esc_attr( $kwtsms_key ); ?>][ar]"
+								id="int_<?php echo esc_attr( $kwtsms_key ); ?>_ar"
 								class="large-text kwtsms-sms-textarea"
 								rows="3"
 								dir="rtl"
 								data-lang="ar"
-							><?php echo esc_textarea( $tpl['ar'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $key ); ?>_ar">
+							><?php echo esc_textarea( $kwtsms_tpl['ar'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="int_<?php echo esc_attr( $kwtsms_key ); ?>_ar">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
 							</div>
@@ -1102,13 +1102,13 @@ $customer_status_labels = array(
 				</div>
 				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
 					<button type="button" class="button kwtsms-reset-template"
-						data-key="<?php echo esc_attr( $key ); ?>">
+						data-key="<?php echo esc_attr( $kwtsms_key ); ?>">
 						&#8635; <?php esc_html_e( 'Reset to Default', 'kwtsms' ); ?>
 					</button>
 				</div>
 			</div>
 
-		</div><!-- /.kwtsms-tab-section[<?php echo esc_attr( $key ); ?>] -->
+		</div><!-- /.kwtsms-tab-section[<?php echo esc_attr( $kwtsms_key ); ?>] -->
 		<?php endforeach; ?>
 
 		<?php submit_button( __( 'Save WooCommerce Settings', 'kwtsms' ), 'primary kwtsms-save-btn' ); ?>

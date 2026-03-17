@@ -10,16 +10,16 @@
 defined( 'ABSPATH' ) || exit;
 
 // phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
-$settings             = $this->plugin->settings;
-$credentials_verified = (bool) $settings->get( 'gateway.credentials_verified', false );
-$has_credentials      = $credentials_verified
-	&& ! empty( $settings->get( 'gateway.api_username', '' ) )
-	&& ! empty( $settings->get( 'gateway.api_password', '' ) );
-$has_sender           = $credentials_verified && ! empty( $settings->get( 'gateway.sender_id', '' ) );
-$test_mode            = (bool) $settings->get( 'gateway.test_mode', 1 );
-$debug_logging        = (bool) $settings->get( 'general.debug_logging', 0 );
+$kwtsms_settings             = $this->plugin->settings;
+$kwtsms_credentials_verified = (bool) $kwtsms_settings->get( 'gateway.credentials_verified', false );
+$kwtsms_has_credentials      = $kwtsms_credentials_verified
+	&& ! empty( $kwtsms_settings->get( 'gateway.api_username', '' ) )
+	&& ! empty( $kwtsms_settings->get( 'gateway.api_password', '' ) );
+$kwtsms_has_sender           = $kwtsms_credentials_verified && ! empty( $kwtsms_settings->get( 'gateway.sender_id', '' ) );
+$kwtsms_test_mode            = (bool) $kwtsms_settings->get( 'gateway.test_mode', 1 );
+$kwtsms_debug_logging        = (bool) $kwtsms_settings->get( 'general.debug_logging', 0 );
 // Relative content path (e.g. "wp-content") for display — avoids showing full server paths.
-$content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
+$kwtsms_content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 	? rtrim( str_replace( trailingslashit( ABSPATH ), '', WP_CONTENT_DIR ), '/' )
 	: 'wp-content';
 ?>
@@ -40,7 +40,7 @@ $content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			<tr>
 				<td style="padding:6px 0;width:200px;"><strong><?php esc_html_e( 'API Credentials', 'kwtsms' ); ?></strong></td>
 				<td>
-					<?php if ( $has_credentials ) : ?>
+					<?php if ( $kwtsms_has_credentials ) : ?>
 					<span style="color:#46b450;">&#10003; <?php esc_html_e( 'Configured', 'kwtsms' ); ?></span>
 					<?php else : ?>
 					<span style="color:#dc3232;">&#10007; <?php esc_html_e( 'Not configured', 'kwtsms' ); ?></span>,
@@ -51,8 +51,8 @@ $content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			<tr>
 				<td style="padding:6px 0;"><strong><?php esc_html_e( 'Sender ID', 'kwtsms' ); ?></strong></td>
 				<td>
-					<?php if ( $has_sender ) : ?>
-					<span style="color:#46b450;">&#10003; <?php echo esc_html( $settings->get( 'gateway.sender_id', '' ) ); ?></span>
+					<?php if ( $kwtsms_has_sender ) : ?>
+					<span style="color:#46b450;">&#10003; <?php echo esc_html( $kwtsms_settings->get( 'gateway.sender_id', '' ) ); ?></span>
 					<?php else : ?>
 					<span style="color:#dc3232;">&#10007; <?php esc_html_e( 'Not selected', 'kwtsms' ); ?></span>,
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-gateway' ) ); ?>"><?php esc_html_e( 'Go to Gateway Settings ', 'kwtsms' ); ?></a>
@@ -62,7 +62,7 @@ $content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			<tr>
 				<td style="padding:6px 0;"><strong><?php esc_html_e( 'Test Mode', 'kwtsms' ); ?></strong></td>
 				<td>
-					<?php if ( $test_mode ) : ?>
+					<?php if ( $kwtsms_test_mode ) : ?>
 					<span style="color:#FFA200;font-weight:600;"><?php esc_html_e( 'ON, no real SMS is sent', 'kwtsms' ); ?></span>
 					<?php else : ?>
 					<span style="color:#46b450;"><?php esc_html_e( 'OFF, live SMS delivery', 'kwtsms' ); ?></span>
@@ -72,9 +72,9 @@ $content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 			<tr>
 				<td style="padding:6px 0;"><strong><?php esc_html_e( 'Debug Logging', 'kwtsms' ); ?></strong></td>
 				<td>
-					<?php if ( $debug_logging ) : ?>
+					<?php if ( $kwtsms_debug_logging ) : ?>
 					<span style="color:#FFA200;font-weight:600;"><?php esc_html_e( 'ON', 'kwtsms' ); ?></span>,
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ); ?>"><?php echo esc_html( $content_dir . '/kwtsms-debug.log' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' ) ); ?>"><?php echo esc_html( $kwtsms_content_dir . '/kwtsms-debug.log' ); ?></a>
 					<?php else : ?>
 					<span style="color:#757575;"><?php esc_html_e( 'OFF', 'kwtsms' ); ?></span>,
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ); ?>"><?php esc_html_e( 'Enable in General Settings ', 'kwtsms' ); ?></a>
@@ -85,20 +85,20 @@ $content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 				<td style="padding:6px 0;"><strong><?php esc_html_e( 'Account Balance', 'kwtsms' ); ?></strong></td>
 				<td>
 					<?php
-					$bal_available = $settings->get( 'gateway.balance_available', null );
-					$bal_updated   = (int) $settings->get( 'gateway.balance_updated_at', 0 );
-					if ( $credentials_verified && null !== $bal_available ) :
+					$kwtsms_bal_available = $kwtsms_settings->get( 'gateway.balance_available', null );
+					$kwtsms_bal_updated   = (int) $kwtsms_settings->get( 'gateway.balance_updated_at', 0 );
+					if ( $kwtsms_credentials_verified && null !== $kwtsms_bal_available ) :
 						?>
 					<span style="color:#46b450;font-weight:600;">
-						<?php echo esc_html( number_format( (float) $bal_available, 2 ) ); ?>
+						<?php echo esc_html( number_format( (float) $kwtsms_bal_available, 2 ) ); ?>
 					</span>
-						<?php if ( $bal_updated > 0 ) : ?>
+						<?php if ( $kwtsms_bal_updated > 0 ) : ?>
 					<span style="color:#888;font-size:12px;">
 							<?php
 							printf(
 							/* translators: %s: human-readable time difference */
 								esc_html__( '(updated %s ago)', 'kwtsms' ),
-								esc_html( human_time_diff( $bal_updated, time() ) )
+								esc_html( human_time_diff( $kwtsms_bal_updated, time() ) )
 							);
 							?>
 					</span>
@@ -445,12 +445,12 @@ $content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		<h3><?php esc_html_e( 'Where is the debug log?', 'kwtsms' ); ?></h3>
 		<p>
 			<?php
-			$debug_log_url = admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' );
+			$kwtsms_debug_log_url = admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' );
 			printf(
 				/* translators: 1: path to debug log file, 2: link to Logs page */
 				esc_html__( 'When Debug Logging is enabled, all API activity is recorded in %1$s. You can view, scroll, and download it directly from %2$s.', 'kwtsms' ),
-				'<code>' . esc_html( $content_dir . '/kwtsms-debug.log' ) . '</code>',
-				'<a href="' . esc_url( $debug_log_url ) . '">' . esc_html__( 'Logs  Debug Log', 'kwtsms' ) . '</a>'
+				'<code>' . esc_html( $kwtsms_content_dir . '/kwtsms-debug.log' ) . '</code>',
+				'<a href="' . esc_url( $kwtsms_debug_log_url ) . '">' . esc_html__( 'Logs  Debug Log', 'kwtsms' ) . '</a>'
 			);
 			?>
 		</p>

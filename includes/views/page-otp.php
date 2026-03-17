@@ -10,53 +10,53 @@
  * @var int     $cooldown       Resend cooldown in seconds.
  * @var string  $redirect_to    Post-login redirect URL.
  * @var string  $nonce_resend   Nonce for AJAX resend request.
- * @var bool    $is_reset       True when rendering for password reset context.
+ * @var bool    $kwtsms_is_reset       True when rendering for password reset context.
  *
  * @package KwtSMS_OTP
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$is_reset  = $is_reset ?? false;
-$site_name = get_bloginfo( 'name' );
-$login_url = wp_login_url();
+$kwtsms_is_reset  = $is_reset ?? false;
+$kwtsms_site_name = get_bloginfo( 'name' );
+$kwtsms_login_url = wp_login_url();
 
 // Build site logo — matches WordPress login page header behaviour.
-$custom_logo_id = get_theme_mod( 'custom_logo' );
-if ( $custom_logo_id ) {
+$kwtsms_custom_logo_id = get_theme_mod( 'custom_logo' );
+if ( $kwtsms_custom_logo_id ) {
 	// Custom logo set via Customizer.
-	$logo_html = wp_get_attachment_image(
-		$custom_logo_id,
+	$kwtsms_logo_html = wp_get_attachment_image(
+		$kwtsms_custom_logo_id,
 		array( 312, 84 ),
 		false,
-		array( 'alt' => $site_name )
+		array( 'alt' => $kwtsms_site_name )
 	);
 } elseif ( has_site_icon() ) {
 	// Site icon — WordPress login page uses this as fallback since WP 5.5.
-	$logo_html = '<img src="' . esc_url( get_site_icon_url( 84 ) ) . '" alt="' . esc_attr( $site_name ) . '" style="max-height:84px;width:auto;" />';
+	$kwtsms_logo_html = '<img src="' . esc_url( get_site_icon_url( 84 ) ) . '" alt="' . esc_attr( $kwtsms_site_name ) . '" style="max-height:84px;width:auto;" />';
 } else {
 	// No logo — visually hide the text with screen-reader-text so WordPress login CSS
 	// (#login h1 a background-image) shows the WordPress logo instead.
-	$logo_html = '<span class="screen-reader-text">' . esc_html( $site_name ) . '</span>';
+	$kwtsms_logo_html = '<span class="screen-reader-text">' . esc_html( $kwtsms_site_name ) . '</span>';
 }
 
 // Referral link settings.
-$referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 0 ) : false;
-$page_title            = $is_reset
+$kwtsms_referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 0 ) : false;
+$kwtsms_page_title            = $kwtsms_is_reset
 	? __( 'Verify Your Identity: Password Reset', 'kwtsms' )
 	: __( 'Enter Your Verification Code', 'kwtsms' );
 
-$masked_phone = '';
+$kwtsms_masked_phone = '';
 if ( ! empty( $token ) ) {
 	// Use the correct transient prefix depending on context (login vs. reset).
-	$transient_key = $is_reset
+	$kwtsms_transient_key = $kwtsms_is_reset
 		? KwtSMS_Reset_OTP::RESET_TRANSIENT_PREFIX . $token
 		: 'kwtsms_partial_auth_' . $token;
-	$partial       = get_transient( $transient_key );
-	if ( $partial && ! empty( $partial['phone'] ) ) {
-		$p            = $partial['phone'];
-		$len          = strlen( $p );
-		$masked_phone = substr( $p, 0, max( 0, $len - 4 ) ) . '****';
+	$kwtsms_partial       = get_transient( $kwtsms_transient_key );
+	if ( $kwtsms_partial && ! empty( $kwtsms_partial['phone'] ) ) {
+		$kwtsms_p            = $kwtsms_partial['phone'];
+		$kwtsms_len          = strlen( $kwtsms_p );
+		$kwtsms_masked_phone = substr( $kwtsms_p, 0, max( 0, $kwtsms_len - 4 ) ) . '****';
 	}
 }
 ?>
@@ -65,31 +65,31 @@ if ( ! empty( $token ) ) {
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title><?php echo esc_html( $page_title . ' — ' . $site_name ); ?></title>
+	<title><?php echo esc_html( $kwtsms_page_title . ' — ' . $kwtsms_site_name ); ?></title>
 	<?php wp_head(); ?>
 </head>
 <body class="login wp-core-ui">
 <div id="login">
 
 	<h1>
-		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( $site_name ); ?>" tabindex="-1">
-			<?php echo $logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( $kwtsms_site_name ); ?>" tabindex="-1">
+			<?php echo $kwtsms_logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</a>
 	</h1>
 
 	<div class="kwtsms-otp-box">
 		<h2 class="kwtsms-otp-title">
-			<?php echo esc_html( $is_reset ? __( 'Password Reset', 'kwtsms' ) : __( 'Two-Step Verification', 'kwtsms' ) ); ?>
+			<?php echo esc_html( $kwtsms_is_reset ? __( 'Password Reset', 'kwtsms' ) : __( 'Two-Step Verification', 'kwtsms' ) ); ?>
 		</h2>
 
-		<?php if ( ! empty( $masked_phone ) ) : ?>
+		<?php if ( ! empty( $kwtsms_masked_phone ) ) : ?>
 		<p class="kwtsms-otp-desc">
 			<?php
 			printf(
 				/* translators: %s: partially masked phone number */
 				esc_html__( 'We sent a %1$d-digit code to %2$s', 'kwtsms' ),
 				(int) $otp_length,
-				'<strong>' . esc_html( $masked_phone ) . '</strong>'
+				'<strong>' . esc_html( $kwtsms_masked_phone ) . '</strong>'
 			);
 			?>
 		</p>
@@ -112,16 +112,16 @@ if ( ! empty( $token ) ) {
 		<?php endif; ?>
 
 		<?php
-		$form_action  = ! empty( $is_reset )
-			? add_query_arg( 'action', 'kwtsms_reset_otp', $login_url )
-			: add_query_arg( 'action', 'kwtsms_otp', $login_url );
-		$nonce_action = ! empty( $is_reset ) ? 'kwtsms_reset_otp_submit' : 'kwtsms_otp_submit';
-		$nonce_field  = ! empty( $is_reset ) ? 'kwtsms_reset_nonce' : 'kwtsms_otp_nonce';
+		$kwtsms_form_action  = ! empty( $kwtsms_is_reset )
+			? add_query_arg( 'action', 'kwtsms_reset_otp', $kwtsms_login_url )
+			: add_query_arg( 'action', 'kwtsms_otp', $kwtsms_login_url );
+		$kwtsms_nonce_action = ! empty( $kwtsms_is_reset ) ? 'kwtsms_reset_otp_submit' : 'kwtsms_otp_submit';
+		$kwtsms_nonce_field  = ! empty( $kwtsms_is_reset ) ? 'kwtsms_reset_nonce' : 'kwtsms_otp_nonce';
 		?>
-		<form method="post" action="<?php echo esc_url( $form_action ); ?>" id="kwtsms-otp-form">
-			<?php wp_nonce_field( $nonce_action, $nonce_field ); ?>
+		<form method="post" action="<?php echo esc_url( $kwtsms_form_action ); ?>" id="kwtsms-otp-form">
+			<?php wp_nonce_field( $kwtsms_nonce_action, $kwtsms_nonce_field ); ?>
 
-			<?php if ( $is_reset ) : ?>
+			<?php if ( $kwtsms_is_reset ) : ?>
 				<input type="hidden" name="kwtsms_context" value="reset" />
 			<?php endif; ?>
 
@@ -148,7 +148,7 @@ if ( ! empty( $token ) ) {
 				/>
 			</div>
 
-			<?php if ( ! $is_reset ) : ?>
+			<?php if ( ! $kwtsms_is_reset ) : ?>
 			<div class="kwtsms-trust-device">
 				<label>
 					<input type="checkbox" name="kwtsms_trust_device" value="1" />
@@ -169,7 +169,7 @@ if ( ! empty( $token ) ) {
 				data-cooldown="<?php echo (int) $cooldown; ?>"
 				data-ajax="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>"
 				data-token="<?php echo esc_attr( $token ?? '' ); ?>"
-				data-context="<?php echo esc_attr( $is_reset ? 'reset' : 'login' ); ?>"
+				data-context="<?php echo esc_attr( $kwtsms_is_reset ? 'reset' : 'login' ); ?>"
 				disabled
 			>
 				<?php
@@ -184,7 +184,7 @@ if ( ! empty( $token ) ) {
 		</div>
 
 		<p class="kwtsms-back-link">
-			<a href="<?php echo esc_url( $login_url ); ?>">
+			<a href="<?php echo esc_url( $kwtsms_login_url ); ?>">
 				← <?php esc_html_e( 'Back to login', 'kwtsms' ); ?>
 			</a>
 		</p>
@@ -194,11 +194,11 @@ if ( ! empty( $token ) ) {
 <?php wp_footer(); ?>
 
 <?php
-if ( $referral_link_enabled ) :
-	$ref_url = add_query_arg( 'ref', wp_parse_url( home_url(), PHP_URL_HOST ), 'https://www.kwtsms.com/' );
+if ( $kwtsms_referral_link_enabled ) :
+	$kwtsms_ref_url = add_query_arg( 'ref', wp_parse_url( home_url(), PHP_URL_HOST ), 'https://www.kwtsms.com/' );
 	?>
 <p class="kwtsms-powered-by" style="text-align:center;font-size:11px;color:#888;margin-top:16px;">
-	<a href="<?php echo esc_url( $ref_url ); ?>" target="_blank" rel="noopener">
+	<a href="<?php echo esc_url( $kwtsms_ref_url ); ?>" target="_blank" rel="noopener">
 		<?php esc_html_e( 'SMS service by kwtSMS.com', 'kwtsms' ); ?>
 	</a>
 </p>

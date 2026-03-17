@@ -12,50 +12,50 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$error_message   = $error_message ?? '';
-$success_message = $success_message ?? '';
-$site_name       = get_bloginfo( 'name' );
-$login_url       = wp_login_url();
+$kwtsms_error_message   = $error_message ?? '';
+$kwtsms_success_message = $success_message ?? '';
+$kwtsms_site_name       = get_bloginfo( 'name' );
+$kwtsms_login_url       = wp_login_url();
 
 /* $plugin_settings is passed as a local variable from KwtSMS_Login_OTP::render_passwordless_page() */
-$captcha = new KwtSMS_Captcha( $plugin_settings ?? new KwtSMS_Settings() );
+$kwtsms_captcha = new KwtSMS_Captcha( $plugin_settings ?? new KwtSMS_Settings() );
 
 // Build site logo — matches WordPress login page header behaviour.
-$custom_logo_id = get_theme_mod( 'custom_logo' );
-if ( $custom_logo_id ) {
+$kwtsms_custom_logo_id = get_theme_mod( 'custom_logo' );
+if ( $kwtsms_custom_logo_id ) {
 	// Custom logo set via Customizer.
-	$logo_html = wp_get_attachment_image(
-		$custom_logo_id,
+	$kwtsms_logo_html = wp_get_attachment_image(
+		$kwtsms_custom_logo_id,
 		array( 312, 84 ),
 		false,
-		array( 'alt' => $site_name )
+		array( 'alt' => $kwtsms_site_name )
 	);
 } elseif ( has_site_icon() ) {
 	// Site icon — WordPress login page uses this as fallback since WP 5.5.
-	$logo_html = '<img src="' . esc_url( get_site_icon_url( 84 ) ) . '" alt="' . esc_attr( $site_name ) . '" style="max-height:84px;width:auto;" />';
+	$kwtsms_logo_html = '<img src="' . esc_url( get_site_icon_url( 84 ) ) . '" alt="' . esc_attr( $kwtsms_site_name ) . '" style="max-height:84px;width:auto;" />';
 } else {
 	// No logo — visually hide the text with screen-reader-text so WordPress login CSS
 	// (#login h1 a background-image) shows the WordPress logo instead.
-	$logo_html = '<span class="screen-reader-text">' . esc_html( $site_name ) . '</span>';
+	$kwtsms_logo_html = '<span class="screen-reader-text">' . esc_html( $kwtsms_site_name ) . '</span>';
 }
 
 // Referral link settings.
-$referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 0 ) : false;
+$kwtsms_referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->get( 'general.referral_link', 0 ) : false;
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title><?php echo esc_html( __( 'Login with SMS — ', 'kwtsms' ) . $site_name ); ?></title>
+	<title><?php echo esc_html( __( 'Login with SMS — ', 'kwtsms' ) . $kwtsms_site_name ); ?></title>
 	<?php wp_head(); ?>
 </head>
 <body class="login wp-core-ui">
 <div id="login">
 
 	<h1>
-		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( $site_name ); ?>" tabindex="-1">
-			<?php echo $logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( $kwtsms_site_name ); ?>" tabindex="-1">
+			<?php echo $kwtsms_logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</a>
 	</h1>
 
@@ -63,15 +63,15 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 		<h2 class="kwtsms-otp-title"><?php esc_html_e( 'Login with SMS', 'kwtsms' ); ?></h2>
 		<p class="kwtsms-otp-desc"><?php esc_html_e( 'Enter your registered phone number to receive a one-time login code.', 'kwtsms' ); ?></p>
 
-		<?php if ( ! empty( $error_message ) ) : ?>
-		<div class="kwtsms-otp-error" role="alert"><?php echo esc_html( $error_message ); ?></div>
+		<?php if ( ! empty( $kwtsms_error_message ) ) : ?>
+		<div class="kwtsms-otp-error" role="alert"><?php echo esc_html( $kwtsms_error_message ); ?></div>
 		<?php endif; ?>
 
-		<?php if ( ! empty( $success_message ) ) : ?>
-		<div class="kwtsms-otp-success" role="status"><?php echo esc_html( $success_message ); ?></div>
+		<?php if ( ! empty( $kwtsms_success_message ) ) : ?>
+		<div class="kwtsms-otp-success" role="status"><?php echo esc_html( $kwtsms_success_message ); ?></div>
 		<?php endif; ?>
 
-		<form method="post" action="<?php echo esc_url( add_query_arg( 'action', 'kwtsms_passwordless', $login_url ) ); ?>" id="kwtsms-passwordless-form">
+		<form method="post" action="<?php echo esc_url( add_query_arg( 'action', 'kwtsms_passwordless', $kwtsms_login_url ) ); ?>" id="kwtsms-passwordless-form">
 			<?php wp_nonce_field( 'kwtsms_passwordless_submit', 'kwtsms_passwordless_nonce' ); ?>
 
 			<label class="screen-reader-text">
@@ -149,23 +149,23 @@ $referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_settings->ge
 				<input type="hidden" name="kwtsms_phone" id="kwtsms_phone_combined" />
 			</div>
 
-			<?php echo $captcha->render_widget(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo $kwtsms_captcha->render_widget(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
 			<input type="submit" class="button button-primary button-large kwtsms-btn" value="<?php esc_attr_e( 'Send OTP Code', 'kwtsms' ); ?>" />
 		</form>
 
 		<p class="kwtsms-back-link">
-			<a href="<?php echo esc_url( $login_url ); ?>">← <?php esc_html_e( 'Back to login', 'kwtsms' ); ?></a>
+			<a href="<?php echo esc_url( $kwtsms_login_url ); ?>">← <?php esc_html_e( 'Back to login', 'kwtsms' ); ?></a>
 		</p>
 	</div>
 </div>
 
 <?php
-if ( $referral_link_enabled ) :
-	$ref_url = add_query_arg( 'ref', wp_parse_url( home_url(), PHP_URL_HOST ), 'https://www.kwtsms.com/' );
+if ( $kwtsms_referral_link_enabled ) :
+	$kwtsms_ref_url = add_query_arg( 'ref', wp_parse_url( home_url(), PHP_URL_HOST ), 'https://www.kwtsms.com/' );
 	?>
 <p class="kwtsms-powered-by" style="text-align:center;font-size:11px;color:#888;margin-top:16px;">
-	<a href="<?php echo esc_url( $ref_url ); ?>" target="_blank" rel="noopener">
+	<a href="<?php echo esc_url( $kwtsms_ref_url ); ?>" target="_blank" rel="noopener">
 		<?php esc_html_e( 'SMS service by kwtSMS.com', 'kwtsms' ); ?>
 	</a>
 </p>

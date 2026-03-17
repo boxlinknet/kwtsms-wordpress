@@ -12,21 +12,21 @@
 defined( 'ABSPATH' ) || exit;
 
 // phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
-$templates = $this->plugin->settings->get_all_templates();
+$kwtsms_templates = $this->plugin->settings->get_all_templates();
 
-$template_labels = array(
+$kwtsms_template_labels = array(
 	'login_otp'   => __( 'Login OTP', 'kwtsms' ),
 	'reset_otp'   => __( 'Password Reset OTP', 'kwtsms' ),
 	'welcome_sms' => __( 'Welcome SMS', 'kwtsms' ),
 );
 
-$template_descriptions = array(
+$kwtsms_template_descriptions = array(
 	'login_otp'   => __( 'Sent when a user requests a login OTP code.', 'kwtsms' ),
 	'reset_otp'   => __( 'Sent when a user requests a password reset via OTP.', 'kwtsms' ),
 	'welcome_sms' => __( 'Sent after a new user account is created. (Optional)', 'kwtsms' ),
 );
 
-$template_placeholders = array(
+$kwtsms_template_placeholders = array(
 	'login_otp'   => array(
 		'{otp}'            => __( 'The generated OTP code', 'kwtsms' ),
 		'{site_name}'      => __( 'Your WordPress site name', 'kwtsms' ),
@@ -43,8 +43,8 @@ $template_placeholders = array(
 	),
 );
 
-$valid_tabs = array_keys( $template_labels );
-$active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$kwtsms_valid_tabs = array_keys( $kwtsms_template_labels );
+$kwtsms_active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $kwtsms_valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	? sanitize_key( $_GET['tab'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	: 'login_otp';
 
@@ -76,10 +76,10 @@ function kwtsms_templates_tab_url( $tab ) {
 
 	<!-- Tab navigation -->
 	<nav class="nav-tab-wrapper">
-		<?php foreach ( $template_labels as $key => $label ) : ?>
-		<a href="<?php echo esc_url( kwtsms_templates_tab_url( $key ) ); ?>"
-			class="nav-tab <?php echo $key === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php echo esc_html( $label ); ?>
+		<?php foreach ( $kwtsms_template_labels as $kwtsms_key => $kwtsms_label ) : ?>
+		<a href="<?php echo esc_url( kwtsms_templates_tab_url( $kwtsms_key ) ); ?>"
+			class="nav-tab <?php echo $kwtsms_key === $kwtsms_active_tab ? 'nav-tab-active' : ''; ?>">
+			<?php echo esc_html( $kwtsms_label ); ?>
 		</a>
 		<?php endforeach; ?>
 	</nav>
@@ -88,23 +88,23 @@ function kwtsms_templates_tab_url( $tab ) {
 		<?php settings_fields( 'kwtsms_otp_templates_group' ); ?>
 
 		<?php
-		foreach ( $template_labels as $key => $label ) :
-			$tpl       = $templates[ $key ] ?? array(
+		foreach ( $kwtsms_template_labels as $kwtsms_key => $kwtsms_label ) :
+			$kwtsms_tpl       = $kwtsms_templates[ $kwtsms_key ] ?? array(
 				'enabled' => 0,
 				'en'      => '',
 				'ar'      => '',
 			);
-			$is_active = ( $key === $active_tab );
+			$kwtsms_is_active = ( $kwtsms_key === $kwtsms_active_tab );
 			?>
-		<div class="kwtsms-tab-section"<?php echo $is_active ? ' style="margin-top:16px;"' : ' style="display:none;"'; ?>>
+		<div class="kwtsms-tab-section"<?php echo $kwtsms_is_active ? ' style="margin-top:16px;"' : ' style="display:none;"'; ?>>
 
 			<div class="kwtsms-placeholder-help">
 				<strong><?php esc_html_e( 'Available placeholders:', 'kwtsms' ); ?></strong>
 				<ul style="margin:6px 0 0 16px;list-style:disc;">
-					<?php foreach ( $template_placeholders[ $key ] as $placeholder => $desc ) : ?>
+					<?php foreach ( $kwtsms_template_placeholders[ $kwtsms_key ] as $kwtsms_placeholder => $kwtsms_desc ) : ?>
 					<li>
-						<span class="kwtsms-placeholder-tag"><?php echo esc_html( $placeholder ); ?></span>
-						<span class="kwtsms-placeholder-desc"><?php echo esc_html( $desc ); ?></span>
+						<span class="kwtsms-placeholder-tag"><?php echo esc_html( $kwtsms_placeholder ); ?></span>
+						<span class="kwtsms-placeholder-desc"><?php echo esc_html( $kwtsms_desc ); ?></span>
 					</li>
 					<?php endforeach; ?>
 				</ul>
@@ -112,9 +112,9 @@ function kwtsms_templates_tab_url( $tab ) {
 
 			<div class="kwtsms-template-card">
 				<div class="kwtsms-template-card-header">
-					<h3><?php echo esc_html( $label ); ?></h3>
+					<h3><?php echo esc_html( $kwtsms_label ); ?></h3>
 				</div>
-				<p class="description"><?php echo esc_html( $template_descriptions[ $key ] ); ?></p>
+				<p class="description"><?php echo esc_html( $kwtsms_template_descriptions[ $kwtsms_key ] ); ?></p>
 
 				<div class="kwtsms-lang-tabs">
 					<div class="kwtsms-tab-nav">
@@ -124,14 +124,14 @@ function kwtsms_templates_tab_url( $tab ) {
 					<div class="kwtsms-tab-pane" data-tab="en">
 						<div class="kwtsms-textarea-wrap">
 							<textarea
-								name="kwtsms_otp_templates[<?php echo esc_attr( $key ); ?>][en]"
-								id="tpl_<?php echo esc_attr( $key ); ?>_en"
+								name="kwtsms_otp_templates[<?php echo esc_attr( $kwtsms_key ); ?>][en]"
+								id="tpl_<?php echo esc_attr( $kwtsms_key ); ?>_en"
 								class="large-text kwtsms-sms-textarea"
 								rows="3"
 								dir="ltr"
 								data-lang="en"
-							><?php echo esc_textarea( $tpl['en'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="tpl_<?php echo esc_attr( $key ); ?>_en">
+							><?php echo esc_textarea( $kwtsms_tpl['en'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="tpl_<?php echo esc_attr( $kwtsms_key ); ?>_en">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
 							</div>
@@ -140,14 +140,14 @@ function kwtsms_templates_tab_url( $tab ) {
 					<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
 						<div class="kwtsms-textarea-wrap">
 							<textarea
-								name="kwtsms_otp_templates[<?php echo esc_attr( $key ); ?>][ar]"
-								id="tpl_<?php echo esc_attr( $key ); ?>_ar"
+								name="kwtsms_otp_templates[<?php echo esc_attr( $kwtsms_key ); ?>][ar]"
+								id="tpl_<?php echo esc_attr( $kwtsms_key ); ?>_ar"
 								class="large-text kwtsms-sms-textarea"
 								rows="3"
 								dir="rtl"
 								data-lang="ar"
-							><?php echo esc_textarea( $tpl['ar'] ); ?></textarea>
-							<div class="kwtsms-char-counter" data-target="tpl_<?php echo esc_attr( $key ); ?>_ar">
+							><?php echo esc_textarea( $kwtsms_tpl['ar'] ); ?></textarea>
+							<div class="kwtsms-char-counter" data-target="tpl_<?php echo esc_attr( $kwtsms_key ); ?>_ar">
 								<span class="kwtsms-char-count">0</span> <?php esc_html_e( 'characters', 'kwtsms' ); ?>
 								&middot; <span class="kwtsms-page-count">1</span> <?php esc_html_e( 'SMS page(s)', 'kwtsms' ); ?>
 							</div>
@@ -156,7 +156,7 @@ function kwtsms_templates_tab_url( $tab ) {
 				</div>
 				<div class="kwtsms-reset-wrap" style="margin-top:8px;">
 					<button type="button" class="button kwtsms-reset-template"
-						data-key="<?php echo esc_attr( $key ); ?>">
+						data-key="<?php echo esc_attr( $kwtsms_key ); ?>">
 						&#8635; <?php esc_html_e( 'Reset to Default', 'kwtsms' ); ?>
 					</button>
 				</div>

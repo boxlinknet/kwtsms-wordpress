@@ -12,11 +12,11 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
 
-$settings       = $this->plugin->settings;
-$required_roles = (array) $settings->get( 'general.otp_required_roles', array() );
+$kwtsms_settings       = $this->plugin->settings;
+$kwtsms_required_roles = (array) $kwtsms_settings->get( 'general.otp_required_roles', array() );
 
 // Query users without a phone who are subject to OTP.
-$query_args = array(
+$kwtsms_query_args = array(
 	'number'     => 200,
 	'orderby'    => 'display_name',
 	'order'      => 'ASC',
@@ -34,30 +34,30 @@ $query_args = array(
 	),
 );
 
-if ( ! empty( $required_roles ) ) {
-	$query_args['role__in'] = $required_roles;
+if ( ! empty( $kwtsms_required_roles ) ) {
+	$kwtsms_query_args['role__in'] = $kwtsms_required_roles;
 }
 
-$users      = get_users( $query_args );
-$user_count = count( $users );
-$nonce      = wp_create_nonce( 'kwtsms_admin_nonce' );
+$kwtsms_users      = get_users( $kwtsms_query_args );
+$kwtsms_user_count = count( $kwtsms_users );
+$kwtsms_nonce      = wp_create_nonce( 'kwtsms_admin_nonce' );
 
 // Resolve default dial code for client-side auto-prefixing.
-$default_iso2 = $settings->get( 'general.default_country_code', 'KW' );
-$all_ccs      = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
-$default_dial = '965'; // Kuwait fallback.
-foreach ( $all_ccs as $cc_row ) {
-	if ( $cc_row['iso2'] === $default_iso2 ) {
-		$default_dial = $cc_row['dial'];
+$kwtsms_default_iso2 = $kwtsms_settings->get( 'general.default_country_code', 'KW' );
+$kwtsms_all_ccs      = include KWTSMS_OTP_DIR . 'includes/data/country-codes.php';
+$kwtsms_default_dial = '965'; // Kuwait fallback.
+foreach ( $kwtsms_all_ccs as $kwtsms_cc_row ) {
+	if ( $kwtsms_cc_row['iso2'] === $kwtsms_default_iso2 ) {
+		$kwtsms_default_dial = $kwtsms_cc_row['dial'];
 		break;
 	}
 }
 
 // Human-readable role labels.
-$all_wp_roles = wp_roles()->get_names();
+$kwtsms_all_wp_roles = wp_roles()->get_names();
 
 // Color scheme per role slug.
-$role_colors = array(
+$kwtsms_role_colors = array(
 	'administrator' => array(
 		'bg' => '#1d2327',
 		'fg' => '#ffffff',
@@ -100,9 +100,9 @@ $role_colors = array(
 	<hr class="wp-header-end">
 
 	<?php // ── Summary bar ──────────────────────────────────────────────────── ?>
-	<div class="kwtsms-unphone-summary <?php echo $user_count > 0 ? 'is-warning' : 'is-ok'; ?>">
-		<span class="kwtsms-unphone-count" id="kwtsms-unphone-count"><?php echo (int) $user_count; ?></span>
-		<?php if ( $user_count > 0 ) : ?>
+	<div class="kwtsms-unphone-summary <?php echo $kwtsms_user_count > 0 ? 'is-warning' : 'is-ok'; ?>">
+		<span class="kwtsms-unphone-count" id="kwtsms-unphone-count"><?php echo (int) $kwtsms_user_count; ?></span>
+		<?php if ( $kwtsms_user_count > 0 ) : ?>
 			<div class="kwtsms-unphone-summary-text">
 				<strong><?php esc_html_e( 'Users need a phone number', 'kwtsms' ); ?></strong>
 				<span><?php esc_html_e( 'These users are required to verify via OTP but will bypass it until a phone is saved.', 'kwtsms' ); ?></span>
@@ -117,16 +117,16 @@ $role_colors = array(
 
 	<?php // ── Scope note ────────────────────────────────────────────────────── ?>
 	<p class="kwtsms-unphone-scope">
-		<?php if ( ! empty( $required_roles ) ) : ?>
+		<?php if ( ! empty( $kwtsms_required_roles ) ) : ?>
 			<?php
-			$role_name_list = array();
-			foreach ( $required_roles as $slug ) {
-				$role_name_list[] = isset( $all_wp_roles[ $slug ] ) ? translate_user_role( $all_wp_roles[ $slug ] ) : ucfirst( $slug );
+			$kwtsms_role_name_list = array();
+			foreach ( $kwtsms_required_roles as $kwtsms_slug ) {
+				$kwtsms_role_name_list[] = isset( $kwtsms_all_wp_roles[ $kwtsms_slug ] ) ? translate_user_role( $kwtsms_all_wp_roles[ $kwtsms_slug ] ) : ucfirst( $kwtsms_slug );
 			}
 			printf(
 				/* translators: 1: comma-separated role names, 2: link to General Settings */
 				esc_html__( 'Filtered to OTP-required roles: %1$s. Change roles in %2$s.', 'kwtsms' ),
-				'<strong>' . esc_html( implode( ', ', $role_name_list ) ) . '</strong>',
+				'<strong>' . esc_html( implode( ', ', $kwtsms_role_name_list ) ) . '</strong>',
 				'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ) . '">' . esc_html__( 'General Settings', 'kwtsms' ) . '</a>'
 			);
 			?>
@@ -141,7 +141,7 @@ $role_colors = array(
 		<?php endif; ?>
 	</p>
 
-	<?php if ( $user_count > 0 ) : ?>
+	<?php if ( $kwtsms_user_count > 0 ) : ?>
 
 	<table class="wp-list-table widefat fixed kwtsms-unphone-table" id="kwtsms-unphone-table">
 		<thead>
@@ -154,30 +154,30 @@ $role_colors = array(
 			</tr>
 		</thead>
 		<tbody id="kwtsms-unphone-tbody">
-			<?php foreach ( $users as $user ) : ?>
+			<?php foreach ( $kwtsms_users as $kwtsms_user ) : ?>
 				<?php
-				$roles        = (array) $user->roles;
-				$primary_role = $roles[0] ?? '';
-				$role_label   = isset( $all_wp_roles[ $primary_role ] )
-					? translate_user_role( $all_wp_roles[ $primary_role ] )
-					: ucfirst( $primary_role );
-				$chip         = $role_colors[ $primary_role ] ?? array(
+				$kwtsms_roles        = (array) $kwtsms_user->roles;
+				$kwtsms_primary_role = $kwtsms_roles[0] ?? '';
+				$kwtsms_role_label   = isset( $kwtsms_all_wp_roles[ $kwtsms_primary_role ] )
+					? translate_user_role( $kwtsms_all_wp_roles[ $kwtsms_primary_role ] )
+					: ucfirst( $kwtsms_primary_role );
+				$kwtsms_chip         = $kwtsms_role_colors[ $kwtsms_primary_role ] ?? array(
 					'bg' => '#e8e8e8',
 					'fg' => '#3c434a',
 				);
-				$chip_style   = 'background:' . $chip['bg'] . ';color:' . $chip['fg'];
+				$kwtsms_chip_style   = 'background:' . $kwtsms_chip['bg'] . ';color:' . $kwtsms_chip['fg'];
 				?>
-				<tr id="kwtsms-urow-<?php echo (int) $user->ID; ?>" class="kwtsms-unphone-row">
+				<tr id="kwtsms-urow-<?php echo (int) $kwtsms_user->ID; ?>" class="kwtsms-unphone-row">
 					<td style="padding:10px 8px;vertical-align:middle;text-align:center;">
-						<?php echo get_avatar( $user->ID, 28, '', '', array( 'class' => 'kwtsms-unphone-avatar' ) ); ?>
+						<?php echo get_avatar( $kwtsms_user->ID, 28, '', '', array( 'class' => 'kwtsms-unphone-avatar' ) ); ?>
 					</td>
 					<td style="padding:10px 12px;vertical-align:middle;">
-						<strong><?php echo esc_html( $user->display_name ); ?></strong><br>
-						<span class="kwtsms-unphone-login">@<?php echo esc_html( $user->user_login ); ?></span>
+						<strong><?php echo esc_html( $kwtsms_user->display_name ); ?></strong><br>
+						<span class="kwtsms-unphone-login">@<?php echo esc_html( $kwtsms_user->user_login ); ?></span>
 					</td>
 					<td style="padding:10px 12px;vertical-align:middle;">
-						<span class="kwtsms-unphone-role-chip" style="<?php echo esc_attr( $chip_style ); ?>">
-							<?php echo esc_html( $role_label ); ?>
+						<span class="kwtsms-unphone-role-chip" style="<?php echo esc_attr( $kwtsms_chip_style ); ?>">
+							<?php echo esc_html( $kwtsms_role_label ); ?>
 						</span>
 					</td>
 					<td style="padding:8px 12px;vertical-align:middle;">
@@ -186,7 +186,7 @@ $role_colors = array(
 							class="kwtsms-unphone-input"
 							placeholder="<?php esc_attr_e( 'e.g. 96598765432', 'kwtsms' ); ?>"
 							maxlength="15"
-							data-user-id="<?php echo (int) $user->ID; ?>"
+							data-user-id="<?php echo (int) $kwtsms_user->ID; ?>"
 							autocomplete="off"
 						/>
 						<span class="kwtsms-unphone-msg" aria-live="polite"></span>
@@ -194,7 +194,7 @@ $role_colors = array(
 					<td style="padding:8px 12px;vertical-align:middle;">
 						<button type="button"
 							class="button button-primary kwtsms-unphone-save-btn"
-							data-user-id="<?php echo (int) $user->ID; ?>">
+							data-user-id="<?php echo (int) $kwtsms_user->ID; ?>">
 							<?php esc_html_e( 'Save', 'kwtsms' ); ?>
 						</button>
 					</td>
@@ -224,8 +224,8 @@ wp_localize_script(
 	'kwtSmsUnphoneData',
 	array(
 		'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
-		'nonce'          => $nonce,
-		'defaultDial'    => $default_dial,
+		'nonce'          => $kwtsms_nonce,
+		'defaultDial'    => $kwtsms_default_dial,
 		'generalPageUrl' => admin_url( 'admin.php?page=kwtsms-otp' ),
 		'strings'        => array(
 			'saving'       => __( "Saving\u2026", 'kwtsms' ),

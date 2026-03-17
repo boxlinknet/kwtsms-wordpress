@@ -12,14 +12,14 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- @var KwtSMS_Admin $this, injected by admin controller.
 
-$settings = $this->plugin->settings;
+$kwtsms_settings = $this->plugin->settings;
 
-$integrations = array(
+$kwtsms_integrations = array(
 	'woo'       => array(
 		'label'       => __( 'WooCommerce', 'kwtsms' ),
 		'description' => __( 'Order status SMS notifications (7 statuses), checkout OTP gate, admin alerts, and per-order custom SMS from the order metabox.', 'kwtsms' ),
 		'active'      => class_exists( 'WooCommerce' ),
-		'sms_enabled' => (bool) $settings->get( 'integrations.woo_enabled', 1 ),
+		'sms_enabled' => (bool) $kwtsms_settings->get( 'integrations.woo_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-woo',
 		'wp_slug'     => 'woocommerce',
 		'plugin_file' => 'woocommerce/woocommerce.php',
@@ -28,7 +28,7 @@ $integrations = array(
 		'label'       => __( 'Contact Form 7', 'kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on form submission, or enable OTP gate to verify the phone before the form submits.', 'kwtsms' ),
 		'active'      => class_exists( 'WPCF7' ),
-		'sms_enabled' => (bool) $settings->get( 'integrations.cf7_enabled', 1 ),
+		'sms_enabled' => (bool) $kwtsms_settings->get( 'integrations.cf7_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-cf7',
 		'wp_slug'     => 'contact-form-7',
 		'plugin_file' => 'contact-form-7/wp-contact-form-7.php',
@@ -37,7 +37,7 @@ $integrations = array(
 		'label'       => __( 'WPForms', 'kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on form submission, or enable OTP gate to verify the phone before the form submits.', 'kwtsms' ),
 		'active'      => function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' ),
-		'sms_enabled' => (bool) $settings->get( 'integrations.wpforms_enabled', 1 ),
+		'sms_enabled' => (bool) $kwtsms_settings->get( 'integrations.wpforms_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-wpforms',
 		'wp_slug'     => 'wpforms-lite',
 		'plugin_file' => 'wpforms-lite/wpforms.php',
@@ -46,7 +46,7 @@ $integrations = array(
 		'label'       => __( 'Ninja Forms', 'kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification. Your form must include a phone field for SMS to trigger.', 'kwtsms' ),
 		'active'      => class_exists( 'Ninja_Forms' ),
-		'sms_enabled' => (bool) $settings->get( 'integrations.nf_enabled', 1 ),
+		'sms_enabled' => (bool) $kwtsms_settings->get( 'integrations.nf_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-nf',
 		'wp_slug'     => 'ninja-forms',
 		'plugin_file' => 'ninja-forms/ninja-forms.php',
@@ -55,7 +55,7 @@ $integrations = array(
 		'label'       => __( 'Elementor', 'kwtsms' ),
 		'description' => __( 'Send a confirmation SMS after an Elementor Pro form submission, or gate the form behind phone OTP verification. Requires Elementor Pro.', 'kwtsms' ),
 		'active'      => did_action( 'elementor/loaded' ) || class_exists( '\Elementor\Plugin' ),
-		'sms_enabled' => (bool) $settings->get( 'integrations.elementor_enabled', 1 ),
+		'sms_enabled' => (bool) $kwtsms_settings->get( 'integrations.elementor_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-elementor',
 		'wp_slug'     => 'elementor',
 		'plugin_file' => 'elementor/elementor.php',
@@ -64,14 +64,14 @@ $integrations = array(
 		'label'       => __( 'Gravity Forms', 'kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification.', 'kwtsms' ),
 		'active'      => class_exists( 'GFForms' ),
-		'sms_enabled' => (bool) $settings->get( 'integrations.gf_enabled', 1 ),
+		'sms_enabled' => (bool) $kwtsms_settings->get( 'integrations.gf_enabled', 1 ),
 		'slug'        => 'kwtsms-otp-int-gf',
 		'wp_slug'     => '',
 		'plugin_file' => 'gravityforms/gravityforms.php',
 	),
 );
 
-$icons = array(
+$kwtsms_icons = array(
 	'woo'       => '&#x1F6D2;',
 	'cf7'       => '&#x1F4CB;',
 	'wpforms'   => '&#x1F4DD;',
@@ -106,42 +106,42 @@ $icons = array(
 			</tr>
 		</thead>
 		<tbody>
-			<?php foreach ( $integrations as $key => $int ) : ?>
+			<?php foreach ( $kwtsms_integrations as $kwtsms_key => $kwtsms_int ) : ?>
 				<?php
 				// Determine plugin install and activation state.
-				$plugin_file  = $int['plugin_file'] ?? '';
-				$is_installed = $plugin_file && file_exists( WP_PLUGIN_DIR . '/' . $plugin_file );
+				$kwtsms_plugin_file  = $kwtsms_int['plugin_file'] ?? '';
+				$kwtsms_is_installed = $kwtsms_plugin_file && file_exists( WP_PLUGIN_DIR . '/' . $kwtsms_plugin_file );
 
 				// Activate URL — only for installed-but-inactive plugins; requires nonce.
-				$activate_url = ( $is_installed && ! $int['active'] && current_user_can( 'activate_plugins' ) )
+				$kwtsms_activate_url = ( $kwtsms_is_installed && ! $kwtsms_int['active'] && current_user_can( 'activate_plugins' ) )
 					? wp_nonce_url(
-						admin_url( 'plugins.php?action=activate&plugin=' . rawurlencode( $plugin_file ) ),
-						'activate-plugin_' . $plugin_file
+						admin_url( 'plugins.php?action=activate&plugin=' . rawurlencode( $kwtsms_plugin_file ) ),
+						'activate-plugin_' . $kwtsms_plugin_file
 					)
 					: null;
 
 				// Install URL — only when plugin is not on disk at all.
-				$install_url = ( ! $is_installed && ! empty( $int['wp_slug'] ) )
-					? admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . rawurlencode( $int['wp_slug'] ) )
+				$kwtsms_install_url = ( ! $kwtsms_is_installed && ! empty( $kwtsms_int['wp_slug'] ) )
+					? admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . rawurlencode( $kwtsms_int['wp_slug'] ) )
 					: null;
 				?>
 			<tr>
 				<td style="text-align:center;font-size:22px;padding:14px 8px;vertical-align:middle;">
-					<?php echo $icons[ $key ]; // phpcs:ignore WordPress.Security.EscapeOutput ?>
+					<?php echo $kwtsms_icons[ $kwtsms_key ]; // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				</td>
 				<td style="padding:14px 16px;vertical-align:middle;">
-					<strong style="font-size:14px;"><?php echo esc_html( $int['label'] ); ?></strong>
+					<strong style="font-size:14px;"><?php echo esc_html( $kwtsms_int['label'] ); ?></strong>
 				</td>
 				<td style="color:#555;font-size:13px;padding:14px 16px;vertical-align:middle;line-height:1.5;">
-					<?php echo esc_html( $int['description'] ); ?>
+					<?php echo esc_html( $kwtsms_int['description'] ); ?>
 				</td>
 				<td style="padding:14px 16px;vertical-align:middle;">
-					<?php if ( $int['active'] ) : ?>
+					<?php if ( $kwtsms_int['active'] ) : ?>
 						<span style="color:#00a32a;font-weight:600;">&#10003; <?php esc_html_e( 'Active', 'kwtsms' ); ?></span>
-					<?php elseif ( $is_installed ) : ?>
+					<?php elseif ( $kwtsms_is_installed ) : ?>
 						<span style="color:#b36c00;font-weight:600;">&#9711; <?php esc_html_e( 'Inactive', 'kwtsms' ); ?></span>
-					<?php elseif ( $install_url ) : ?>
-						<a href="<?php echo esc_url( $install_url ); ?>" style="color:#999;text-decoration:none;" title="<?php esc_attr_e( 'View on WordPress.org', 'kwtsms' ); ?>">
+					<?php elseif ( $kwtsms_install_url ) : ?>
+						<a href="<?php echo esc_url( $kwtsms_install_url ); ?>" style="color:#999;text-decoration:none;" title="<?php esc_attr_e( 'View on WordPress.org', 'kwtsms' ); ?>">
 							&#10007; <?php esc_html_e( 'Not installed', 'kwtsms' ); ?>
 						</a>
 					<?php else : ?>
@@ -149,25 +149,25 @@ $icons = array(
 					<?php endif; ?>
 				</td>
 				<td style="padding:14px 16px;vertical-align:middle;">
-					<?php if ( ! $int['active'] ) : ?>
+					<?php if ( ! $kwtsms_int['active'] ) : ?>
 						<span style="color:#bbb;font-size:12px;"><?php esc_html_e( 'N/A', 'kwtsms' ); ?></span>
-					<?php elseif ( $int['sms_enabled'] ) : ?>
+					<?php elseif ( $kwtsms_int['sms_enabled'] ) : ?>
 						<span style="color:#00a32a;font-weight:600;">&#10003; <?php esc_html_e( 'On', 'kwtsms' ); ?></span>
 					<?php else : ?>
 						<span style="color:#d63638;font-weight:600;">&#10007; <?php esc_html_e( 'Off', 'kwtsms' ); ?></span>
 					<?php endif; ?>
 				</td>
 				<td style="padding:14px 16px;vertical-align:middle;">
-					<?php if ( $int['active'] ) : ?>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . $int['slug'] ) ); ?>" class="button button-secondary">
+					<?php if ( $kwtsms_int['active'] ) : ?>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . $kwtsms_int['slug'] ) ); ?>" class="button button-secondary">
 							<?php esc_html_e( 'Configure', 'kwtsms' ); ?> &rarr;
 						</a>
-					<?php elseif ( $activate_url ) : ?>
-						<a href="<?php echo esc_url( $activate_url ); ?>" class="button button-secondary">
+					<?php elseif ( $kwtsms_activate_url ) : ?>
+						<a href="<?php echo esc_url( $kwtsms_activate_url ); ?>" class="button button-secondary">
 							<?php esc_html_e( 'Activate', 'kwtsms' ); ?> &rarr;
 						</a>
-					<?php elseif ( $install_url ) : ?>
-						<a href="<?php echo esc_url( $install_url ); ?>" class="button button-secondary">
+					<?php elseif ( $kwtsms_install_url ) : ?>
+						<a href="<?php echo esc_url( $kwtsms_install_url ); ?>" class="button button-secondary">
 							<?php esc_html_e( 'Install', 'kwtsms' ); ?> &rarr;
 						</a>
 					<?php endif; ?>

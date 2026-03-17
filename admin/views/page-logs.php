@@ -18,35 +18,35 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
 }
 
-$active_tab     = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_history'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$active_tab     = in_array( $active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $active_tab : 'sms_history';
-$items_per_page = 20;
-$current_page   = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_history'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$kwtsms_active_tab     = in_array( $kwtsms_active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $kwtsms_active_tab : 'sms_history';
+$kwtsms_items_per_page = 20;
+$kwtsms_current_page   = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
 // NOTE: download/clear/export handlers are registered on admin_init in KwtSMS_Admin::handle_log_exports()
 // so that Content-Type headers can be sent before any HTML output.
-$debug_log_path   = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/kwtsms-debug.log' : '';
-$debug_logging_on = (bool) $this->plugin->settings->get( 'general.debug_logging', 0 );
-$debug_log_exists = $debug_log_path && file_exists( $debug_log_path );
-$show_debug_tab   = $debug_logging_on && $debug_log_exists;
+$kwtsms_debug_log_path   = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/kwtsms-debug.log' : '';
+$kwtsms_debug_logging_on = (bool) $this->plugin->settings->get( 'general.debug_logging', 0 );
+$kwtsms_debug_log_exists = $kwtsms_debug_log_path && file_exists( $kwtsms_debug_log_path );
+$kwtsms_show_debug_tab   = $kwtsms_debug_logging_on && $kwtsms_debug_log_exists;
 
 // -------------------------------------------------------------------------
 // Load log data for display.
 // -------------------------------------------------------------------------
-$sms_history = get_option( 'kwtsms_otp_sms_history', array() );
-$attempt_log = get_option( 'kwtsms_otp_attempt_log', array() );
-if ( ! is_array( $sms_history ) ) {
-	$sms_history = array(); }
-if ( ! is_array( $attempt_log ) ) {
-	$attempt_log = array(); }
+$kwtsms_sms_history = get_option( 'kwtsms_otp_sms_history', array() );
+$kwtsms_attempt_log = get_option( 'kwtsms_otp_attempt_log', array() );
+if ( ! is_array( $kwtsms_sms_history ) ) {
+	$kwtsms_sms_history = array(); }
+if ( ! is_array( $kwtsms_attempt_log ) ) {
+	$kwtsms_attempt_log = array(); }
 
-$active_log    = 'sms_history' === $active_tab ? $sms_history : $attempt_log;
-$total_entries = count( $active_log );
-$total_pages   = max( 1, (int) ceil( $total_entries / $items_per_page ) );
-$current_page  = min( $current_page, $total_pages );
-$offset        = ( $current_page - 1 ) * $items_per_page;
-$page_entries  = array_slice( $active_log, $offset, $items_per_page );
+$kwtsms_active_log    = 'sms_history' === $kwtsms_active_tab ? $kwtsms_sms_history : $kwtsms_attempt_log;
+$kwtsms_total_entries = count( $kwtsms_active_log );
+$kwtsms_total_pages   = max( 1, (int) ceil( $kwtsms_total_entries / $kwtsms_items_per_page ) );
+$kwtsms_current_page  = min( $kwtsms_current_page, $kwtsms_total_pages );
+$kwtsms_offset        = ( $kwtsms_current_page - 1 ) * $kwtsms_items_per_page;
+$kwtsms_page_entries  = array_slice( $kwtsms_active_log, $kwtsms_offset, $kwtsms_items_per_page );
 
 /**
  * Build a tab URL for the Logs page.
@@ -100,22 +100,22 @@ function kwtsms_attempt_result_label( $result ) {
 	<!-- Tabs -->
 	<nav class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( kwtsms_logs_tab_url( 'sms_history' ) ); ?>"
-			class="nav-tab <?php echo 'sms_history' === $active_tab ? 'nav-tab-active' : ''; ?>">
+			class="nav-tab <?php echo 'sms_history' === $kwtsms_active_tab ? 'nav-tab-active' : ''; ?>">
 			<?php esc_html_e( 'SMS History', 'kwtsms' ); ?>
 		</a>
 		<a href="<?php echo esc_url( kwtsms_logs_tab_url( 'attempt_log' ) ); ?>"
-			class="nav-tab <?php echo 'attempt_log' === $active_tab ? 'nav-tab-active' : ''; ?>">
+			class="nav-tab <?php echo 'attempt_log' === $kwtsms_active_tab ? 'nav-tab-active' : ''; ?>">
 			<?php esc_html_e( 'OTP Attempts', 'kwtsms' ); ?>
 		</a>
-		<?php if ( $show_debug_tab ) : ?>
+		<?php if ( $kwtsms_show_debug_tab ) : ?>
 		<a href="<?php echo esc_url( kwtsms_logs_tab_url( 'debug_log' ) ); ?>"
-			class="nav-tab <?php echo 'debug_log' === $active_tab ? 'nav-tab-active' : ''; ?>">
+			class="nav-tab <?php echo 'debug_log' === $kwtsms_active_tab ? 'nav-tab-active' : ''; ?>">
 			<?php esc_html_e( 'Debug Log', 'kwtsms' ); ?>
 		</a>
 		<?php endif; ?>
 	</nav>
 
-	<?php if ( 'debug_log' !== $active_tab && $total_entries > 0 ) : ?>
+	<?php if ( 'debug_log' !== $kwtsms_active_tab && $kwtsms_total_entries > 0 ) : ?>
 	<div class="kwtsms-log-toolbar" style="display:flex;gap:10px;align-items:center;margin:16px 0;">
 		<a href="
 		<?php
@@ -123,8 +123,8 @@ function kwtsms_attempt_result_label( $result ) {
 			add_query_arg(
 				array(
 					'action'   => 'export_csv',
-					'log'      => $active_tab,
-					'_wpnonce' => wp_create_nonce( 'kwtsms_export_csv_' . $active_tab ),
+					'log'      => $kwtsms_active_tab,
+					'_wpnonce' => wp_create_nonce( 'kwtsms_export_csv_' . $kwtsms_active_tab ),
 				),
 				admin_url( 'admin.php?page=kwtsms-otp-logs' )
 			)
@@ -140,16 +140,16 @@ function kwtsms_attempt_result_label( $result ) {
 			printf(
 				/* translators: %d total entries */
 				esc_html__( '%d entries total', 'kwtsms' ),
-				(int) $total_entries
+				(int) $kwtsms_total_entries
 			);
 			?>
 		</span>
 	</div>
 	<?php endif; ?>
 
-	<?php if ( 'sms_history' === $active_tab ) : ?>
+	<?php if ( 'sms_history' === $kwtsms_active_tab ) : ?>
 	<!-- ===== SMS History Tab ===== -->
-		<?php if ( empty( $page_entries ) ) : ?>
+		<?php if ( empty( $kwtsms_page_entries ) ) : ?>
 	<p><?php esc_html_e( 'No SMS history yet.', 'kwtsms' ); ?></p>
 	<?php else : ?>
 	<table class="widefat striped kwtsms-log-table">
@@ -165,32 +165,32 @@ function kwtsms_attempt_result_label( $result ) {
 			</tr>
 		</thead>
 		<tbody>
-			<?php foreach ( $page_entries as $entry ) : ?>
+			<?php foreach ( $kwtsms_page_entries as $kwtsms_entry ) : ?>
 			<tr>
-				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $entry['time'] ?? 0 ) ); ?></td>
-				<td><?php echo esc_html( $entry['sender_id'] ?? '' ); ?></td>
-				<td style="max-width:400px;word-break:break-word;"><?php echo esc_html( $entry['message'] ?? '' ); ?></td>
-				<td><?php echo esc_html( $entry['phone'] ?? '' ); ?></td>
-				<td><?php echo esc_html( $entry['type'] ?? '' ); ?></td>
-				<td style="color:<?php echo 'sent' === ( $entry['status'] ?? '' ) ? '#46b450' : '#dc3232'; ?>;">
-					<?php echo 'sent' === ( $entry['status'] ?? '' ) ? esc_html__( 'Sent', 'kwtsms' ) : esc_html__( 'Failed', 'kwtsms' ); ?>
+				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $kwtsms_entry['time'] ?? 0 ) ); ?></td>
+				<td><?php echo esc_html( $kwtsms_entry['sender_id'] ?? '' ); ?></td>
+				<td style="max-width:400px;word-break:break-word;"><?php echo esc_html( $kwtsms_entry['message'] ?? '' ); ?></td>
+				<td><?php echo esc_html( $kwtsms_entry['phone'] ?? '' ); ?></td>
+				<td><?php echo esc_html( $kwtsms_entry['type'] ?? '' ); ?></td>
+				<td style="color:<?php echo 'sent' === ( $kwtsms_entry['status'] ?? '' ) ? '#46b450' : '#dc3232'; ?>;">
+					<?php echo 'sent' === ( $kwtsms_entry['status'] ?? '' ) ? esc_html__( 'Sent', 'kwtsms' ) : esc_html__( 'Failed', 'kwtsms' ); ?>
 				</td>
 				<td>
 					<?php
-					$gr = $entry['gateway_result'] ?? array();
-					if ( ! empty( $gr ) ) :
-						$gr_ok   = ! empty( $gr['ok'] );
-						$gr_code = $gr['code'] ?? '';
-						$gr_msg  = $gr['message'] ?? '';
-						if ( $gr_ok ) {
-							$gr_label = esc_html__( 'OK', 'kwtsms' );
-							$gr_color = '#46b450';
+					$kwtsms_gr = $kwtsms_entry['gateway_result'] ?? array();
+					if ( ! empty( $kwtsms_gr ) ) :
+						$kwtsms_gr_ok   = ! empty( $kwtsms_gr['ok'] );
+						$kwtsms_gr_code = $kwtsms_gr['code'] ?? '';
+						$kwtsms_gr_msg  = $kwtsms_gr['message'] ?? '';
+						if ( $kwtsms_gr_ok ) {
+							$kwtsms_gr_label = esc_html__( 'OK', 'kwtsms' );
+							$kwtsms_gr_color = '#46b450';
 						} else {
-							$parts    = array_filter( array( $gr_code, $gr_msg ) );
-							$gr_label = $parts ? esc_html( implode( ': ', $parts ) ) : esc_html__( 'Error', 'kwtsms' );
-							$gr_color = '#dc3232';
+							$kwtsms_parts    = array_filter( array( $kwtsms_gr_code, $kwtsms_gr_msg ) );
+							$kwtsms_gr_label = $kwtsms_parts ? esc_html( implode( ': ', $kwtsms_parts ) ) : esc_html__( 'Error', 'kwtsms' );
+							$kwtsms_gr_color = '#dc3232';
 						}
-						printf( '<span style="color:%s;">%s</span>', esc_attr( $gr_color ), $gr_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						printf( '<span style="color:%s;">%s</span>', esc_attr( $kwtsms_gr_color ), $kwtsms_gr_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					endif;
 					?>
 				</td>
@@ -200,9 +200,9 @@ function kwtsms_attempt_result_label( $result ) {
 	</table>
 	<?php endif; ?>
 
-	<?php elseif ( 'attempt_log' === $active_tab ) : ?>
+	<?php elseif ( 'attempt_log' === $kwtsms_active_tab ) : ?>
 	<!-- ===== OTP Attempts Tab ===== -->
-		<?php if ( empty( $page_entries ) ) : ?>
+		<?php if ( empty( $kwtsms_page_entries ) ) : ?>
 	<p><?php esc_html_e( 'No OTP attempts logged yet.', 'kwtsms' ); ?></p>
 	<?php else : ?>
 	<table class="widefat striped kwtsms-log-table">
@@ -218,41 +218,41 @@ function kwtsms_attempt_result_label( $result ) {
 		</thead>
 		<tbody>
 			<?php
-			foreach ( $page_entries as $entry ) :
-				$user_id = $entry['user_id'] ?? null;
-				if ( $user_id ) {
-					$user_data  = get_userdata( (int) $user_id );
-					$user_label = $user_data ? esc_html( $user_data->user_login ) . ' (#' . (int) $user_id . ')' : '#' . (int) $user_id;
+			foreach ( $kwtsms_page_entries as $kwtsms_entry ) :
+				$kwtsms_user_id = $kwtsms_entry['user_id'] ?? null;
+				if ( $kwtsms_user_id ) {
+					$kwtsms_user_data  = get_userdata( (int) $kwtsms_user_id );
+					$kwtsms_user_label = $kwtsms_user_data ? esc_html( $kwtsms_user_data->user_login ) . ' (#' . (int) $kwtsms_user_id . ')' : '#' . (int) $kwtsms_user_id;
 				} else {
-					$user_label = '—';
+					$kwtsms_user_label = '—';
 				}
 				?>
 			<tr>
-				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $entry['time'] ?? 0 ) ); ?></td>
-				<td><?php echo $user_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
-				<td><?php echo esc_html( $entry['phone'] ?? '' ); ?></td>
-				<td><?php echo esc_html( $entry['ip'] ?? '' ); ?></td>
-				<td><?php echo esc_html( $entry['action'] ?? '' ); ?></td>
-				<td><?php echo kwtsms_attempt_result_label( $entry['result'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $kwtsms_entry['time'] ?? 0 ) ); ?></td>
+				<td><?php echo $kwtsms_user_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+				<td><?php echo esc_html( $kwtsms_entry['phone'] ?? '' ); ?></td>
+				<td><?php echo esc_html( $kwtsms_entry['ip'] ?? '' ); ?></td>
+				<td><?php echo esc_html( $kwtsms_entry['action'] ?? '' ); ?></td>
+				<td><?php echo kwtsms_attempt_result_label( $kwtsms_entry['result'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
 			</tr>
 			<?php endforeach; ?>
 		</tbody>
 	</table>
 	<?php endif; ?>
 
-	<?php elseif ( $show_debug_tab ) : ?>
+	<?php elseif ( $kwtsms_show_debug_tab ) : ?>
 	<!-- ===== Debug Log Tab ===== -->
 		<?php
 		// Read file, reverse lines (newest first), paginate.
-		$lines_raw       = file( $debug_log_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
-		$lines_raw       = $lines_raw ? $lines_raw : array();
-		$lines           = array_reverse( $lines_raw );
-		$total_lines     = count( $lines );
-		$per_page_dbg    = 100;
-		$total_pages_dbg = max( 1, (int) ceil( $total_lines / $per_page_dbg ) );
-		$cur_page_dbg    = min( max( 1, absint( $_GET['paged'] ?? 1 ) ), $total_pages_dbg ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$offset_dbg      = ( $cur_page_dbg - 1 ) * $per_page_dbg;
-		$page_lines      = array_slice( $lines, $offset_dbg, $per_page_dbg );
+		$kwtsms_lines_raw       = file( $kwtsms_debug_log_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+		$kwtsms_lines_raw       = $kwtsms_lines_raw ? $kwtsms_lines_raw : array();
+		$kwtsms_lines           = array_reverse( $kwtsms_lines_raw );
+		$kwtsms_total_lines     = count( $kwtsms_lines );
+		$kwtsms_per_page_dbg    = 100;
+		$kwtsms_total_pages_dbg = max( 1, (int) ceil( $kwtsms_total_lines / $kwtsms_per_page_dbg ) );
+		$kwtsms_cur_page_dbg    = min( max( 1, absint( $_GET['paged'] ?? 1 ) ), $kwtsms_total_pages_dbg ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$kwtsms_offset_dbg      = ( $kwtsms_cur_page_dbg - 1 ) * $kwtsms_per_page_dbg;
+		$kwtsms_page_lines      = array_slice( $kwtsms_lines, $kwtsms_offset_dbg, $kwtsms_per_page_dbg );
 		?>
 
 	<div class="kwtsms-log-toolbar" style="display:flex;gap:10px;align-items:center;margin:16px 0;">
@@ -278,31 +278,31 @@ function kwtsms_attempt_result_label( $result ) {
 			printf(
 				/* translators: %d: number of log lines */
 				esc_html__( '%d lines total', 'kwtsms' ),
-				(int) $total_lines
+				(int) $kwtsms_total_lines
 			);
 			?>
 		</span>
 		<span style="color:#888;font-size:13px;margin-left:auto;">
 		<?php
 			// Show relative path so it reads the same on any server layout.
-			$debug_log_display = str_replace( trailingslashit( ABSPATH ), '', $debug_log_path );
-			echo esc_html( $debug_log_display );
+			$kwtsms_debug_log_display = str_replace( trailingslashit( ABSPATH ), '', $kwtsms_debug_log_path );
+			echo esc_html( $kwtsms_debug_log_display );
 		?>
 		</span>
 	</div>
 
-		<?php if ( empty( $page_lines ) ) : ?>
+		<?php if ( empty( $kwtsms_page_lines ) ) : ?>
 	<p><?php esc_html_e( 'The debug log is empty.', 'kwtsms' ); ?></p>
 	<?php else : ?>
 	<pre style="background:#1e1e1e;color:#d4d4d4;font-size:12px;line-height:1.6;padding:16px;border-radius:4px;overflow:auto;max-height:600px;white-space:pre-wrap;">
 		<?php
-		foreach ( $page_lines as $line ) {
-			echo esc_html( $line ) . "\n";
+		foreach ( $kwtsms_page_lines as $kwtsms_line ) {
+			echo esc_html( $kwtsms_line ) . "\n";
 		}
 		?>
 	</pre>
 
-		<?php if ( $total_pages_dbg > 1 ) : ?>
+		<?php if ( $kwtsms_total_pages_dbg > 1 ) : ?>
 	<div class="tablenav" style="margin-top:12px;">
 		<div class="tablenav-pages">
 			<?php
@@ -311,8 +311,8 @@ function kwtsms_attempt_result_label( $result ) {
 				array(
 					'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( 'debug_log' ) ),
 					'format'  => '',
-					'current' => $cur_page_dbg,
-					'total'   => $total_pages_dbg,
+					'current' => $kwtsms_cur_page_dbg,
+					'total'   => $kwtsms_total_pages_dbg,
 				)
 			);
 			?>
@@ -324,17 +324,17 @@ function kwtsms_attempt_result_label( $result ) {
 	<?php endif; // end three-way tab. ?>
 
 	<!-- Pagination -->
-	<?php if ( $total_pages > 1 ) : ?>
+	<?php if ( $kwtsms_total_pages > 1 ) : ?>
 	<div class="tablenav" style="margin-top:12px;">
 		<div class="tablenav-pages">
 			<?php
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- paginate_links() returns safe HTML.
 			echo paginate_links(
 				array(
-					'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( $active_tab ) ),
+					'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( $kwtsms_active_tab ) ),
 					'format'  => '',
-					'current' => $current_page,
-					'total'   => $total_pages,
+					'current' => $kwtsms_current_page,
+					'total'   => $kwtsms_total_pages,
 				)
 			);
 			?>

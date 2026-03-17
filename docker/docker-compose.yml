@@ -1,0 +1,68 @@
+# kwtSMS WordPress Plugin — Local Docker Test Environment
+# URL: http://localhost:8090  |  Admin: admin / Test@12345
+# Run setup once: bash docker/setup.sh
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: kwtsms_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  wordpress:
+    image: wordpress:6.5-php8.1-apache
+    container_name: kwtsms_wordpress
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8090:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DEBUG: 1
+      WORDPRESS_DEBUG_LOG: 1
+      WORDPRESS_DEBUG_DISPLAY: 0
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_DEBUG_DISPLAY', false);
+        @ini_set('display_errors', 0);
+    volumes:
+      - wp_data:/var/www/html
+      - ..:/var/www/html/wp-content/plugins/kwtsms
+
+  wpcli:
+    image: wordpress:cli-php8.1
+    container_name: kwtsms_wpcli
+    depends_on:
+      - wordpress
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+      - ..:/var/www/html/wp-content/plugins/kwtsms
+    working_dir: /var/www/html
+    entrypoint: wp
+    profiles:
+      - cli
+
+volumes:
+  mysql_data:
+  wp_data:
