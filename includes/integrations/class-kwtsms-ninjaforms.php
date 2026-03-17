@@ -102,7 +102,19 @@ class KwtSMS_NinjaForms {
 	 * @return array Possibly annotated fields array.
 	 */
 	public function gate_validate_fields( $fields ) {
-		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// Verify our gate nonce — created at page load via wp_localize_script and injected into the form by form-otp.js after successful OTP verification.
+		if ( ! isset( $_POST['_kwtsms_gate_nonce'] ) ||
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_kwtsms_gate_nonce'] ) ), 'kwtsms_gate_verify' ) ) {
+			foreach ( $fields as &$field ) {
+				if ( $this->is_phone_field( $field ) ) {
+					$field['errors']['verify'] = __( 'Please verify your phone number before submitting this form.', 'kwtsms' );
+					break;
+				}
+			}
+			unset( $field );
+			return $fields;
+		}
+		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) );
 
 		if ( empty( $token ) || ! $this->plugin->verify_form_token( $token ) ) {
 			// Attach the error to the first phone field; NF surfaces it inline.

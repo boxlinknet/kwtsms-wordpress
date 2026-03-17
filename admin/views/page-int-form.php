@@ -2,7 +2,7 @@
 /**
  * Admin View: Shared Form-Integration Settings Sub-Page.
  *
- * Used by CF7, WPForms, Elementor, Gravity Forms, and Ninja Forms.
+ * Used by CF7, WPForms, and Ninja Forms.
  * The calling render method sets $int_key before including this file.
  *
  * Both cards (Settings and SMS Template) are always visible on the same page.
@@ -11,7 +11,7 @@
  * integration section (identified by the hidden _save_section field),
  * leaving all other integrations' settings intact in the database.
  *
- * @var string        $int_key  Integration key: cf7 | wpforms | elementor | gf | nf.
+ * @var string        $int_key  Integration key: cf7 | wpforms | nf.
  * @var KwtSMS_Admin  $this     Admin controller instance.
  *
  * @package KwtSMS_OTP
@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
 
 // Per-integration configuration.
 $kwtsms_configs = array(
-	'cf7'       => array(
+	'cf7'     => array(
 		'label'        => __( 'Contact Form 7', 'kwtsms' ),
 		'enabled_key'  => 'cf7_enabled',
 		'mode_key'     => 'cf7_mode',
@@ -33,7 +33,7 @@ $kwtsms_configs = array(
 		'tip'          => __( 'Setup tip: add a tel field named kwtsms_phone to your CF7 form:', 'kwtsms' ),
 		'tip_code'     => '[tel kwtsms_phone placeholder "e.g. 96598765432"]',
 	),
-	'wpforms'   => array(
+	'wpforms' => array(
 		'label'        => __( 'WPForms', 'kwtsms' ),
 		'enabled_key'  => 'wpforms_enabled',
 		'mode_key'     => 'wpforms_mode',
@@ -42,25 +42,7 @@ $kwtsms_configs = array(
 		'tip'          => __( 'WPForms automatically detects Phone fields. Add a Phone field to your form to enable SMS delivery.', 'kwtsms' ),
 		'tip_code'     => '',
 	),
-	'elementor' => array(
-		'label'        => __( 'Elementor', 'kwtsms' ),
-		'enabled_key'  => 'elementor_enabled',
-		'mode_key'     => 'elementor_mode',
-		'tpl_key'      => 'elementor_confirmation',
-		'placeholders' => '{site_name}, {form_name}',
-		'tip'          => __( 'Add a Tel/Phone field to your Elementor Pro form. The field will be auto-detected.', 'kwtsms' ),
-		'tip_code'     => '',
-	),
-	'gf'        => array(
-		'label'        => __( 'Gravity Forms', 'kwtsms' ),
-		'enabled_key'  => 'gf_enabled',
-		'mode_key'     => 'gf_mode',
-		'tpl_key'      => 'gf_confirmation',
-		'placeholders' => '{form_name}, {phone}',
-		'tip'          => __( 'Add a Phone field (type=phone) to your Gravity Form. kwtSMS will detect it automatically.', 'kwtsms' ),
-		'tip_code'     => '',
-	),
-	'nf'        => array(
+	'nf'      => array(
 		'label'        => __( 'Ninja Forms', 'kwtsms' ),
 		'enabled_key'  => 'nf_enabled',
 		'mode_key'     => 'nf_mode',

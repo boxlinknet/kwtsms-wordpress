@@ -200,7 +200,6 @@ class KwtSMS_Login_OTP {
 				// Temporary failure (network, API down) — fail-open to avoid lockout.
 				return $user;
 			}
-
 		}
 
 		// Sliding-window counters are recorded inside is_rate_limited(),
@@ -474,7 +473,12 @@ class KwtSMS_Login_OTP {
 
 		// CAPTCHA verification.
 		$captcha        = new KwtSMS_Captcha( $this->plugin->settings );
-		$captcha_result = $captcha->verify( $_POST );
+		$captcha_result = $captcha->verify(
+			array(
+				'kwtsms_recaptcha_token' => sanitize_text_field( wp_unslash( $_POST['kwtsms_recaptcha_token'] ?? '' ) ),
+				'cf-turnstile-response'  => sanitize_text_field( wp_unslash( $_POST['cf-turnstile-response'] ?? '' ) ),
+			)
+		);
 		if ( is_wp_error( $captcha_result ) ) {
 			$this->render_passwordless_page( $captcha_result->get_error_message() );
 			exit;

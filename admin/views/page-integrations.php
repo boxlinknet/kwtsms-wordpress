@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 $kwtsms_settings = $this->plugin->settings;
 
 $kwtsms_integrations = array(
-	'woo'       => array(
+	'woo'     => array(
 		'label'       => __( 'WooCommerce', 'kwtsms' ),
 		'description' => __( 'Order status SMS notifications (7 statuses), checkout OTP gate, admin alerts, and per-order custom SMS from the order metabox.', 'kwtsms' ),
 		'active'      => class_exists( 'WooCommerce' ),
@@ -24,7 +24,7 @@ $kwtsms_integrations = array(
 		'wp_slug'     => 'woocommerce',
 		'plugin_file' => 'woocommerce/woocommerce.php',
 	),
-	'cf7'       => array(
+	'cf7'     => array(
 		'label'       => __( 'Contact Form 7', 'kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on form submission, or enable OTP gate to verify the phone before the form submits.', 'kwtsms' ),
 		'active'      => class_exists( 'WPCF7' ),
@@ -33,7 +33,7 @@ $kwtsms_integrations = array(
 		'wp_slug'     => 'contact-form-7',
 		'plugin_file' => 'contact-form-7/wp-contact-form-7.php',
 	),
-	'wpforms'   => array(
+	'wpforms' => array(
 		'label'       => __( 'WPForms', 'kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on form submission, or enable OTP gate to verify the phone before the form submits.', 'kwtsms' ),
 		'active'      => function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' ),
@@ -42,7 +42,7 @@ $kwtsms_integrations = array(
 		'wp_slug'     => 'wpforms-lite',
 		'plugin_file' => 'wpforms-lite/wpforms.php',
 	),
-	'nf'        => array(
+	'nf'      => array(
 		'label'       => __( 'Ninja Forms', 'kwtsms' ),
 		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification. Your form must include a phone field for SMS to trigger.', 'kwtsms' ),
 		'active'      => class_exists( 'Ninja_Forms' ),
@@ -51,33 +51,13 @@ $kwtsms_integrations = array(
 		'wp_slug'     => 'ninja-forms',
 		'plugin_file' => 'ninja-forms/ninja-forms.php',
 	),
-	'elementor' => array(
-		'label'       => __( 'Elementor', 'kwtsms' ),
-		'description' => __( 'Send a confirmation SMS after an Elementor Pro form submission, or gate the form behind phone OTP verification. Requires Elementor Pro.', 'kwtsms' ),
-		'active'      => did_action( 'elementor/loaded' ) || class_exists( '\Elementor\Plugin' ),
-		'sms_enabled' => (bool) $kwtsms_settings->get( 'integrations.elementor_enabled', 1 ),
-		'slug'        => 'kwtsms-otp-int-elementor',
-		'wp_slug'     => 'elementor',
-		'plugin_file' => 'elementor/elementor.php',
-	),
-	'gf'        => array(
-		'label'       => __( 'Gravity Forms', 'kwtsms' ),
-		'description' => __( 'Send a confirmation SMS on submission, or gate the form behind phone OTP verification.', 'kwtsms' ),
-		'active'      => class_exists( 'GFForms' ),
-		'sms_enabled' => (bool) $kwtsms_settings->get( 'integrations.gf_enabled', 1 ),
-		'slug'        => 'kwtsms-otp-int-gf',
-		'wp_slug'     => '',
-		'plugin_file' => 'gravityforms/gravityforms.php',
-	),
 );
 
 $kwtsms_icons = array(
-	'woo'       => '&#x1F6D2;',
-	'cf7'       => '&#x1F4CB;',
-	'wpforms'   => '&#x1F4DD;',
-	'elementor' => '&#x1F3A8;',
-	'gf'        => '&#x1F4CA;',
-	'nf'        => '&#x1F977;',
+	'woo'     => '&#x1F6D2;',
+	'cf7'     => '&#x1F4CB;',
+	'wpforms' => '&#x1F4DD;',
+	'nf'      => '&#x1F977;',
 );
 ?>
 <div class="wrap kwtsms-admin-wrap">
@@ -127,7 +107,7 @@ $kwtsms_icons = array(
 				?>
 			<tr>
 				<td style="text-align:center;font-size:22px;padding:14px 8px;vertical-align:middle;">
-					<?php echo $kwtsms_icons[ $kwtsms_key ]; // phpcs:ignore WordPress.Security.EscapeOutput ?>
+					<?php echo esc_html( $kwtsms_icons[ $kwtsms_key ] ); ?>
 				</td>
 				<td style="padding:14px 16px;vertical-align:middle;">
 					<strong style="font-size:14px;"><?php echo esc_html( $kwtsms_int['label'] ); ?></strong>

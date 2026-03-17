@@ -597,9 +597,7 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 					<p class="description">
 						<?php
 						// Show relative path (e.g. wp-content/kwtsms-debug.log) regardless of server layout.
-						$kwtsms_log_path = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
-						? str_replace( trailingslashit( ABSPATH ), '', WP_CONTENT_DIR ) . '/kwtsms-debug.log'
-						: 'wp-content/kwtsms-debug.log';
+						$kwtsms_log_path = basename( WP_CONTENT_DIR ) . '/kwtsms-debug.log';
 						printf(
 							/* translators: %s: path to the debug log file */
 							esc_html__( 'Log file: %s', 'kwtsms' ),
@@ -633,7 +631,8 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 </div><!-- /.kwtsms-admin-wrap -->
 
 <?php
-$kwtsms_general_page_js = <<<'KWTSMS_JS'
+ob_start();
+?>
 // Allowed countries tag manager
 (function() {
 	'use strict';
@@ -726,7 +725,8 @@ $kwtsms_general_page_js = <<<'KWTSMS_JS'
 		applyState( show );
 	});
 })();
-KWTSMS_JS;
+<?php
+$kwtsms_general_page_js = ob_get_clean();
 
 wp_localize_script(
 	'kwtsms-admin',

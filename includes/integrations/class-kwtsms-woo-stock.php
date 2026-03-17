@@ -201,9 +201,14 @@ class KwtSMS_Woo_Stock {
 
 		$sender_id = (string) $this->plugin->settings->get( 'gateway.sender_id', '' );
 
-		$phones = array_values( array_filter( $subscribers, function ( $p ) {
-			return is_string( $p ) && '' !== $p;
-		} ) );
+		$phones = array_values(
+			array_filter(
+				$subscribers,
+				function ( $p ) {
+					return is_string( $p ) && '' !== $p;
+				}
+			)
+		);
 		if ( ! empty( $phones ) ) {
 			$this->plugin->api->send( $phones, $sender_id, $tpl, 'back_in_stock' );
 		}

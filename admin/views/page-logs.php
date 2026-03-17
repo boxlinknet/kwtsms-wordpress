@@ -229,11 +229,23 @@ function kwtsms_attempt_result_label( $result ) {
 				?>
 			<tr>
 				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $kwtsms_entry['time'] ?? 0 ) ); ?></td>
-				<td><?php echo $kwtsms_user_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+				<td>
+				<?php
+				echo wp_kses(
+					$kwtsms_user_label,
+					array(
+						'a' => array(
+							'href'  => array(),
+							'title' => array(),
+						),
+					)
+				);
+				?>
+					</td>
 				<td><?php echo esc_html( $kwtsms_entry['phone'] ?? '' ); ?></td>
 				<td><?php echo esc_html( $kwtsms_entry['ip'] ?? '' ); ?></td>
 				<td><?php echo esc_html( $kwtsms_entry['action'] ?? '' ); ?></td>
-				<td><?php echo kwtsms_attempt_result_label( $kwtsms_entry['result'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+				<td><?php echo wp_kses( kwtsms_attempt_result_label( $kwtsms_entry['result'] ?? '' ), array( 'span' => array( 'style' => array() ) ) ); ?></td>
 			</tr>
 			<?php endforeach; ?>
 		</tbody>
@@ -285,7 +297,7 @@ function kwtsms_attempt_result_label( $result ) {
 		<span style="color:#888;font-size:13px;margin-left:auto;">
 		<?php
 			// Show relative path so it reads the same on any server layout.
-			$kwtsms_debug_log_display = str_replace( trailingslashit( ABSPATH ), '', $kwtsms_debug_log_path );
+			$kwtsms_debug_log_display = basename( dirname( $kwtsms_debug_log_path ) ) . '/' . basename( $kwtsms_debug_log_path );
 			echo esc_html( $kwtsms_debug_log_display );
 		?>
 		</span>
@@ -306,13 +318,14 @@ function kwtsms_attempt_result_label( $result ) {
 	<div class="tablenav" style="margin-top:12px;">
 		<div class="tablenav-pages">
 			<?php
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- paginate_links() returns safe HTML.
-			echo paginate_links(
-				array(
-					'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( 'debug_log' ) ),
-					'format'  => '',
-					'current' => $kwtsms_cur_page_dbg,
-					'total'   => $kwtsms_total_pages_dbg,
+			echo wp_kses_post(
+				paginate_links(
+					array(
+						'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( 'debug_log' ) ),
+						'format'  => '',
+						'current' => $kwtsms_cur_page_dbg,
+						'total'   => $kwtsms_total_pages_dbg,
+					)
 				)
 			);
 			?>
@@ -328,13 +341,14 @@ function kwtsms_attempt_result_label( $result ) {
 	<div class="tablenav" style="margin-top:12px;">
 		<div class="tablenav-pages">
 			<?php
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- paginate_links() returns safe HTML.
-			echo paginate_links(
-				array(
-					'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( $kwtsms_active_tab ) ),
-					'format'  => '',
-					'current' => $kwtsms_current_page,
-					'total'   => $kwtsms_total_pages,
+			echo wp_kses_post(
+				paginate_links(
+					array(
+						'base'    => add_query_arg( 'paged', '%#%', kwtsms_logs_tab_url( $kwtsms_active_tab ) ),
+						'format'  => '',
+						'current' => $kwtsms_current_page,
+						'total'   => $kwtsms_total_pages,
+					)
 				)
 			);
 			?>

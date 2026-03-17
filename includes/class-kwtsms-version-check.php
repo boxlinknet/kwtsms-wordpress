@@ -99,10 +99,10 @@ class KwtSMS_Version_Check {
 		set_transient(
 			self::TRANSIENT_KEY,
 			array(
-				'version'     => sanitize_text_field( $latest ),
-				'url'         => esc_url_raw( $data['html_url'] ?? '' ),
-				'published'   => sanitize_text_field( $data['published_at'] ?? '' ),
-				'checked_at'  => time(),
+				'version'    => sanitize_text_field( $latest ),
+				'url'        => esc_url_raw( $data['html_url'] ?? '' ),
+				'published'  => sanitize_text_field( $data['published_at'] ?? '' ),
+				'checked_at' => time(),
 			),
 			DAY_IN_SECONDS
 		);
@@ -157,12 +157,12 @@ class KwtSMS_Version_Check {
 			</p>
 		</div>
 		<?php
-		$kwtsms_dismiss_js = "jQuery(function($){"
+		$kwtsms_dismiss_js = 'jQuery(function($){'
 			. "$('.kwtsms-version-notice').on('click','.notice-dismiss',function(){"
 			. "var n=$(this).closest('.kwtsms-version-notice');"
 			. "$.post(ajaxurl,{action:'kwtsms_dismiss_version_notice',version:n.data('version'),nonce:n.data('nonce')});"
-			. "});"
-			. "});";
+			. '});'
+			. '});';
 		wp_register_script( 'kwtsms-version-dismiss', '', array( 'jquery' ), KWTSMS_OTP_VERSION, true );
 		wp_enqueue_script( 'kwtsms-version-dismiss' );
 		wp_add_inline_script( 'kwtsms-version-dismiss', $kwtsms_dismiss_js );

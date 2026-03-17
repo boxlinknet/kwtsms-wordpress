@@ -325,7 +325,12 @@ class KwtSMS_Woo {
 	 * @param int $customer_id New customer user ID.
 	 */
 	public function save_wc_customer_phone( $customer_id ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce created_customer hook; nonce verified by WooCommerce core.
+		// WooCommerce registration nonce — verified by WooCommerce before this hook fires.
+		// We verify it explicitly here as an additional security layer.
+		if ( ! isset( $_POST['woocommerce-register-nonce'] ) ||
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) ) {
+			return;
+		}
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		if ( '' === $phone ) {
 			return;

@@ -130,21 +130,17 @@ class KwtSMS_Admin {
 
 		// Conditionally register sub-pages for each active integration.
 		$integrations_active = array(
-			'woo'       => class_exists( 'WooCommerce' ),
-			'cf7'       => class_exists( 'WPCF7' ),
-			'wpforms'   => function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' ),
-			'elementor' => did_action( 'elementor/loaded' ) || class_exists( '\Elementor\Plugin' ),
-			'gf'        => class_exists( 'GFForms' ),
-			'nf'        => class_exists( 'Ninja_Forms' ),
+			'woo'     => class_exists( 'WooCommerce' ),
+			'cf7'     => class_exists( 'WPCF7' ),
+			'wpforms' => function_exists( 'wpforms' ) || class_exists( 'WPForms\WPForms' ),
+			'nf'      => class_exists( 'Ninja_Forms' ),
 		);
 
 		$int_labels = array(
-			'woo'       => __( 'WooCommerce', 'kwtsms' ),
-			'cf7'       => __( 'Contact Form 7', 'kwtsms' ),
-			'wpforms'   => __( 'WPForms', 'kwtsms' ),
-			'elementor' => __( 'Elementor', 'kwtsms' ),
-			'gf'        => __( 'Gravity Forms', 'kwtsms' ),
-			'nf'        => __( 'Ninja Forms', 'kwtsms' ),
+			'woo'     => __( 'WooCommerce', 'kwtsms' ),
+			'cf7'     => __( 'Contact Form 7', 'kwtsms' ),
+			'wpforms' => __( 'WPForms', 'kwtsms' ),
+			'nf'      => __( 'Ninja Forms', 'kwtsms' ),
 		);
 
 		foreach ( $integrations_active as $key => $active ) {
@@ -702,12 +698,10 @@ class KwtSMS_Admin {
 		// Use current saved values as base; overwrite only the submitted section.
 		$sanitized = $current;
 
-		$update_woo       = in_array( $section, array( 'all', 'woo' ), true );
-		$update_cf7       = in_array( $section, array( 'all', 'cf7' ), true );
-		$update_wpforms   = in_array( $section, array( 'all', 'wpforms' ), true );
-		$update_elementor = in_array( $section, array( 'all', 'elementor' ), true );
-		$update_gf        = in_array( $section, array( 'all', 'gf' ), true );
-		$update_nf        = in_array( $section, array( 'all', 'nf' ), true );
+		$update_woo     = in_array( $section, array( 'all', 'woo' ), true );
+		$update_cf7     = in_array( $section, array( 'all', 'cf7' ), true );
+		$update_wpforms = in_array( $section, array( 'all', 'wpforms' ), true );
+		$update_nf      = in_array( $section, array( 'all', 'nf' ), true );
 
 		// Tab-specific subsections: each sub-tab saves only its own fields, not overwritten by the parent 'woo' save.
 		$update_stock_alerts     = in_array( $section, array( 'all', 'stock_alerts' ), true );
@@ -795,30 +789,6 @@ class KwtSMS_Admin {
 					'enabled' => ! empty( $raw['wpforms_confirmation']['enabled'] ) ? 1 : 0,
 					'en'      => $this->sanitize_template_content( $raw['wpforms_confirmation']['en'] ?? '' ),
 					'ar'      => $this->sanitize_template_content( $raw['wpforms_confirmation']['ar'] ?? '' ),
-				);
-			}
-		}
-
-		if ( $update_elementor ) {
-			$sanitized['elementor_enabled'] = ! empty( $raw['elementor_enabled'] ) ? 1 : 0;
-			$sanitized['elementor_mode']    = in_array( $raw['elementor_mode'] ?? '', $valid_modes, true ) ? $raw['elementor_mode'] : 'notification';
-			if ( isset( $raw['elementor_confirmation'] ) && is_array( $raw['elementor_confirmation'] ) ) {
-				$sanitized['elementor_confirmation'] = array(
-					'enabled' => ! empty( $raw['elementor_confirmation']['enabled'] ) ? 1 : 0,
-					'en'      => $this->sanitize_template_content( $raw['elementor_confirmation']['en'] ?? '' ),
-					'ar'      => $this->sanitize_template_content( $raw['elementor_confirmation']['ar'] ?? '' ),
-				);
-			}
-		}
-
-		if ( $update_gf ) {
-			$sanitized['gf_enabled'] = ! empty( $raw['gf_enabled'] ) ? 1 : 0;
-			$sanitized['gf_mode']    = in_array( $raw['gf_mode'] ?? '', $valid_modes, true ) ? $raw['gf_mode'] : 'notification';
-			if ( isset( $raw['gf_confirmation'] ) && is_array( $raw['gf_confirmation'] ) ) {
-				$sanitized['gf_confirmation'] = array(
-					'enabled' => ! empty( $raw['gf_confirmation']['enabled'] ) ? 1 : 0,
-					'en'      => $this->sanitize_template_content( $raw['gf_confirmation']['en'] ?? '' ),
-					'ar'      => $this->sanitize_template_content( $raw['gf_confirmation']['ar'] ?? '' ),
 				);
 			}
 		}
@@ -1041,7 +1011,7 @@ class KwtSMS_Admin {
 		// WP outputs settings_errors with single-quoted class attr (class='notice ...').
 		// Add 'inline' so WP admin JS doesn't relocate the notice into our flex header.
 		$se_html = str_replace( "class='notice ", "class='notice inline ", $se_html );
-		echo $se_html; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo wp_kses_post( $se_html );
 
 		// Notice: site is not HTTPS — suppressed on localhost/127.0.0.1 dev environments.
 		// The 'inline' class prevents WP admin JS from relocating the notice
@@ -1156,28 +1126,6 @@ class KwtSMS_Admin {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
 		}
 		$int_key = 'wpforms';
-		include KWTSMS_OTP_DIR . 'admin/views/page-int-form.php';
-	}
-
-	/**
-	 * Render Elementor integration settings sub-page.
-	 */
-	public function render_int_elementor_page() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
-		}
-		$int_key = 'elementor';
-		include KWTSMS_OTP_DIR . 'admin/views/page-int-form.php';
-	}
-
-	/**
-	 * Render Gravity Forms integration settings sub-page.
-	 */
-	public function render_int_gf_page() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
-		}
-		$int_key = 'gf';
 		include KWTSMS_OTP_DIR . 'admin/views/page-int-form.php';
 	}
 

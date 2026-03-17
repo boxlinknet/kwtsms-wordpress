@@ -248,7 +248,7 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 								if ( is_array( $kwtsms_c ) ) {
 									$kwtsms__cname = $kwtsms_c['name'] ?? $kwtsms_c['country'] ?? $kwtsms_c['countryName'] ?? $kwtsms_c['CountryName'] ?? $kwtsms_c['cc'] ?? '';
 									if ( '' === $kwtsms__cname ) {
-										foreach (  $kwtsms_c as $kwtsms_v ) {
+										foreach ( $kwtsms_c as $kwtsms_v ) {
 											if ( is_string( $kwtsms_v ) && '' !== $kwtsms_v ) {
 												$kwtsms__cname = $kwtsms_v;
 												break; }

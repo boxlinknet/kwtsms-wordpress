@@ -88,7 +88,13 @@ class KwtSMS_WPForms {
 	 * @return array Possibly augmented errors array.
 	 */
 	public function gate_add_error( $errors, $form_data ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WPForms handles nonce; we only read our own token.
+		// Verify our gate nonce — created at page load via wp_localize_script and injected into the form by form-otp.js after successful OTP verification.
+		if ( ! isset( $_POST['_kwtsms_gate_nonce'] ) ||
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_kwtsms_gate_nonce'] ) ), 'kwtsms_gate_verify' ) ) {
+			$form_id                      = absint( $form_data['id'] ?? 0 );
+			$errors[ $form_id ]['header'] = __( 'Please verify your phone number before submitting this form.', 'kwtsms' );
+			return $errors;
+		}
 		$token = sanitize_text_field( wp_unslash( $_POST['kwtsms_form_verified_token'] ?? '' ) );
 
 		if ( empty( $token ) || ! $this->plugin->verify_form_token( $token ) ) {
@@ -122,7 +128,7 @@ class KwtSMS_WPForms {
 	 * @param int   $entry_id  Saved entry ID (0 if entry storage is disabled).
 	 */
 	public function send_confirmation_sms( $fields, $entry, $form_data, $entry_id ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
-		$phone = $this->extract_phone_from_fields( $fields );
+		$phone      = $this->extract_phone_from_fields( $fields );
 		$form_title = sanitize_text_field( $form_data['settings']['form_title'] ?? '' );
 		if ( empty( $phone ) ) {
 			$this->plugin->api->write_debug_log( 'wpforms', 'Skipped WPForms confirmation SMS for form "' . $form_title . '": no phone field value found' );

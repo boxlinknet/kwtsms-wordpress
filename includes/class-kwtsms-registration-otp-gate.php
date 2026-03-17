@@ -146,11 +146,15 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
-		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce verified by WordPress core before this filter fires.
+		// WordPress registration form nonce.
+		if ( ! isset( $_REQUEST['_wpnonce'] ) ||
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'register' ) ) {
+			return $errors;
+		}
+
 		$phone = trim(
 			sanitize_text_field( wp_unslash( $_POST['kwtsms_phone'] ?? '' ) )
 		);
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		if ( '' === $phone ) {
 			if ( 'required' === $gate ) {
@@ -167,9 +171,8 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
-		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- raw password is intentionally preserved for wp_create_user(); nonce verified by core.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- password must not be sanitized; sanitize_text_field strips special characters which corrupts passwords.
 		$password = wp_unslash( $_POST['pass1'] ?? $_POST['password'] ?? '' );
-		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$result = $this->send_registration_otp( $sanitized_user_login, $user_email, $password, $phone );
 		// send_registration_otp() calls wp_safe_redirect() + exit on success (returns null).
@@ -203,11 +206,16 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
-		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce verified by WooCommerce before this filter fires.
+		// WooCommerce registration form nonce — verified by WooCommerce before this filter fires.
+		// We verify it explicitly here as an additional security layer.
+		if ( ! isset( $_POST['woocommerce-register-nonce'] ) ||
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) ) {
+			return $errors;
+		}
+
 		$phone = trim(
 			sanitize_text_field( wp_unslash( $_POST['kwtsms_phone'] ?? $_POST['billing_phone'] ?? '' ) )
 		);
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		if ( '' === $phone ) {
 			if ( 'required' === $gate ) {
@@ -223,9 +231,8 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
-		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- raw password is intentionally preserved for wp_create_user(); nonce verified by WooCommerce.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- password must not be sanitized; sanitize_text_field strips special characters which corrupts passwords.
 		$password = wp_unslash( $_POST['password'] ?? $_POST['pass1'] ?? '' );
-		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$result = $this->send_registration_otp( $username, $email, $password, $phone );
 		// send_registration_otp() calls wp_safe_redirect() + exit on success (returns null).

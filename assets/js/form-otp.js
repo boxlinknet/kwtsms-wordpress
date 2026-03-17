@@ -24,7 +24,8 @@
 	/** Resolved i18n strings, falling back to sensible English defaults. */
 	var s = ( window.kwtSmsFormData && window.kwtSmsFormData.strings ) ? window.kwtSmsFormData.strings : {};
 	var ajaxUrl = ( window.kwtSmsFormData && window.kwtSmsFormData.ajaxUrl ) ? window.kwtSmsFormData.ajaxUrl : '';
-	var nonce   = ( window.kwtSmsFormData && window.kwtSmsFormData.nonce )   ? window.kwtSmsFormData.nonce   : '';
+	var nonce     = ( window.kwtSmsFormData && window.kwtSmsFormData.nonce )     ? window.kwtSmsFormData.nonce     : '';
+	var gateNonce = ( window.kwtSmsFormData && window.kwtSmsFormData.gateNonce ) ? window.kwtSmsFormData.gateNonce : '';
 
 	/** Currently active token, populated after send-OTP succeeds. */
 	var activeToken = '';
@@ -294,11 +295,16 @@
 
 					// Inject the verified token into the pending form and re-submit.
 					if ( pendingForm ) {
-						// Remove any old token input first.
+						// Remove any old token/nonce inputs first.
 						$( pendingForm ).find( 'input[name="kwtsms_form_verified_token"]' ).remove();
+						$( pendingForm ).find( 'input[name="_kwtsms_gate_nonce"]' ).remove();
 						$( '<input>' )
 							.attr( { type: 'hidden', name: 'kwtsms_form_verified_token' } )
 							.val( activeToken )
+							.appendTo( pendingForm );
+						$( '<input>' )
+							.attr( { type: 'hidden', name: '_kwtsms_gate_nonce' } )
+							.val( gateNonce )
 							.appendTo( pendingForm );
 
 						// Short delay so user sees the success message.

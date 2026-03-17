@@ -149,7 +149,7 @@ $kwtsms_referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_setti
 				<input type="hidden" name="kwtsms_phone" id="kwtsms_phone_combined" />
 			</div>
 
-			<?php echo $kwtsms_captcha->render_widget(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo wp_kses_post( $kwtsms_captcha->render_widget() ); ?>
 
 			<input type="submit" class="button button-primary button-large kwtsms-btn" value="<?php esc_attr_e( 'Send OTP Code', 'kwtsms' ); ?>" />
 		</form>

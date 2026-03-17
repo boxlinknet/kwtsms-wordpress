@@ -91,12 +91,10 @@ class KwtSMS_Settings {
 			'woo_enabled'               => 1,
 			'cf7_enabled'               => 1,
 			'wpforms_enabled'           => 1,
-			'elementor_enabled'         => 1,
 			'woo_checkout_otp'          => 0,
 			'woo_checkout_otp_cod_only' => 0,  // 0 = all payment methods, 1 = COD only.
 			'cf7_mode'                  => 'notification', // Options: notification or gate.
 			'wpforms_mode'              => 'notification', // Options: notification or gate.
-			'elementor_mode'            => 'notification', // Options: notification or gate.
 			'woo_processing'            => array(
 				'enabled' => 1,
 				'en'      => '{site_name}: Your order #{order_id} has been confirmed. Total: {total}. Thank you!',
@@ -193,18 +191,6 @@ class KwtSMS_Settings {
 				'enabled' => 1,
 				'en'      => '{site_name}: Your form "{form_name}" was received. Thank you!',
 				'ar'      => '{site_name}: تم استلام نموذج "{form_name}". شكرًا لك!',
-			),
-			'elementor_confirmation'    => array(
-				'enabled' => 1,
-				'en'      => '{site_name}: Your form "{form_name}" has been received. Thank you!',
-				'ar'      => '{site_name}: تم استلام نموذج "{form_name}". شكرًا لك!',
-			),
-			'gf_enabled'                => 1,
-			'gf_mode'                   => 'notification', // Options: notification or gate.
-			'gf_confirmation'           => array(
-				'enabled' => 1,
-				'en'      => '{form_name}: Thank you! Your phone {phone} has been registered.',
-				'ar'      => '{form_name}: شكراً! تم تسجيل رقمك {phone}.',
 			),
 			'nf_enabled'                => 1,
 			'nf_mode'                   => 'notification', // Options: notification or gate.
@@ -373,8 +359,6 @@ class KwtSMS_Settings {
 			'woo_tpl_vendor_new_order',
 			'cf7_confirmation',
 			'wpforms_confirmation',
-			'elementor_confirmation',
-			'gf_confirmation',
 			'nf_confirmation',
 		);
 

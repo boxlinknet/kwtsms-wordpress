@@ -184,6 +184,19 @@ class KwtSMS_API {
 		return ( $len <= 70 ) ? 1 : (int) ceil( $len / 67 );
 	}
 
+	/**
+	 * Send an SMS message to one or more phone numbers.
+	 *
+	 * Handles credentials check, message cleaning, phone normalization,
+	 * country filtering, balance check, batch sending, and logging.
+	 *
+	 * @param string|string[] $phones    One phone number or an array of numbers.
+	 * @param string          $sender_id Sender ID approved in your kwtSMS account.
+	 * @param string          $message   Plain-text message to send.
+	 * @param string          $type      Message type for the send log (e.g. 'login', 'order').
+	 *
+	 * @return array|WP_Error Result array or WP_Error on failure.
+	 */
 	public function send( $phones, $sender_id, $message, $type = 'login' ) {
 		$single_mode = ! is_array( $phones );
 
@@ -230,11 +243,20 @@ class KwtSMS_API {
 			foreach ( $phones as $p ) {
 				$log_phone = ! empty( $p ) ? $p : '?';
 				self::append_send_log( $log_phone, 'failed', $type );
-				self::append_sms_history( $log_phone, $message, 'failed', $type, '', '', array(
-					'ok'      => false,
-					'code'    => $err->get_error_code(),
-					'message' => $err->get_error_message(),
-				), $this->username );
+				self::append_sms_history(
+					$log_phone,
+					$message,
+					'failed',
+					$type,
+					'',
+					'',
+					array(
+						'ok'      => false,
+						'code'    => $err->get_error_code(),
+						'message' => $err->get_error_message(),
+					),
+					$this->username
+				);
 			}
 			if ( $single_mode ) {
 				return $err;
@@ -258,11 +280,20 @@ class KwtSMS_API {
 			foreach ( $phones as $p ) {
 				$log_phone = ! empty( $p ) ? $p : '?';
 				self::append_send_log( $log_phone, 'failed', $type );
-				self::append_sms_history( $log_phone, $message, 'failed', $type, '', '', array(
-					'ok'      => false,
-					'code'    => $err->get_error_code(),
-					'message' => $err->get_error_message(),
-				), $this->username );
+				self::append_sms_history(
+					$log_phone,
+					$message,
+					'failed',
+					$type,
+					'',
+					'',
+					array(
+						'ok'      => false,
+						'code'    => $err->get_error_code(),
+						'message' => $err->get_error_message(),
+					),
+					$this->username
+				);
 			}
 			if ( $single_mode ) {
 				return $err;
@@ -301,11 +332,20 @@ class KwtSMS_API {
 				);
 				$this->write_debug_log( 'send()', 'SKIP: empty phone in batch' );
 				self::append_send_log( '?', 'failed', $type );
-				self::append_sms_history( $raw_phone, $message, 'failed', $type, '', '', array(
-					'ok'      => false,
-					'code'    => $err->get_error_code(),
-					'message' => $err->get_error_message(),
-				), $this->username );
+				self::append_sms_history(
+					$raw_phone,
+					$message,
+					'failed',
+					$type,
+					'',
+					'',
+					array(
+						'ok'      => false,
+						'code'    => $err->get_error_code(),
+						'message' => $err->get_error_message(),
+					),
+					$this->username
+				);
 				++$invalid;
 
 				// In single mode, return the error immediately.
@@ -319,11 +359,20 @@ class KwtSMS_API {
 			if ( is_wp_error( $norm ) ) {
 				$this->write_debug_log( 'send()', "SKIP: invalid phone={$raw_phone}: " . $norm->get_error_message() );
 				self::append_send_log( $raw_phone, 'failed', $type );
-				self::append_sms_history( $raw_phone, $message, 'failed', $type, '', '', array(
-					'ok'      => false,
-					'code'    => $norm->get_error_code(),
-					'message' => $norm->get_error_message(),
-				), $this->username );
+				self::append_sms_history(
+					$raw_phone,
+					$message,
+					'failed',
+					$type,
+					'',
+					'',
+					array(
+						'ok'      => false,
+						'code'    => $norm->get_error_code(),
+						'message' => $norm->get_error_message(),
+					),
+					$this->username
+				);
 				++$invalid;
 
 				if ( $single_mode ) {
@@ -383,11 +432,20 @@ class KwtSMS_API {
 						"BLOCK: country not allowed, phone={$p} iso2={$phone_iso2} allowed=" . implode( ',', $allowed_countries )
 					);
 					self::append_send_log( $p, 'failed', $type );
-					self::append_sms_history( $p, $message, 'failed', $type, '', '', array(
-						'ok'      => false,
-						'code'    => $country_err->get_error_code(),
-						'message' => $country_err->get_error_message(),
-					), $this->username );
+					self::append_sms_history(
+						$p,
+						$message,
+						'failed',
+						$type,
+						'',
+						'',
+						array(
+							'ok'      => false,
+							'code'    => $country_err->get_error_code(),
+							'message' => $country_err->get_error_message(),
+						),
+						$this->username
+					);
 					++$invalid;
 
 					if ( $single_mode ) {
@@ -424,11 +482,20 @@ class KwtSMS_API {
 			$this->write_debug_log( 'send()', 'ABORT: ' . $balance_check->get_error_message() );
 			foreach ( $unique_phones as $p ) {
 				self::append_send_log( $p, 'failed', $type );
-				self::append_sms_history( $p, $message, 'failed', $type, '', '', array(
-					'ok'      => false,
-					'code'    => $balance_check->get_error_code(),
-					'message' => $balance_check->get_error_message(),
-				), $this->username );
+				self::append_sms_history(
+					$p,
+					$message,
+					'failed',
+					$type,
+					'',
+					'',
+					array(
+						'ok'      => false,
+						'code'    => $balance_check->get_error_code(),
+						'message' => $balance_check->get_error_message(),
+					),
+					$this->username
+				);
 			}
 			if ( $single_mode ) {
 				return $balance_check;
@@ -479,14 +546,23 @@ class KwtSMS_API {
 
 				foreach ( $chunk as $p ) {
 					self::append_send_log( $p, 'failed', $type, $sender_id );
-					self::append_sms_history( $p, $message, 'failed', $type, '', $sender_id, array(
-						'ok'      => false,
-						'code'    => $_api_code ? $_api_code : $response->get_error_code(),
-						'message' => $_api_desc ? $_api_desc : ( $_api_code ? $_api_code : $response->get_error_code() ),
-					), $this->username );
+					self::append_sms_history(
+						$p,
+						$message,
+						'failed',
+						$type,
+						'',
+						$sender_id,
+						array(
+							'ok'      => false,
+							'code'    => $_api_code ? $_api_code : $response->get_error_code(),
+							'message' => $_api_desc ? $_api_desc : ( $_api_code ? $_api_code : $response->get_error_code() ),
+						),
+						$this->username
+					);
 				}
 
-				$total_failed += count( $chunk );
+				$total_failed  += count( $chunk );
 				$batch_errors[] = $response;
 
 				$batch_results[] = array(
@@ -508,11 +584,20 @@ class KwtSMS_API {
 
 			foreach ( $chunk as $p ) {
 				self::append_send_log( $p, 'sent', $type, $sender_id );
-				self::append_sms_history( $p, $message, 'sent', $type, $msg_id, $sender_id, array(
-					'ok'      => true,
-					'code'    => '',
-					'message' => 'OK',
-				), $this->username );
+				self::append_sms_history(
+					$p,
+					$message,
+					'sent',
+					$type,
+					$msg_id,
+					$sender_id,
+					array(
+						'ok'      => true,
+						'code'    => '',
+						'message' => 'OK',
+					),
+					$this->username
+				);
 			}
 
 			$total_sent += count( $chunk );

@@ -19,9 +19,7 @@ $kwtsms_has_sender           = $kwtsms_credentials_verified && ! empty( $kwtsms_
 $kwtsms_test_mode            = (bool) $kwtsms_settings->get( 'gateway.test_mode', 1 );
 $kwtsms_debug_logging        = (bool) $kwtsms_settings->get( 'general.debug_logging', 0 );
 // Relative content path (e.g. "wp-content") for display — avoids showing full server paths.
-$kwtsms_content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
-	? rtrim( str_replace( trailingslashit( ABSPATH ), '', WP_CONTENT_DIR ), '/' )
-	: 'wp-content';
+$kwtsms_content_dir = basename( WP_CONTENT_DIR );
 ?>
 <div class="wrap kwtsms-admin-wrap">
 
@@ -231,7 +229,7 @@ $kwtsms_content_dir = ( defined( 'ABSPATH' ) && defined( 'WP_CONTENT_DIR' ) )
 		</ul>
 		<p><a href="<?php echo esc_url( admin_url( 'admin.php?page=kwtsms-otp-integrations' ) ); ?>"><?php esc_html_e( 'Integrations Settings ', 'kwtsms' ); ?></a></p>
 
-		<h3><?php esc_html_e( 'Form Integrations (Contact Form 7, WPForms, Elementor Pro, Gravity Forms, Ninja Forms)', 'kwtsms' ); ?></h3>
+		<h3><?php esc_html_e( 'Form Integrations (Contact Form 7, WPForms, Ninja Forms)', 'kwtsms' ); ?></h3>
 		<p><?php esc_html_e( 'Each form plugin integration supports two modes:', 'kwtsms' ); ?></p>
 		<ul style="margin-left:20px;font-size:14px;line-height:1.8;">
 			<li><strong><?php esc_html_e( 'Notification mode', 'kwtsms' ); ?></strong>: <?php esc_html_e( 'Send a confirmation SMS to the customer after a successful form submission.', 'kwtsms' ); ?></li>

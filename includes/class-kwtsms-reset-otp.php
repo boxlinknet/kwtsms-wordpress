@@ -81,8 +81,12 @@ class KwtSMS_Reset_OTP {
 			return;
 		}
 
+		// Verify the WordPress lostpassword form nonce.
+		if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'lostpassword' ) ) {
+			return;
+		}
+
 		// Try to find user from form input (login, email, or phone).
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress lostpassword form; nonce verified by WP core.
 		$input = sanitize_text_field( wp_unslash( $_POST['user_login'] ?? '' ) );
 
 		if ( empty( $input ) ) {

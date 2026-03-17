@@ -100,7 +100,7 @@ class KwtSMS_Plugin {
 		// CAPTCHA module — always loaded so it can enqueue on login page.
 		new KwtSMS_Captcha( $this->settings );
 
-		// Third-party plugin integrations (WooCommerce, CF7, WPForms, Elementor).
+		// Third-party plugin integrations (WooCommerce, CF7, WPForms, Ninja Forms).
 		new KwtSMS_Integrations( $this );
 
 		// Registration OTP Gate — verify phone before account creation.
@@ -448,18 +448,14 @@ class KwtSMS_Plugin {
 	 * Hooked to wp_enqueue_scripts so it only runs on public pages.
 	 */
 	public function enqueue_form_otp_assets() {
-		$cf7_gate       = ( 'gate' === $this->settings->get( 'integrations.cf7_mode', 'notification' ) )
+		$cf7_gate     = ( 'gate' === $this->settings->get( 'integrations.cf7_mode', 'notification' ) )
 			&& $this->settings->get( 'integrations.cf7_enabled', 1 );
-		$wpforms_gate   = ( 'gate' === $this->settings->get( 'integrations.wpforms_mode', 'notification' ) )
+		$wpforms_gate = ( 'gate' === $this->settings->get( 'integrations.wpforms_mode', 'notification' ) )
 			&& $this->settings->get( 'integrations.wpforms_enabled', 1 );
-		$elementor_gate = ( 'gate' === $this->settings->get( 'integrations.elementor_mode', 'notification' ) )
-			&& $this->settings->get( 'integrations.elementor_enabled', 1 );
-		$gf_gate        = ( 'gate' === $this->settings->get( 'integrations.gf_mode', 'notification' ) )
-			&& $this->settings->get( 'integrations.gf_enabled', 1 );
-		$nf_gate        = ( 'gate' === $this->settings->get( 'integrations.nf_mode', 'notification' ) )
+		$nf_gate      = ( 'gate' === $this->settings->get( 'integrations.nf_mode', 'notification' ) )
 			&& $this->settings->get( 'integrations.nf_enabled', 1 );
 
-		if ( ! $cf7_gate && ! $wpforms_gate && ! $elementor_gate && ! $gf_gate && ! $nf_gate ) {
+		if ( ! $cf7_gate && ! $wpforms_gate && ! $nf_gate ) {
 			return;
 		}
 
@@ -477,6 +473,7 @@ class KwtSMS_Plugin {
 			array(
 				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
 				'nonce'           => wp_create_nonce( 'kwtsms_form_otp_nonce' ),
+				'gateNonce'       => wp_create_nonce( 'kwtsms_gate_verify' ),
 				'defaultDialCode' => KwtSMS_API::get_default_dial_code(),
 				'strings'         => array(
 					'enterPhone'       => __( 'Enter your phone number to verify', 'kwtsms' ),
