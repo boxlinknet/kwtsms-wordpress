@@ -28,6 +28,9 @@ $kwtsms_options = array(
 	'kwtsms_otp_send_log',
 	'kwtsms_otp_sms_history',
 	'kwtsms_otp_attempt_log',
+	'kwtsms_otp_integrations',
+	'kwtsms_otp_alerts',
+	'kwtsms_abandoned_carts',
 );
 
 foreach ( $kwtsms_options as $kwtsms_option ) {
@@ -41,9 +44,15 @@ foreach ( $kwtsms_options as $kwtsms_option ) {
 // -------------------------------------------------------------------------
 delete_metadata( 'user', 0, 'kwtsms_phone', '', true );
 delete_metadata( 'user', 0, 'kwtsms_dismissed_version', '', true );
+delete_metadata( 'user', 0, 'kwtsms_trusted_devices', '', true );
 
 // -------------------------------------------------------------------------
-// 3. Remove transients (OTPs, partial auths, rate limiters).
+// 3. Remove product post meta (back-in-stock subscribers).
+// -------------------------------------------------------------------------
+delete_post_meta_by_key( 'kwtsms_back_in_stock_subscribers' );
+
+// -------------------------------------------------------------------------
+// 4. Remove transients (OTPs, partial auths, rate limiters).
 // Transients are stored as _transient_* and _transient_timeout_* in options.
 // -------------------------------------------------------------------------
 // phpcs:disable WordPress.DB.DirectDatabaseQuery

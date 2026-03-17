@@ -94,6 +94,19 @@ class KwtSMS_CF7 {
 	 * @return WPCF7_ContactForm The (possibly mutated) form instance.
 	 */
 	public function gate_verify_token( $cf7, &$abort, $submission ) {
+		// Verify our gate nonce — injected into the form by form-otp.js after successful OTP verification.
+		// The nonce is in $_POST (not CF7's get_posted_data) because it is a JS-injected hidden input,
+		// not a registered CF7 form tag.
+		if ( ! isset( $_POST['_kwtsms_gate_nonce'] ) || // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			! wp_verify_nonce( wp_unslash( $_POST['_kwtsms_gate_nonce'] ), 'kwtsms_gate_verify' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$abort = true;
+			if ( is_a( $submission, 'WPCF7_Submission' ) ) {
+				$submission->set_response(
+					__( 'Please verify your phone number before submitting this form.', 'kwtsms' )
+				);
+			}
+			return $cf7;
+		}
 		// Use the CF7 Submission API instead of raw $_POST to read posted data.
 		// This is the correct CF7 idiom and avoids direct superglobal access.
 		$cf7_submission = WPCF7_Submission::get_instance();

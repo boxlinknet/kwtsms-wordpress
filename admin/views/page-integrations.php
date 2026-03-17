@@ -107,7 +107,7 @@ $kwtsms_icons = array(
 				?>
 			<tr>
 				<td style="text-align:center;font-size:22px;padding:14px 8px;vertical-align:middle;">
-					<?php echo esc_html( $kwtsms_icons[ $kwtsms_key ] ); ?>
+					<?php echo wp_kses_post( $kwtsms_icons[ $kwtsms_key ] ); ?>
 				</td>
 				<td style="padding:14px 16px;vertical-align:middle;">
 					<strong style="font-size:14px;"><?php echo esc_html( $kwtsms_int['label'] ); ?></strong>

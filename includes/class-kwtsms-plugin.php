@@ -511,7 +511,8 @@ class KwtSMS_Plugin {
 		}
 
 		$username = sanitize_text_field( wp_unslash( $_POST['username'] ?? '' ) );
-		$password = sanitize_text_field( wp_unslash( $_POST['password'] ?? '' ) );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- API password must not be sanitized; sanitize_text_field strips special characters which corrupts passwords containing &, <, >, etc.
+		$password = wp_unslash( $_POST['password'] ?? '' );
 
 		if ( empty( $username ) || empty( $password ) ) {
 			wp_send_json_error( array( 'message' => __( 'Username and password are required.', 'kwtsms' ) ) );

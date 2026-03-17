@@ -147,8 +147,8 @@ class KwtSMS_Registration_OTP_Gate {
 		}
 
 		// WordPress registration form nonce.
-		if ( ! isset( $_REQUEST['_wpnonce'] ) ||
-			! wp_verify_nonce( sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'register' ) ) {
+		if ( ! isset( $_POST['_wpnonce'] ) ||
+			! wp_verify_nonce( wp_unslash( $_POST['_wpnonce'] ), 'register' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			return $errors;
 		}
 
@@ -209,7 +209,7 @@ class KwtSMS_Registration_OTP_Gate {
 		// WooCommerce registration form nonce — verified by WooCommerce before this filter fires.
 		// We verify it explicitly here as an additional security layer.
 		if ( ! isset( $_POST['woocommerce-register-nonce'] ) ||
-			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) ) {
+			! wp_verify_nonce( wp_unslash( $_POST['woocommerce-register-nonce'] ), 'woocommerce-register' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			return $errors;
 		}
 

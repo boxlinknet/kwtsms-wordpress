@@ -112,6 +112,10 @@ register_deactivation_hook( KWTSMS_OTP_FILE, 'kwtsms_otp_deactivate' );
  * before we register hooks that may depend on them.
  */
 function kwtsms_otp_init() {
+	// Load plugin translations. Required for GitHub-distributed installs where
+	// WordPress auto-loading does not apply (only WordPress.org plugins get that).
+	load_plugin_textdomain( 'kwtsms', false, dirname( KWTSMS_OTP_BASENAME ) . '/languages' );
+
 	// Emergency bypass — if defined in wp-config.php, skip all OTP logic.
 	// Useful when an admin is locked out. See Help page for instructions.
 	if ( defined( 'KWTSMS_OTP_DISABLED' ) && KWTSMS_OTP_DISABLED ) {
