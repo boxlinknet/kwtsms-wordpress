@@ -149,6 +149,7 @@ class KwtSMS_Woo_Multivendor {
 
 			$vendor_phone = (string) get_user_meta( $vendor_id, 'kwtsms_phone', true );
 			if ( '' === $vendor_phone ) {
+				$this->plugin->api->write_debug_log( 'vendor_sms', 'Skipped vendor ID ' . $vendor_id . ' (no phone on file) for order #' . $order->get_order_number() );
 				$notified[] = $vendor_id;
 				continue;
 			}
