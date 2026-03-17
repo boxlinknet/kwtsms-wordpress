@@ -145,7 +145,7 @@ class KwtSMS_Plugin {
 			'https://www.kwtsms.com/'
 		);
 		printf(
-			'<p class="kwtsms-powered-by" style="text-align:center;color:#aaa;font-size:12px;margin-top:16px;">' .
+			'<p class="kwtsms-credit" style="text-align:center;color:#aaa;font-size:12px;margin-top:16px;">' .
 			'<a href="%s" target="_blank" rel="noopener" style="color:#aaa;">' .
 			'%s' .
 			'</a></p>',

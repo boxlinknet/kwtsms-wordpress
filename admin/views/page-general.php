@@ -327,17 +327,17 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 
 		</table>
 
-		<!-- ===== Referral Link ===== -->
-		<h2 class="title"><?php esc_html_e( 'Powered-by Footer', 'kwtsms' ); ?></h2>
+		<!-- ===== Attribution Footer ===== -->
+		<h2 class="title"><?php esc_html_e( 'Attribution Footer', 'kwtsms' ); ?></h2>
 		<table class="form-table" role="presentation">
 
 			<tr>
-				<th scope="row"><label for="kwtsms_referral_link"><?php esc_html_e( 'Show Referral Link', 'kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_referral_link"><?php esc_html_e( 'Show credit link', 'kwtsms' ); ?></label></th>
 				<td>
 					<label>
 						<input type="checkbox" name="kwtsms_otp_general[referral_link]" id="kwtsms_referral_link"
 							value="1" <?php checked( $kwtsms_referral_link ); ?> />
-						<?php esc_html_e( 'Display "SMS by kwtSMS.com" footer on login pages', 'kwtsms' ); ?>
+						<?php esc_html_e( 'Display "SMS by kwtSMS.com" footer on login pages (opt-in)', 'kwtsms' ); ?>
 					</label>
 					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'kwtsms' ); ?></p>
 				</td>

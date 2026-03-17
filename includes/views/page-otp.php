@@ -197,7 +197,7 @@ if ( ! empty( $token ) ) {
 if ( $kwtsms_referral_link_enabled ) :
 	$kwtsms_ref_url = add_query_arg( 'ref', wp_parse_url( home_url(), PHP_URL_HOST ), 'https://www.kwtsms.com/' );
 	?>
-<p class="kwtsms-powered-by" style="text-align:center;font-size:11px;color:#888;margin-top:16px;">
+<p class="kwtsms-credit" style="text-align:center;font-size:11px;color:#888;margin-top:16px;">
 	<a href="<?php echo esc_url( $kwtsms_ref_url ); ?>" target="_blank" rel="noopener">
 		<?php esc_html_e( 'SMS service by kwtSMS.com', 'kwtsms' ); ?>
 	</a>
