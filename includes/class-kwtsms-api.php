@@ -1519,7 +1519,24 @@ class KwtSMS_API {
 			);
 		}
 
-		// 6. Validate country-specific format (local length + mobile prefix).
+		// 6. Strip trunk zero embedded after country code (e.g. 9660559... => 966559...).
+		// Some users enter the full dialled format: country_code + trunk_0 + local_number.
+		// If we detect a country code and the local part starts with 0, try stripping it.
+		$cc = self::find_country_code( $phone );
+		if ( null !== $cc ) {
+			$local = substr( $phone, strlen( $cc ) );
+			if ( strlen( $local ) > 0 && '0' === $local[0] ) {
+				$stripped_local = ltrim( $local, '0' );
+				$candidate      = $cc . $stripped_local;
+				// Only accept if the stripped version passes country-specific validation.
+				$candidate_check = self::validate_phone_format( $candidate );
+				if ( true === $candidate_check ) {
+					$phone = $candidate;
+				}
+			}
+		}
+
+		// 7. Validate country-specific format (local length + mobile prefix).
 		$format = self::validate_phone_format( $phone );
 		if ( is_wp_error( $format ) ) {
 			return $format;
