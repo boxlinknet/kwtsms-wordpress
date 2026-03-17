@@ -154,7 +154,7 @@ class KwtSMS_Woo {
 			return;
 		}
 
-		$this->plugin->api->send_sms(
+		$this->plugin->api->send(
 			$phone,
 			$this->plugin->settings->get( 'gateway.sender_id', '' ),
 			$message,
@@ -479,7 +479,7 @@ class KwtSMS_Woo {
 			// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
 			if ( ! $this->plugin->otp->is_send_cooldown_active( $checkout_id ) ) {
 				$msg    = $this->plugin->otp->build_message( $otp, 'login_otp' );
-				$result = $this->plugin->api->send_sms(
+				$result = $this->plugin->api->send(
 					$normalized,
 					$this->plugin->settings->get( 'gateway.sender_id', '' ),
 					$msg,

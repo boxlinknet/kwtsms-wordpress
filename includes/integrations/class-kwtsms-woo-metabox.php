@@ -204,7 +204,7 @@ class KwtSMS_Woo_Metabox {
 			return;
 		}
 
-		$result = $this->api->send_sms(
+		$result = $this->api->send(
 			$normalized,
 			$this->settings->get( 'gateway.sender_id', '' ),
 			$message,

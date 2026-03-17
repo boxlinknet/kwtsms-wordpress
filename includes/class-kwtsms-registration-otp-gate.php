@@ -428,7 +428,7 @@ class KwtSMS_Registration_OTP_Gate {
 		$otp_code = $this->otp->generate( $phone, self::OTP_ACTION );
 		$message  = $this->otp->build_message( $otp_code, 'login_otp' );
 
-		$send_result = $this->api->send_sms(
+		$send_result = $this->api->send(
 			$phone,
 			$this->settings->get( 'gateway.sender_id', '' ),
 			$message,

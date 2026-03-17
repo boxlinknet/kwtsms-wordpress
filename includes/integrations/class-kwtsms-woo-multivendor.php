@@ -169,7 +169,7 @@ class KwtSMS_Woo_Multivendor {
 			);
 
 			if ( '' !== $message ) {
-				$this->plugin->api->send_sms( $vendor_phone, $sender_id, $message, 'woo_vendor' );
+				$this->plugin->api->send( $vendor_phone, $sender_id, $message, 'woo_vendor' );
 			} else {
 				$this->plugin->api->write_debug_log( 'vendor_sms', 'Skipped vendor SMS for vendor ID ' . $vendor_id . ' on order #' . $order->get_order_number() . ': template empty or missing' );
 			}

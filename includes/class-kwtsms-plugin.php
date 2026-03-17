@@ -201,7 +201,7 @@ class KwtSMS_Plugin {
 		$user    = get_userdata( $user_id );
 		$name    = $user ? $user->display_name : '';
 		$message = $this->otp->build_message( '', 'welcome_sms', array( '{name}' => $name ) );
-		$this->api->send_sms(
+		$this->api->send(
 			$phone,
 			$this->settings->get( 'gateway.sender_id', '' ),
 			$message,
@@ -354,7 +354,7 @@ class KwtSMS_Plugin {
 			$otp_code
 		);
 
-		$result = $this->api->send_sms(
+		$result = $this->api->send(
 			$normalized,
 			$this->settings->get( 'gateway.sender_id', '' ),
 			$message,
@@ -814,7 +814,7 @@ class KwtSMS_Plugin {
 		// Generate OTP (reuses existing valid code) and send SMS.
 		$otp_code = $this->otp->generate( $user_id, $otp_action );
 		$message  = $this->otp->build_message( $otp_code, $template_id );
-		$result   = $this->api->send_sms(
+		$result   = $this->api->send(
 			$phone,
 			$this->settings->get( 'gateway.sender_id', '' ),
 			$message,
@@ -1069,7 +1069,7 @@ class KwtSMS_Plugin {
 		$site_name = get_bloginfo( 'name' );
 		$message   = "Test SMS message from {$site_name}\nStamp: {$stamp}";
 
-		$result = $this->api->send_sms(
+		$result = $this->api->send(
 			$normalized,
 			$this->settings->get( 'gateway.sender_id', '' ),
 			$message,

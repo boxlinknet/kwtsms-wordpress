@@ -148,7 +148,7 @@ class KwtSMS_Reset_OTP {
 		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
 		if ( ! $this->plugin->otp->is_send_cooldown_active( $resolved_user->ID, 'reset' ) ) {
 			$message = $this->plugin->otp->build_message( $otp_code, 'reset_otp' );
-			$result  = $this->plugin->api->send_sms(
+			$result  = $this->plugin->api->send(
 				$phone,
 				$this->plugin->settings->get( 'gateway.sender_id', '' ),
 				$message,

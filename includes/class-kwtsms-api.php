@@ -551,24 +551,6 @@ class KwtSMS_API {
 	}
 
 	/**
-	 * Send an SMS message (legacy method, delegates to send()).
-	 *
-	 * This method is retained for backward compatibility. All validation,
-	 * normalization, country checks, balance checks, and logging are handled
-	 * by the unified send() method.
-	 *
-	 * @param string $phone     Recipient phone in international format (e.g. 96598765432).
-	 * @param string $sender_id Approved sender ID for this account.
-	 * @param string $message   Message text (English or Arabic).
-	 * @param string $type      Context type for logging: 'login'|'reset'|'passwordless'|'welcome'|'test'.
-	 *
-	 * @return array{msg_id: string, balance_after: float}|WP_Error
-	 */
-	public function send_sms( $phone, $sender_id, $message, $type = 'login' ) {
-		return $this->send( $phone, $sender_id, $message, $type );
-	}
-
-	/**
 	 * Retrieve SMS coverage information for the account.
 	 *
 	 * Returns an array of coverage data (countries and their status).

@@ -158,7 +158,7 @@ class KwtSMS_Login_OTP {
 		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
 		if ( ! $this->plugin->otp->is_send_cooldown_active( $user->ID, 'login' ) ) {
 			$message = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
-			$result  = $this->plugin->api->send_sms(
+			$result  = $this->plugin->api->send(
 				$phone,
 				$this->plugin->settings->get( 'gateway.sender_id', '' ),
 				$message,
@@ -564,7 +564,7 @@ class KwtSMS_Login_OTP {
 		// Send SMS only if outside the send-cooldown (prevents double-send on double-click).
 		if ( ! $this->plugin->otp->is_send_cooldown_active( $user_id, 'passwordless' ) ) {
 			$message = $this->plugin->otp->build_message( $otp_code, 'login_otp' );
-			$result  = $this->plugin->api->send_sms(
+			$result  = $this->plugin->api->send(
 				$normalized,
 				$this->plugin->settings->get( 'gateway.sender_id', '' ),
 				$message,

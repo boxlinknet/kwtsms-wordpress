@@ -157,7 +157,7 @@ class KwtSMS_NinjaForms {
 			return;
 		}
 
-		$this->plugin->api->send_sms(
+		$this->plugin->api->send(
 			$normalized,
 			$this->plugin->settings->get( 'gateway.sender_id', '' ),
 			$message,

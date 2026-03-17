@@ -213,7 +213,7 @@ class KwtSMS_Woo_Cart {
 			$message
 		);
 
-		$result = $this->plugin->api->send_sms(
+		$result = $this->plugin->api->send(
 			$cart['phone'],
 			(string) $this->plugin->settings->get( 'gateway.sender_id', '' ),
 			$message,
