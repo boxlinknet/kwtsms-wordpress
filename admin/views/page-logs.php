@@ -183,14 +183,14 @@ function kwtsms_attempt_result_label( $result ) {
 						$kwtsms_gr_code = $kwtsms_gr['code'] ?? '';
 						$kwtsms_gr_msg  = $kwtsms_gr['message'] ?? '';
 						if ( $kwtsms_gr_ok ) {
-							$kwtsms_gr_label = esc_html__( 'OK', 'kwtsms' );
+							$kwtsms_gr_label = __( 'OK', 'kwtsms' );
 							$kwtsms_gr_color = '#46b450';
 						} else {
 							$kwtsms_parts    = array_filter( array( $kwtsms_gr_code, $kwtsms_gr_msg ) );
-							$kwtsms_gr_label = $kwtsms_parts ? esc_html( implode( ': ', $kwtsms_parts ) ) : esc_html__( 'Error', 'kwtsms' );
+							$kwtsms_gr_label = $kwtsms_parts ? implode( ': ', $kwtsms_parts ) : __( 'Error', 'kwtsms' );
 							$kwtsms_gr_color = '#dc3232';
 						}
-						printf( '<span style="color:%s;">%s</span>', esc_attr( $kwtsms_gr_color ), $kwtsms_gr_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						printf( '<span style="color:%s;">%s</span>', esc_attr( $kwtsms_gr_color ), esc_html( $kwtsms_gr_label ) );
 					endif;
 					?>
 				</td>
@@ -284,6 +284,24 @@ function kwtsms_attempt_result_label( $result ) {
 			class="button">
 			&#11015; <?php esc_html_e( 'Download', 'kwtsms' ); ?>
 		</a>
+
+	<a href="
+		<?php
+		echo esc_url(
+			add_query_arg(
+				array(
+					'action'   => 'clear_debug_log',
+					'_wpnonce' => wp_create_nonce( 'kwtsms_clear_debug_log' ),
+				),
+				admin_url( 'admin.php?page=kwtsms-otp-logs&tab=debug_log' )
+			)
+		);
+		?>
+	"
+		class="button"
+		onclick="return confirm('<?php esc_attr_e( 'Clear the debug log? This cannot be undone.', 'kwtsms' ); ?>');">
+		&#128465; <?php esc_html_e( 'Clear Log', 'kwtsms' ); ?>
+	</a>
 
 		<span style="color:#888;font-size:13px;">
 			<?php

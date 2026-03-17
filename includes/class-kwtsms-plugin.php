@@ -981,7 +981,7 @@ class KwtSMS_Plugin {
 	public function ajax_revoke_device() {
 		check_ajax_referer( 'kwtsms_profile_nonce', 'nonce' );
 
-		$target_user_id = absint( $_POST['user_id'] ?? 0 );
+		$target_user_id = absint( wp_unslash( $_POST['user_id'] ?? 0 ) );
 		if ( ! current_user_can( 'edit_user', $target_user_id ) ) {
 			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'kwtsms' ) ), 403 );
 			return;
@@ -1008,7 +1008,7 @@ class KwtSMS_Plugin {
 	public function ajax_revoke_all_devices() {
 		check_ajax_referer( 'kwtsms_profile_nonce', 'nonce' );
 
-		$target_user_id = absint( $_POST['user_id'] ?? 0 );
+		$target_user_id = absint( wp_unslash( $_POST['user_id'] ?? 0 ) );
 		if ( ! current_user_can( 'edit_user', $target_user_id ) ) {
 			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'kwtsms' ) ), 403 );
 			return;

@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.3.3
+Stable tag: 3.4.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -226,6 +226,16 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
+
+= 3.4.0 =
+* Security: back-in-stock subscribe nonce changed to a static action so product_id is never read before authentication.
+* Security: all nonce values now passed through sanitize_key() before wp_verify_nonce(), per WordPress security documentation.
+* Security: sanitize_url() replaced with esc_url_raw() (sanitize_url was deprecated in WP 6.1).
+* Security: absint() calls on POST user_id now include wp_unslash() per WPCS.
+* Security: GET page parameter compared using sanitize_key() in the log export handler.
+* Security: printf output in SMS history log now escapes at the point of output instead of pre-escaping the variable.
+* Feature: Clear Log button added to debug log tab; implements the clear_debug_log handler in handle_log_exports().
+* Removed: Elementor Pro Forms and Gravity Forms integrations removed (not ready for WordPress.org review).
 
 = 3.3.3 =
 * Fix: Local phone numbers with a trunk prefix (e.g. Saudi 0559..., UAE 050...) are now correctly normalized by stripping the trunk digit and raising the local-number threshold to 9 digits.

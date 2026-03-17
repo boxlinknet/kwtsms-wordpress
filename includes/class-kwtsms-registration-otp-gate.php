@@ -148,7 +148,7 @@ class KwtSMS_Registration_OTP_Gate {
 
 		// WordPress registration form nonce.
 		if ( ! isset( $_POST['_wpnonce'] ) ||
-			! wp_verify_nonce( wp_unslash( $_POST['_wpnonce'] ), 'register' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' ) ) {
 			return $errors;
 		}
 
@@ -209,7 +209,7 @@ class KwtSMS_Registration_OTP_Gate {
 		// WooCommerce registration form nonce — verified by WooCommerce before this filter fires.
 		// We verify it explicitly here as an additional security layer.
 		if ( ! isset( $_POST['woocommerce-register-nonce'] ) ||
-			! wp_verify_nonce( wp_unslash( $_POST['woocommerce-register-nonce'] ), 'woocommerce-register' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) ) {
 			return $errors;
 		}
 
@@ -308,7 +308,7 @@ class KwtSMS_Registration_OTP_Gate {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce is read and verified below via wp_verify_nonce().
 		$submitted_code = sanitize_text_field( wp_unslash( $_POST['kwtsms_reg_code'] ?? '' ) );
-		$nonce          = sanitize_text_field( wp_unslash( $_POST['kwtsms_reg_nonce'] ?? '' ) );
+		$nonce          = sanitize_key( wp_unslash( $_POST['kwtsms_reg_nonce'] ?? '' ) );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		if ( ! wp_verify_nonce( $nonce, 'kwtsms_reg_otp_submit' ) ) {

@@ -239,7 +239,7 @@ class KwtSMS_Login_OTP {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- reading redirect_to from login POST, no state change.
-		$redirect_to = sanitize_url( wp_unslash( $_POST['redirect_to'] ?? '' ) );
+		$redirect_to = esc_url_raw( wp_unslash( $_POST['redirect_to'] ?? '' ) );
 		$otp_url     = add_query_arg(
 			array(
 				'action'      => 'kwtsms_otp',
@@ -442,7 +442,7 @@ class KwtSMS_Login_OTP {
 			$trusted->set_cookie( $user_id, $new_token );
 		}
 
-		$redirect_to = sanitize_url( wp_unslash( $_GET['redirect_to'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$redirect_to = esc_url_raw( wp_unslash( $_GET['redirect_to'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( empty( $redirect_to ) ) {
 			$redirect_to = admin_url();
 		}
@@ -659,7 +659,7 @@ class KwtSMS_Login_OTP {
 		$token           = $token ? $token : $this->get_partial_auth_token();
 		$otp_length      = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
 		$cooldown        = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
-		$redirect_to     = sanitize_url( wp_unslash( $_GET['redirect_to'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$redirect_to     = esc_url_raw( wp_unslash( $_GET['redirect_to'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$nonce_resend    = wp_create_nonce( 'kwtsms_otp_nonce' );
 		$login_url       = wp_login_url();
 		$plugin_settings = $this->plugin->settings;

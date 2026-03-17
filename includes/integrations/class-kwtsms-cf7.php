@@ -98,7 +98,7 @@ class KwtSMS_CF7 {
 		// The nonce is in $_POST (not CF7's get_posted_data) because it is a JS-injected hidden input,
 		// not a registered CF7 form tag.
 		if ( ! isset( $_POST['_kwtsms_gate_nonce'] ) || // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			! wp_verify_nonce( wp_unslash( $_POST['_kwtsms_gate_nonce'] ), 'kwtsms_gate_verify' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_kwtsms_gate_nonce'] ) ), 'kwtsms_gate_verify' ) ) {
 			$abort = true;
 			if ( is_a( $submission, 'WPCF7_Submission' ) ) {
 				$submission->set_response(

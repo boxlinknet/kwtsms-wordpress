@@ -1345,7 +1345,7 @@ class KwtSMS_Admin {
 	 * Security: capability check + per-action nonce verification on every branch.
 	 */
 	public function handle_log_exports() {
-		if ( ! isset( $_GET['page'] ) || 'kwtsms-otp-logs' !== $_GET['page'] ) {
+		if ( ! isset( $_GET['page'] ) || 'kwtsms-otp-logs' !== sanitize_key( wp_unslash( $_GET['page'] ) ) ) {
 			return;
 		}
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -1373,6 +1373,24 @@ class KwtSMS_Admin {
 			header( 'Pragma: no-cache' );
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents,WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo file_get_contents( $debug_log_path );
+			exit;
+		}
+
+		// ---- Clear debug log ----
+		if ( 'clear_debug_log' === $action && $show_debug_tab &&
+			wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_clear_debug_log' )
+		) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			file_put_contents( $debug_log_path, '' );
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'page' => 'kwtsms-otp-logs',
+						'tab'  => 'debug_log',
+					),
+					admin_url( 'admin.php' )
+				)
+			);
 			exit;
 		}
 

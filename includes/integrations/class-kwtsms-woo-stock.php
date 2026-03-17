@@ -220,20 +220,20 @@ class KwtSMS_Woo_Stock {
 	/**
 	 * AJAX handler: subscribe a phone number to back-in-stock notifications.
 	 *
-	 * Expects POST: product_id (int), phone (string), nonce (kwtsms_bis_{product_id}).
+	 * Expects POST: product_id (int), phone (string), nonce (kwtsms_bis_subscribe).
 	 */
 	public function ajax_back_in_stock_subscribe() {
-		$product_id = absint( wp_unslash( $_POST['product_id'] ?? 0 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$nonce      = sanitize_key( wp_unslash( $_POST['nonce'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
-		if ( ! wp_verify_nonce( $nonce, 'kwtsms_bis_' . $product_id ) ) {
+		// Verify nonce first using a static action, so product_id is not read before authentication.
+		$nonce = sanitize_key( wp_unslash( $_POST['nonce'] ?? '' ) );
+		if ( ! wp_verify_nonce( $nonce, 'kwtsms_bis_subscribe' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'kwtsms' ) ) );
 			return;
 		}
 
-		$raw   = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$raw   = KwtSMS_API::prepend_country_code_if_local( $raw, KwtSMS_API::get_default_dial_code() );
-		$phone = KwtSMS_API::normalize_phone( $raw );
+		$product_id = absint( wp_unslash( $_POST['product_id'] ?? 0 ) );
+		$raw        = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
+		$raw        = KwtSMS_API::prepend_country_code_if_local( $raw, KwtSMS_API::get_default_dial_code() );
+		$phone      = KwtSMS_API::normalize_phone( $raw );
 
 		if ( is_wp_error( $phone ) ) {
 			wp_send_json_error( array( 'message' => $phone->get_error_message() ) );
@@ -272,7 +272,7 @@ class KwtSMS_Woo_Stock {
 		}
 
 		$product_id = $product->get_id();
-		$nonce      = wp_create_nonce( 'kwtsms_bis_' . $product_id );
+		$nonce      = wp_create_nonce( 'kwtsms_bis_subscribe' );
 		?>
 		<div id="kwtsms-bis-form" style="margin:16px 0;padding:12px;border:1px solid #ddd;border-radius:4px;">
 			<p style="margin:0 0 8px;font-weight:600;">
