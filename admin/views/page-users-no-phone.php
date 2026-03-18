@@ -134,7 +134,7 @@ $kwtsms_role_colors = array(
 			<?php
 			printf(
 				/* translators: %s: link to General Settings */
-				esc_html__( 'No roles configured — showing all users without a phone. %s', 'kwtsms' ),
+				esc_html__( 'No roles configured. Showing all users without a phone. %s', 'kwtsms' ),
 				'<a href="' . esc_url( admin_url( 'admin.php?page=kwtsms-otp' ) ) . '">' . esc_html__( 'Configure OTP roles.', 'kwtsms' ) . '</a>'
 			);
 			?>

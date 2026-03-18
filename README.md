@@ -68,8 +68,6 @@ Each integration supports two modes: **Notification** (send confirmation SMS on 
 | Contact Form 7 | ✓ | ✓ | ✓ |
 | WPForms | ✓ | ✓ | ✓ |
 | Ninja Forms | ✓ | ✓ | ✓ |
-| Elementor Pro | ✓ | ✓ | ✓ |
-| Gravity Forms | ✓ | ✓ | ✓ |
 
 Need a specific plugin supported? [Open an issue](https://github.com/boxlinknet/kwtsms-wordpress/issues) and we will look into it.
 
@@ -146,9 +144,7 @@ Need a specific plugin supported? [Open an issue](https://github.com/boxlinknet/
 
 ## Installation
 
-### Option 1: WordPress Plugin Directory (coming soon)
-
-The plugin has been submitted to the WordPress.org directory and is pending review. Once approved:
+### Option 1: WordPress Plugin Directory
 
 1. In your WordPress dashboard, go to **Plugins → Add New Plugin**.
 2. Search for **kwtSMS**.

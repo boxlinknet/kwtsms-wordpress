@@ -111,9 +111,6 @@ class KwtSMS_Plugin {
 		// Admin Site Alerts: notify admin phone(s) on key site events.
 		new KwtSMS_Admin_Alerts( $this );
 
-		// Lightweight GitHub version check (daily cron + admin notice).
-		new KwtSMS_Version_Check();
-
 		// Welcome SMS: fires for all registrations — WC checkout, WC My Account, standard WP.
 		add_action( 'user_register', array( $this, 'maybe_send_welcome_on_register' ), 20 );
 

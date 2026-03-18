@@ -563,10 +563,8 @@ class KwtSMS_OTP_Engine {
 		$range  = $parts[0];
 		$prefix = isset( $parts[1] ) ? (int) $parts[1] : -1;
 
-		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-		$ip_bin = @inet_pton( $ip );
-		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-		$range_bin = @inet_pton( $range );
+		$ip_bin    = inet_pton( $ip );
+		$range_bin = inet_pton( $range );
 
 		if ( false === $ip_bin || false === $range_bin ) {
 			return false;

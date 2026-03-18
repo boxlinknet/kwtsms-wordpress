@@ -41,8 +41,6 @@ Each integration supports two modes: **Notification** (send a confirmation SMS o
 
 * Contact Form 7
 * WPForms
-* Elementor Pro Forms
-* Gravity Forms
 * Ninja Forms
 
 = Security =
@@ -120,9 +118,7 @@ Ships with English (default) and Arabic translations. The plugin admin UI and al
 
 == Installation ==
 
-= Method 1: WordPress Plugin Directory (coming soon) =
-
-The plugin has been submitted to the WordPress.org plugin directory and is pending review. Once approved, you will be able to install it directly from inside WordPress:
+= Method 1: WordPress Plugin Directory =
 
 1. In your WordPress admin, go to **Plugins > Add New Plugin**.
 2. Search for **kwtSMS**.
@@ -222,7 +218,7 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 4. Passwordless login: phone number entry with country code selector, no password required.
 5. Password reset via OTP: SMS verification step that replaces the default email reset link.
 6. WooCommerce integration: per-status SMS templates and checkout OTP gate configuration.
-7. Integrations overview: WooCommerce, Contact Form 7, WPForms, Elementor Pro, Gravity Forms, and Ninja Forms.
+7. Integrations overview: WooCommerce, Contact Form 7, WPForms, and Ninja Forms.
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==

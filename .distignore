@@ -10,6 +10,9 @@ composer.lock
 phpstan.neon
 phpstan-baseline.neon
 phpstan-bootstrap.php
+phpstan.neon
+phpstan-baseline.neon
+phpstan-bootstrap.php
 phpunit.xml
 phpunit-integration.xml
 patchwork.json

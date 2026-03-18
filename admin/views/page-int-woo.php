@@ -52,7 +52,7 @@ $kwtsms_woo_template_defs = array(
 	),
 	'woo_pending'    => array(
 		'tab_label'    => __( 'Pending', 'kwtsms' ),
-		'label'        => __( 'New Order — Awaiting Payment (Pending)', 'kwtsms' ),
+		'label'        => __( 'New Order: Awaiting Payment (Pending)', 'kwtsms' ),
 		'description'  => __( 'Sent when an order is placed but payment not yet received (e.g. bank transfer). Disabled by default.', 'kwtsms' ),
 		'placeholders' => '{order_id}, {site_name}, {customer_name}',
 	),
@@ -64,7 +64,7 @@ $kwtsms_woo_template_defs = array(
 	),
 	'woo_failed'     => array(
 		'tab_label'    => __( 'Failed', 'kwtsms' ),
-		'label'        => __( 'Payment Failed — Order Not Confirmed', 'kwtsms' ),
+		'label'        => __( 'Payment Failed: Order Not Confirmed', 'kwtsms' ),
 		'description'  => __( 'Sent when the payment attempt fails and the order is not confirmed. Disabled by default.', 'kwtsms' ),
 		'placeholders' => '{order_id}, {site_name}, {customer_name}',
 	),
@@ -98,11 +98,11 @@ $kwtsms_customer_status_labels = array(
 		'hint'  => __( "Fires immediately when a paid order is placed (credit card, PayPal, COD). This is the main 'new order' notification.", 'kwtsms' ),
 	),
 	'woo_pending'    => array(
-		'label' => __( 'New Order — Awaiting Payment (Pending)', 'kwtsms' ),
+		'label' => __( 'New Order: Awaiting Payment (Pending)', 'kwtsms' ),
 		'hint'  => __( 'Fires when an order is placed but payment has not been received yet (e.g. bank transfer). Disabled by default.', 'kwtsms' ),
 	),
 	'woo_failed'     => array(
-		'label' => __( 'Payment Failed — Order Not Confirmed', 'kwtsms' ),
+		'label' => __( 'Payment Failed: Order Not Confirmed', 'kwtsms' ),
 		'hint'  => __( 'Fires when the payment attempt fails and the order is not confirmed. Disabled by default.', 'kwtsms' ),
 	),
 	'woo_shipped'    => array(
@@ -276,8 +276,8 @@ $kwtsms_customer_status_labels = array(
 							$kwtsms_admin_notify_statuses = $kwtsms_int['woo_notify_admin_statuses'] ?? array();
 							$kwtsms_status_options        = array(
 								'processing' => __( 'New Order / Order Confirmed (Processing)', 'kwtsms' ),
-								'pending'    => __( 'New Order — Awaiting Payment (Pending)', 'kwtsms' ),
-								'failed'     => __( 'Payment Failed — Order Not Confirmed', 'kwtsms' ),
+								'pending'    => __( 'New Order: Awaiting Payment (Pending)', 'kwtsms' ),
+								'failed'     => __( 'Payment Failed: Order Not Confirmed', 'kwtsms' ),
 								'on-hold'    => __( 'Order Shipped (On-Hold)', 'kwtsms' ),
 								'completed'  => __( 'Order Completed', 'kwtsms' ),
 								'cancelled'  => __( 'Order Cancelled', 'kwtsms' ),

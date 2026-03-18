@@ -65,7 +65,7 @@ if ( ! empty( $token ) ) {
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title><?php echo esc_html( $kwtsms_page_title . ' — ' . $kwtsms_site_name ); ?></title>
+	<title><?php echo esc_html( $kwtsms_page_title . ': ' . $kwtsms_site_name ); ?></title>
 	<?php wp_head(); ?>
 </head>
 <body class="login wp-core-ui">

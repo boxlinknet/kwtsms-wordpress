@@ -213,7 +213,7 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 									<?php echo esc_html( $kwtsms_sender_id ); ?>
 								</option>
 							<?php else : ?>
-								<option value=""><?php esc_html_e( '— Login to load —', 'kwtsms' ); ?></option>
+								<option value=""><?php esc_html_e( 'Select Sender ID', 'kwtsms' ); ?></option>
 							<?php endif; ?>
 					</select>
 					<p class="description"><?php esc_html_e( 'This is the name recipients see as the sender of your SMS messages. Choose from the sender IDs registered on your kwtSMS account.', 'kwtsms' ); ?></p>

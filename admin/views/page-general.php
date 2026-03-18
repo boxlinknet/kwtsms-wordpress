@@ -290,7 +290,7 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 
 						<div style="display:flex;gap:8px;align-items:center;">
 							<select id="kwtsms-add-country-select">
-								<option value=""><?php esc_html_e( '— Add a country —', 'kwtsms' ); ?></option>
+								<option value=""><?php esc_html_e( 'Add a country', 'kwtsms' ); ?></option>
 								<?php foreach ( $kwtsms_all_countries as $kwtsms_cc ) : ?>
 								<option value="<?php echo esc_attr( $kwtsms_cc['iso2'] ); ?>"
 									data-dial="<?php echo esc_attr( $kwtsms_cc['dial'] ); ?>"
