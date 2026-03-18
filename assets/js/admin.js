@@ -552,14 +552,13 @@
 
 		// After a "Save Changes" from the unsaved-changes modal, WordPress saves and
 		// redirects back here with ?settings-updated. Forward to the original destination.
-		// After a modal "Save Changes": sessionStorage holds the original navigation target.
-		// The presence of _redir is sufficient — it is set immediately before form.submit()
-		// and consumed on the very next page load, so it can only be present if WP just
-		// processed the settings form. We do NOT check for ?settings-updated because
-		// some environments (WP Playground) reload the page without that query parameter.
+		// A timestamp guards against stale entries surviving across unrelated page loads:
+		// only consume the redirect if it was set within the last 60 seconds.
 		var _redir = sessionStorage.getItem( 'kwtsmsRedirectAfterSave' );
-		if ( _redir ) {
-			sessionStorage.removeItem( 'kwtsmsRedirectAfterSave' );
+		var _redirTs = parseInt( sessionStorage.getItem( 'kwtsmsRedirectAfterSaveTs' ) || '0', 10 );
+		sessionStorage.removeItem( 'kwtsmsRedirectAfterSave' );
+		sessionStorage.removeItem( 'kwtsmsRedirectAfterSaveTs' );
+		if ( _redir && ( Date.now() - _redirTs ) < 60000 ) {
 			window.location.href = _redir;
 			return;
 		}
@@ -610,7 +609,10 @@
 		// Use HTMLFormElement.prototype.submit.call() to bypass the override.
 		$( '#kwtsms-unsaved-save' ).on( 'click', function () {
 			var href = pendingHref;
-			if ( href ) { sessionStorage.setItem( 'kwtsmsRedirectAfterSave', href ); }
+			if ( href ) {
+				sessionStorage.setItem( 'kwtsmsRedirectAfterSave', href );
+				sessionStorage.setItem( 'kwtsmsRedirectAfterSaveTs', String( Date.now() ) );
+			}
 			dirty = false;
 			HTMLFormElement.prototype.submit.call( $forms.first()[ 0 ] );
 		} );
