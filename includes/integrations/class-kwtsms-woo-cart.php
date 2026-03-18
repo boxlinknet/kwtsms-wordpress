@@ -207,6 +207,11 @@ class KwtSMS_Woo_Cart {
 
 		if ( $discount > 0 ) {
 			$coupon_code = $this->create_coupon( $cart['phone'], $discount );
+		} else {
+			// Strip coupon placeholders and their surrounding text when no coupon.
+			$message = str_replace( array( '{coupon_code}', '{discount}' ), '', $message );
+			$message = preg_replace( '/Use code\s+for\s+%\s+off:?\s*/i', '', $message );
+			$message = preg_replace( '/استخدم كود\s+للحصول على خصم\s+%:?\s*/u', '', $message );
 		}
 
 		$cart_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/cart/' );
