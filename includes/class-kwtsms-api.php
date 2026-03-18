@@ -628,7 +628,7 @@ class KwtSMS_API {
 		return array(
 			'sent'          => $total_sent,
 			'failed'        => $total_failed,
-			'total'         => count( $phones ),
+			'total'         => $total_sent + $total_failed,
 			'batches'       => $batch_results,
 			'balance_after' => $balance_after,
 			'errors'        => $batch_errors,
