@@ -8,6 +8,11 @@
  * @package KwtSMS_OTP
  */
 
+// This file is a dev-only PHPStan bootstrap — not loaded by WordPress.
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', __DIR__ . '/' );
+}
+
 // Plugin-specific constants.
 defined( 'KWTSMS_OTP_DIR' ) || define( 'KWTSMS_OTP_DIR', __DIR__ . '/' );
 defined( 'KWTSMS_OTP_URL' ) || define( 'KWTSMS_OTP_URL', 'https://example.com/wp-content/plugins/wp-kwtsms/' );

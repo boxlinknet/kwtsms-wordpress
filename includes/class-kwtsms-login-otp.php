@@ -435,7 +435,7 @@ class KwtSMS_Login_OTP {
 
 		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id, false );
-		do_action( 'wp_login', $user->user_login, $user );
+		do_action( 'wp_login', $user->user_login, $user ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Firing core WP hook, not defining a custom one.
 
 		// Issue a trusted device cookie if the user checked "Trust this device".
 		// Only available in the 2FA flow (not password reset).

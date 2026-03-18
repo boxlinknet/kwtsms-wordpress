@@ -410,7 +410,7 @@ class KwtSMS_Registration_OTP_Gate {
 		// Log the user in immediately.
 		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id );
-		do_action( 'wp_login', $pending['username'], get_userdata( $user_id ) );
+		do_action( 'wp_login', $pending['username'], get_userdata( $user_id ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Firing core WP hook, not defining a custom one.
 
 		// Redirect to dashboard.
 		$redirect = get_dashboard_url( $user_id );

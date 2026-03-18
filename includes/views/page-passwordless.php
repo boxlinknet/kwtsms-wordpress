@@ -81,25 +81,25 @@ $kwtsms_referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_setti
 			<?php
 			// $allowed_countries and $detected_iso2 are passed from render_passwordless_page().
 			// Provide safe fallbacks if viewed directly.
-			$allowed_countries = $allowed_countries ?? array();
-			$detected_iso2     = $detected_iso2 ?? 'KW';
+			$kwtsms_allowed_countries = $allowed_countries ?? array();
+			$kwtsms_detected_iso2     = $detected_iso2 ?? 'KW';
 
 			// Generate flag emoji from ISO2 using Unicode Regional Indicator Symbols.
-			$flag_emoji = function ( $iso2 ) {
+			$kwtsms_flag_emoji = function ( $iso2 ) {
 				$chars = array();
-				foreach ( str_split( strtoupper( $iso2 ) ) as $c ) {
-					$chars[] = mb_chr( 0x1F1E6 + ( ord( $c ) - ord( 'A' ) ), 'UTF-8' );
+				foreach ( str_split( strtoupper( $iso2 ) ) as $kwtsms_c ) {
+					$chars[] = mb_chr( 0x1F1E6 + ( ord( $kwtsms_c ) - ord( 'A' ) ), 'UTF-8' );
 				}
 				return implode( '', $chars );
 			};
 
 			// Resolve pre-selected country's dial code and flag.
-			$default_dial = '965';
-			$default_flag = $flag_emoji( 'KW' );
-			foreach ( $allowed_countries as $c ) {
-				if ( $c['iso2'] === $detected_iso2 ) {
-					$default_dial = $c['dial'];
-					$default_flag = $flag_emoji( $c['iso2'] );
+			$kwtsms_default_dial = '965';
+			$kwtsms_default_flag = $kwtsms_flag_emoji( 'KW' );
+			foreach ( $kwtsms_allowed_countries as $kwtsms_c ) {
+				if ( $kwtsms_c['iso2'] === $kwtsms_detected_iso2 ) {
+					$kwtsms_default_dial = $kwtsms_c['dial'];
+					$kwtsms_default_flag = $kwtsms_flag_emoji( $kwtsms_c['iso2'] );
 					break;
 				}
 			}
@@ -109,7 +109,7 @@ $kwtsms_referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_setti
 				<div class="kwtsms-dial-wrap" id="kwtsms-dial-wrap">
 					<button type="button" id="kwtsms-dial-trigger" class="kwtsms-dial-trigger"
 						aria-haspopup="listbox" aria-expanded="false">
-						<span id="kwtsms-dial-display"><?php echo esc_html( $default_flag . ' +' . $default_dial ); ?></span>
+						<span id="kwtsms-dial-display"><?php echo esc_html( $kwtsms_default_flag . ' +' . $kwtsms_default_dial ); ?></span>
 						<span class="kwtsms-dial-arrow">&#9662;</span>
 					</button>
 					<div id="kwtsms-dial-dropdown" class="kwtsms-dial-dropdown" role="listbox" hidden>
@@ -117,23 +117,23 @@ $kwtsms_referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_setti
 							placeholder="<?php esc_attr_e( 'Search country...', 'kwtsms' ); ?>"
 							autocomplete="off" />
 						<ul id="kwtsms-dial-list">
-							<?php foreach ( $allowed_countries as $c ) : ?>
+							<?php foreach ( $kwtsms_allowed_countries as $kwtsms_c ) : ?>
 							<li role="option"
-								data-dial="<?php echo esc_attr( $c['dial'] ); ?>"
-								data-iso2="<?php echo esc_attr( $c['iso2'] ); ?>"
-								data-name="<?php echo esc_attr( strtolower( $c['name'] ) ); ?>"
+								data-dial="<?php echo esc_attr( $kwtsms_c['dial'] ); ?>"
+								data-iso2="<?php echo esc_attr( $kwtsms_c['iso2'] ); ?>"
+								data-name="<?php echo esc_attr( strtolower( $kwtsms_c['name'] ) ); ?>"
 								<?php
-								if ( $c['iso2'] === $detected_iso2 ) :
+								if ( $kwtsms_c['iso2'] === $kwtsms_detected_iso2 ) :
 									?>
 									class="is-focused"<?php endif; ?>>
-								<?php echo esc_html( $flag_emoji( $c['iso2'] ) . ' +' . $c['dial'] . ' ' . $c['name'] ); ?>
+								<?php echo esc_html( $kwtsms_flag_emoji( $kwtsms_c['iso2'] ) . ' +' . $kwtsms_c['dial'] . ' ' . $kwtsms_c['name'] ); ?>
 							</li>
 							<?php endforeach; ?>
 						</ul>
 					</div>
 					<!-- Hidden dial code submitted with the form -->
 					<input type="hidden" name="kwtsms_dial_code" id="kwtsms_dial_code"
-						value="<?php echo esc_attr( $default_dial ); ?>" />
+						value="<?php echo esc_attr( $kwtsms_default_dial ); ?>" />
 				</div>
 				<input
 					type="tel"

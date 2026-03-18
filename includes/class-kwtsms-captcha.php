@@ -44,6 +44,7 @@ class KwtSMS_Captcha {
 	public function enqueue_captcha_scripts() {
 		$provider = $this->settings->get( 'general.captcha_provider', 'none' );
 
+		// phpcs:disable PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- External CAPTCHA APIs (Google reCAPTCHA, Cloudflare Turnstile) require loading scripts from their own CDNs.
 		if ( 'recaptcha' === $provider ) {
 			$site_key = $this->settings->get( 'general.recaptcha_site_key', '' );
 			if ( $site_key ) {
@@ -67,6 +68,7 @@ class KwtSMS_Captcha {
 				);
 			}
 		}
+		// phpcs:enable PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent
 	}
 
 	// =========================================================================
