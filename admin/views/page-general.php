@@ -567,7 +567,7 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 				<td>
 					<input type="number" name="kwtsms_otp_general[iphub_cache_ttl]" id="kwtsms_iphub_cache_ttl"
 						value="<?php echo esc_attr( (string) absint( $kwtsms_iphub_cache_ttl ) ); ?>"
-						min="3600" max="604800" class="small-text" />
+						class="small-text" />
 					<?php esc_html_e( 'seconds', 'kwtsms' ); ?>
 					<p class="description">
 						<?php esc_html_e( 'How long to cache each IP reputation result (min: 1 hour = 3600 s, max: 7 days = 604800 s, default: 86400 s = 1 day). Cached results avoid repeated API calls for the same IP.', 'kwtsms' ); ?>
