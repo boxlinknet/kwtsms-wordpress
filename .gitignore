@@ -27,6 +27,7 @@ node_modules/
 # Secrets / local config
 env.txt
 auth-state.json
+blueprint.json
 
 # OS files
 .DS_Store
