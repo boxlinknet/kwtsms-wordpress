@@ -197,7 +197,7 @@ class KwtSMS_Login_OTP {
 				// Country blocked or SMS disabled: user's phone is in a disallowed country.
 				// Do NOT fail-open: show OTP page but with no valid transient (anti-enumeration).
 				// Clear any stale partial-auth cookie so an old session cannot be reused.
-				if ( in_array( $error_code, array( 'kwtsms_country_blocked', 'kwtsms_sms_disabled' ), true ) ) {
+				if ( in_array( $error_code, array( 'country_not_allowed', 'kwtsms_sms_disabled' ), true ) ) {
 					$this->clear_partial_auth_cookie();
 					return new WP_Error( 'kwtsms_otp_required', '' );
 				}
@@ -612,7 +612,7 @@ class KwtSMS_Login_OTP {
 
 				// Country blocked or SMS disabled: user's phone is in a disallowed country.
 				// Anti-enumeration: show generic success but do not create a session.
-				if ( in_array( $error_code, array( 'kwtsms_country_blocked', 'kwtsms_sms_disabled' ), true ) ) {
+				if ( in_array( $error_code, array( 'country_not_allowed', 'kwtsms_sms_disabled' ), true ) ) {
 					$this->plugin->api->write_debug_log( 'passwordless', 'Country-blocked phone attempted passwordless OTP: ' . $normalized );
 					$this->render_passwordless_page( '', $generic_message );
 					exit;
