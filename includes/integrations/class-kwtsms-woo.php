@@ -88,6 +88,7 @@ class KwtSMS_Woo {
 		add_action( 'woocommerce_register_form', array( $this, 'render_wc_phone_field' ) );
 		add_filter( 'woocommerce_registration_errors', array( $this, 'validate_wc_phone_field' ), 10, 3 );
 		add_action( 'woocommerce_created_customer', array( $this, 'save_wc_customer_phone' ) );
+		add_action( 'woocommerce_edit_account_form', array( $this, 'output_account_nonce' ) );
 
 		// Checkout OTP gate (only when enabled).
 		if ( $this->is_checkout_otp_enabled() ) {
@@ -314,6 +315,15 @@ class KwtSMS_Woo {
 	}
 
 	/**
+	 * Output a nonce field on the WooCommerce My Account edit form.
+	 *
+	 * Paired with nonce verification in save_wc_customer_phone().
+	 */
+	public function output_account_nonce() {
+		wp_nonce_field( 'kwtsms_woo_account', 'kwtsms_woo_account_nonce' );
+	}
+
+	/**
 	 * Save phone meta after WC account creation.
 	 *
 	 * Only runs when a non-empty phone was submitted. The phone is normalised
@@ -325,7 +335,10 @@ class KwtSMS_Woo {
 	 * @param int $customer_id New customer user ID.
 	 */
 	public function save_wc_customer_phone( $customer_id ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- woocommerce_created_customer fires after WooCommerce has already verified the checkout or registration nonce; the specific nonce varies by context (registration vs checkout).
+		if ( ! isset( $_POST['kwtsms_woo_account_nonce'] ) ||
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['kwtsms_woo_account_nonce'] ) ), 'kwtsms_woo_account' ) ) {
+			return;
+		}
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		if ( '' === $phone ) {
 			return;

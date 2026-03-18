@@ -308,8 +308,8 @@ function kwtsms_attempt_result_label( $result ) {
 		</span>
 		<span style="color:#888;font-size:13px;margin-left:auto;">
 		<?php
-			// Show relative path so it reads the same on any server layout.
-			$kwtsms_debug_log_display = basename( dirname( $kwtsms_debug_log_path ) ) . '/' . basename( $kwtsms_debug_log_path );
+			// Show the full normalized path for clarity.
+			$kwtsms_debug_log_display = wp_normalize_path( $kwtsms_debug_log_path );
 			echo esc_html( $kwtsms_debug_log_display );
 		?>
 		</span>

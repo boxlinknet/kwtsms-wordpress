@@ -310,7 +310,7 @@ $kwtsms_content_dir = basename( WP_CONTENT_DIR );
 			<li>.kwtsms-otp-input: <?php esc_html_e( 'the OTP code input field', 'kwtsms' ); ?></li>
 			<li>.kwtsms-submit-btn: <?php esc_html_e( 'the Submit / Verify button', 'kwtsms' ); ?></li>
 			<li>.kwtsms-phone-group: <?php esc_html_e( 'country code + phone input wrapper', 'kwtsms' ); ?></li>
-			<li>.kwtsms-credit: <?php esc_html_e( '"SMS by kwtSMS.com" footer', 'kwtsms' ); ?></li>
+			<li>.kwtsms-credit: <?php esc_html_e( '"SMS by kwtSMS.com" footer (opt-in, off by default, enabled via General Settings &gt; Show credit link)', 'kwtsms' ); ?></li>
 		</ul>
 		<p>
 			<?php esc_html_e( 'No customisation page is needed. Full CSS control is available through standard WordPress/theme overrides.', 'kwtsms' ); ?>

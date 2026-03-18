@@ -81,6 +81,7 @@ class KwtSMS_Registration_OTP_Gate {
 
 		add_filter( 'registration_errors', array( $this, 'prepend_reg_url_error' ), 1, 1 );
 		add_filter( 'registration_errors', array( $this, 'gate_registration' ), 10, 3 );
+		add_action( 'woocommerce_register_form', array( $this, 'output_woo_register_nonce' ) );
 		add_filter( 'woocommerce_registration_errors', array( $this, 'gate_woo_registration' ), 10, 3 );
 		add_action( 'login_init', array( $this, 'handle_reg_otp_page' ) );
 	}
@@ -188,6 +189,15 @@ class KwtSMS_Registration_OTP_Gate {
 	// =========================================================================
 
 	/**
+	 * Output a nonce field on the WooCommerce registration form.
+	 *
+	 * Paired with nonce verification in gate_woo_registration().
+	 */
+	public function output_woo_register_nonce() {
+		wp_nonce_field( 'kwtsms_woo_register', 'kwtsms_woo_register_nonce' );
+	}
+
+	/**
 	 * Intercept WooCommerce My Account registration and require OTP when gate is active.
 	 *
 	 * Hooked to woocommerce_registration_errors at priority 10.
@@ -206,10 +216,9 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
-		// WooCommerce registration form nonce — verified by WooCommerce before this filter fires.
-		// We verify it explicitly here as an additional security layer.
-		if ( ! isset( $_POST['woocommerce-register-nonce'] ) ||
-			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) ) {
+		if ( ! isset( $_POST['kwtsms_woo_register_nonce'] ) ||
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['kwtsms_woo_register_nonce'] ) ), 'kwtsms_woo_register' ) ) {
+			$errors->add( 'kwtsms_security', __( 'Security verification failed. Please refresh and try again.', 'kwtsms' ) );
 			return $errors;
 		}
 
