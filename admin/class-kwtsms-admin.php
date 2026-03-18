@@ -765,11 +765,11 @@ class KwtSMS_Admin {
 			if ( ! $sanitized['woo_cart_abandon_enabled'] ) {
 				wp_clear_scheduled_hook( 'kwtsms_check_abandoned_carts' );
 			}
-			$sanitized['woo_cart_abandon_delay']   = max( 1, absint( $raw['woo_cart_abandon_delay'] ?? 60 ) );
-			$sanitized['woo_cart_abandon_coupon']  = min( 100, absint( $raw['woo_cart_abandon_coupon'] ?? 10 ) );
-			$sanitized['woo_cart_abandon_expiry']  = max( 1, absint( $raw['woo_cart_abandon_expiry'] ?? 48 ) );
-			$tpl_ca_raw                            = is_array( $raw['woo_tpl_cart_abandon'] ?? null ) ? $raw['woo_tpl_cart_abandon'] : array();
-			$sanitized['woo_tpl_cart_abandon']     = array(
+			$sanitized['woo_cart_abandon_delay']  = max( 1, absint( $raw['woo_cart_abandon_delay'] ?? 60 ) );
+			$sanitized['woo_cart_abandon_coupon'] = min( 100, absint( $raw['woo_cart_abandon_coupon'] ?? 10 ) );
+			$sanitized['woo_cart_abandon_expiry'] = max( 1, absint( $raw['woo_cart_abandon_expiry'] ?? 48 ) );
+			$tpl_ca_raw                           = is_array( $raw['woo_tpl_cart_abandon'] ?? null ) ? $raw['woo_tpl_cart_abandon'] : array();
+			$sanitized['woo_tpl_cart_abandon']    = array(
 				'en' => $this->sanitize_template_content( $tpl_ca_raw['en'] ?? '' ),
 				'ar' => $this->sanitize_template_content( $tpl_ca_raw['ar'] ?? '' ),
 			);

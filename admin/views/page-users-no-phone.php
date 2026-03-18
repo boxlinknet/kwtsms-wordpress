@@ -169,7 +169,18 @@ $kwtsms_role_colors = array(
 				<tr id="kwtsms-urow-<?php echo (int) $kwtsms_user->ID; ?>" class="kwtsms-unphone-row">
 					<td style="padding:10px 12px;vertical-align:middle;">
 						<div style="display:flex;align-items:center;gap:8px;">
-							<?php echo get_avatar( $kwtsms_user->ID, 32, '', '', array( 'class' => 'kwtsms-unphone-avatar', 'style' => 'border-radius:50%;flex-shrink:0;' ) ); ?>
+							<?php
+							echo get_avatar(
+								$kwtsms_user->ID,
+								32,
+								'',
+								'',
+								array(
+									'class' => 'kwtsms-unphone-avatar',
+									'style' => 'border-radius:50%;flex-shrink:0;',
+								)
+							);
+							?>
 							<div>
 								<strong><?php echo esc_html( $kwtsms_user->display_name ); ?></strong><br>
 								<span class="kwtsms-unphone-login">@<?php echo esc_html( $kwtsms_user->user_login ); ?></span>

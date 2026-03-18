@@ -299,7 +299,7 @@ class KwtSMS_Registration_OTP_Gate {
 			'max_attempts' => __( 'Too many failed attempts. Please start over.', 'kwtsms' ),
 			'security'     => __( 'Security check failed. Please try again.', 'kwtsms' ),
 		);
-		$error_message = $error_messages[ $reg_error_key ] ?? '';
+		$error_message  = $error_messages[ $reg_error_key ] ?? '';
 		$this->render_reg_otp_form( $token, $error_message );
 		exit;
 	}
@@ -495,11 +495,11 @@ class KwtSMS_Registration_OTP_Gate {
 		set_transient(
 			self::PENDING_REG_PREFIX . $token,
 			array(
-				'username' => $username,
-				'email'    => $email,
+				'username'      => $username,
+				'email'         => $email,
 				'password_hash' => wp_hash_password( $password ),
-				'phone'    => $phone,
-				'created'  => time(),
+				'phone'         => $phone,
+				'created'       => time(),
 			),
 			$ttl
 		);

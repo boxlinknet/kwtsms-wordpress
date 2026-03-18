@@ -842,7 +842,7 @@ class KwtSMS_API {
 
 		// Redact OTP codes from the log for security. For OTP-type sends, replace
 		// any sequence of 4-8 digits with **** so the plaintext code is not stored.
-		$otp_types = array(
+		$otp_types   = array(
 			'login_otp',
 			'passwordless_otp',
 			'reset_otp',
