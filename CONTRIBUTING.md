@@ -62,8 +62,6 @@ includes/
     class-kwtsms-woo-metabox.php Per-order custom SMS metabox
     class-kwtsms-cf7.php         Contact Form 7
     class-kwtsms-wpforms.php     WPForms
-    class-kwtsms-elementor.php   Elementor Pro
-    class-kwtsms-gravityforms.php Gravity Forms
     class-kwtsms-ninjaforms.php  Ninja Forms
 admin/
   class-kwtsms-admin.php       Admin class and sanitization
@@ -101,7 +99,7 @@ tests/                         PHPUnit 9 + Brain\Monkey
 - Class names: `KwtSMS_Class_Name`
 - Method names: `snake_case()`
 - Hooks: `kwtsms_hook_name`
-- Text domain: `wp-kwtsms`
+- Text domain: `kwtsms`
 - Never output raw PHP errors or stack traces to the browser
 - Never commit credentials, `.env` files, or debug logs
 
@@ -110,15 +108,15 @@ tests/                         PHPUnit 9 + Brain\Monkey
 All user-facing strings must use WordPress i18n functions:
 
 ```php
-__( 'String', 'wp-kwtsms' )
-esc_html__( 'String', 'wp-kwtsms' )
-_e( 'String', 'wp-kwtsms' )
+__( 'String', 'kwtsms' )
+esc_html__( 'String', 'kwtsms' )
+_e( 'String', 'kwtsms' )
 ```
 
 After adding new strings, regenerate the POT file:
 
 ```bash
-wp i18n make-pot . languages/wp-kwtsms.pot
+wp i18n make-pot . languages/kwtsms.pot
 ```
 
 ## Releasing
@@ -126,7 +124,7 @@ wp i18n make-pot . languages/wp-kwtsms.pot
 1. Bump the version in `wp-kwtsms.php` (plugin header) and `readme.txt` (Stable tag)
 2. Update `readme.txt` changelog with the new version entry
 3. Update `CHANGELOG.md`: move items from `[Unreleased]` to a new version section
-4. Regenerate the POT file: `wp i18n make-pot . languages/wp-kwtsms.pot`
+4. Regenerate the POT file: `wp i18n make-pot . languages/kwtsms.pot`
 5. Compile MO files: `wp i18n make-mo languages/`
 6. Run the full test suite and PHPCS
 7. Commit with `feat: release vX.Y.Z`

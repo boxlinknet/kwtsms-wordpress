@@ -216,10 +216,18 @@ This plugin connects to the following external services:
 - [Terms of Service](https://ipapi.co/terms/) | [Privacy Policy](https://ipapi.co/privacy/)
 
 **3. Google reCAPTCHA v3** (optional): bot protection on OTP forms. Only active when a reCAPTCHA Site Key is entered in General Settings.
-- [Privacy Policy](https://policies.google.com/privacy)
+- JavaScript loaded from: `https://www.google.com/recaptcha/api.js`
+- Verification endpoint: `https://www.google.com/recaptcha/api/siteverify`
+- Data sent: reCAPTCHA token (generated client-side), secret key (server-side only)
+- When: on every login, password reset, or registration page load (client JS), and on every OTP form submission (server-side verification)
+- [Terms of Service](https://policies.google.com/terms) | [Privacy Policy](https://policies.google.com/privacy)
 
 **4. Cloudflare Turnstile** (optional): alternative bot protection. Only active when a Turnstile Site Key is entered in General Settings.
-- [Privacy Policy](https://www.cloudflare.com/privacypolicy/)
+- JavaScript loaded from: `https://challenges.cloudflare.com/turnstile/v0/api.js`
+- Verification endpoint: `https://challenges.cloudflare.com/turnstile/v0/siteverify`
+- Data sent: Turnstile token (generated client-side), secret key (server-side only)
+- When: on every login, password reset, or registration page load (client JS), and on every OTP form submission (server-side verification)
+- [Terms of Service](https://www.cloudflare.com/terms/) | [Privacy Policy](https://www.cloudflare.com/privacypolicy/)
 
 **5. IPHub** (optional): detects proxies and VPNs to block or flag suspicious OTP requests. Only active when an IPHub API key is entered and the feature is enabled in General Settings.
 - Endpoint: `https://v2.api.iphub.info/ip/{ip}`

@@ -97,11 +97,21 @@ If IPHub is unavailable or returns an error, the request is allowed through (fai
 **4. Google reCAPTCHA v3** (optional): bot protection on OTP forms. Only active if you enter a reCAPTCHA Site Key in General Settings.
 
 * Service: [https://www.google.com/recaptcha/](https://www.google.com/recaptcha/)
+* JavaScript loaded from: `https://www.google.com/recaptcha/api.js`
+* Verification endpoint: `https://www.google.com/recaptcha/api/siteverify`
+* Data sent: reCAPTCHA token (generated client-side), secret key (server-side only)
+* When: on every login, password reset, or registration page load (client JS), and on every OTP form submission (server-side verification)
+* Terms of Service: [https://policies.google.com/terms](https://policies.google.com/terms)
 * Privacy Policy: [https://policies.google.com/privacy](https://policies.google.com/privacy)
 
 **5. Cloudflare Turnstile** (optional): alternative bot protection. Only active if you enter a Turnstile Site Key in General Settings.
 
 * Service: [https://www.cloudflare.com/products/turnstile/](https://www.cloudflare.com/products/turnstile/)
+* JavaScript loaded from: `https://challenges.cloudflare.com/turnstile/v0/api.js`
+* Verification endpoint: `https://challenges.cloudflare.com/turnstile/v0/siteverify`
+* Data sent: Turnstile token (generated client-side), secret key (server-side only)
+* When: on every login, password reset, or registration page load (client JS), and on every OTP form submission (server-side verification)
+* Terms of Service: [https://www.cloudflare.com/terms/](https://www.cloudflare.com/terms/)
 * Privacy Policy: [https://www.cloudflare.com/privacypolicy/](https://www.cloudflare.com/privacypolicy/)
 
 = Admin =

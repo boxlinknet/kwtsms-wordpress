@@ -57,10 +57,12 @@ delete_post_meta_by_key( 'kwtsms_back_in_stock_subscribers' );
 // 4. Remove transients (OTPs, partial auths, rate limiters).
 // Transients are stored as _transient_* and _transient_timeout_* in options.
 // -------------------------------------------------------------------------
-$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared
-	"DELETE FROM {$wpdb->options}
-	 WHERE option_name LIKE '\\_transient\\_kwtsms\\_%'
-	    OR option_name LIKE '\\_transient\\_timeout\\_kwtsms\\_%'"
+$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+	$wpdb->prepare(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+		$wpdb->esc_like( '_transient_kwtsms_' ) . '%',
+		$wpdb->esc_like( '_transient_timeout_kwtsms_' ) . '%'
+	)
 );
 
 // -------------------------------------------------------------------------

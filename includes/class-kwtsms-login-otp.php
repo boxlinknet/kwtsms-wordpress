@@ -268,7 +268,7 @@ class KwtSMS_Login_OTP {
 	 */
 	public function handle_login_actions() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading WP action key, not form data.
-		$action = isset( $_REQUEST['action'] ) ? sanitize_key( $_REQUEST['action'] ) : 'login';
+		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : 'login';
 
 		if ( 'kwtsms_otp' === $action ) {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- REQUEST_METHOD is a server variable.

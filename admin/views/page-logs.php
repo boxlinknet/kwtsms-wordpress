@@ -21,7 +21,7 @@ if ( ! current_user_can( 'manage_options' ) ) {
 $kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'sms_history'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $kwtsms_active_tab     = in_array( $kwtsms_active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $kwtsms_active_tab : 'sms_history';
 $kwtsms_items_per_page = 20;
-$kwtsms_current_page   = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$kwtsms_current_page   = max( 1, absint( wp_unslash( $_GET['paged'] ?? 1 ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
 // NOTE: download/clear/export handlers are registered on admin_init in KwtSMS_Admin::handle_log_exports()
@@ -256,7 +256,7 @@ function kwtsms_attempt_result_label( $result ) {
 		$kwtsms_total_lines     = count( $kwtsms_lines );
 		$kwtsms_per_page_dbg    = 100;
 		$kwtsms_total_pages_dbg = max( 1, (int) ceil( $kwtsms_total_lines / $kwtsms_per_page_dbg ) );
-		$kwtsms_cur_page_dbg    = min( max( 1, absint( $_GET['paged'] ?? 1 ) ), $kwtsms_total_pages_dbg ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$kwtsms_cur_page_dbg    = min( max( 1, absint( wp_unslash( $_GET['paged'] ?? 1 ) ) ), $kwtsms_total_pages_dbg ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$kwtsms_offset_dbg      = ( $kwtsms_cur_page_dbg - 1 ) * $kwtsms_per_page_dbg;
 		$kwtsms_page_lines      = array_slice( $kwtsms_lines, $kwtsms_offset_dbg, $kwtsms_per_page_dbg );
 		?>

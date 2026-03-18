@@ -1375,8 +1375,8 @@ class KwtSMS_Admin {
 			header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
 			header( 'X-Content-Type-Options: nosniff' );
 			header( 'Pragma: no-cache' );
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents,WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo file_get_contents( $debug_log_path );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
+			readfile( $debug_log_path );
 			exit;
 		}
 
