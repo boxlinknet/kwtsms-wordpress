@@ -54,6 +54,10 @@ class KwtSMS_Woo_Cart {
 		}
 
 		if ( ! $this->plugin->settings->get( 'integrations.woo_cart_abandon_enabled', 0 ) ) {
+			// Clear leftover cron from when the feature was previously enabled.
+			if ( wp_next_scheduled( self::CRON_EVENT ) ) {
+				wp_clear_scheduled_hook( self::CRON_EVENT );
+			}
 			return;
 		}
 
