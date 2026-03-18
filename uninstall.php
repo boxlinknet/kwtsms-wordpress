@@ -9,6 +9,8 @@
  * - All kwtsms_otp_* options from wp_options
  * - All kwtsms_phone user meta from wp_usermeta
  * - All kwtsms_otp_* and kwtsms_partial_auth_* transients
+ * - Scheduled cron events (kwtsms_check_abandoned_carts)
+ * - Debug log file (wp-content/kwtsms-debug.log)
  *
  * @package KwtSMS_OTP
  */
@@ -60,3 +62,16 @@ $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordP
 	 WHERE option_name LIKE '\\_transient\\_kwtsms\\_%'
 	    OR option_name LIKE '\\_transient\\_timeout\\_kwtsms\\_%'"
 );
+
+// -------------------------------------------------------------------------
+// 5. Clear scheduled cron events.
+// -------------------------------------------------------------------------
+wp_clear_scheduled_hook( 'kwtsms_check_abandoned_carts' );
+
+// -------------------------------------------------------------------------
+// 6. Remove debug log file.
+// -------------------------------------------------------------------------
+$kwtsms_debug_log = WP_CONTENT_DIR . '/kwtsms-debug.log';
+if ( file_exists( $kwtsms_debug_log ) ) {
+	wp_delete_file( $kwtsms_debug_log );
+}

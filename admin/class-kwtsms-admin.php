@@ -1282,13 +1282,11 @@ class KwtSMS_Admin {
 		// user_id: must be a positive integer; absint() rejects negatives and zero.
 		$user_id = absint( isset( $_POST['user_id'] ) ? wp_unslash( $_POST['user_id'] ) : 0 ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		// phone: cap raw length before any processing to prevent DoS; then sanitize.
-		$raw_phone = isset( $_POST['phone'] ) ? wp_unslash( $_POST['phone'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( strlen( $raw_phone ) > 25 ) {
+		$phone = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
+		if ( strlen( $phone ) > 25 ) {
 			wp_send_json_error( array( 'message' => __( 'Phone number is too long.', 'kwtsms' ) ) );
 			return;
 		}
-		$phone = sanitize_text_field( $raw_phone );
 
 		// --- Validation ---
 
@@ -1358,7 +1356,7 @@ class KwtSMS_Admin {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'kwtsms' ) );
 		}
 
-		$action = isset( $_GET['action'] ) ? sanitize_key( $_GET['action'] ) : '';
+		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
 		if ( empty( $action ) || ! isset( $_GET['_wpnonce'] ) ) {
 			return;
 		}
@@ -1402,7 +1400,7 @@ class KwtSMS_Admin {
 
 		// ---- Export CSV ----
 		if ( 'export_csv' === $action ) {
-			$log_key = sanitize_key( $_GET['log'] ?? '' );
+			$log_key = sanitize_key( wp_unslash( $_GET['log'] ?? '' ) );
 			if ( in_array( $log_key, array( 'sms_history', 'attempt_log' ), true ) &&
 				wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_export_csv_' . $log_key )
 			) {
