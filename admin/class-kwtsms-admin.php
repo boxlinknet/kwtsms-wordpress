@@ -759,6 +759,12 @@ class KwtSMS_Admin {
 		// D3 — Cart abandonment recovery (saved from cart_abandonment tab).
 		if ( $update_cart_abandonment ) {
 			$sanitized['woo_cart_abandon_enabled'] = ! empty( $raw['woo_cart_abandon_enabled'] ) ? 1 : 0;
+
+			// Unschedule the cron immediately when the feature is disabled so the
+			// event does not linger as an orphaned no-op until plugin deactivation.
+			if ( ! $sanitized['woo_cart_abandon_enabled'] ) {
+				wp_clear_scheduled_hook( 'kwtsms_check_abandoned_carts' );
+			}
 			$sanitized['woo_cart_abandon_delay']   = max( 1, absint( $raw['woo_cart_abandon_delay'] ?? 60 ) );
 			$sanitized['woo_cart_abandon_coupon']  = min( 100, absint( $raw['woo_cart_abandon_coupon'] ?? 10 ) );
 			$sanitized['woo_cart_abandon_expiry']  = max( 1, absint( $raw['woo_cart_abandon_expiry'] ?? 48 ) );
