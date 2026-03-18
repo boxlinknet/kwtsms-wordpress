@@ -596,8 +596,10 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 					<?php endif; ?>
 					<p class="description">
 						<?php
-						// Show relative path (e.g. wp-content/kwtsms-debug.log) regardless of server layout.
-						$kwtsms_log_path = basename( WP_CONTENT_DIR ) . '/kwtsms-debug.log';
+						// Show relative path using wp_upload_dir() per WP.org guidelines.
+						$kwtsms_upload      = wp_upload_dir();
+						$kwtsms_content_rel = basename( dirname( $kwtsms_upload['basedir'] ) );
+						$kwtsms_log_path    = $kwtsms_content_rel . '/kwtsms-debug.log';
 						printf(
 							/* translators: %s: path to the debug log file */
 							esc_html__( 'Log file: %s', 'kwtsms' ),

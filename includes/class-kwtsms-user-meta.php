@@ -224,8 +224,12 @@ class KwtSMS_User_Meta {
 			return;
 		}
 
-		$user_id = isset( $_GET['user_id'] ) ? absint( wp_unslash( $_GET['user_id'] ) ) : get_current_user_id(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$msg     = get_transient( 'kwtsms_phone_error_' . $user_id );
+		$user_id = get_current_user_id();
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin screen context; validated via absint + capability check.
+		if ( isset( $_GET['user_id'] ) && current_user_can( 'edit_users' ) ) {
+			$user_id = absint( wp_unslash( $_GET['user_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		$msg = get_transient( 'kwtsms_phone_error_' . $user_id );
 		if ( ! $msg ) {
 			return;
 		}
@@ -385,7 +389,11 @@ class KwtSMS_User_Meta {
 	 * @param int $user_id Newly created user ID.
 	 */
 	public function save_registration_phone( $user_id ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress registration; nonce verified by WP core.
+		// Verify the WordPress registration nonce before accessing POST data.
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' ) ) {
+			return;
+		}
+
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 
 		if ( '' === $phone ) {

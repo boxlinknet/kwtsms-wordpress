@@ -336,7 +336,16 @@ class KwtSMS_Woo {
 	 * @param int $customer_id New customer user ID.
 	 */
 	public function save_wc_customer_phone( $customer_id ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verifies checkout nonce before firing woocommerce_created_customer.
+		// Verify WooCommerce checkout or registration nonce before accessing POST data.
+		$wc_nonce_valid = (
+			( isset( $_POST['woocommerce-process-checkout-nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ) ), 'woocommerce-process_checkout' ) )
+			|| ( isset( $_POST['woocommerce-register-nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) )
+			|| ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' ) )
+		);
+		if ( ! $wc_nonce_valid ) {
+			return;
+		}
+
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		if ( '' === $phone ) {
 			return;

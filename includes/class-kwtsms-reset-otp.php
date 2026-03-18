@@ -81,10 +81,8 @@ class KwtSMS_Reset_OTP {
 			return;
 		}
 
-		// Verify the WordPress lostpassword form nonce if present.
-		// WP 6.9+ removed _wpnonce from the lostpassword POST body, so we only
-		// reject an explicitly invalid nonce, not a missing one.
-		if ( isset( $_POST['_wpnonce'] ) && ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'lostpassword' ) ) {
+		// Verify the WordPress lostpassword form nonce. Fail early if missing or invalid.
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'lostpassword' ) ) {
 			return;
 		}
 

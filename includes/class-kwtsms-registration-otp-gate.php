@@ -172,8 +172,10 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- password must not be sanitized; sanitize_text_field strips special characters which corrupts passwords.
-		$password = wp_unslash( $_POST['pass1'] ?? $_POST['password'] ?? '' );
+		// Passwords must preserve special characters: sanitize_text_field() would corrupt them.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wp_check_invalid_utf8 is the appropriate sanitizer for passwords.
+		$raw_pass = isset( $_POST['pass1'] ) ? wp_unslash( $_POST['pass1'] ) : ( isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : '' );
+		$password = is_string( $raw_pass ) ? wp_check_invalid_utf8( $raw_pass ) : '';
 
 		$result = $this->send_registration_otp( $sanitized_user_login, $user_email, $password, $phone );
 		// send_registration_otp() calls wp_safe_redirect() + exit on success (returns null).
@@ -242,8 +244,10 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- password must not be sanitized; sanitize_text_field strips special characters which corrupts passwords.
-		$password = wp_unslash( $_POST['password'] ?? $_POST['pass1'] ?? '' );
+		// Passwords must preserve special characters: sanitize_text_field() would corrupt them.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wp_check_invalid_utf8 is the appropriate sanitizer for passwords.
+		$raw_pass = isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : ( isset( $_POST['pass1'] ) ? wp_unslash( $_POST['pass1'] ) : '' );
+		$password = is_string( $raw_pass ) ? wp_check_invalid_utf8( $raw_pass ) : '';
 
 		$result = $this->send_registration_otp( $username, $email, $password, $phone );
 		// send_registration_otp() calls wp_safe_redirect() + exit on success (returns null).

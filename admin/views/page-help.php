@@ -18,8 +18,9 @@ $kwtsms_has_credentials      = $kwtsms_credentials_verified
 $kwtsms_has_sender           = $kwtsms_credentials_verified && ! empty( $kwtsms_settings->get( 'gateway.sender_id', '' ) );
 $kwtsms_test_mode            = (bool) $kwtsms_settings->get( 'gateway.test_mode', 1 );
 $kwtsms_debug_logging        = (bool) $kwtsms_settings->get( 'general.debug_logging', 0 );
-// Relative content path (e.g. "wp-content") for display — avoids showing full server paths.
-$kwtsms_content_dir = basename( WP_CONTENT_DIR );
+// Relative content path for display — uses wp_upload_dir() per WP.org guidelines.
+$kwtsms_upload_dir  = wp_upload_dir();
+$kwtsms_content_dir = basename( dirname( $kwtsms_upload_dir['basedir'] ) );
 ?>
 <div class="wrap kwtsms-admin-wrap">
 

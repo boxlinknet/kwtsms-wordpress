@@ -243,9 +243,13 @@ class KwtSMS_Login_OTP {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- reading redirect_to from login POST, no state change.
-		$redirect_to = esc_url_raw( wp_unslash( $_POST['redirect_to'] ?? '' ) );
-		$otp_url     = add_query_arg(
+		// Verify the WordPress login form nonce before reading POST data.
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'log-in' ) ) {
+			$redirect_to = '';
+		} else {
+			$redirect_to = esc_url_raw( wp_unslash( $_POST['redirect_to'] ?? '' ) );
+		}
+		$otp_url = add_query_arg(
 			array(
 				'action'      => 'kwtsms_otp',
 				'redirect_to' => rawurlencode( $redirect_to ),
