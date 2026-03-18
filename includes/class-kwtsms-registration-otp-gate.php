@@ -213,8 +213,10 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
+		// WC My Account registration sends the field as kwtsms_phone_reg; fall back
+		// to kwtsms_phone (legacy) and then billing_phone (WC guest checkout).
 		$phone = trim(
-			sanitize_text_field( wp_unslash( $_POST['kwtsms_phone'] ?? $_POST['billing_phone'] ?? '' ) )
+			sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? $_POST['kwtsms_phone'] ?? $_POST['billing_phone'] ?? '' ) )
 		);
 
 		if ( '' === $phone ) {
