@@ -176,6 +176,7 @@ class KwtSMS_User_Meta {
 			sanitize_key( wp_unslash( $_POST['kwtsms_phone_nonce'] ) ),
 			'kwtsms_save_phone_' . $user_id
 		) ) {
+			set_transient( 'kwtsms_phone_error_' . $user_id, __( 'Security check failed. Please reload the page and try again.', 'kwtsms' ), 60 );
 			return;
 		}
 
@@ -292,7 +293,7 @@ class KwtSMS_User_Meta {
 			sanitize_key( wp_unslash( $_POST['kwtsms_add_new_user_phone_nonce'] ) ),
 			'kwtsms_add_new_user_phone'
 		) ) {
-			return;
+			wp_die( esc_html__( 'Security check failed. Please reload the page and try again.', 'kwtsms' ) );
 		}
 
 		if ( ! current_user_can( 'create_users' ) ) {

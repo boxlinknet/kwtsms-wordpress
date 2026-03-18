@@ -1355,7 +1355,7 @@ class KwtSMS_Admin {
 			return;
 		}
 		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
+			wp_die( esc_html__( 'You do not have permission to perform this action.', 'kwtsms' ) );
 		}
 
 		$action = isset( $_GET['action'] ) ? sanitize_key( $_GET['action'] ) : '';

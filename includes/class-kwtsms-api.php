@@ -840,12 +840,30 @@ class KwtSMS_API {
 			$log = array();
 		}
 
+		// Redact OTP codes from the log for security. For OTP-type sends, replace
+		// any sequence of 4-8 digits with **** so the plaintext code is not stored.
+		$otp_types = array(
+			'login_otp',
+			'passwordless_otp',
+			'reset_otp',
+			'checkout_otp',
+			'cf7_gate',
+			'wpforms_gate',
+			'elementor_gate',
+			'ninjaforms_gate',
+			'gravityforms_gate',
+			'reg_otp',
+		);
+		$log_message = in_array( $type, $otp_types, true )
+			? preg_replace( '/\b\d{4,8}\b/', '****', $message )
+			: $message;
+
 		array_unshift(
 			$log,
 			array(
 				'time'           => time(),
 				'phone'          => sanitize_text_field( $phone ),
-				'message'        => sanitize_textarea_field( $message ),
+				'message'        => sanitize_textarea_field( $log_message ),
 				'status'         => in_array( $status, array( 'sent', 'failed' ), true ) ? $status : 'failed',
 				'type'           => sanitize_key( $type ),
 				'msg_id'         => sanitize_text_field( $msg_id ),
