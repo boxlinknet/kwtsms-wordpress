@@ -221,7 +221,7 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 				<th scope="row"><label for="kwtsms_otp_expiry"><?php esc_html_e( 'Code Expiry', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="number" name="kwtsms_otp_general[otp_expiry]" id="kwtsms_otp_expiry"
-						value="<?php echo esc_attr( absint( $kwtsms_general['otp_expiry'] ) ); ?>" min="1" max="30" class="small-text" />
+						value="<?php echo esc_attr( (string) absint( $kwtsms_general['otp_expiry'] ) ); ?>" min="1" max="30" class="small-text" />
 					<?php esc_html_e( 'minutes', 'kwtsms' ); ?>
 					<p class="description"><?php esc_html_e( 'Recommended: 5 minutes. Shorter = more secure, longer = more user-friendly.', 'kwtsms' ); ?></p>
 				</td>
@@ -231,7 +231,7 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 				<th scope="row"><label for="kwtsms_max_attempts"><?php esc_html_e( 'Max Verification Attempts', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="number" name="kwtsms_otp_general[max_attempts]" id="kwtsms_max_attempts"
-						value="<?php echo esc_attr( absint( $kwtsms_general['max_attempts'] ) ); ?>" min="1" max="10" class="small-text" />
+						value="<?php echo esc_attr( (string) absint( $kwtsms_general['max_attempts'] ) ); ?>" min="1" max="10" class="small-text" />
 					<p class="description"><?php esc_html_e( 'Number of wrong OTP attempts before the code is invalidated.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
@@ -240,7 +240,7 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 				<th scope="row"><label for="kwtsms_resend_cooldown"><?php esc_html_e( 'Resend Cooldown', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="number" name="kwtsms_otp_general[resend_cooldown]" id="kwtsms_resend_cooldown"
-						value="<?php echo esc_attr( absint( $kwtsms_general['resend_cooldown'] ) ); ?>" min="30" max="600" class="small-text" />
+						value="<?php echo esc_attr( (string) absint( $kwtsms_general['resend_cooldown'] ) ); ?>" min="30" max="600" class="small-text" />
 					<?php esc_html_e( 'seconds', 'kwtsms' ); ?>
 					<p class="description"><?php esc_html_e( 'Minimum time between resend requests per user. Recommended: 120 seconds.', 'kwtsms' ); ?></p>
 				</td>
@@ -566,7 +566,7 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 				<th scope="row"><label for="kwtsms_iphub_cache_ttl"><?php esc_html_e( 'Cache TTL', 'kwtsms' ); ?></label></th>
 				<td>
 					<input type="number" name="kwtsms_otp_general[iphub_cache_ttl]" id="kwtsms_iphub_cache_ttl"
-						value="<?php echo esc_attr( absint( $kwtsms_iphub_cache_ttl ) ); ?>"
+						value="<?php echo esc_attr( (string) absint( $kwtsms_iphub_cache_ttl ) ); ?>"
 						min="3600" max="604800" class="small-text" />
 					<?php esc_html_e( 'seconds', 'kwtsms' ); ?>
 					<p class="description">
