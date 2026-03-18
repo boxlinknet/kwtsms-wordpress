@@ -278,8 +278,18 @@ class KwtSMS_Registration_OTP_Gate {
 			exit;
 		}
 
-		// GET: render the OTP entry form.
-		$this->render_reg_otp_form( $token, '' );
+		// GET: render the OTP entry form, showing an error if one was set by a prior submission.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading error code from redirect, no state change.
+		$reg_error_key = sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ?? '' ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		$error_messages = array(
+			'invalid_code' => __( 'Invalid verification code. Please try again.', 'kwtsms' ),
+			'expired'      => __( 'Your verification code has expired. Please start over.', 'kwtsms' ),
+			'max_attempts' => __( 'Too many failed attempts. Please start over.', 'kwtsms' ),
+			'security'     => __( 'Security check failed. Please try again.', 'kwtsms' ),
+		);
+		$error_message = $error_messages[ $reg_error_key ] ?? '';
+		$this->render_reg_otp_form( $token, $error_message );
 		exit;
 	}
 

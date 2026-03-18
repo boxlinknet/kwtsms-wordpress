@@ -140,8 +140,10 @@ class KwtSMS_Login_OTP {
 
 		// Anti-enumeration: silently fail without allocating a session.
 		// User sees the OTP screen but has no valid transient to verify against.
+		// Clear any stale partial-auth cookie so an old session cannot be reused.
 		if ( $this->plugin->otp->is_phone_blocked( $phone ) ) {
 			$this->plugin->api->write_debug_log( 'login_otp', 'Blocked phone attempted OTP: ' . $phone );
+			$this->clear_partial_auth_cookie();
 			return new WP_Error( 'kwtsms_otp_required', '' );
 		}
 
@@ -149,6 +151,7 @@ class KwtSMS_Login_OTP {
 		$client_ip = $this->plugin->otp->get_client_ip();
 		if ( '' !== $client_ip && $this->plugin->otp->is_ip_blocklisted( $client_ip ) ) {
 			$this->plugin->api->write_debug_log( 'login_otp', 'Blocklisted IP attempted OTP: ' . $client_ip );
+			$this->clear_partial_auth_cookie();
 			return new WP_Error( 'kwtsms_otp_required', '' );
 		}
 
@@ -191,9 +194,11 @@ class KwtSMS_Login_OTP {
 					);
 				}
 
-				// Country blocked or SMS disabled — user's phone is in a disallowed country.
+				// Country blocked or SMS disabled: user's phone is in a disallowed country.
 				// Do NOT fail-open: show OTP page but with no valid transient (anti-enumeration).
+				// Clear any stale partial-auth cookie so an old session cannot be reused.
 				if ( in_array( $error_code, array( 'kwtsms_country_blocked', 'kwtsms_sms_disabled' ), true ) ) {
+					$this->clear_partial_auth_cookie();
 					return new WP_Error( 'kwtsms_otp_required', '' );
 				}
 
@@ -603,6 +608,14 @@ class KwtSMS_Login_OTP {
 					}
 					// 'allow' mode — fall through and show OTP screen (user will not receive a code
 					// but is not logged in; this is safer than auto-logging-in without a phone lookup).
+				}
+
+				// Country blocked or SMS disabled: user's phone is in a disallowed country.
+				// Anti-enumeration: show generic success but do not create a session.
+				if ( in_array( $error_code, array( 'kwtsms_country_blocked', 'kwtsms_sms_disabled' ), true ) ) {
+					$this->plugin->api->write_debug_log( 'passwordless', 'Country-blocked phone attempted passwordless OTP: ' . $normalized );
+					$this->render_passwordless_page( '', $generic_message );
+					exit;
 				}
 
 				// Temporary failure — proceed to OTP screen; user cannot complete it

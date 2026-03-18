@@ -88,7 +88,7 @@ class KwtSMS_Woo_Cart {
 			return;
 		}
 
-		$total      = wp_strip_all_tags( WC()->cart->get_cart_total() );
+		$total      = html_entity_decode( wp_strip_all_tags( WC()->cart->get_cart_total() ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 		$first_name = '';
 
 		$user_id = get_current_user_id();
