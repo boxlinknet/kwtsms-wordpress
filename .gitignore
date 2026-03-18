@@ -35,6 +35,9 @@ Thumbs.db
 
 # Tests
 tests/
+phpunit.xml
+phpunit-integration.xml
+patchwork.json
 
 # PHPUnit / static analysis artifacts
 .phpunit.result.cache
