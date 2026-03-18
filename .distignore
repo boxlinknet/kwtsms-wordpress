@@ -3,6 +3,7 @@
 tests
 docs
 docker
+vendor
 kwtsms-ext4
 composer.json
 composer.lock
