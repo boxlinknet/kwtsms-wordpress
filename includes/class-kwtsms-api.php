@@ -636,6 +636,27 @@ class KwtSMS_API {
 	}
 
 	/**
+	 * Legacy send method. Deprecated in 3.4.0.
+	 *
+	 * Calls send() internally. External code should migrate to send().
+	 *
+	 * @deprecated 3.4.0 Use send() instead.
+	 *
+	 * @param string $phone     Phone number.
+	 * @param string $sender_id Sender ID.
+	 * @param string $message   Message text.
+	 * @param string $type      Message type for logging.
+	 *
+	 * @return array|WP_Error
+	 */
+	public function send_sms( $phone, $sender_id, $message, $type = 'login' ) {
+		if ( function_exists( '_deprecated_function' ) ) {
+			_deprecated_function( __METHOD__, '3.4.0', 'KwtSMS_API::send()' );
+		}
+		return $this->send( $phone, $sender_id, $message, $type );
+	}
+
+	/**
 	 * Retrieve SMS coverage information for the account.
 	 *
 	 * Returns an array of coverage data (countries and their status).
