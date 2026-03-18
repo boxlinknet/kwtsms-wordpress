@@ -103,9 +103,8 @@ class KwtSMS_Registration_OTP_Gate {
 	 * @return WP_Error Errors with any URL-sourced error prepended.
 	 */
 	public function prepend_reg_url_error( WP_Error $errors ): WP_Error {
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only GET param; no state change.
-		$error_code = sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ?? '' ) );
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		// Read-only GET param for error display on redirect. Sanitized via sanitize_key, validated against allowlist below.
+		$error_code = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
 
 		if ( '' === $error_code ) {
 			return $errors;
@@ -271,17 +270,15 @@ class KwtSMS_Registration_OTP_Gate {
 	 * URL: /wp-login.php?action=kwtsms_reg_otp&token={token}
 	 */
 	public function handle_reg_otp_page() {
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		$action = sanitize_key( wp_unslash( $_GET['action'] ?? '' ) );
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		// Reading the WP login action key (same pattern as wp-login.php core). Sanitized via sanitize_key.
+		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
 
 		if ( 'kwtsms_reg_otp' !== $action ) {
 			return;
 		}
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		$token = sanitize_text_field( wp_unslash( $_GET['token'] ?? '' ) );
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		// URL token for OTP session lookup. Sanitized via sanitize_text_field, validated against transient below.
+		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 
 		if ( empty( $token ) ) {
 			wp_safe_redirect( wp_registration_url() );
@@ -294,9 +291,8 @@ class KwtSMS_Registration_OTP_Gate {
 		}
 
 		// GET: render the OTP entry form, showing an error if one was set by a prior submission.
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading error code from redirect, no state change.
-		$reg_error_key = sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ?? '' ) );
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		// Read-only GET param for error display on redirect. Sanitized via sanitize_key, validated against allowlist below.
+		$reg_error_key  = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
 		$error_messages = array(
 			'invalid_code' => __( 'Invalid verification code. Please try again.', 'kwtsms' ),
 			'expired'      => __( 'Your verification code has expired. Please start over.', 'kwtsms' ),
@@ -331,12 +327,9 @@ class KwtSMS_Registration_OTP_Gate {
 			exit;
 		}
 
-		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce is read and verified below via wp_verify_nonce().
-		$submitted_code = sanitize_text_field( wp_unslash( $_POST['kwtsms_reg_code'] ?? '' ) );
-		$nonce          = sanitize_key( wp_unslash( $_POST['kwtsms_reg_nonce'] ?? '' ) );
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
-
-		if ( ! wp_verify_nonce( $nonce, 'kwtsms_reg_otp_submit' ) ) {
+		// Verify nonce before accessing any POST data (fail-early).
+		if ( ! isset( $_POST['kwtsms_reg_nonce'] ) ||
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['kwtsms_reg_nonce'] ) ), 'kwtsms_reg_otp_submit' ) ) {
 			$url = add_query_arg(
 				array( 'kwtsms_reg_error' => 'security' ),
 				wp_registration_url()
@@ -345,8 +338,9 @@ class KwtSMS_Registration_OTP_Gate {
 			exit;
 		}
 
-		$phone  = $pending['phone'];
-		$result = $this->otp->verify( $phone, $submitted_code, self::OTP_ACTION, null, $phone );
+		$submitted_code = sanitize_text_field( wp_unslash( $_POST['kwtsms_reg_code'] ?? '' ) );
+		$phone          = $pending['phone'];
+		$result         = $this->otp->verify( $phone, $submitted_code, self::OTP_ACTION, null, $phone );
 
 		if ( 'valid' !== $result ) {
 			if ( 'invalid' === $result ) {
@@ -652,6 +646,6 @@ class KwtSMS_Registration_OTP_Gate {
 </body>
 </html>
 		<?php
-		echo ob_get_clean(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		ob_end_flush();
 	}
 }

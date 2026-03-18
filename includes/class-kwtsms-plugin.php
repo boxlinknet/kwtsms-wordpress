@@ -168,15 +168,26 @@ class KwtSMS_Plugin {
 		}
 
 		// Resolve phone from POST first (available during registration requests).
-		// phpcs:disable WordPress.Security.NonceVerification.Missing -- reading phone during WP/WC registration; nonce verified by core.
-		$phone = trim(
-			sanitize_text_field(
-				wp_unslash(
-					$_POST['kwtsms_phone_reg'] ?? $_POST['billing_phone'] ?? ''
+		// Verify one of the possible registration nonces before accessing POST data.
+		$nonce_valid = false;
+		if ( isset( $_POST['woocommerce-register-nonce'] ) ) {
+			$nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' );
+		} elseif ( isset( $_POST['woocommerce-process-checkout-nonce'] ) ) {
+			$nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ) ), 'woocommerce-process_checkout' );
+		} elseif ( isset( $_POST['_wpnonce'] ) ) {
+			$nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' );
+		}
+
+		$phone = '';
+		if ( $nonce_valid ) {
+			$phone = trim(
+				sanitize_text_field(
+					wp_unslash(
+						$_POST['kwtsms_phone_reg'] ?? $_POST['billing_phone'] ?? ''
+					)
 				)
-			)
-		);
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
+			);
+		}
 
 		// Fall back to user meta (may be set by custom registration hooks before user_register).
 		if ( '' === $phone ) {

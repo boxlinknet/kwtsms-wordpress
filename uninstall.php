@@ -73,7 +73,8 @@ wp_clear_scheduled_hook( 'kwtsms_check_abandoned_carts' );
 // -------------------------------------------------------------------------
 // 6. Remove debug log file.
 // -------------------------------------------------------------------------
-$kwtsms_debug_log = WP_CONTENT_DIR . '/kwtsms-debug.log';
-if ( file_exists( $kwtsms_debug_log ) ) {
+$kwtsms_upload_dir = wp_upload_dir();
+$kwtsms_debug_log  = ! empty( $kwtsms_upload_dir['basedir'] ) ? $kwtsms_upload_dir['basedir'] . '/kwtsms-debug.log' : '';
+if ( $kwtsms_debug_log && file_exists( $kwtsms_debug_log ) ) {
 	wp_delete_file( $kwtsms_debug_log );
 }

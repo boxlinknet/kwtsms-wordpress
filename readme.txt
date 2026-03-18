@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.4.0
+Stable tag: 3.4.5
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ SMS OTP login, password reset, and WooCommerce order notifications via the kwtSM
 
 == Description ==
 
-**kwtSMS** replaces or supplements WordPress passwords with SMS one-time codes, sends WooCommerce order updates automatically, and lets you verify phone numbers on any contact form, all powered by the [kwtSMS](https://www.kwtsms.com) SMS gateway.
+**kwtSMS** replaces or supplements WordPress passwords with SMS one-time codes, sends WooCommerce order updates automatically, and lets you verify phone numbers on any contact form. Built on the [kwtSMS](https://www.kwtsms.com) SMS gateway.
 
 Built for Arabic-speaking markets (Kuwait, Saudi Arabia, UAE, Bahrain, Qatar, Oman) with full RTL admin support and bilingual SMS templates in English and Arabic.
 
@@ -233,7 +233,7 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 
 == Changelog ==
 
-= 3.4.0 =
+= 3.4.5 =
 * Security: back-in-stock subscribe nonce changed to a static action so product_id is never read before authentication.
 * Security: all nonce values now passed through sanitize_key() before wp_verify_nonce(), per WordPress security documentation.
 * Security: sanitize_url() replaced with esc_url_raw() (sanitize_url was deprecated in WP 6.1).

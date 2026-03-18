@@ -199,7 +199,6 @@ class KwtSMS_Admin {
 
 		// Add count badge to the menu label when there are users needing phones.
 		if ( $nophone_count > 0 ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- count is int; HTML is safe.
 			$users_menu_label = sprintf(
 				/* translators: %s: HTML span element containing the count of users missing a phone number. */
 				__( 'Users %s', 'kwtsms' ),
@@ -1361,7 +1360,8 @@ class KwtSMS_Admin {
 			return;
 		}
 
-		$debug_log_path   = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/kwtsms-debug.log' : '';
+		$kwtsms_uploads   = wp_upload_dir();
+		$debug_log_path   = ! empty( $kwtsms_uploads['basedir'] ) ? $kwtsms_uploads['basedir'] . '/kwtsms-debug.log' : '';
 		$debug_logging_on = (bool) $this->plugin->settings->get( 'general.debug_logging', 0 );
 		$debug_log_exists = $debug_log_path && file_exists( $debug_log_path );
 		$show_debug_tab   = $debug_logging_on && $debug_log_exists;

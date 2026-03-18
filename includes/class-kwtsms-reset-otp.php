@@ -75,7 +75,7 @@ class KwtSMS_Reset_OTP {
 		if ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) {
 			return;
 		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading WP action key.
+		// Reading the WP login action key (same pattern as wp-login.php core). Not form data, no nonce needed.
 		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
 		if ( 'lostpassword' !== $action ) {
 			return;
@@ -211,7 +211,7 @@ class KwtSMS_Reset_OTP {
 	 * Fires on `login_init`. If action matches, handles GET (render) and POST (verify).
 	 */
 	public function handle_reset_otp_action() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading WP action key.
+		// Reading the WP login action key (same pattern as wp-login.php core). Not form data, no nonce needed.
 		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : 'login';
 
 		if ( 'kwtsms_reset_otp' !== $action ) {

@@ -44,8 +44,9 @@ $kwtsms_template_placeholders = array(
 );
 
 $kwtsms_valid_tabs = array_keys( $kwtsms_template_labels );
-$kwtsms_active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( wp_unslash( $_GET['tab'] ) ), $kwtsms_valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	? sanitize_key( wp_unslash( $_GET['tab'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+// Admin navigation parameter: sanitized via sanitize_key and validated against allowlist.
+$kwtsms_active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( wp_unslash( $_GET['tab'] ) ), $kwtsms_valid_tabs, true )
+	? sanitize_key( wp_unslash( $_GET['tab'] ) )
 	: 'login_otp';
 
 /**

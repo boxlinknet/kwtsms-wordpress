@@ -7,6 +7,8 @@
 CLAUDE.md
 .claude/
 .worktrees/
+.playwright/
+.playwright-cli/
 
 # Local docs, notes, screenshots — not for distribution
 docs/

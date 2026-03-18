@@ -8,9 +8,9 @@
 [![Release](https://img.shields.io/github/v/release/boxlinknet/kwtsms-wordpress)](https://github.com/boxlinknet/kwtsms-wordpress/releases)
 [![WooCommerce](https://img.shields.io/badge/WooCommerce-optional-96588a.svg?logo=woocommerce&logoColor=white)](https://woocommerce.com)
 
-Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress, powered by the [kwtSMS](https://www.kwtsms.com) gateway.
+Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress. Built on the [kwtSMS](https://www.kwtsms.com) gateway.
 
-**Version:** 3.4.0 | **Requires:** WordPress 6.0+, PHP 7.4+
+**Version:** 3.4.5 | **Requires:** WordPress 6.0+, PHP 7.4+
 
 > Don't have a kwtSMS account? [Sign up at kwtsms.com →](https://www.kwtsms.com/signup)
 
@@ -324,4 +324,4 @@ GPL-2.0-or-later. See [GNU GPL v2.0](https://www.gnu.org/licenses/gpl-2.0.html)
 
 ---
 
-Powered by [kwtSMS.com](https://www.kwtsms.com), Kuwait's SMS gateway
+Built on [kwtSMS.com](https://www.kwtsms.com), Kuwait's SMS gateway

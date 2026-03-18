@@ -96,8 +96,8 @@ class KwtSMS_CF7 {
 	public function gate_verify_token( $cf7, &$abort, $submission ) {
 		// Verify our gate nonce — injected into the form by form-otp.js after successful OTP verification.
 		// The nonce is in $_POST (not CF7's get_posted_data) because it is a JS-injected hidden input,
-		// not a registered CF7 form tag.
-		if ( ! isset( $_POST['_kwtsms_gate_nonce'] ) || // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// not a registered CF7 form tag. Nonce IS verified on the next line (fail-early pattern).
+		if ( ! isset( $_POST['_kwtsms_gate_nonce'] ) ||
 			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_kwtsms_gate_nonce'] ) ), 'kwtsms_gate_verify' ) ) {
 			$abort = true;
 			if ( is_a( $submission, 'WPCF7_Submission' ) ) {

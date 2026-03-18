@@ -225,9 +225,9 @@ class KwtSMS_User_Meta {
 		}
 
 		$user_id = get_current_user_id();
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin screen context; validated via absint + capability check.
+		// Admin screen navigation parameter: validated via absint and gated by capability check.
 		if ( isset( $_GET['user_id'] ) && current_user_can( 'edit_users' ) ) {
-			$user_id = absint( wp_unslash( $_GET['user_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$user_id = absint( wp_unslash( $_GET['user_id'] ) );
 		}
 		$msg = get_transient( 'kwtsms_phone_error_' . $user_id );
 		if ( ! $msg ) {
@@ -327,8 +327,12 @@ class KwtSMS_User_Meta {
 	 * Stored as kwtsms_phone user meta after successful registration.
 	 */
 	public function render_registration_phone_field() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WP registration form; nonce verified by WordPress core.
-		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+		// Re-populate field on validation failure. Verify WP registration nonce before accessing POST.
+		$phone = '';
+		if ( isset( $_POST['_wpnonce'] ) &&
+			wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' ) ) {
+			$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+		}
 		?>
 		<p>
 			<label for="kwtsms_phone_reg">
@@ -364,7 +368,11 @@ class KwtSMS_User_Meta {
 	 * @return WP_Error
 	 */
 	public function validate_registration_phone( $errors, $sanitized_user_login, $user_email ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress registration; nonce verified by WP core.
+		// Verify WP registration nonce before accessing POST data.
+		if ( ! isset( $_POST['_wpnonce'] ) ||
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' ) ) {
+			return $errors;
+		}
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 
 		if ( '' === $phone ) {

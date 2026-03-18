@@ -18,15 +18,17 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
 }
 
-$kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'sms_history'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+// Admin navigation parameters: sanitized via sanitize_key/absint and validated against allowlist.
+$kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'sms_history';
 $kwtsms_active_tab     = in_array( $kwtsms_active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $kwtsms_active_tab : 'sms_history';
 $kwtsms_items_per_page = 20;
-$kwtsms_current_page   = max( 1, absint( wp_unslash( $_GET['paged'] ?? 1 ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$kwtsms_current_page   = isset( $_GET['paged'] ) ? max( 1, absint( wp_unslash( $_GET['paged'] ) ) ) : 1;
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
 // NOTE: download/clear/export handlers are registered on admin_init in KwtSMS_Admin::handle_log_exports()
 // so that Content-Type headers can be sent before any HTML output.
-$kwtsms_debug_log_path   = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/kwtsms-debug.log' : '';
+$kwtsms_uploads_dir      = wp_upload_dir();
+$kwtsms_debug_log_path   = ! empty( $kwtsms_uploads_dir['basedir'] ) ? $kwtsms_uploads_dir['basedir'] . '/kwtsms-debug.log' : '';
 $kwtsms_debug_logging_on = (bool) $this->plugin->settings->get( 'general.debug_logging', 0 );
 $kwtsms_debug_log_exists = $kwtsms_debug_log_path && file_exists( $kwtsms_debug_log_path );
 $kwtsms_show_debug_tab   = $kwtsms_debug_logging_on && $kwtsms_debug_log_exists;
@@ -256,7 +258,7 @@ function kwtsms_attempt_result_label( $result ) {
 		$kwtsms_total_lines     = count( $kwtsms_lines );
 		$kwtsms_per_page_dbg    = 100;
 		$kwtsms_total_pages_dbg = max( 1, (int) ceil( $kwtsms_total_lines / $kwtsms_per_page_dbg ) );
-		$kwtsms_cur_page_dbg    = min( max( 1, absint( wp_unslash( $_GET['paged'] ?? 1 ) ) ), $kwtsms_total_pages_dbg ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$kwtsms_cur_page_dbg    = isset( $_GET['paged'] ) ? min( max( 1, absint( wp_unslash( $_GET['paged'] ) ) ), $kwtsms_total_pages_dbg ) : 1;
 		$kwtsms_offset_dbg      = ( $kwtsms_cur_page_dbg - 1 ) * $kwtsms_per_page_dbg;
 		$kwtsms_page_lines      = array_slice( $kwtsms_lines, $kwtsms_offset_dbg, $kwtsms_per_page_dbg );
 		?>

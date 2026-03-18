@@ -1949,11 +1949,12 @@ class KwtSMS_API {
 			return;
 		}
 
-		if ( ! defined( 'WP_CONTENT_DIR' ) ) {
+		$upload_dir = wp_upload_dir();
+		if ( empty( $upload_dir['basedir'] ) ) {
 			return;
 		}
 
-		$log_path = WP_CONTENT_DIR . '/kwtsms-debug.log';
+		$log_path = $upload_dir['basedir'] . '/kwtsms-debug.log';
 
 		// Rotate when the file reaches the size limit.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_exists

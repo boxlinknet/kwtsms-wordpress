@@ -689,10 +689,11 @@ class KwtSMS_OTP_Engine {
 		if ( ! $this->settings->get( 'general.debug_logging', false ) ) {
 			return;
 		}
-		if ( ! defined( 'WP_CONTENT_DIR' ) ) {
+		$upload_dir = wp_upload_dir();
+		if ( empty( $upload_dir['basedir'] ) ) {
 			return;
 		}
-		$log_path = WP_CONTENT_DIR . '/kwtsms-debug.log';
+		$log_path = $upload_dir['basedir'] . '/kwtsms-debug.log';
 		$line     = '[' . date( 'Y-m-d H:i:s' ) . '] [kwtsms-otp] [' . $context . '] ' . $message . PHP_EOL; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 		file_put_contents( $log_path, $line, FILE_APPEND );

@@ -267,8 +267,14 @@ class KwtSMS_Woo {
 	 * Re-populates the field value from $_POST on validation failure.
 	 */
 	public function render_wc_phone_field() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce registration form; nonce verified by WooCommerce core.
-		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+		// Re-populate the field value from POST on validation failure.
+		// Nonce is verified by WooCommerce core before this filter fires.
+		// We only read a single sanitized field for re-display, not processing.
+		$phone = '';
+		if ( isset( $_POST['woocommerce-register-nonce'] ) &&
+			wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) ) {
+			$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+		}
 		?>
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 			<label for="kwtsms_phone_reg">
@@ -303,7 +309,11 @@ class KwtSMS_Woo {
 	 * @return WP_Error The (potentially augmented) errors object.
 	 */
 	public function validate_wc_phone_field( $errors, $username, $email ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce registration validation; nonce verified by WooCommerce core.
+		// Verify WooCommerce registration nonce before accessing POST data.
+		if ( ! isset( $_POST['woocommerce-register-nonce'] ) ||
+			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) ) {
+			return $errors;
+		}
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		if ( '' !== $phone ) {
 			$phone      = KwtSMS_API::prepend_country_code_if_local( $phone, KwtSMS_API::get_default_dial_code() );
@@ -337,11 +347,15 @@ class KwtSMS_Woo {
 	 */
 	public function save_wc_customer_phone( $customer_id ) {
 		// Verify WooCommerce checkout or registration nonce before accessing POST data.
-		$wc_nonce_valid = (
-			( isset( $_POST['woocommerce-process-checkout-nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ) ), 'woocommerce-process_checkout' ) )
-			|| ( isset( $_POST['woocommerce-register-nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) )
-			|| ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' ) )
-		);
+		// One of three possible nonces must be present and valid (checkout, WC register, WP register).
+		$wc_nonce_valid = false;
+		if ( isset( $_POST['woocommerce-process-checkout-nonce'] ) ) {
+			$wc_nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ) ), 'woocommerce-process_checkout' );
+		} elseif ( isset( $_POST['woocommerce-register-nonce'] ) ) {
+			$wc_nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' );
+		} elseif ( isset( $_POST['_wpnonce'] ) ) {
+			$wc_nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' );
+		}
 		if ( ! $wc_nonce_valid ) {
 			return;
 		}
@@ -453,17 +467,17 @@ class KwtSMS_Woo {
 			return;
 		}
 
-		// In COD-only mode, skip OTP for non-COD payment methods.
-		$cod_only       = (bool) $this->plugin->settings->get( 'integrations.woo_checkout_otp_cod_only', 0 );
-		$payment_method = sanitize_key( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( $cod_only && 'cod' !== $payment_method ) {
-			return;
-		}
-
-		// Nonce check.
+		// Nonce check (must come before any $_POST access).
 		$nonce = sanitize_key( wp_unslash( $_POST['kwtsms_checkout_nonce'] ?? '' ) );
 		if ( ! wp_verify_nonce( $nonce, 'kwtsms_otp_nonce' ) ) {
 			wc_add_notice( __( 'Security check failed. Please refresh and try again.', 'kwtsms' ), 'error' );
+			return;
+		}
+
+		// In COD-only mode, skip OTP for non-COD payment methods.
+		$cod_only       = (bool) $this->plugin->settings->get( 'integrations.woo_checkout_otp_cod_only', 0 );
+		$payment_method = sanitize_key( wp_unslash( $_POST['payment_method'] ?? '' ) );
+		if ( $cod_only && 'cod' !== $payment_method ) {
 			return;
 		}
 
