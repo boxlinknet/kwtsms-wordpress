@@ -100,8 +100,34 @@ class KwtSMS_Woo_Metabox {
 			}
 		}
 
+		// Per-order SMS log.
+		$order_sms_log = array();
+		if ( $order ) {
+			$all_history = get_option( 'kwtsms_otp_sms_history', array() );
+			if ( is_array( $all_history ) ) {
+				$oid = $order->get_id();
+				foreach ( $all_history as $entry ) {
+					if ( isset( $entry['order_id'] ) && (int) $entry['order_id'] === $oid ) {
+						$order_sms_log[] = $entry;
+					}
+				}
+			}
+		}
+
 		?>
 		<div id="kwtsms-metabox-wrap">
+		<?php if ( ! empty( $order_sms_log ) ) : ?>
+			<div class="kwtsms-order-sms-log" style="margin-bottom:12px;border-bottom:1px solid #ddd;padding-bottom:8px;">
+				<strong><?php esc_html_e( 'SMS Log', 'kwtsms' ); ?></strong>
+				<?php foreach ( $order_sms_log as $entry ) : ?>
+					<div style="font-size:12px;margin:4px 0;padding:4px;background:#f9f9f9;">
+						<span style="color:#666;"><?php echo esc_html( wp_date( 'M j, H:i', $entry['time'] ?? 0 ) ); ?></span>
+						<span class="<?php echo 'sent' === ( $entry['status'] ?? '' ) ? 'dashicons dashicons-yes' : 'dashicons dashicons-no'; ?>" style="font-size:14px;width:14px;height:14px;"></span>
+						<span><?php echo esc_html( mb_strimwidth( $entry['message'] ?? '', 0, 60, '...' ) ); ?></span>
+					</div>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
 			<p>
 				<label for="kwtsms-custom-sms-phone"><?php esc_html_e( 'Phone', 'kwtsms' ); ?></label><br>
 				<input
@@ -208,7 +234,8 @@ class KwtSMS_Woo_Metabox {
 			$normalized,
 			$this->settings->get( 'gateway.sender_id', '' ),
 			$message,
-			'woo_custom'
+			'woo_custom',
+			array( 'order_id' => $order_id )
 		);
 
 		if ( is_wp_error( $result ) ) {

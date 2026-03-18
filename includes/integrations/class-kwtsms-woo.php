@@ -159,7 +159,8 @@ class KwtSMS_Woo {
 			$phone,
 			$this->plugin->settings->get( 'gateway.sender_id', '' ),
 			$message,
-			'woo_order'
+			'woo_order',
+			array( 'order_id' => $order->get_id() )
 		);
 
 		// Admin SMS notification — send to configured admin phone(s) for selected statuses.
@@ -180,7 +181,7 @@ class KwtSMS_Woo {
 			foreach ( preg_split( '/[\s,]+/', $admin_phone, -1, PREG_SPLIT_NO_EMPTY ) as $raw_p ) {
 				$phones[] = KwtSMS_API::prepend_country_code_if_local( $raw_p, $dial_code );
 			}
-			$this->plugin->api->send( $phones, $sender_id, $admin_msg, 'woo_admin' );
+			$this->plugin->api->send( $phones, $sender_id, $admin_msg, 'woo_admin', array( 'order_id' => $order->get_id() ) );
 		}
 	}
 

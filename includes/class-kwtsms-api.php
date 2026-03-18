@@ -34,6 +34,16 @@ class KwtSMS_API {
 	const TIMEOUT = 15;
 
 	/**
+	 * Context metadata passed from send() to append_sms_history() calls.
+	 *
+	 * Set before each send() call, reset after. Allows callers to attach
+	 * metadata (e.g. order_id) without modifying every internal history call.
+	 *
+	 * @var array
+	 */
+	private static $send_context = array();
+
+	/**
 	 * API username.
 	 *
 	 * @var string
@@ -194,11 +204,13 @@ class KwtSMS_API {
 	 * @param string          $sender_id Sender ID approved in your kwtSMS account.
 	 * @param string          $message   Plain-text message to send.
 	 * @param string          $type      Message type for the send log (e.g. 'login', 'order').
+	 * @param array           $context   Optional metadata passed to append_sms_history (e.g. order_id).
 	 *
 	 * @return array|WP_Error Result array or WP_Error on failure.
 	 */
-	public function send( $phones, $sender_id, $message, $type = 'login' ) {
-		$single_mode = ! is_array( $phones );
+	public function send( $phones, $sender_id, $message, $type = 'login', $context = array() ) {
+		self::$send_context = $context;
+		$single_mode        = ! is_array( $phones );
 
 		// Normalize input to array.
 		if ( $single_mode ) {
@@ -846,16 +858,21 @@ class KwtSMS_API {
 	 * The full phone number and message text are stored here — only visible
 	 * to administrators via the Logs page.
 	 *
-	 * @param string $phone   Full normalised phone number (e.g. 96598765432).
-	 * @param string $message The exact message that was sent.
-	 * @param string $status  'sent' or 'failed'.
-	 * @param string $type    Context: 'login'|'reset'|'passwordless'|'welcome'|'test'.
-	 * @param string $msg_id        Message ID returned by API, or empty on failure.
+	 * @param string $phone          Full normalised phone number (e.g. 96598765432).
+	 * @param string $message        The exact message that was sent.
+	 * @param string $status         'sent' or 'failed'.
+	 * @param string $type           Context: 'login'|'reset'|'passwordless'|'welcome'|'test'.
+	 * @param string $msg_id         Message ID returned by API, or empty on failure.
 	 * @param string $sender_id      Sender ID used.
 	 * @param array  $gateway_result Raw gateway API response array.
 	 * @param string $api_username   API username for log attribution.
+	 * @param array  $context        Optional metadata. Supports 'order_id' (int) for WooCommerce.
 	 */
-	public static function append_sms_history( $phone, $message, $status, $type, $msg_id = '', $sender_id = '', $gateway_result = array(), $api_username = '' ) {
+	public static function append_sms_history( $phone, $message, $status, $type, $msg_id = '', $sender_id = '', $gateway_result = array(), $api_username = '', $context = array() ) {
+		// Merge with send_context set by send() if no explicit context passed.
+		if ( empty( $context ) && ! empty( self::$send_context ) ) {
+			$context = self::$send_context;
+		}
 		$log = get_option( 'kwtsms_otp_sms_history', array() );
 		if ( ! is_array( $log ) ) {
 			$log = array();
@@ -890,6 +907,7 @@ class KwtSMS_API {
 				'msg_id'         => sanitize_text_field( $msg_id ),
 				'sender_id'      => sanitize_text_field( $sender_id ),
 				'api_username'   => sanitize_text_field( $api_username ),
+				'order_id'       => absint( $context['order_id'] ?? 0 ),
 				'gateway_result' => array(
 					'ok'      => (bool) ( $gateway_result['ok'] ?? true ),
 					'code'    => sanitize_text_field( $gateway_result['code'] ?? '' ),
