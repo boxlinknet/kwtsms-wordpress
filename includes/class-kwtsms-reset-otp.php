@@ -76,7 +76,7 @@ class KwtSMS_Reset_OTP {
 			return;
 		}
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading WP action key.
-		$action = isset( $_REQUEST['action'] ) ? sanitize_key( $_REQUEST['action'] ) : '';
+		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
 		if ( 'lostpassword' !== $action ) {
 			return;
 		}
@@ -214,7 +214,7 @@ class KwtSMS_Reset_OTP {
 	 */
 	public function handle_reset_otp_action() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading WP action key.
-		$action = isset( $_REQUEST['action'] ) ? sanitize_key( $_REQUEST['action'] ) : 'login';
+		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : 'login';
 
 		if ( 'kwtsms_reset_otp' !== $action ) {
 			return;

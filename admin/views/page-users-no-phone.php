@@ -146,9 +146,8 @@ $kwtsms_role_colors = array(
 	<table class="wp-list-table widefat fixed kwtsms-unphone-table" id="kwtsms-unphone-table">
 		<thead>
 			<tr>
-				<th scope="col" style="width:34px;padding:10px 8px;"></th>
-				<th scope="col" style="width:190px;"><?php esc_html_e( 'User', 'kwtsms' ); ?></th>
-					<th scope="col" style="width:120px;"><?php esc_html_e( 'Role', 'kwtsms' ); ?></th>
+				<th scope="col" style="width:220px;"><?php esc_html_e( 'User', 'kwtsms' ); ?></th>
+				<th scope="col" style="width:120px;"><?php esc_html_e( 'Role', 'kwtsms' ); ?></th>
 				<th scope="col" style="width:260px;"><?php esc_html_e( 'Phone Number', 'kwtsms' ); ?></th>
 				<th scope="col" style="width:80px;"></th>
 			</tr>
@@ -168,12 +167,14 @@ $kwtsms_role_colors = array(
 				$kwtsms_chip_style   = 'background:' . $kwtsms_chip['bg'] . ';color:' . $kwtsms_chip['fg'];
 				?>
 				<tr id="kwtsms-urow-<?php echo (int) $kwtsms_user->ID; ?>" class="kwtsms-unphone-row">
-					<td style="padding:10px 8px;vertical-align:middle;text-align:center;">
-						<?php echo get_avatar( $kwtsms_user->ID, 28, '', '', array( 'class' => 'kwtsms-unphone-avatar' ) ); ?>
-					</td>
 					<td style="padding:10px 12px;vertical-align:middle;">
-						<strong><?php echo esc_html( $kwtsms_user->display_name ); ?></strong><br>
-						<span class="kwtsms-unphone-login">@<?php echo esc_html( $kwtsms_user->user_login ); ?></span>
+						<div style="display:flex;align-items:center;gap:8px;">
+							<?php echo get_avatar( $kwtsms_user->ID, 32, '', '', array( 'class' => 'kwtsms-unphone-avatar', 'style' => 'border-radius:50%;flex-shrink:0;' ) ); ?>
+							<div>
+								<strong><?php echo esc_html( $kwtsms_user->display_name ); ?></strong><br>
+								<span class="kwtsms-unphone-login">@<?php echo esc_html( $kwtsms_user->user_login ); ?></span>
+							</div>
+						</div>
 					</td>
 					<td style="padding:10px 12px;vertical-align:middle;">
 						<span class="kwtsms-unphone-role-chip" style="<?php echo esc_attr( $kwtsms_chip_style ); ?>">

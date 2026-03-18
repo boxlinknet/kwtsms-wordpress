@@ -55,7 +55,7 @@ $kwtsms_referral_link_enabled = isset( $plugin_settings ) ? (bool) $plugin_setti
 
 	<h1>
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( $kwtsms_site_name ); ?>" tabindex="-1">
-			<?php echo $kwtsms_logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo wp_kses_post( $kwtsms_logo_html ); ?>
 		</a>
 	</h1>
 

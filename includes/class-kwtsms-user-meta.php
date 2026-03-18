@@ -141,7 +141,11 @@ class KwtSMS_User_Meta {
 						. ' }'
 						. ' if (dialSelect && localInput && combined) {'
 						. '  dialSelect.addEventListener("change", update);'
-						. '  localInput.addEventListener("input", update);'
+						. '  localInput.addEventListener("input", function() {'
+						. '   var stripped = localInput.value.replace(/\\D/g, "");'
+						. '   if (localInput.value !== stripped) { localInput.value = stripped; }'
+						. '   update();'
+						. '  });'
 						. '  update();'
 						. ' }'
 						. '})();';
@@ -219,7 +223,7 @@ class KwtSMS_User_Meta {
 			return;
 		}
 
-		$user_id = isset( $_GET['user_id'] ) ? absint( $_GET['user_id'] ) : get_current_user_id(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$user_id = isset( $_GET['user_id'] ) ? absint( wp_unslash( $_GET['user_id'] ) ) : get_current_user_id(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$msg     = get_transient( 'kwtsms_phone_error_' . $user_id );
 		if ( ! $msg ) {
 			return;

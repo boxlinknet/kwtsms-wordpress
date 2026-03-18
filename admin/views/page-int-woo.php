@@ -71,8 +71,8 @@ $kwtsms_woo_template_defs = array(
 );
 
 $kwtsms_valid_tabs = array_merge( array( 'stock_alerts', 'multivendor', 'cart_abandonment' ), array_keys( $kwtsms_woo_template_defs ) );
-$kwtsms_active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( $_GET['tab'] ), $kwtsms_valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	? sanitize_key( $_GET['tab'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$kwtsms_active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( wp_unslash( $_GET['tab'] ) ), $kwtsms_valid_tabs, true ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	? sanitize_key( wp_unslash( $_GET['tab'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	: 'woo_processing';
 
 /**

@@ -18,7 +18,7 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
 }
 
-$kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'sms_history'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'sms_history'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $kwtsms_active_tab     = in_array( $kwtsms_active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $kwtsms_active_tab : 'sms_history';
 $kwtsms_items_per_page = 20;
 $kwtsms_current_page   = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -222,7 +222,9 @@ function kwtsms_attempt_result_label( $result ) {
 				$kwtsms_user_id = $kwtsms_entry['user_id'] ?? null;
 				if ( $kwtsms_user_id ) {
 					$kwtsms_user_data  = get_userdata( (int) $kwtsms_user_id );
-					$kwtsms_user_label = $kwtsms_user_data ? esc_html( $kwtsms_user_data->user_login ) . ' (#' . (int) $kwtsms_user_id . ')' : '#' . (int) $kwtsms_user_id;
+					$kwtsms_user_label = $kwtsms_user_data
+						? $kwtsms_user_data->user_login . ' (#' . (int) $kwtsms_user_id . ')'
+						: '#' . (int) $kwtsms_user_id;
 				} else {
 					$kwtsms_user_label = '—';
 				}
@@ -231,15 +233,7 @@ function kwtsms_attempt_result_label( $result ) {
 				<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $kwtsms_entry['time'] ?? 0 ) ); ?></td>
 				<td>
 				<?php
-				echo wp_kses(
-					$kwtsms_user_label,
-					array(
-						'a' => array(
-							'href'  => array(),
-							'title' => array(),
-						),
-					)
-				);
+				echo esc_html( $kwtsms_user_label );
 				?>
 					</td>
 				<td><?php echo esc_html( $kwtsms_entry['phone'] ?? '' ); ?></td>

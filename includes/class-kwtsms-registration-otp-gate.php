@@ -103,7 +103,7 @@ class KwtSMS_Registration_OTP_Gate {
 	 */
 	public function prepend_reg_url_error( WP_Error $errors ): WP_Error {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only GET param; no state change.
-		$error_code = sanitize_key( $_GET['kwtsms_reg_error'] ?? '' );
+		$error_code = sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ?? '' ) );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		if ( '' === $error_code ) {
@@ -363,9 +363,11 @@ class KwtSMS_Registration_OTP_Gate {
 		// OTP is valid — create the user account.
 		delete_transient( $transient_key );
 
+		// Create the user with a temporary random password; the pre-hashed
+		// password is written directly to the DB below to avoid double-hashing.
 		$user_id = wp_create_user(
 			$pending['username'],
-			$pending['password'],
+			wp_generate_password( 24, true, true ),
 			$pending['email']
 		);
 
@@ -377,6 +379,21 @@ class KwtSMS_Registration_OTP_Gate {
 			wp_safe_redirect( $url );
 			exit;
 		}
+
+		// Write the pre-hashed password directly to avoid double-hashing.
+		// Do NOT call wp_set_password() here — it re-hashes the value.
+		global $wpdb;
+		$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->users,
+			array(
+				'user_pass'           => $pending['password_hash'],
+				'user_activation_key' => '',
+			),
+			array( 'ID' => $user_id ),
+			array( '%s', '%s' ),
+			array( '%d' )
+		);
+		wp_cache_delete( $user_id, 'users' );
 
 		// Save verified phone to user meta.
 		update_user_meta( $user_id, 'kwtsms_phone', $phone );
@@ -471,7 +488,7 @@ class KwtSMS_Registration_OTP_Gate {
 			array(
 				'username' => $username,
 				'email'    => $email,
-				'password' => $password,
+				'password_hash' => wp_hash_password( $password ),
 				'phone'    => $phone,
 				'created'  => time(),
 			),
@@ -548,7 +565,7 @@ class KwtSMS_Registration_OTP_Gate {
 
 	<h1>
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( $site_name ); ?>" tabindex="-1">
-			<?php echo $logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo wp_kses_post( $logo_html ); ?>
 		</a>
 	</h1>
 
