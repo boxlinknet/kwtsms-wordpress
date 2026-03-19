@@ -681,3 +681,42 @@ body[class*="kwtsms_page_kwtsms-otp"] #footer-upgrade {
 	font-weight: 600;
 	margin-left: 4px;
 }
+
+/* =========================================================================
+   Nav Tabs (branded)
+   ========================================================================= */
+
+.kwtsms-admin-wrap .nav-tab-wrapper {
+	border-bottom: 2px solid #FFA200 !important;
+	margin-bottom: 0;
+}
+
+.kwtsms-admin-wrap .nav-tab {
+	color: #434345 !important;
+	background: #f7f7f7;
+	border: 1px solid #ddd;
+	border-bottom: none;
+	margin-bottom: -1px;
+	padding: 8px 16px;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background 0.15s, color 0.15s;
+	cursor: pointer;
+}
+
+.kwtsms-admin-wrap .nav-tab:hover,
+.kwtsms-admin-wrap .nav-tab:focus {
+	background: #fff;
+	color: #FFA200 !important;
+}
+
+.kwtsms-admin-wrap .nav-tab-active,
+.kwtsms-admin-wrap .nav-tab-active:hover,
+.kwtsms-admin-wrap .nav-tab-active:focus {
+	background: #fff;
+	color: #FFA200 !important;
+	border-color: #FFA200 #FFA200 #fff !important;
+	border-top: 3px solid #FFA200 !important;
+	font-weight: 700;
+}
