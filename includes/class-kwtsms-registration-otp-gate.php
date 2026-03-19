@@ -103,7 +103,7 @@ class KwtSMS_Registration_OTP_Gate {
 	 * @return WP_Error Errors with any URL-sourced error prepended.
 	 */
 	public function prepend_reg_url_error( WP_Error $errors ): WP_Error {
-		// Read-only GET param for error display on redirect. Sanitized via sanitize_key, validated against allowlist below.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only GET param for error display on redirect, no state change.
 		$error_code = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
 
 		if ( '' === $error_code ) {
@@ -270,14 +270,14 @@ class KwtSMS_Registration_OTP_Gate {
 	 * URL: /wp-login.php?action=kwtsms_reg_otp&token={token}
 	 */
 	public function handle_reg_otp_page() {
-		// Reading the WP login action key (same pattern as wp-login.php core). Sanitized via sanitize_key.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only WP login action key (same pattern as wp-login.php core), no state change.
 		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
 
 		if ( 'kwtsms_reg_otp' !== $action ) {
 			return;
 		}
 
-		// URL token for OTP session lookup. Sanitized via sanitize_text_field, validated against transient below.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only URL token for OTP session lookup, no state change.
 		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 
 		if ( empty( $token ) ) {
@@ -291,7 +291,7 @@ class KwtSMS_Registration_OTP_Gate {
 		}
 
 		// GET: render the OTP entry form, showing an error if one was set by a prior submission.
-		// Read-only GET param for error display on redirect. Sanitized via sanitize_key, validated against allowlist below.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only GET param for error display on redirect, no state change.
 		$reg_error_key  = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
 		$error_messages = array(
 			'invalid_code' => __( 'Invalid verification code. Please try again.', 'kwtsms' ),

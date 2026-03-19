@@ -225,10 +225,11 @@ class KwtSMS_User_Meta {
 		}
 
 		$user_id = get_current_user_id();
-		// Admin screen navigation parameter: validated via absint and gated by capability check.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin navigation parameter, no state change.
 		if ( isset( $_GET['user_id'] ) && current_user_can( 'edit_users' ) ) {
 			$user_id = absint( wp_unslash( $_GET['user_id'] ) );
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		$msg = get_transient( 'kwtsms_phone_error_' . $user_id );
 		if ( ! $msg ) {
 			return;

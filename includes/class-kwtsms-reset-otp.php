@@ -211,7 +211,7 @@ class KwtSMS_Reset_OTP {
 	 * Fires on `login_init`. If action matches, handles GET (render) and POST (verify).
 	 */
 	public function handle_reset_otp_action() {
-		// Reading the WP login action key (same pattern as wp-login.php core). Not form data, no nonce needed.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only WP login action key (same pattern as wp-login.php core), no state change.
 		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : 'login';
 
 		if ( 'kwtsms_reset_otp' !== $action ) {

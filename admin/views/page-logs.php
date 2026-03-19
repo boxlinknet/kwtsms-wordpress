@@ -18,10 +18,11 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
 }
 
-// Admin navigation parameters: sanitized via sanitize_key/absint and validated against allowlist.
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin tab navigation parameter, no state change.
 $kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'sms_history';
 $kwtsms_active_tab     = in_array( $kwtsms_active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $kwtsms_active_tab : 'sms_history';
 $kwtsms_items_per_page = 20;
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin pagination parameter, no state change.
 $kwtsms_current_page   = isset( $_GET['paged'] ) ? max( 1, absint( wp_unslash( $_GET['paged'] ) ) ) : 1;
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
@@ -258,7 +259,8 @@ function kwtsms_attempt_result_label( $result ) {
 		$kwtsms_total_lines     = count( $kwtsms_lines );
 		$kwtsms_per_page_dbg    = 100;
 		$kwtsms_total_pages_dbg = max( 1, (int) ceil( $kwtsms_total_lines / $kwtsms_per_page_dbg ) );
-		$kwtsms_cur_page_dbg    = isset( $_GET['paged'] ) ? min( max( 1, absint( wp_unslash( $_GET['paged'] ) ) ), $kwtsms_total_pages_dbg ) : 1;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin pagination parameter, no state change.
+	$kwtsms_cur_page_dbg    = isset( $_GET['paged'] ) ? min( max( 1, absint( wp_unslash( $_GET['paged'] ) ) ), $kwtsms_total_pages_dbg ) : 1;
 		$kwtsms_offset_dbg      = ( $kwtsms_cur_page_dbg - 1 ) * $kwtsms_per_page_dbg;
 		$kwtsms_page_lines      = array_slice( $kwtsms_lines, $kwtsms_offset_dbg, $kwtsms_per_page_dbg );
 		?>

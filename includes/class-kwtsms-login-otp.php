@@ -271,7 +271,7 @@ class KwtSMS_Login_OTP {
 	 * Fires on `login_init` at the very top of wp-login.php.
 	 */
 	public function handle_login_actions() {
-		// Reading the WP login action key (same pattern as wp-login.php core). Not form data, no nonce needed.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only WP login action key (same pattern as wp-login.php core), no state change.
 		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : 'login';
 
 		if ( 'kwtsms_otp' === $action ) {
@@ -680,7 +680,7 @@ class KwtSMS_Login_OTP {
 		$token      = $token ? $token : $this->get_partial_auth_token();
 		$otp_length = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
 		$cooldown   = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
-		// redirect_to is a standard WP login parameter (no nonce, same as wp-login.php core).
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only WP login redirect parameter (same as wp-login.php core), no state change.
 		$redirect_to     = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) : '';
 		$nonce_resend    = wp_create_nonce( 'kwtsms_otp_nonce' );
 		$login_url       = wp_login_url();
