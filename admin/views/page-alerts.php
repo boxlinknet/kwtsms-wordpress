@@ -73,7 +73,7 @@ $kwtsms_tpl_placeholders = array(
 		<!-- ===== Event Alerts ===== -->
 		<div class="kwtsms-settings-card">
 		<div class="kwtsms-settings-card-header">
-			<h3><span class="dashicons dashicons-bell"></span> <?php esc_html_e( 'Event Alerts', 'kwtsms' ); ?></h3>
+			<h3><span class="dashicons dashicons-bell"></span> <?php esc_html_e( 'WordPress Event Alerts', 'kwtsms' ); ?></h3>
 		</div>
 		<div class="kwtsms-settings-card-body">
 		<p style="margin-top:0;margin-bottom:16px;color:#555;font-size:13px;">
@@ -101,7 +101,7 @@ $kwtsms_tpl_placeholders = array(
 		<!-- ===== Alert Templates (JS tabs) ===== -->
 		<div class="kwtsms-settings-card">
 		<div class="kwtsms-settings-card-header">
-			<h3><span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Alert Templates', 'kwtsms' ); ?></h3>
+			<h3><span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'SMS Templates', 'kwtsms' ); ?></h3>
 		</div>
 		<div class="kwtsms-settings-card-body">
 		<p style="margin-top:0;margin-bottom:12px;color:#555;font-size:13px;">

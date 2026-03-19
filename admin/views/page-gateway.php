@@ -152,32 +152,6 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 		<!-- Dependent sections — hidden until credentials are verified -->
 		<div id="kwtsms-verified-sections"<?php echo $kwtsms_credentials_verified ? '' : ' style="display:none;"'; ?>>
 
-		<!-- ===== SMS Sending ===== -->
-		<div class="kwtsms-settings-card">
-		<div class="kwtsms-settings-card-header">
-			<h3><span class="dashicons dashicons-email-alt"></span> <?php esc_html_e( 'SMS Sending', 'kwtsms' ); ?></h3>
-		</div>
-		<div class="kwtsms-settings-card-body">
-		<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row"><label for="kwtsms_sms_enabled"><?php esc_html_e( 'Enable SMS Sending', 'kwtsms' ); ?></label></th>
-				<td>
-					<label>
-						<input type="checkbox" name="kwtsms_otp_gateway[sms_enabled]" id="kwtsms_sms_enabled"
-							value="1" <?php checked( ! empty( $kwtsms_gateway['sms_enabled'] ) ); ?> />
-						<?php esc_html_e( 'When disabled, no SMS messages are sent. OTP login, notifications, and all integrations are paused.', 'kwtsms' ); ?>
-					</label>
-					<?php if ( empty( $kwtsms_gateway['sms_enabled'] ) ) : ?>
-					<p class="description" style="color:#d63638;font-weight:600;">
-						<?php esc_html_e( 'SMS sending is currently OFF. No messages will be sent until you enable this.', 'kwtsms' ); ?>
-					</p>
-					<?php endif; ?>
-				</td>
-			</tr>
-		</table>
-		</div><!-- /.kwtsms-settings-card-body -->
-		</div><!-- /.kwtsms-settings-card -->
-
 		<!-- ===== Test Mode ===== -->
 		<div class="kwtsms-settings-card">
 		<div class="kwtsms-settings-card-header">

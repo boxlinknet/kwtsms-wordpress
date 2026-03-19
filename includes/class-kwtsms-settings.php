@@ -27,6 +27,7 @@ class KwtSMS_Settings {
 	 */
 	const DEFAULTS = array(
 		'general'      => array(
+			'sms_enabled'           => 1,          // Global SMS kill switch. When 0, no SMS is sent anywhere.
 			'otp_mode'              => '2fa',     // Options: 2fa, passwordless, or both.
 			'otp_length'            => 6,          // 4 or 6.
 			'otp_expiry'            => 5,          // In minutes.
@@ -57,7 +58,6 @@ class KwtSMS_Settings {
 			'iphub_cache_ttl'       => 86400,    // Transient TTL for cached IP reputation results (default: 1 day = 86400 s).
 		),
 		'gateway'      => array(
-			'sms_enabled'          => 1,          // Global SMS sending toggle.
 			'api_username'         => '',
 			'api_password'         => '',
 			'sender_id'            => '',

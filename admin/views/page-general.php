@@ -99,6 +99,35 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_general_group' ); ?>
 
+		<!-- ===== Plugin Master Switch ===== -->
+		<div class="kwtsms-settings-card" style="border-left: 4px solid <?php echo empty( $kwtsms_general['sms_enabled'] ) ? '#d63638' : '#00a32a'; ?>;">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-controls-play"></span> <?php esc_html_e( 'Plugin Status', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="kwtsms_sms_enabled"><?php esc_html_e( 'SMS Sending', 'kwtsms' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_general[sms_enabled]" id="kwtsms_sms_enabled"
+							value="1" <?php checked( ! empty( $kwtsms_general['sms_enabled'] ) ); ?> />
+						<strong><?php esc_html_e( 'Enable SMS sending across the entire plugin', 'kwtsms' ); ?></strong>
+					</label>
+					<p class="description">
+						<?php esc_html_e( 'This is the master switch for kwtSMS. When turned off, all SMS features are paused: OTP login codes, password resets, WooCommerce order notifications, form verifications, and admin alerts. No SMS credits are consumed while disabled.', 'kwtsms' ); ?>
+					</p>
+					<?php if ( empty( $kwtsms_general['sms_enabled'] ) ) : ?>
+					<p style="color:#d63638;font-weight:600;margin-top:8px;">
+						<?php esc_html_e( 'SMS is currently OFF. All SMS features are paused.', 'kwtsms' ); ?>
+					</p>
+					<?php endif; ?>
+				</td>
+			</tr>
+		</table>
+		</div>
+		</div>
+
 		<!-- ===== Login Behaviour ===== -->
 		<div class="kwtsms-settings-card">
 		<div class="kwtsms-settings-card-header">

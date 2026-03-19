@@ -220,13 +220,18 @@ class KwtSMS_API {
 		$this->write_debug_log( 'send()', "type={$type} phones=" . count( $phones ) . " sender={$sender_id}" );
 
 		// ── Global SMS kill switch ───────────────────────────────────────────
-		// Default to enabled (1) when the key doesn't exist yet, so existing
-		// installations are not broken by this upgrade.
-		$gw = get_option( 'kwtsms_otp_gateway', array() );
-		if ( isset( $gw['sms_enabled'] ) && empty( $gw['sms_enabled'] ) ) {
+		// Reads from general settings. Falls back to gateway for backward compat
+		// with existing installs that have not re-saved General settings yet.
+		$gen = get_option( 'kwtsms_otp_general', array() );
+		$sms_on = isset( $gen['sms_enabled'] ) ? $gen['sms_enabled'] : null;
+		if ( null === $sms_on ) {
+			$gw     = get_option( 'kwtsms_otp_gateway', array() );
+			$sms_on = $gw['sms_enabled'] ?? 1;
+		}
+		if ( empty( $sms_on ) ) {
 			$err = new WP_Error(
 				'kwtsms_sms_disabled',
-				__( 'SMS sending is disabled. Enable it in kwtSMS > Gateway settings.', 'kwtsms' )
+				__( 'SMS sending is disabled. Enable it in kwtSMS > General Settings.', 'kwtsms' )
 			);
 			$this->write_debug_log( 'send()', 'ABORT: SMS sending is disabled (sms_enabled=0)' );
 			return $err;
