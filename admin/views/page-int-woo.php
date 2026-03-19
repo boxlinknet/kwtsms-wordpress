@@ -14,7 +14,7 @@
  *   Section 2 (bottom, vertical tabs): ALL SMS templates grouped.
  *     Order Templates: Processing, Shipped, Completed, Cancelled, Pending, Refunded, Failed.
  *     Stock Alerts: Low Stock, Out of Stock, Backorder, New Product, Back in Stock.
- *     Abandoned Cart: Abandoned Cart SMS.
+ *     Abandoned Cart: Cart Recovery.
  *     Multivendor: Instant Order, Vendor SMS.
  *
  * @package KwtSMS_OTP
@@ -123,7 +123,7 @@ $kwtsms_all_vtab_defs = array(
 		'group_label' => __( 'Abandoned Cart', 'kwtsms' ),
 		'tabs'        => array(
 			'woo_tpl_cart_abandon' => array(
-				'tab_label'    => __( 'Abandoned Cart SMS', 'kwtsms' ),
+				'tab_label'    => __( 'Cart Recovery', 'kwtsms' ),
 				'label'        => __( 'Cart Abandonment Recovery SMS', 'kwtsms' ),
 				'description'  => __( 'Message sent to the customer when their cart is considered abandoned.', 'kwtsms' ),
 				'placeholders' => '{site_name}, {first_name}, {cart_total}, {coupon_code}, {discount}, {cart_url}',
