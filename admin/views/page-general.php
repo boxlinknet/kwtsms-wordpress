@@ -100,7 +100,11 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 		<?php settings_fields( 'kwtsms_otp_general_group' ); ?>
 
 		<!-- ===== Login Behaviour ===== -->
-		<h2 class="title"><?php esc_html_e( 'Login Behaviour', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-shield-alt"></span> <?php esc_html_e( 'Login Behaviour', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 
 			<tr>
@@ -247,9 +251,15 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<!-- ===== Phone & Country Settings ===== -->
-		<h2 class="title"><?php esc_html_e( 'Phone &amp; Country Settings', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-phone"></span> <?php esc_html_e( 'Phone & Country Settings', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 
 			<tr>
@@ -326,9 +336,15 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<!-- ===== Attribution Footer ===== -->
-		<h2 class="title"><?php esc_html_e( 'Attribution Footer', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-megaphone"></span> <?php esc_html_e( 'Attribution Footer', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 
 			<tr>
@@ -344,9 +360,15 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<!-- ===== On Balance Failure ===== -->
-		<h2 class="title"><?php esc_html_e( 'On Balance Failure', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-warning"></span> <?php esc_html_e( 'On Balance Failure', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<p style="margin-top:-8px;color:#555;font-size:13px;">
 			<?php esc_html_e( 'Decides what happens when kwtSMS cannot send an OTP because your SMS credit balance is zero. An admin email is always sent when this condition is first detected.', 'kwtsms' ); ?>
 		</p>
@@ -377,11 +399,17 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<div id="kwtsms-advanced-options" style="display:none;">
 
 		<!-- ===== CAPTCHA ===== -->
-		<h2 class="title"><?php esc_html_e( 'CAPTCHA Protection', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-lock"></span> <?php esc_html_e( 'CAPTCHA Protection', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 
 			<tr>
@@ -441,9 +469,15 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<!-- ===== Security ===== -->
-		<h2 class="title"><?php esc_html_e( 'Security', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-privacy"></span> <?php esc_html_e( 'Security', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 
 			<tr>
@@ -461,9 +495,15 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<!-- ===== IP Rules ===== -->
-		<h2 class="title"><?php esc_html_e( 'IP Rules', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-admin-site-alt3"></span> <?php esc_html_e( 'IP Rules', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<p style="margin-top:-8px;color:#555;font-size:13px;">
 			<?php esc_html_e( 'One IPv4 or IPv6 address or CIDR per line (e.g. 192.168.1.0/24). Allowlisted IPs skip per-IP rate limiting. Blocklisted IPs receive a silent refusal.', 'kwtsms' ); ?>
 		</p>
@@ -498,9 +538,15 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<!-- ===== IPHub Proxy/VPN Detection ===== -->
-		<h2 class="title"><?php esc_html_e( 'Proxy and VPN Detection (IPHub)', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-visibility"></span> <?php esc_html_e( 'Proxy and VPN Detection (IPHub)', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<p style="margin-top:-8px;color:#555;font-size:13px;">
 			<?php
 			printf(
@@ -576,9 +622,15 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<!-- ===== Developer Tools ===== -->
-		<h2 class="title"><?php esc_html_e( 'Developer Tools', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-admin-tools"></span> <?php esc_html_e( 'Developer Tools', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 
 			<tr>
@@ -614,6 +666,8 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		</div><!-- /#kwtsms-advanced-options -->
 

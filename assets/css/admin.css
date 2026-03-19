@@ -175,6 +175,61 @@ body[class*="kwtsms_page_kwtsms-otp"] #footer-upgrade {
    Template cards
    ========================================================================= */
 
+/* =========================================================================
+   Settings Card (used on General, Gateway, Alerts pages)
+   ========================================================================= */
+
+.kwtsms-settings-card {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	padding: 0;
+	margin-bottom: 24px;
+	box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+	overflow: hidden;
+}
+
+.kwtsms-settings-card-header {
+	background: #f9f9f9;
+	border-bottom: 1px solid #e8e8e8;
+	padding: 14px 24px;
+}
+
+.kwtsms-settings-card-header h3 {
+	font-family: Montserrat, sans-serif;
+	font-size: 14px;
+	font-weight: 700;
+	margin: 0;
+	color: #434345;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.kwtsms-settings-card-header h3 .dashicons {
+	color: #FFA200;
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+}
+
+.kwtsms-settings-card-body {
+	padding: 16px 24px 20px;
+}
+
+.kwtsms-settings-card-body .form-table {
+	margin-top: 0;
+}
+
+.kwtsms-settings-card-body .form-table th {
+	padding-top: 12px;
+	padding-bottom: 12px;
+}
+
+/* =========================================================================
+   Template Card (used on Templates, WooCommerce, Alerts template sections)
+   ========================================================================= */
+
 .kwtsms-template-card {
 	background: #fff;
 	border: 1px solid #ddd;
