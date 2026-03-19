@@ -232,10 +232,11 @@ wp_add_inline_script(
 		<!-- ============================================================= -->
 
 		<!-- Card 1: WooCommerce Integration -->
-		<div class="kwtsms-template-card">
-			<div class="kwtsms-template-card-header">
-				<h3><?php esc_html_e( 'WooCommerce Integration', 'kwtsms' ); ?></h3>
+		<div class="kwtsms-settings-card">
+			<div class="kwtsms-settings-card-header">
+				<h3><span class="dashicons dashicons-cart"></span> <?php esc_html_e( 'WooCommerce Integration', 'kwtsms' ); ?></h3>
 			</div>
+			<div class="kwtsms-settings-card-body">
 			<p class="description" style="margin-top:0;">
 				<?php esc_html_e( 'Send SMS notifications for order status changes and registration events.', 'kwtsms' ); ?>
 			</p>
@@ -307,13 +308,15 @@ wp_add_inline_script(
 				. '}());'
 			);
 			?>
+		</div><!-- /.kwtsms-settings-card-body -->
 		</div><!-- /.woo-integration-card -->
 
 		<!-- Card 2: Customer SMS per Order Status -->
-		<div class="kwtsms-template-card">
-			<div class="kwtsms-template-card-header">
-				<h3><?php esc_html_e( 'Customer SMS per Order Status', 'kwtsms' ); ?></h3>
+		<div class="kwtsms-settings-card">
+			<div class="kwtsms-settings-card-header">
+				<h3><span class="dashicons dashicons-email-alt"></span> <?php esc_html_e( 'Customer SMS per Order Status', 'kwtsms' ); ?></h3>
 			</div>
+			<div class="kwtsms-settings-card-body">
 			<p class="description">
 				<?php esc_html_e( 'Select which order status changes trigger a customer SMS notification.', 'kwtsms' ); ?>
 			</p>
@@ -342,13 +345,15 @@ wp_add_inline_script(
 					</td>
 				</tr>
 			</table>
+		</div><!-- /.kwtsms-settings-card-body -->
 		</div><!-- /.customer-status-card -->
 
 		<!-- Card 3: Admin SMS Notifications -->
-		<div class="kwtsms-template-card">
-			<div class="kwtsms-template-card-header">
-				<h3><?php esc_html_e( 'Admin SMS Notifications', 'kwtsms' ); ?></h3>
+		<div class="kwtsms-settings-card">
+			<div class="kwtsms-settings-card-header">
+				<h3><span class="dashicons dashicons-businessman"></span> <?php esc_html_e( 'Admin SMS Notifications', 'kwtsms' ); ?></h3>
 			</div>
+			<div class="kwtsms-settings-card-body">
 			<p class="description">
 				<?php esc_html_e( 'Send an SMS to a store admin phone number when selected order status changes occur.', 'kwtsms' ); ?>
 			</p>
@@ -381,13 +386,15 @@ wp_add_inline_script(
 					</td>
 				</tr>
 			</table>
+		</div><!-- /.kwtsms-settings-card-body -->
 		</div><!-- /.admin-notification-card -->
 
 		<!-- Card 4: Stock Alerts (settings only, templates below) -->
-		<div class="kwtsms-template-card">
-			<div class="kwtsms-template-card-header">
-				<h3><?php esc_html_e( 'Stock Alerts', 'kwtsms' ); ?></h3>
+		<div class="kwtsms-settings-card">
+			<div class="kwtsms-settings-card-header">
+				<h3><span class="dashicons dashicons-archive"></span> <?php esc_html_e( 'Stock Alerts', 'kwtsms' ); ?></h3>
 			</div>
+			<div class="kwtsms-settings-card-body">
 			<p class="description">
 				<?php esc_html_e( 'SMS alerts for stock level changes. Edit message templates in the SMS Templates section below.', 'kwtsms' ); ?>
 			</p>
@@ -465,13 +472,15 @@ wp_add_inline_script(
 					</td>
 				</tr>
 			</table>
+		</div><!-- /.kwtsms-settings-card-body -->
 		</div><!-- /.stock-alerts-card -->
 
 		<!-- Card 5: Cart Abandonment (settings only, template below) -->
-		<div class="kwtsms-template-card">
-			<div class="kwtsms-template-card-header">
-				<h3><?php esc_html_e( 'Cart Abandonment Recovery', 'kwtsms' ); ?></h3>
+		<div class="kwtsms-settings-card">
+			<div class="kwtsms-settings-card-header">
+				<h3><span class="dashicons dashicons-migrate"></span> <?php esc_html_e( 'Cart Abandonment Recovery', 'kwtsms' ); ?></h3>
 			</div>
+			<div class="kwtsms-settings-card-body">
 			<p class="description">
 				<?php esc_html_e( 'Automatically send a recovery SMS with an optional coupon code to customers who add items to their cart but do not complete checkout. Edit the message template in the SMS Templates section below.', 'kwtsms' ); ?>
 			</p>
@@ -523,13 +532,15 @@ wp_add_inline_script(
 					</td>
 				</tr>
 			</table>
+		</div><!-- /.kwtsms-settings-card-body -->
 		</div><!-- /.cart-abandonment-card -->
 
 		<!-- Card 6: Multivendor (settings only, templates below) -->
-		<div class="kwtsms-template-card">
-			<div class="kwtsms-template-card-header">
-				<h3><?php esc_html_e( 'Multivendor SMS', 'kwtsms' ); ?></h3>
+		<div class="kwtsms-settings-card">
+			<div class="kwtsms-settings-card-header">
+				<h3><span class="dashicons dashicons-groups"></span> <?php esc_html_e( 'Multivendor SMS', 'kwtsms' ); ?></h3>
 			</div>
+			<div class="kwtsms-settings-card-body">
 			<p class="description">
 				<?php esc_html_e( 'Instant new order alerts and vendor-specific SMS notifications for multivendor stores. Edit message templates in the SMS Templates section below.', 'kwtsms' ); ?>
 			</p>
@@ -571,6 +582,7 @@ wp_add_inline_script(
 					</td>
 				</tr>
 			</table>
+		</div><!-- /.kwtsms-settings-card-body -->
 		</div><!-- /.multivendor-card -->
 
 		<!-- ============================================================= -->

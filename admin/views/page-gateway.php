@@ -72,7 +72,11 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 		<?php endif; ?>
 
 		<!-- ===== API Information ===== -->
-		<h2 class="title"><?php esc_html_e( 'API Information', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-admin-network"></span> <?php esc_html_e( 'API Information', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 
 			<tr id="kwtsms-row-username"<?php echo $kwtsms_credentials_verified ? ' style="display:none;"' : ''; ?>>
@@ -142,12 +146,18 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<!-- Dependent sections — hidden until credentials are verified -->
 		<div id="kwtsms-verified-sections"<?php echo $kwtsms_credentials_verified ? '' : ' style="display:none;"'; ?>>
 
 		<!-- ===== SMS Sending ===== -->
-		<h2 class="title"><?php esc_html_e( 'SMS Sending', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-email-alt"></span> <?php esc_html_e( 'SMS Sending', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row"><label for="kwtsms_sms_enabled"><?php esc_html_e( 'Enable SMS Sending', 'kwtsms' ); ?></label></th>
@@ -165,9 +175,15 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 				</td>
 			</tr>
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<!-- ===== Test Mode ===== -->
-		<h2 class="title"><?php esc_html_e( 'Test Mode', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-flag"></span> <?php esc_html_e( 'Test Mode', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 
 			<tr>
@@ -226,6 +242,8 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<div style="margin-top:20px;">
 			<?php submit_button( __( 'Save Settings', 'kwtsms' ), 'primary kwtsms-save-btn', 'submit', false ); ?>
@@ -233,7 +251,11 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 		<hr style="margin:20px 0;" />
 
 		<!-- ===== SMS Coverage ===== -->
-		<h2 class="title"><?php esc_html_e( 'SMS Coverage', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-admin-site-alt3"></span> <?php esc_html_e( 'SMS Coverage', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row"><?php esc_html_e( 'Active Coverage', 'kwtsms' ); ?></th>
@@ -309,9 +331,15 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 				</td>
 			</tr>
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		<!-- ===== Gateway Test ===== -->
-		<h2 class="title"><?php esc_html_e( 'Gateway Test', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-buddicons-pm"></span> <?php esc_html_e( 'Gateway Test', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 
 			<tr>
@@ -340,6 +368,8 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 			</tr>
 
 		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
 
 		</div><!-- #kwtsms-verified-sections -->
 

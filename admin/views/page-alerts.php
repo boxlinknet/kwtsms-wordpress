@@ -47,7 +47,11 @@ $kwtsms_tpl_placeholders = array(
 		<?php settings_fields( 'kwtsms_otp_alerts_group' ); ?>
 
 		<!-- ===== Admin Phones ===== -->
-		<h2 class="title"><?php esc_html_e( 'Recipient Phone Numbers', 'kwtsms' ); ?></h2>
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-phone"></span> <?php esc_html_e( 'Recipient Phone Numbers', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row">
@@ -63,10 +67,16 @@ $kwtsms_tpl_placeholders = array(
 				</td>
 			</tr>
 		</table>
+		</div>
+		</div>
 
 		<!-- ===== Event Alerts ===== -->
-		<h2 class="title"><?php esc_html_e( 'Event Alerts', 'kwtsms' ); ?></h2>
-		<p style="margin-top:-8px;margin-bottom:16px;color:#555;font-size:13px;">
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-bell"></span> <?php esc_html_e( 'Event Alerts', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
+		<p style="margin-top:0;margin-bottom:16px;color:#555;font-size:13px;">
 			<?php esc_html_e( 'Enable or disable each event alert. Configure the message text in the Templates section below.', 'kwtsms' ); ?>
 		</p>
 		<table class="form-table" role="presentation">
@@ -85,10 +95,16 @@ $kwtsms_tpl_placeholders = array(
 			</tr>
 			<?php endforeach; ?>
 		</table>
+		</div>
+		</div>
 
 		<!-- ===== Alert Templates (JS tabs) ===== -->
-		<h2 class="title"><?php esc_html_e( 'Alert Templates', 'kwtsms' ); ?></h2>
-		<p style="margin-top:-8px;margin-bottom:12px;color:#555;font-size:13px;">
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Alert Templates', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
+		<p style="margin-top:0;margin-bottom:12px;color:#555;font-size:13px;">
 			<?php esc_html_e( 'Customise the SMS message for each event in English and Arabic.', 'kwtsms' ); ?>
 		</p>
 
@@ -215,6 +231,8 @@ $kwtsms_tpl_placeholders = array(
 			'})();'
 		);
 		?>
+		</div>
+		</div>
 
 		<?php submit_button( __( 'Save Alert Settings', 'kwtsms' ), 'primary kwtsms-save-btn' ); ?>
 	</form>
