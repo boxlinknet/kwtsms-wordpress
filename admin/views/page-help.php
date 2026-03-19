@@ -477,36 +477,6 @@ $kwtsms_content_dir = basename( dirname( $kwtsms_upload_dir['basedir'] ) );
 			?>
 		</p>
 
-		<h3><?php esc_html_e( 'API error codes', 'kwtsms' ); ?></h3>
-		<p style="font-size:13px;"><?php esc_html_e( 'Error codes appear in the SMS History log (Result column) and in the Debug Log. Match them to the table below.', 'kwtsms' ); ?></p>
-		<table class="widefat striped" style="max-width:800px;font-size:13px;">
-			<thead>
-				<tr>
-					<th style="width:90px;"><?php esc_html_e( 'Code', 'kwtsms' ); ?></th>
-					<th><?php esc_html_e( 'Meaning', 'kwtsms' ); ?></th>
-					<th><?php esc_html_e( 'Fix', 'kwtsms' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr><td>ERR001</td><td><?php esc_html_e( 'Service temporarily unavailable', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Retry after a short wait. Check kwtsms.com status if it persists.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR002</td><td><?php esc_html_e( 'Gateway configuration error', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Contact kwtSMS support, account configuration issue.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR003</td><td><?php esc_html_e( 'Authentication failed', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Wrong API username or password. Re-enter credentials on the Gateway page and click Login.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR004</td><td><?php esc_html_e( 'API not enabled on account', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Contact kwtSMS to enable the API on your account.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR005</td><td><?php esc_html_e( 'Account suspended', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Log in to kwtsms.com to check account status.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR006 / ERR025</td><td><?php esc_html_e( 'Invalid phone number', 'kwtsms' ); ?></td><td><?php esc_html_e( 'The number format is wrong. Ensure country code is included (e.g. 96598765432).', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR008</td><td><?php esc_html_e( 'Sender ID not allowed', 'kwtsms' ); ?></td><td><?php esc_html_e( 'The selected Sender ID is not approved on your account. Choose a different one on the Gateway page.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR009</td><td><?php esc_html_e( 'Message body is empty', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Check your SMS templates. The OTP or notification template for this event is empty.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR010 / ERR011</td><td><?php esc_html_e( 'Insufficient credits', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Top up your kwtSMS account balance.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR012</td><td><?php esc_html_e( 'Message too long', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Shorten your SMS template. Standard SMS is 160 characters; Arabic is 70 characters per page.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR013</td><td><?php esc_html_e( 'SMS queue is full', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Retry in a few minutes.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR024</td><td><?php esc_html_e( 'Request blocked by security policy', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Your server IP may be rate-limited (max 5 req/sec). Contact kwtSMS support.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR026 / ERR033</td><td><?php esc_html_e( 'No SMS coverage for destination', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Add coverage for this country in your kwtSMS account or contact kwtSMS to enable international coverage.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR027</td><td><?php esc_html_e( 'Unsupported characters in message', 'kwtsms' ); ?></td><td><?php esc_html_e( 'Remove emoji or special characters from the SMS template.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR028</td><td><?php esc_html_e( 'Resend too fast', 'kwtsms' ); ?></td><td><?php esc_html_e( 'The API requires at least 15 seconds between OTP sends to the same number.', 'kwtsms' ); ?></td></tr>
-				<tr><td>ERR031 / ERR032</td><td><?php esc_html_e( 'Message rejected (policy/spam)', 'kwtsms' ); ?></td><td><?php esc_html_e( 'The message content was flagged. Review your template text and remove any spam-like content.', 'kwtsms' ); ?></td></tr>
-			</tbody>
-		</table>
-
 	</div><!-- max-width wrapper -->
 	</div><!-- .kwtsms-settings-card-body -->
 	</div><!-- .kwtsms-settings-card -->
