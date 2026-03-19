@@ -187,22 +187,7 @@ $kwtsms_page_title = sprintf( __( '%s Settings', 'kwtsms' ), $kwtsms_label );
 				</div>
 				<p class="description"><?php esc_html_e( 'Sent to the submitter after a successful form submission.', 'kwtsms' ); ?></p>
 
-				<table class="form-table" style="margin-bottom:0;">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Enable Template', 'kwtsms' ); ?></th>
-						<td>
-							<label class="kwtsms-toggle">
-								<input type="checkbox"
-									name="kwtsms_otp_integrations[<?php echo esc_attr( $kwtsms_tpl_key ); ?>][enabled]"
-									value="1"
-									<?php checked( ! empty( $kwtsms_tpl['enabled'] ) ); ?> />
-								<span><?php esc_html_e( 'Send confirmation SMS after form submission', 'kwtsms' ); ?></span>
-							</label>
-						</td>
-					</tr>
-				</table>
-
-				<p class="description" style="margin-top:4px;">
+				<p class="description" style="margin-top:12px;">
 					<strong><?php esc_html_e( 'Placeholders:', 'kwtsms' ); ?></strong>
 					<code><?php echo esc_html( $kwtsms_cfg['placeholders'] ); ?></code>
 				</p>
