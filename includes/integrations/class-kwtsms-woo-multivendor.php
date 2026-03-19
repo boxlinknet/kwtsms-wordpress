@@ -88,6 +88,9 @@ class KwtSMS_Woo_Multivendor {
 
 		$admin_phone = (string) $this->plugin->settings->get( 'integrations.woo_instant_order_phone', '' );
 		if ( '' === trim( $admin_phone ) ) {
+			$admin_phone = (string) $this->plugin->settings->get( 'integrations.woo_admin_phone', '' );
+		}
+		if ( '' === trim( $admin_phone ) ) {
 			$this->plugin->api->write_debug_log( 'woo_instant_order', 'Skipped instant order SMS for order #' . $order->get_order_number() . ': no admin phone configured' );
 			return;
 		}

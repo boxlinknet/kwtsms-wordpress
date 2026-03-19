@@ -341,6 +341,9 @@ class KwtSMS_Woo_Stock {
 	private function send_admin_stock_sms( $tpl_key, array $placeholders ) {
 		$admin_phone = (string) $this->plugin->settings->get( 'integrations.woo_stock_admin_phone', '' );
 		if ( '' === trim( $admin_phone ) ) {
+			$admin_phone = (string) $this->plugin->settings->get( 'integrations.woo_admin_phone', '' );
+		}
+		if ( '' === trim( $admin_phone ) ) {
 			$this->plugin->api->write_debug_log( 'woo_stock', 'Skipped stock alert (' . $tpl_key . '): no admin phone configured' );
 			return;
 		}

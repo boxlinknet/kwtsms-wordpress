@@ -4,12 +4,12 @@
  *
  * Layout:
  *   Section 1 (top, no tabs): Settings cards stacked vertically.
- *     1. WooCommerce Integration (enable, checkout OTP, COD-only).
+ *     1. WooCommerce Integration (enable, admin phone, checkout OTP, COD-only).
  *     2. Customer SMS per Order Status checkboxes.
- *     3. Admin SMS Notifications.
- *     4. Stock Alerts (admin phone, low/out/backorder/new product enables + templates).
+ *     3. Admin SMS Notifications (status checkboxes, uses main admin phone).
+ *     4. Stock Alerts (phone override, low/out/backorder/new product enables + templates).
  *     5. Cart Abandonment (delay, coupon, templates).
- *     6. Multivendor (instant order, vendor SMS settings + templates).
+ *     6. Multivendor (instant order phone override, vendor SMS settings + templates).
  *
  *   Section 2 (bottom, vertical tabs): 7 order status SMS templates only.
  *     Processing, Shipped, Completed, Cancelled, Pending, Refunded, Failed.
@@ -180,6 +180,17 @@ wp_add_inline_script(
 					</td>
 				</tr>
 				<tr>
+					<th scope="row"><?php esc_html_e( 'Admin Phone Numbers', 'kwtsms' ); ?></th>
+					<td>
+						<input type="text"
+							name="kwtsms_otp_integrations[woo_admin_phone]"
+							value="<?php echo esc_attr( $kwtsms_int['woo_admin_phone'] ?? '' ); ?>"
+							class="regular-text"
+							placeholder="<?php esc_attr_e( 'e.g. 96598765432, 96599220333', 'kwtsms' ); ?>" />
+						<p class="description"><?php esc_html_e( 'All WooCommerce SMS alerts are sent to these numbers. Individual features below can override this.', 'kwtsms' ); ?></p>
+					</td>
+				</tr>
+				<tr>
 					<th scope="row"><?php esc_html_e( 'Checkout OTP', 'kwtsms' ); ?></th>
 					<td>
 						<label>
@@ -269,17 +280,6 @@ wp_add_inline_script(
 			</p>
 			<table class="form-table" style="margin-top:12px;">
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Admin Phone Number(s)', 'kwtsms' ); ?></th>
-					<td>
-						<input type="text"
-							name="kwtsms_otp_integrations[woo_admin_phone]"
-							value="<?php echo esc_attr( $kwtsms_int['woo_admin_phone'] ?? '' ); ?>"
-							class="regular-text"
-							placeholder="<?php esc_attr_e( 'e.g. 96598765432, 96599220333', 'kwtsms' ); ?>" />
-						<p class="description"><?php esc_html_e( 'Comma-separated list of phone numbers (with country code) to receive admin notifications.', 'kwtsms' ); ?></p>
-					</td>
-				</tr>
-				<tr>
 					<th scope="row"><?php esc_html_e( 'Notify admin for statuses', 'kwtsms' ); ?></th>
 					<td>
 						<?php
@@ -320,14 +320,14 @@ wp_add_inline_script(
 
 			<table class="form-table" style="margin-top:12px;">
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Admin Phone Number(s)', 'kwtsms' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Phone Override (optional)', 'kwtsms' ); ?></th>
 					<td>
 						<input type="text"
 							name="kwtsms_otp_integrations[woo_stock_admin_phone]"
 							value="<?php echo esc_attr( $kwtsms_int['woo_stock_admin_phone'] ?? '' ); ?>"
 							class="regular-text"
-							placeholder="<?php esc_attr_e( 'e.g. 96598765432, 96599220333', 'kwtsms' ); ?>" />
-						<p class="description"><?php esc_html_e( 'Comma-separated list of phone numbers (with country code) to receive stock notifications.', 'kwtsms' ); ?></p>
+							placeholder="<?php esc_attr_e( 'Leave blank to use main admin phone', 'kwtsms' ); ?>" />
+						<p class="description"><?php esc_html_e( 'Override the main admin phone for stock alerts only. Leave empty to use the main phone above.', 'kwtsms' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -865,14 +865,14 @@ wp_add_inline_script(
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Admin Phone Number(s)', 'kwtsms' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Phone Override (optional)', 'kwtsms' ); ?></th>
 					<td>
 						<input type="text"
 							name="kwtsms_otp_integrations[woo_instant_order_phone]"
 							value="<?php echo esc_attr( $kwtsms_int['woo_instant_order_phone'] ?? '' ); ?>"
 							class="regular-text"
-							placeholder="<?php esc_attr_e( 'e.g. 96598765432, 96599220333', 'kwtsms' ); ?>" />
-						<p class="description"><?php esc_html_e( 'Comma-separated list of phone numbers (with country code) to receive instant order alerts.', 'kwtsms' ); ?></p>
+							placeholder="<?php esc_attr_e( 'Leave blank to use main admin phone', 'kwtsms' ); ?>" />
+						<p class="description"><?php esc_html_e( 'Override the main admin phone for instant order alerts only. Leave empty to use the main phone above.', 'kwtsms' ); ?></p>
 					</td>
 				</tr>
 			</table>
