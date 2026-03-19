@@ -86,13 +86,30 @@ $kwtsms_tpl_placeholders = array(
 			<?php endforeach; ?>
 		</table>
 
-		<!-- ===== Alert Templates ===== -->
+		<!-- ===== Alert Templates (JS tabs) ===== -->
 		<h2 class="title"><?php esc_html_e( 'Alert Templates', 'kwtsms' ); ?></h2>
-		<p style="margin-top:-8px;margin-bottom:20px;color:#555;font-size:13px;">
+		<p style="margin-top:-8px;margin-bottom:12px;color:#555;font-size:13px;">
 			<?php esc_html_e( 'Customise the SMS message for each event in English and Arabic.', 'kwtsms' ); ?>
 		</p>
 
+		<nav class="nav-tab-wrapper" id="kwtsms-alert-tpl-tabs">
+			<?php
+			$kwtsms_alert_first = true;
+			foreach ( $kwtsms_events as $kwtsms_event_key => $kwtsms_event_label ) :
+				?>
+			<a href="#<?php echo esc_attr( $kwtsms_event_key ); ?>"
+				class="nav-tab<?php echo $kwtsms_alert_first ? ' nav-tab-active' : ''; ?>"
+				data-kwtsms-alert-tab="<?php echo esc_attr( $kwtsms_event_key ); ?>">
+				<?php echo esc_html( $kwtsms_event_label ); ?>
+			</a>
+				<?php
+				$kwtsms_alert_first = false;
+			endforeach;
+			?>
+		</nav>
+
 		<?php
+		$kwtsms_alert_first_panel = true;
 		foreach ( $kwtsms_events as $kwtsms_event_key => $kwtsms_event_label ) :
 			$kwtsms_tpl_key     = 'tpl_' . $kwtsms_event_key;
 			$kwtsms_tpl         = is_array( $kwtsms_alerts[ $kwtsms_tpl_key ] ) ? $kwtsms_alerts[ $kwtsms_tpl_key ] : array(
@@ -106,6 +123,7 @@ $kwtsms_tpl_placeholders = array(
 			$kwtsms_en_id       = 'alerts_' . $kwtsms_event_key . '_en';
 			$kwtsms_ar_id       = 'alerts_' . $kwtsms_event_key . '_ar';
 			?>
+		<div class="kwtsms-alert-tpl-panel" data-kwtsms-alert-panel="<?php echo esc_attr( $kwtsms_event_key ); ?>"<?php echo $kwtsms_alert_first_panel ? ' style="margin-top:16px;"' : ' style="display:none;"'; ?>>
 		<div class="kwtsms-template-card">
 			<div class="kwtsms-template-card-header">
 				<h3><?php echo esc_html( $kwtsms_event_label ); ?></h3>
@@ -129,7 +147,7 @@ $kwtsms_tpl_placeholders = array(
 				<div class="kwtsms-tab-pane" data-tab="en">
 					<div class="kwtsms-textarea-wrap">
 						<textarea
-							name="kwtsms_otp_alerts[<?php echo esc_attr( $kwtsms_tpl_key ); ?>_en]"
+							name="kwtsms_otp_alerts[<?php echo esc_attr( $kwtsms_tpl_key ); ?>][en]"
 							id="<?php echo esc_attr( $kwtsms_en_id ); ?>"
 							class="large-text kwtsms-sms-textarea"
 							rows="3"
@@ -145,7 +163,7 @@ $kwtsms_tpl_placeholders = array(
 				<div class="kwtsms-tab-pane" data-tab="ar" style="display:none;">
 					<div class="kwtsms-textarea-wrap">
 						<textarea
-							name="kwtsms_otp_alerts[<?php echo esc_attr( $kwtsms_tpl_key ); ?>_ar]"
+							name="kwtsms_otp_alerts[<?php echo esc_attr( $kwtsms_tpl_key ); ?>][ar]"
 							id="<?php echo esc_attr( $kwtsms_ar_id ); ?>"
 							class="large-text kwtsms-sms-textarea"
 							rows="3"
@@ -167,7 +185,36 @@ $kwtsms_tpl_placeholders = array(
 				</button>
 			</div>
 		</div>
-		<?php endforeach; ?>
+		</div>
+			<?php
+			$kwtsms_alert_first_panel = false;
+		endforeach;
+		?>
+
+		<?php
+		wp_register_script( 'kwtsms-alert-tpl-tabs', '', array(), KWTSMS_OTP_VERSION, true );
+		wp_enqueue_script( 'kwtsms-alert-tpl-tabs' );
+		wp_add_inline_script(
+			'kwtsms-alert-tpl-tabs',
+			'(function(){' .
+			'var tabs=document.querySelectorAll("#kwtsms-alert-tpl-tabs [data-kwtsms-alert-tab]");' .
+			'var panels=document.querySelectorAll("[data-kwtsms-alert-panel]");' .
+			'function activate(key){' .
+				'tabs.forEach(function(t){t.classList.toggle("nav-tab-active",t.getAttribute("data-kwtsms-alert-tab")===key);});' .
+				'panels.forEach(function(p){' .
+					'if(p.getAttribute("data-kwtsms-alert-panel")===key){p.style.display="";p.style.marginTop="16px";}' .
+					'else{p.style.display="none";}' .
+				'});' .
+				'window.location.hash=key;' .
+			'}' .
+			'tabs.forEach(function(t){' .
+				't.addEventListener("click",function(e){e.preventDefault();activate(this.getAttribute("data-kwtsms-alert-tab"));});' .
+			'});' .
+			'var hash=window.location.hash.replace("#","");' .
+			'if(hash&&document.querySelector("[data-kwtsms-alert-panel=\""+hash+"\"]")){activate(hash);}' .
+			'})();'
+		);
+		?>
 
 		<?php submit_button( __( 'Save Alert Settings', 'kwtsms' ), 'primary kwtsms-save-btn' ); ?>
 	</form>
