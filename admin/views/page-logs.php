@@ -23,7 +23,7 @@ $kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET
 $kwtsms_active_tab     = in_array( $kwtsms_active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $kwtsms_active_tab : 'sms_history';
 $kwtsms_items_per_page = 20;
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin pagination parameter, no state change.
-$kwtsms_current_page   = isset( $_GET['paged'] ) ? max( 1, absint( wp_unslash( $_GET['paged'] ) ) ) : 1;
+$kwtsms_current_page = isset( $_GET['paged'] ) ? max( 1, absint( wp_unslash( $_GET['paged'] ) ) ) : 1;
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
 // NOTE: download/clear/export handlers are registered on admin_init in KwtSMS_Admin::handle_log_exports()
@@ -99,6 +99,12 @@ function kwtsms_attempt_result_label( $result ) {
 		<h1><?php esc_html_e( 'Logs', 'kwtsms' ); ?></h1>
 	</div>
 	<hr class="wp-header-end">
+
+	<div class="kwtsms-settings-card">
+	<div class="kwtsms-settings-card-header">
+		<h3><span class="dashicons dashicons-list-view"></span> <?php esc_html_e( 'SMS Logs', 'kwtsms' ); ?></h3>
+	</div>
+	<div class="kwtsms-settings-card-body">
 
 	<!-- Tabs -->
 	<nav class="nav-tab-wrapper">
@@ -260,9 +266,9 @@ function kwtsms_attempt_result_label( $result ) {
 		$kwtsms_per_page_dbg    = 100;
 		$kwtsms_total_pages_dbg = max( 1, (int) ceil( $kwtsms_total_lines / $kwtsms_per_page_dbg ) );
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin pagination parameter, no state change.
-	$kwtsms_cur_page_dbg    = isset( $_GET['paged'] ) ? min( max( 1, absint( wp_unslash( $_GET['paged'] ) ) ), $kwtsms_total_pages_dbg ) : 1;
-		$kwtsms_offset_dbg      = ( $kwtsms_cur_page_dbg - 1 ) * $kwtsms_per_page_dbg;
-		$kwtsms_page_lines      = array_slice( $kwtsms_lines, $kwtsms_offset_dbg, $kwtsms_per_page_dbg );
+		$kwtsms_cur_page_dbg = isset( $_GET['paged'] ) ? min( max( 1, absint( wp_unslash( $_GET['paged'] ) ) ), $kwtsms_total_pages_dbg ) : 1;
+		$kwtsms_offset_dbg   = ( $kwtsms_cur_page_dbg - 1 ) * $kwtsms_per_page_dbg;
+		$kwtsms_page_lines   = array_slice( $kwtsms_lines, $kwtsms_offset_dbg, $kwtsms_per_page_dbg );
 		?>
 
 	<div class="kwtsms-log-toolbar" style="display:flex;gap:10px;align-items:center;margin:16px 0;">
@@ -371,4 +377,7 @@ function kwtsms_attempt_result_label( $result ) {
 		</div>
 	</div>
 	<?php endif; ?>
+
+	</div><!-- .kwtsms-settings-card-body -->
+	</div><!-- .kwtsms-settings-card -->
 </div>

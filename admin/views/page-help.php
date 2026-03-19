@@ -33,8 +33,11 @@ $kwtsms_content_dir = basename( dirname( $kwtsms_upload_dir['basedir'] ) );
 	<hr class="wp-header-end">
 
 	<!-- ===== Plugin Status ===== -->
-	<div style="background:#fff;border:1px solid #ddd;border-radius:4px;padding:16px 20px;margin-bottom:24px;max-width:800px;">
-		<h2 style="margin-top:0;"><?php esc_html_e( 'Current Status', 'kwtsms' ); ?></h2>
+	<div class="kwtsms-settings-card">
+	<div class="kwtsms-settings-card-header">
+		<h3><span class="dashicons dashicons-dashboard"></span> <?php esc_html_e( 'Current Status', 'kwtsms' ); ?></h3>
+	</div>
+	<div class="kwtsms-settings-card-body">
 		<table style="border-collapse:collapse;width:100%;font-size:13px;">
 			<tr>
 				<td style="padding:6px 0;width:200px;"><strong><?php esc_html_e( 'API Credentials', 'kwtsms' ); ?></strong></td>
@@ -114,10 +117,15 @@ $kwtsms_content_dir = basename( dirname( $kwtsms_upload_dir['basedir'] ) );
 				<td><?php echo esc_html( defined( 'KWTSMS_OTP_VERSION' ) ? KWTSMS_OTP_VERSION : '—' ); ?></td>
 			</tr>
 		</table>
-	</div>
+	</div><!-- .kwtsms-settings-card-body -->
+	</div><!-- .kwtsms-settings-card -->
 
-		<!-- ===== Support ===== -->
-		<h2><?php esc_html_e( 'Support &amp; Resources', 'kwtsms' ); ?></h2>
+	<!-- ===== Support ===== -->
+	<div class="kwtsms-settings-card">
+	<div class="kwtsms-settings-card-header">
+		<h3><span class="dashicons dashicons-rest-api"></span> <?php esc_html_e( 'Support &amp; Resources', 'kwtsms' ); ?></h3>
+	</div>
+	<div class="kwtsms-settings-card-body">
 		<ul style="font-size:14px;line-height:2;">
 			<li>
 				<strong><?php esc_html_e( 'kwtSMS FAQ:', 'kwtsms' ); ?></strong>
@@ -148,11 +156,17 @@ $kwtsms_content_dir = basename( dirname( $kwtsms_upload_dir['basedir'] ) );
 				<?php esc_html_e( 'other platforms and integrations supported by kwtSMS.', 'kwtsms' ); ?>
 			</li>
 		</ul>
+	</div><!-- .kwtsms-settings-card-body -->
+	</div><!-- .kwtsms-settings-card -->
 
 
 	<!-- ===== Getting Started ===== -->
+	<div class="kwtsms-settings-card">
+	<div class="kwtsms-settings-card-header">
+		<h3><span class="dashicons dashicons-welcome-learn-more"></span> <?php esc_html_e( 'Getting Started', 'kwtsms' ); ?></h3>
+	</div>
+	<div class="kwtsms-settings-card-body">
 	<div style="max-width:800px;">
-		<h2><?php esc_html_e( 'Getting Started', 'kwtsms' ); ?></h2>
 		<ol style="font-size:14px;line-height:1.8;">
 			<li>
 				<strong><?php esc_html_e( 'Create a kwtSMS account', 'kwtsms' ); ?></strong><br>
@@ -317,8 +331,17 @@ $kwtsms_content_dir = basename( dirname( $kwtsms_upload_dir['basedir'] ) );
 			<?php esc_html_e( 'No customisation page is needed. Full CSS control is available through standard WordPress/theme overrides.', 'kwtsms' ); ?>
 		</p>
 
-		<!-- ===== Troubleshooting ===== -->
-		<h2><?php esc_html_e( 'Troubleshooting', 'kwtsms' ); ?></h2>
+	</div><!-- max-width wrapper -->
+	</div><!-- .kwtsms-settings-card-body -->
+	</div><!-- .kwtsms-settings-card -->
+
+	<!-- ===== Troubleshooting ===== -->
+	<div class="kwtsms-settings-card">
+	<div class="kwtsms-settings-card-header">
+		<h3><span class="dashicons dashicons-sos"></span> <?php esc_html_e( 'Troubleshooting', 'kwtsms' ); ?></h3>
+	</div>
+	<div class="kwtsms-settings-card-body">
+	<div style="max-width:800px;">
 
 		<h3><?php esc_html_e( 'Messages not being delivered: step by step', 'kwtsms' ); ?></h3>
 		<ol style="font-size:14px;line-height:1.9;">
@@ -484,5 +507,8 @@ $kwtsms_content_dir = basename( dirname( $kwtsms_upload_dir['basedir'] ) );
 			</tbody>
 		</table>
 
-	</div>
+	</div><!-- max-width wrapper -->
+	</div><!-- .kwtsms-settings-card-body -->
+	</div><!-- .kwtsms-settings-card -->
+
 </div>
