@@ -368,30 +368,6 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 		</div><!-- /.kwtsms-settings-card-body -->
 		</div><!-- /.kwtsms-settings-card -->
 
-		<!-- ===== Attribution Footer ===== -->
-		<div class="kwtsms-settings-card">
-		<div class="kwtsms-settings-card-header">
-			<h3><span class="dashicons dashicons-megaphone"></span> <?php esc_html_e( 'Attribution Footer', 'kwtsms' ); ?></h3>
-		</div>
-		<div class="kwtsms-settings-card-body">
-		<table class="form-table" role="presentation">
-
-			<tr>
-				<th scope="row"><label for="kwtsms_referral_link"><?php esc_html_e( 'Show credit link', 'kwtsms' ); ?></label></th>
-				<td>
-					<label>
-						<input type="checkbox" name="kwtsms_otp_general[referral_link]" id="kwtsms_referral_link"
-							value="1" <?php checked( $kwtsms_referral_link ); ?> />
-						<?php esc_html_e( 'Display "SMS by kwtSMS.com" footer on login pages (opt-in)', 'kwtsms' ); ?>
-					</label>
-					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'kwtsms' ); ?></p>
-				</td>
-			</tr>
-
-		</table>
-		</div><!-- /.kwtsms-settings-card-body -->
-		</div><!-- /.kwtsms-settings-card -->
-
 		<!-- ===== On Balance Failure ===== -->
 		<div class="kwtsms-settings-card">
 		<div class="kwtsms-settings-card-header">
@@ -424,6 +400,30 @@ foreach ( $kwtsms_all_countries as $kwtsms_cc ) {
 							</p>
 						</label>
 					</fieldset>
+				</td>
+			</tr>
+
+		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
+
+		<!-- ===== Attribution Footer ===== -->
+		<div class="kwtsms-settings-card">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-megaphone"></span> <?php esc_html_e( 'Attribution Footer', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
+		<table class="form-table" role="presentation">
+
+			<tr>
+				<th scope="row"><label for="kwtsms_referral_link"><?php esc_html_e( 'Show credit link', 'kwtsms' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_general[referral_link]" id="kwtsms_referral_link"
+							value="1" <?php checked( $kwtsms_referral_link ); ?> />
+						<?php esc_html_e( 'Display "SMS by kwtSMS.com" footer on login pages (opt-in)', 'kwtsms' ); ?>
+					</label>
+					<p class="description"><?php esc_html_e( 'The link text is fixed and cannot be customized.', 'kwtsms' ); ?></p>
 				</td>
 			</tr>
 
