@@ -152,43 +152,16 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 		<!-- Dependent sections — hidden until credentials are verified -->
 		<div id="kwtsms-verified-sections"<?php echo $kwtsms_credentials_verified ? '' : ' style="display:none;"'; ?>>
 
-		<!-- ===== Test Mode ===== -->
+		<!-- ===== Sender ID ===== -->
 		<div class="kwtsms-settings-card">
 		<div class="kwtsms-settings-card-header">
-			<h3><span class="dashicons dashicons-flag"></span> <?php esc_html_e( 'Test Mode', 'kwtsms' ); ?></h3>
+			<h3><span class="dashicons dashicons-id"></span> <?php esc_html_e( 'Sender ID', 'kwtsms' ); ?></h3>
 		</div>
 		<div class="kwtsms-settings-card-body">
 		<table class="form-table" role="presentation">
 
-			<tr>
-				<th scope="row"><label for="kwtsms_test_mode"><?php esc_html_e( 'Enable Test Mode', 'kwtsms' ); ?></label></th>
-				<td>
-					<label>
-						<input type="checkbox" name="kwtsms_otp_gateway[test_mode]" id="kwtsms_test_mode"
-							value="1" <?php checked( $kwtsms_test_mode ); ?> />
-						<?php
-						printf(
-							/* translators: %s: link to kwtSMS account dashboard */
-							esc_html__( 'Messages are queued but not delivered. Delete from %s queue to recover credits.', 'kwtsms' ),
-							'<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'kwtSMS account', 'kwtsms' ) . '</a>'
-						);
-						?>
-					</label>
-					<?php if ( $kwtsms_test_mode ) : ?>
-					<p class="description" style="color:#d63638;font-weight:600;">
-						<?php esc_html_e( '⚠ Test Mode is ON. The SMS will be queued but will NOT be delivered to your phone.', 'kwtsms' ); ?>
-					</p>
-					<?php endif; ?>
-				</td>
-			</tr>
-
-		</table>
-
-		<!-- ===== Sender ID ===== -->
-		<table class="form-table" role="presentation">
-
 			<tr id="kwtsms-sender-row">
-				<th scope="row"><label for="kwtsms_sender_id"><?php esc_html_e( 'Sender ID', 'kwtsms' ); ?></label></th>
+				<th scope="row"><label for="kwtsms_sender_id"><?php esc_html_e( 'Active Sender ID', 'kwtsms' ); ?></label></th>
 				<td>
 					<select name="kwtsms_otp_gateway[sender_id]" id="kwtsms_sender_id">
 							<?php if ( ! empty( $kwtsms_sender_ids ) ) : ?>
@@ -215,6 +188,38 @@ $kwtsms__api_codes = array( 'OK', 'ERROR', 'ERR', 'FAIL', 'FAILED', 'NULL', 'NON
 				</td>
 			</tr>
 
+		</table>
+		</div><!-- /.kwtsms-settings-card-body -->
+		</div><!-- /.kwtsms-settings-card -->
+
+		<!-- ===== Test Mode ===== -->
+		<div class="kwtsms-settings-card" style="border-left: 4px solid <?php echo $kwtsms_test_mode ? '#d63638' : '#00a32a'; ?>;">
+		<div class="kwtsms-settings-card-header">
+			<h3><span class="dashicons dashicons-flag"></span> <?php esc_html_e( 'Test Mode', 'kwtsms' ); ?></h3>
+		</div>
+		<div class="kwtsms-settings-card-body">
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="kwtsms_test_mode"><?php esc_html_e( 'Enable Test Mode', 'kwtsms' ); ?></label></th>
+				<td>
+					<label>
+						<input type="checkbox" name="kwtsms_otp_gateway[test_mode]" id="kwtsms_test_mode"
+							value="1" <?php checked( $kwtsms_test_mode ); ?> />
+						<?php
+						printf(
+							/* translators: %s: link to kwtSMS account dashboard */
+							esc_html__( 'Messages are queued but not delivered. Delete from %s queue to recover credits.', 'kwtsms' ),
+							'<a href="https://www.kwtsms.com/login/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'kwtSMS account', 'kwtsms' ) . '</a>'
+						);
+						?>
+					</label>
+					<?php if ( $kwtsms_test_mode ) : ?>
+					<p class="description" style="color:#d63638;font-weight:600;">
+						<?php esc_html_e( 'Test Mode is ON. SMS will be queued but NOT delivered to phones.', 'kwtsms' ); ?>
+					</p>
+					<?php endif; ?>
+				</td>
+			</tr>
 		</table>
 		</div><!-- /.kwtsms-settings-card-body -->
 		</div><!-- /.kwtsms-settings-card -->
