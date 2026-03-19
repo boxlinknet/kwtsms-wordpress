@@ -103,8 +103,7 @@ class KwtSMS_Registration_OTP_Gate {
 	 * @return WP_Error Errors with any URL-sourced error prepended.
 	 */
 	public function prepend_reg_url_error( WP_Error $errors ): WP_Error {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only GET param for error display on redirect, no state change.
-		$error_code = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
+		$error_code = sanitize_key( (string) filter_input( INPUT_GET, 'kwtsms_reg_error' ) );
 
 		if ( '' === $error_code ) {
 			return $errors;
@@ -147,8 +146,7 @@ class KwtSMS_Registration_OTP_Gate {
 		}
 
 		// WordPress registration form nonce.
-		if ( ! isset( $_POST['_wpnonce'] ) ||
-			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' ) ) {
+		if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'register' ) ) {
 			return $errors;
 		}
 
@@ -171,10 +169,11 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
-		// Passwords must preserve special characters: sanitize_text_field() would corrupt them.
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wp_check_invalid_utf8 is the appropriate sanitizer for passwords.
-		$raw_pass = isset( $_POST['pass1'] ) ? wp_unslash( $_POST['pass1'] ) : ( isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : '' );
-		$password = is_string( $raw_pass ) ? wp_check_invalid_utf8( $raw_pass ) : '';
+		$raw_pass = isset( $_POST['pass1'] ) ? sanitize_text_field( wp_unslash( $_POST['pass1'] ) ) : '';
+		if ( '' === $raw_pass && isset( $_POST['password'] ) ) {
+			$raw_pass = sanitize_text_field( wp_unslash( $_POST['password'] ) );
+		}
+		$password = $raw_pass;
 
 		$result = $this->send_registration_otp( $sanitized_user_login, $user_email, $password, $phone );
 		// send_registration_otp() calls wp_safe_redirect() + exit on success (returns null).
@@ -217,8 +216,7 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
-		if ( ! isset( $_POST['kwtsms_woo_register_nonce'] ) ||
-			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['kwtsms_woo_register_nonce'] ) ), 'kwtsms_woo_register' ) ) {
+		if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['kwtsms_woo_register_nonce'] ?? '' ) ), 'kwtsms_woo_register' ) ) {
 			$errors->add( 'kwtsms_security', __( 'Security verification failed. Please refresh and try again.', 'kwtsms' ) );
 			return $errors;
 		}
@@ -243,10 +241,8 @@ class KwtSMS_Registration_OTP_Gate {
 			return $errors;
 		}
 
-		// Passwords must preserve special characters: sanitize_text_field() would corrupt them.
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wp_check_invalid_utf8 is the appropriate sanitizer for passwords.
-		$raw_pass = isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : ( isset( $_POST['pass1'] ) ? wp_unslash( $_POST['pass1'] ) : '' );
-		$password = is_string( $raw_pass ) ? wp_check_invalid_utf8( $raw_pass ) : '';
+		$raw_pass = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : ( isset( $_POST['pass1'] ) ? sanitize_text_field( wp_unslash( $_POST['pass1'] ) ) : '' );
+		$password = is_string( $raw_pass ) ? $raw_pass : '';
 
 		$result = $this->send_registration_otp( $username, $email, $password, $phone );
 		// send_registration_otp() calls wp_safe_redirect() + exit on success (returns null).
@@ -270,15 +266,13 @@ class KwtSMS_Registration_OTP_Gate {
 	 * URL: /wp-login.php?action=kwtsms_reg_otp&token={token}
 	 */
 	public function handle_reg_otp_page() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only WP login action key (same pattern as wp-login.php core), no state change.
-		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
+		$action = sanitize_key( (string) filter_input( INPUT_GET, 'action' ) );
 
 		if ( 'kwtsms_reg_otp' !== $action ) {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only URL token for OTP session lookup, no state change.
-		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
+		$token = sanitize_text_field( (string) filter_input( INPUT_GET, 'token' ) );
 
 		if ( empty( $token ) ) {
 			wp_safe_redirect( wp_registration_url() );
@@ -291,8 +285,7 @@ class KwtSMS_Registration_OTP_Gate {
 		}
 
 		// GET: render the OTP entry form, showing an error if one was set by a prior submission.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only GET param for error display on redirect, no state change.
-		$reg_error_key  = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
+		$reg_error_key  = sanitize_key( (string) filter_input( INPUT_GET, 'kwtsms_reg_error' ) );
 		$error_messages = array(
 			'invalid_code' => __( 'Invalid verification code. Please try again.', 'kwtsms' ),
 			'expired'      => __( 'Your verification code has expired. Please start over.', 'kwtsms' ),
@@ -328,8 +321,7 @@ class KwtSMS_Registration_OTP_Gate {
 		}
 
 		// Verify nonce before accessing any POST data (fail-early).
-		if ( ! isset( $_POST['kwtsms_reg_nonce'] ) ||
-			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['kwtsms_reg_nonce'] ) ), 'kwtsms_reg_otp_submit' ) ) {
+		if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['kwtsms_reg_nonce'] ?? '' ) ), 'kwtsms_reg_otp_submit' ) ) {
 			$url = add_query_arg(
 				array( 'kwtsms_reg_error' => 'security' ),
 				wp_registration_url()

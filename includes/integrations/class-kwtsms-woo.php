@@ -271,8 +271,7 @@ class KwtSMS_Woo {
 		// Nonce is verified by WooCommerce core before this filter fires.
 		// We only read a single sanitized field for re-display, not processing.
 		$phone = '';
-		if ( isset( $_POST['woocommerce-register-nonce'] ) &&
-			wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) ) {
+		if ( wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ?? '' ) ), 'woocommerce-register' ) ) {
 			$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
 		}
 		?>
@@ -310,8 +309,7 @@ class KwtSMS_Woo {
 	 */
 	public function validate_wc_phone_field( $errors, $username, $email ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		// Verify WooCommerce registration nonce before accessing POST data.
-		if ( ! isset( $_POST['woocommerce-register-nonce'] ) ||
-			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) ) {
+		if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ?? '' ) ), 'woocommerce-register' ) ) {
 			return $errors;
 		}
 		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
@@ -347,15 +345,11 @@ class KwtSMS_Woo {
 	 */
 	public function save_wc_customer_phone( $customer_id ) {
 		// Verify WooCommerce checkout or registration nonce before accessing POST data.
-		// One of three possible nonces must be present and valid (checkout, WC register, WP register).
-		$wc_nonce_valid = false;
-		if ( isset( $_POST['woocommerce-process-checkout-nonce'] ) ) {
-			$wc_nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ) ), 'woocommerce-process_checkout' );
-		} elseif ( isset( $_POST['woocommerce-register-nonce'] ) ) {
-			$wc_nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' );
-		} elseif ( isset( $_POST['_wpnonce'] ) ) {
-			$wc_nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' );
-		}
+		$wc_nonce_valid = (
+			wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ?? '' ) ), 'woocommerce-process_checkout' )
+			|| wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ?? '' ) ), 'woocommerce-register' )
+			|| wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'register' )
+		);
 		if ( ! $wc_nonce_valid ) {
 			return;
 		}

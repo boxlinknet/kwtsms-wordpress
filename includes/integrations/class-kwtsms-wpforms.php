@@ -89,8 +89,7 @@ class KwtSMS_WPForms {
 	 */
 	public function gate_add_error( $errors, $form_data ) {
 		// Verify our gate nonce — created at page load via wp_localize_script and injected into the form by form-otp.js after successful OTP verification.
-		if ( ! isset( $_POST['_kwtsms_gate_nonce'] ) ||
-			! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_kwtsms_gate_nonce'] ) ), 'kwtsms_gate_verify' ) ) {
+		if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_kwtsms_gate_nonce'] ?? '' ) ), 'kwtsms_gate_verify' ) ) {
 			$form_id                      = absint( $form_data['id'] ?? 0 );
 			$errors[ $form_id ]['header'] = __( 'Please verify your phone number before submitting this form.', 'kwtsms' );
 			return $errors;

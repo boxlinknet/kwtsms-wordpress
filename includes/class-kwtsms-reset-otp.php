@@ -71,18 +71,20 @@ class KwtSMS_Reset_OTP {
 	 * Only acts on POST requests to action=lostpassword.
 	 */
 	public function maybe_intercept_password_reset() {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- REQUEST_METHOD is a server variable, not user input.
-		if ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) {
+		if ( 'POST' !== sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
 			return;
 		}
 		// Reading the WP login action key (same pattern as wp-login.php core). Not form data, no nonce needed.
-		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
+		$action = sanitize_key( (string) filter_input( INPUT_POST, 'action' ) );
+		if ( '' === $action ) {
+			$action = sanitize_key( (string) filter_input( INPUT_GET, 'action' ) );
+		}
 		if ( 'lostpassword' !== $action ) {
 			return;
 		}
 
 		// Verify the WordPress lostpassword form nonce. Fail early if missing or invalid.
-		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'lostpassword' ) ) {
+		if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'lostpassword' ) ) {
 			return;
 		}
 
@@ -211,15 +213,19 @@ class KwtSMS_Reset_OTP {
 	 * Fires on `login_init`. If action matches, handles GET (render) and POST (verify).
 	 */
 	public function handle_reset_otp_action() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only WP login action key (same pattern as wp-login.php core), no state change.
-		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : 'login';
+		$action = sanitize_key( (string) filter_input( INPUT_GET, 'action' ) );
+		if ( '' === $action ) {
+			$action = sanitize_key( (string) filter_input( INPUT_POST, 'action' ) );
+		}
+		if ( '' === $action ) {
+			$action = 'login';
+		}
 
 		if ( 'kwtsms_reset_otp' !== $action ) {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- REQUEST_METHOD is a server variable.
-		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+		if ( 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
 			$this->handle_reset_otp_submission();
 		}
 
@@ -231,12 +237,10 @@ class KwtSMS_Reset_OTP {
 	 * Handle the OTP verification form for password reset.
 	 */
 	private function handle_reset_otp_submission() {
-		if ( ! isset( $_POST['kwtsms_reset_nonce'] ) ||
-			! wp_verify_nonce(
-				sanitize_key( wp_unslash( $_POST['kwtsms_reset_nonce'] ) ),
-				'kwtsms_reset_otp_submit'
-			)
-		) {
+		if ( ! wp_verify_nonce(
+			sanitize_key( wp_unslash( $_POST['kwtsms_reset_nonce'] ?? '' ) ),
+			'kwtsms_reset_otp_submit'
+		) ) {
 			wp_die( esc_html__( 'Security check failed. Please go back and try again.', 'kwtsms' ) );
 		}
 

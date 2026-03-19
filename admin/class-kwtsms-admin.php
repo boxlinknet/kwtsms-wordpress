@@ -1279,7 +1279,7 @@ class KwtSMS_Admin {
 		// --- Input sanitization ---
 
 		// user_id: must be a positive integer; absint() rejects negatives and zero.
-		$user_id = absint( isset( $_POST['user_id'] ) ? wp_unslash( $_POST['user_id'] ) : 0 ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$user_id = absint( isset( $_POST['user_id'] ) ? sanitize_text_field( wp_unslash( $_POST['user_id'] ) ) : 0 );
 
 		$phone = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
 		if ( strlen( $phone ) > 25 ) {
@@ -1348,15 +1348,17 @@ class KwtSMS_Admin {
 	 * Security: capability check + per-action nonce verification on every branch.
 	 */
 	public function handle_log_exports() {
-		if ( ! isset( $_GET['page'] ) || 'kwtsms-otp-logs' !== sanitize_key( wp_unslash( $_GET['page'] ) ) ) {
+		$page = sanitize_key( (string) filter_input( INPUT_GET, 'page' ) );
+		if ( 'kwtsms-otp-logs' !== $page ) {
 			return;
 		}
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'kwtsms' ) );
 		}
 
-		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
-		if ( empty( $action ) || ! isset( $_GET['_wpnonce'] ) ) {
+		$action   = sanitize_key( (string) filter_input( INPUT_GET, 'action' ) );
+		$wp_nonce = sanitize_key( (string) filter_input( INPUT_GET, '_wpnonce' ) );
+		if ( '' === $action || '' === $wp_nonce ) {
 			return;
 		}
 
@@ -1368,7 +1370,7 @@ class KwtSMS_Admin {
 
 		// ---- Download debug log ----
 		if ( 'download_debug_log' === $action && $show_debug_tab &&
-			wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_download_debug_log' )
+			wp_verify_nonce( $wp_nonce, 'kwtsms_download_debug_log' )
 		) {
 			$filename = 'kwtsms-debug-' . gmdate( 'Y-m-d' ) . '.log';
 			header( 'Content-Type: text/plain; charset=UTF-8' );
@@ -1382,7 +1384,7 @@ class KwtSMS_Admin {
 
 		// ---- Clear debug log ----
 		if ( 'clear_debug_log' === $action && $show_debug_tab &&
-			wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_clear_debug_log' )
+			wp_verify_nonce( $wp_nonce, 'kwtsms_clear_debug_log' )
 		) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 			file_put_contents( $debug_log_path, '' );
@@ -1400,9 +1402,9 @@ class KwtSMS_Admin {
 
 		// ---- Export CSV ----
 		if ( 'export_csv' === $action ) {
-			$log_key = sanitize_key( wp_unslash( $_GET['log'] ?? '' ) );
+			$log_key = sanitize_key( (string) filter_input( INPUT_GET, 'log' ) );
 			if ( in_array( $log_key, array( 'sms_history', 'attempt_log' ), true ) &&
-				wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'kwtsms_export_csv_' . $log_key )
+				wp_verify_nonce( $wp_nonce, 'kwtsms_export_csv_' . $log_key )
 			) {
 				$log = get_option( 'kwtsms_otp_' . $log_key, array() );
 				if ( ! is_array( $log ) ) {

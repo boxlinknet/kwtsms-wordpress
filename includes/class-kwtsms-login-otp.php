@@ -244,7 +244,7 @@ class KwtSMS_Login_OTP {
 		}
 
 		// Verify the WordPress login form nonce before reading POST data.
-		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'log-in' ) ) {
+		if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'log-in' ) ) {
 			$redirect_to = '';
 		} else {
 			$redirect_to = esc_url_raw( wp_unslash( $_POST['redirect_to'] ?? '' ) );
@@ -271,12 +271,16 @@ class KwtSMS_Login_OTP {
 	 * Fires on `login_init` at the very top of wp-login.php.
 	 */
 	public function handle_login_actions() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only WP login action key (same pattern as wp-login.php core), no state change.
-		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : 'login';
+		$action = sanitize_key( (string) filter_input( INPUT_GET, 'action' ) );
+		if ( '' === $action ) {
+			$action = sanitize_key( (string) filter_input( INPUT_POST, 'action' ) );
+		}
+		if ( '' === $action ) {
+			$action = 'login';
+		}
 
 		if ( 'kwtsms_otp' === $action ) {
-			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- REQUEST_METHOD is a server variable.
-			if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+			if ( 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
 				$this->handle_otp_submission();
 			}
 			$this->render_otp_page();
@@ -284,8 +288,7 @@ class KwtSMS_Login_OTP {
 		}
 
 		if ( 'kwtsms_passwordless' === $action ) {
-			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- REQUEST_METHOD is a server variable.
-			if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+			if ( 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
 				$this->handle_passwordless_submission();
 			}
 			$this->render_passwordless_page();
@@ -320,12 +323,10 @@ class KwtSMS_Login_OTP {
 	 */
 	private function handle_otp_submission() {
 		// Nonce check.
-		if ( ! isset( $_POST['kwtsms_otp_nonce'] ) ||
-			! wp_verify_nonce(
-				sanitize_key( wp_unslash( $_POST['kwtsms_otp_nonce'] ) ),
-				'kwtsms_otp_submit'
-			)
-		) {
+		if ( ! wp_verify_nonce(
+			sanitize_key( wp_unslash( $_POST['kwtsms_otp_nonce'] ?? '' ) ),
+			'kwtsms_otp_submit'
+		) ) {
 			wp_die( esc_html__( 'Security check failed. Please go back and try again.', 'kwtsms' ) );
 		}
 
@@ -444,8 +445,7 @@ class KwtSMS_Login_OTP {
 		// Issue a trusted device cookie if the user checked "Trust this device".
 		// Only available in the 2FA flow (not password reset).
 		// Nonce was verified in handle_otp_submission() which is the only caller of this method.
-		if ( isset( $_POST['kwtsms_otp_nonce'] ) &&
-			wp_verify_nonce( sanitize_key( wp_unslash( $_POST['kwtsms_otp_nonce'] ) ), 'kwtsms_otp_nonce' ) &&
+		if ( wp_verify_nonce( sanitize_key( wp_unslash( $_POST['kwtsms_otp_nonce'] ?? '' ) ), 'kwtsms_otp_nonce' ) &&
 			! empty( $_POST['kwtsms_trust_device'] ) ) {
 			$trusted   = new KwtSMS_Trusted_Devices();
 			$old_token = $trusted->get_cookie_token( $user_id ); // '' if no existing cookie.
@@ -455,7 +455,7 @@ class KwtSMS_Login_OTP {
 
 		// redirect_to is a standard WP login parameter (no nonce needed, same as wp-login.php core).
 		// Sanitized by esc_url_raw and validated by wp_safe_redirect (allowlist check).
-		$redirect_to = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) : '';
+		$redirect_to = esc_url_raw( (string) filter_input( INPUT_GET, 'redirect_to' ) );
 		if ( empty( $redirect_to ) ) {
 			$redirect_to = admin_url();
 		}
@@ -475,12 +475,10 @@ class KwtSMS_Login_OTP {
 	 * phone is registered (anti-enumeration).
 	 */
 	private function handle_passwordless_submission() {
-		if ( ! isset( $_POST['kwtsms_passwordless_nonce'] ) ||
-			! wp_verify_nonce(
-				sanitize_key( wp_unslash( $_POST['kwtsms_passwordless_nonce'] ) ),
-				'kwtsms_passwordless_submit'
-			)
-		) {
+		if ( ! wp_verify_nonce(
+			sanitize_key( wp_unslash( $_POST['kwtsms_passwordless_nonce'] ?? '' ) ),
+			'kwtsms_passwordless_submit'
+		) ) {
 			wp_die( esc_html__( 'Security check failed. Please go back and try again.', 'kwtsms' ) );
 		}
 
@@ -677,11 +675,10 @@ class KwtSMS_Login_OTP {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
 		}
 		wp_enqueue_script( 'kwtsms-login-js', KWTSMS_OTP_URL . 'assets/js/login.js', array(), KWTSMS_OTP_VERSION, true );
-		$token      = $token ? $token : $this->get_partial_auth_token();
-		$otp_length = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
-		$cooldown   = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only WP login redirect parameter (same as wp-login.php core), no state change.
-		$redirect_to     = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) : '';
+		$token           = $token ? $token : $this->get_partial_auth_token();
+		$otp_length      = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
+		$cooldown        = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
+		$redirect_to     = esc_url_raw( (string) filter_input( INPUT_GET, 'redirect_to' ) );
 		$nonce_resend    = wp_create_nonce( 'kwtsms_otp_nonce' );
 		$login_url       = wp_login_url();
 		$plugin_settings = $this->plugin->settings;

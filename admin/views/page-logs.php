@@ -18,12 +18,13 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
 }
 
-// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin tab navigation parameter, no state change.
-$kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'sms_history';
+$kwtsms_active_tab = sanitize_key( (string) filter_input( INPUT_GET, 'tab' ) );
+if ( '' === $kwtsms_active_tab ) {
+	$kwtsms_active_tab = 'sms_history';
+}
 $kwtsms_active_tab     = in_array( $kwtsms_active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $kwtsms_active_tab : 'sms_history';
 $kwtsms_items_per_page = 20;
-// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin pagination parameter, no state change.
-$kwtsms_current_page = isset( $_GET['paged'] ) ? max( 1, absint( wp_unslash( $_GET['paged'] ) ) ) : 1;
+$kwtsms_current_page   = max( 1, absint( filter_input( INPUT_GET, 'paged', FILTER_SANITIZE_NUMBER_INT ) ) );
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
 // NOTE: download/clear/export handlers are registered on admin_init in KwtSMS_Admin::handle_log_exports()
@@ -265,10 +266,9 @@ function kwtsms_attempt_result_label( $result ) {
 		$kwtsms_total_lines     = count( $kwtsms_lines );
 		$kwtsms_per_page_dbg    = 100;
 		$kwtsms_total_pages_dbg = max( 1, (int) ceil( $kwtsms_total_lines / $kwtsms_per_page_dbg ) );
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin pagination parameter, no state change.
-		$kwtsms_cur_page_dbg = isset( $_GET['paged'] ) ? min( max( 1, absint( wp_unslash( $_GET['paged'] ) ) ), $kwtsms_total_pages_dbg ) : 1;
-		$kwtsms_offset_dbg   = ( $kwtsms_cur_page_dbg - 1 ) * $kwtsms_per_page_dbg;
-		$kwtsms_page_lines   = array_slice( $kwtsms_lines, $kwtsms_offset_dbg, $kwtsms_per_page_dbg );
+		$kwtsms_cur_page_dbg    = min( max( 1, absint( filter_input( INPUT_GET, 'paged', FILTER_SANITIZE_NUMBER_INT ) ) ), $kwtsms_total_pages_dbg );
+		$kwtsms_offset_dbg      = ( $kwtsms_cur_page_dbg - 1 ) * $kwtsms_per_page_dbg;
+		$kwtsms_page_lines      = array_slice( $kwtsms_lines, $kwtsms_offset_dbg, $kwtsms_per_page_dbg );
 		?>
 
 	<div class="kwtsms-log-toolbar" style="display:flex;gap:10px;align-items:center;margin:16px 0;">

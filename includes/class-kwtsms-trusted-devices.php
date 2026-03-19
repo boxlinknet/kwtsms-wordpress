@@ -82,8 +82,7 @@ class KwtSMS_Trusted_Devices {
 	public function issue_token( int $user_id ): string {
 		$token      = bin2hex( random_bytes( self::TOKEN_BYTES ) );
 		$token_hash = hash( 'sha256', $token );
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$ua = substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) ), 0, 120 );
+		$ua         = substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) ), 0, 120 );
 
 		$devices = $this->get_devices( $user_id );
 
@@ -259,7 +258,7 @@ class KwtSMS_Trusted_Devices {
 		setcookie( $name, $token, $options );
 		// Make cookie available in the current request so is_trusted() can read it
 		// if called again in the same page load.
-		$_COOKIE[ $name ] = $token; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$_COOKIE[ $name ] = $token;
 	}
 
 	/**
@@ -283,7 +282,7 @@ class KwtSMS_Trusted_Devices {
 				'samesite' => 'Strict',
 			)
 		);
-		unset( $_COOKIE[ $name ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		unset( $_COOKIE[ $name ] );
 	}
 
 	// =========================================================================
@@ -315,10 +314,10 @@ class KwtSMS_Trusted_Devices {
 	 */
 	public function get_cookie_token( int $user_id ): string {
 		$name = self::COOKIE_PREFIX . $user_id;
-		if ( ! isset( $_COOKIE[ $name ] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		if ( ! isset( $_COOKIE[ $name ] ) ) {
 			return '';
 		}
-		$token = sanitize_text_field( wp_unslash( $_COOKIE[ $name ] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$token = sanitize_text_field( wp_unslash( $_COOKIE[ $name ] ) );
 		if ( ! preg_match( '/^[0-9a-f]{64}$/', $token ) ) {
 			return '';
 		}

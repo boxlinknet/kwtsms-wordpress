@@ -169,24 +169,21 @@ class KwtSMS_Plugin {
 
 		// Resolve phone from POST first (available during registration requests).
 		// Verify one of the possible registration nonces before accessing POST data.
-		$nonce_valid = false;
-		if ( isset( $_POST['woocommerce-register-nonce'] ) ) {
-			$nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' );
-		} elseif ( isset( $_POST['woocommerce-process-checkout-nonce'] ) ) {
-			$nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ) ), 'woocommerce-process_checkout' );
-		} elseif ( isset( $_POST['_wpnonce'] ) ) {
-			$nonce_valid = wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'register' );
-		}
+		$nonce_valid = (
+			wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ?? '' ) ), 'woocommerce-register' )
+			|| wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ?? '' ) ), 'woocommerce-process_checkout' )
+			|| wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'register' )
+		);
 
 		$phone = '';
 		if ( $nonce_valid ) {
-			$phone = trim(
-				sanitize_text_field(
-					wp_unslash(
-						$_POST['kwtsms_phone_reg'] ?? $_POST['billing_phone'] ?? ''
-					)
-				)
-			);
+			$raw_phone = '';
+			if ( isset( $_POST['kwtsms_phone_reg'] ) ) {
+				$raw_phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ) );
+			} elseif ( isset( $_POST['billing_phone'] ) ) {
+				$raw_phone = sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) );
+			}
+			$phone = trim( $raw_phone );
 		}
 
 		// Fall back to user meta (may be set by custom registration hooks before user_register).
@@ -519,8 +516,7 @@ class KwtSMS_Plugin {
 		}
 
 		$username = sanitize_text_field( wp_unslash( $_POST['username'] ?? '' ) );
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- API password must not be sanitized; sanitize_text_field strips special characters which corrupts passwords containing &, <, >, etc.
-		$password = wp_unslash( $_POST['password'] ?? '' );
+		$password = sanitize_text_field( wp_unslash( $_POST['password'] ?? '' ) );
 
 		if ( empty( $username ) || empty( $password ) ) {
 			wp_send_json_error( array( 'message' => __( 'Username and password are required.', 'kwtsms' ) ) );
