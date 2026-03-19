@@ -2,9 +2,9 @@
 /**
  * Admin View: SMS Templates Page.
  *
- * Three URL-driven tabs — one per template — matching the Logs page nav style.
- * The form wraps all tab sections; hidden sections (display:none) still submit,
- * so Save Templates always persists all three templates at once.
+ * Pure JS tabs (no page reload). All template sections live in one form;
+ * switching tabs only toggles visibility. Save Templates persists all
+ * three templates at once.
  *
  * @package KwtSMS_OTP
  */
@@ -42,29 +42,6 @@ $kwtsms_template_placeholders = array(
 		'{site_name}' => __( 'Your WordPress site name', 'kwtsms' ),
 	),
 );
-
-$kwtsms_valid_tabs = array_keys( $kwtsms_template_labels );
-// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin tab navigation parameter, no state change.
-$kwtsms_active_tab = isset( $_GET['tab'] ) && in_array( sanitize_key( wp_unslash( $_GET['tab'] ) ), $kwtsms_valid_tabs, true )
-	? sanitize_key( wp_unslash( $_GET['tab'] ) )
-	: 'login_otp';
-// phpcs:enable WordPress.Security.NonceVerification.Recommended
-
-/**
- * Build a tab URL for the Templates page.
- *
- * @param string $tab Tab key.
- * @return string Admin URL with page + tab query args.
- */
-function kwtsms_templates_tab_url( $tab ) {
-	return add_query_arg(
-		array(
-			'page' => 'kwtsms-otp-templates',
-			'tab'  => $tab,
-		),
-		admin_url( 'admin.php' )
-	);
-}
 ?>
 <div class="wrap kwtsms-admin-wrap">
 
@@ -76,29 +53,36 @@ function kwtsms_templates_tab_url( $tab ) {
 	</div>
 	<hr class="wp-header-end">
 
-	<!-- Tab navigation -->
-	<nav class="nav-tab-wrapper">
-		<?php foreach ( $kwtsms_template_labels as $kwtsms_key => $kwtsms_label ) : ?>
-		<a href="<?php echo esc_url( kwtsms_templates_tab_url( $kwtsms_key ) ); ?>"
-			class="nav-tab <?php echo $kwtsms_key === $kwtsms_active_tab ? 'nav-tab-active' : ''; ?>">
+	<!-- JS Tab navigation (no page reload) -->
+	<nav class="nav-tab-wrapper" id="kwtsms-tpl-tabs">
+		<?php
+		$kwtsms_first = true;
+		foreach ( $kwtsms_template_labels as $kwtsms_key => $kwtsms_label ) :
+			?>
+		<a href="#<?php echo esc_attr( $kwtsms_key ); ?>"
+			class="nav-tab<?php echo $kwtsms_first ? ' nav-tab-active' : ''; ?>"
+			data-kwtsms-tab="<?php echo esc_attr( $kwtsms_key ); ?>">
 			<?php echo esc_html( $kwtsms_label ); ?>
 		</a>
-		<?php endforeach; ?>
+			<?php
+			$kwtsms_first = false;
+		endforeach;
+		?>
 	</nav>
 
 	<form method="post" action="options.php">
 		<?php settings_fields( 'kwtsms_otp_templates_group' ); ?>
 
 		<?php
+		$kwtsms_first_section = true;
 		foreach ( $kwtsms_template_labels as $kwtsms_key => $kwtsms_label ) :
-			$kwtsms_tpl       = $kwtsms_templates[ $kwtsms_key ] ?? array(
+			$kwtsms_tpl = $kwtsms_templates[ $kwtsms_key ] ?? array(
 				'enabled' => 0,
 				'en'      => '',
 				'ar'      => '',
 			);
-			$kwtsms_is_active = ( $kwtsms_key === $kwtsms_active_tab );
 			?>
-		<div class="kwtsms-tab-section"<?php echo $kwtsms_is_active ? ' style="margin-top:16px;"' : ' style="display:none;"'; ?>>
+		<div class="kwtsms-tab-section" data-kwtsms-panel="<?php echo esc_attr( $kwtsms_key ); ?>"<?php echo $kwtsms_first_section ? ' style="margin-top:16px;"' : ' style="display:none;"'; ?>>
 
 			<div class="kwtsms-placeholder-help">
 				<strong><?php esc_html_e( 'Available placeholders:', 'kwtsms' ); ?></strong>
@@ -164,8 +148,37 @@ function kwtsms_templates_tab_url( $tab ) {
 				</div>
 			</div>
 		</div>
-		<?php endforeach; ?>
+			<?php
+			$kwtsms_first_section = false;
+		endforeach;
+		?>
 
 		<?php submit_button( __( 'Save Templates', 'kwtsms' ), 'primary kwtsms-save-btn' ); ?>
 	</form>
 </div>
+
+<?php
+// Inline JS for tab switching (uses wp_add_inline_script pattern via PHP output buffer).
+wp_register_script( 'kwtsms-tpl-tabs', '', array(), KWTSMS_OTP_VERSION, true );
+wp_enqueue_script( 'kwtsms-tpl-tabs' );
+wp_add_inline_script(
+	'kwtsms-tpl-tabs',
+	'(function(){' .
+	'var tabs=document.querySelectorAll("#kwtsms-tpl-tabs [data-kwtsms-tab]");' .
+	'var panels=document.querySelectorAll("[data-kwtsms-panel]");' .
+	'function activate(key){' .
+		'tabs.forEach(function(t){t.classList.toggle("nav-tab-active",t.getAttribute("data-kwtsms-tab")===key);});' .
+		'panels.forEach(function(p){' .
+			'if(p.getAttribute("data-kwtsms-panel")===key){p.style.display="";p.style.marginTop="16px";}' .
+			'else{p.style.display="none";}' .
+		'});' .
+		'window.location.hash=key;' .
+	'}' .
+	'tabs.forEach(function(t){' .
+		't.addEventListener("click",function(e){e.preventDefault();activate(this.getAttribute("data-kwtsms-tab"));});' .
+	'});' .
+	'var hash=window.location.hash.replace("#","");' .
+	'if(hash&&document.querySelector("[data-kwtsms-panel=\""+hash+"\"]")){activate(hash);}' .
+	'})();'
+);
+?>
