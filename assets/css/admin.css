@@ -721,3 +721,71 @@ body[class*="kwtsms_page_kwtsms-otp"] #footer-upgrade {
 	border-top: 3px solid #FFA200 !important;
 	font-weight: 700;
 }
+
+/* =========================================================================
+   Vertical Tabs (WooCommerce templates)
+   ========================================================================= */
+
+.kwtsms-vtabs {
+	display: flex;
+	gap: 0;
+	margin-top: 24px;
+	min-height: 400px;
+	border: 1px solid #ccc;
+	background: #fff;
+}
+
+.kwtsms-vtabs-nav {
+	width: 200px;
+	flex-shrink: 0;
+	border-right: 1px solid #ccc;
+	background: #f7f7f7;
+	padding-top: 8px;
+}
+
+.kwtsms-vtabs-nav .vtab-group {
+	padding: 10px 14px 4px;
+	font-size: 11px;
+	text-transform: uppercase;
+	font-weight: 700;
+	color: #999;
+	letter-spacing: 0.5px;
+}
+
+.kwtsms-vtabs-nav a {
+	display: block;
+	padding: 9px 16px;
+	color: #434345;
+	text-decoration: none;
+	border-left: 3px solid transparent;
+	font-size: 13px;
+	line-height: 1.4;
+	transition: background 0.15s, color 0.15s;
+}
+
+.kwtsms-vtabs-nav a:hover,
+.kwtsms-vtabs-nav a:focus {
+	background: #fff;
+	color: #FFA200;
+}
+
+.kwtsms-vtabs-nav a.vtab-active {
+	background: #fff;
+	color: #FFA200;
+	border-left-color: #FFA200;
+	font-weight: 700;
+}
+
+.kwtsms-vtabs-content {
+	flex: 1;
+	padding: 16px 24px;
+	min-width: 0;
+}
+
+.kwtsms-vtabs-panel {
+	display: none;
+}
+
+.kwtsms-vtabs-panel.vtab-active {
+	display: block;
+}
