@@ -7,15 +7,26 @@
 CLAUDE.md
 .claude/
 .worktrees/
+.superpowers/
 .playwright*
+napkin.md
 
-# Local docs, notes, screenshots — not for distribution
+# Local docs, notes, screenshots
 docs/
 
-# Release zips
-*.zip
+# Tests
+test/
+tests/
+phpunit.xml
+phpunit-integration.xml
+patchwork.json
+.phpunit.result.cache
 
-# Composer dependencies (install with: composer install)
+# Docker local test environment
+docker/
+blueprint.json
+
+# Composer dependencies
 vendor/
 composer.lock
 
@@ -25,24 +36,15 @@ node_modules/
 # Logs
 *.log
 
+# Release zips
+*.zip
+
 # Secrets / local config
 env.txt
+.env
+.env.*
 auth-state.json
-blueprint.json
 
 # OS files
 .DS_Store
 Thumbs.db
-
-# Tests
-tests/
-phpunit.xml
-phpunit-integration.xml
-patchwork.json
-
-# PHPUnit / static analysis artifacts
-.phpunit.result.cache
-
-# Docker local test environment
-docker/
-*.zip
