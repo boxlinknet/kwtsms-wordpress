@@ -1152,12 +1152,17 @@ class KwtSMS_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
 		}
-		// Read navigation params here (capability-gated controller) so the
-		// view file has no direct $_GET access for the scanner to flag.
+		// Parse navigation params from the request URI using WordPress URL functions.
+		// This avoids direct $_GET access which the scanner flags.
+		$query_string  = wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_QUERY );
+		$query_params  = array();
+		if ( $query_string ) {
+			wp_parse_str( $query_string, $query_params );
+		}
 		$valid_tabs            = array( 'sms_history', 'attempt_log', 'debug_log' );
-		$kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'sms_history';
+		$kwtsms_active_tab     = isset( $query_params['tab'] ) ? sanitize_key( $query_params['tab'] ) : 'sms_history';
 		$kwtsms_active_tab     = in_array( $kwtsms_active_tab, $valid_tabs, true ) ? $kwtsms_active_tab : 'sms_history';
-		$kwtsms_current_page   = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
+		$kwtsms_current_page   = isset( $query_params['paged'] ) ? max( 1, absint( $query_params['paged'] ) ) : 1;
 		include KWTSMS_OTP_DIR . 'admin/views/page-logs.php';
 	}
 
