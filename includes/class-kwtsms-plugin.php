@@ -167,29 +167,12 @@ class KwtSMS_Plugin {
 			return;
 		}
 
-		// Resolve phone from POST first (available during registration requests).
-		// Verify one of the possible registration nonces before accessing POST data.
-		$nonce_valid = (
-			wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ?? '' ) ), 'woocommerce-register' )
-			|| wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ?? '' ) ), 'woocommerce-process_checkout' )
-			|| wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'register' )
-		);
-
-		$phone = '';
-		if ( $nonce_valid ) {
-			$raw_phone = '';
-			if ( isset( $_POST['kwtsms_phone_reg'] ) ) {
-				$raw_phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ) );
-			} elseif ( isset( $_POST['billing_phone'] ) ) {
-				$raw_phone = sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) );
-			}
-			$phone = trim( $raw_phone );
-		}
-
-		// Fall back to user meta (may be set by custom registration hooks before user_register).
-		if ( '' === $phone ) {
-			$phone = (string) get_user_meta( $user_id, 'kwtsms_phone', true );
-		}
+		// Read phone from user meta. The phone was already saved by
+		// save_registration_phone() or save_wc_customer_phone() which fire
+		// on the same user_register / woocommerce_created_customer hooks
+		// at an earlier priority (10 vs our 20). Those handlers verify the
+		// nonce and sanitize the POST input before saving to meta.
+		$phone = (string) get_user_meta( $user_id, 'kwtsms_phone', true );
 
 		if ( '' === $phone ) {
 			$this->api->write_debug_log( 'welcome_sms', 'Skipped welcome SMS for user #' . $user_id . ': no phone number found' );

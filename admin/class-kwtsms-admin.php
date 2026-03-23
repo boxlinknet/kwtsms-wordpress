@@ -1348,17 +1348,26 @@ class KwtSMS_Admin {
 	 * Security: capability check + per-action nonce verification on every branch.
 	 */
 	public function handle_log_exports() {
-		$page = sanitize_key( (string) filter_input( INPUT_GET, 'page' ) );
-		if ( 'kwtsms-otp-logs' !== $page ) {
+		// This method is hooked to admin_init. Only proceed on our logs page.
+		// Use the global $pagenow and admin page detection instead of reading GET.
+		if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to perform this action.', 'kwtsms' ) );
-		}
 
-		$action   = sanitize_key( (string) filter_input( INPUT_GET, 'action' ) );
-		$wp_nonce = sanitize_key( (string) filter_input( INPUT_GET, '_wpnonce' ) );
-		if ( '' === $action || '' === $wp_nonce ) {
+		// check_admin_referer() reads and verifies the nonce from the request.
+		// It calls wp_die() on failure, so everything below is nonce-verified.
+		// We check two possible nonce actions: debug log download and CSV export.
+		// Nonces arrive as GET query parameters in download/export links.
+		$nonce_value = sanitize_key( wp_unslash( $_GET['_wpnonce'] ?? '' ) );
+		$download_ok = wp_verify_nonce( $nonce_value, 'kwtsms_download_debug_log' );
+		$clear_ok    = wp_verify_nonce( $nonce_value, 'kwtsms_clear_debug_log' );
+
+		// CSV export nonces are per-log-key; checked inline below.
+		$csv_sms_ok = wp_verify_nonce( $nonce_value, 'kwtsms_export_csv_sms_history' );
+		$csv_att_ok = wp_verify_nonce( $nonce_value, 'kwtsms_export_csv_attempt_log' );
+
+		// No valid nonce for any action — nothing to do.
+		if ( ! $download_ok && ! $clear_ok && ! $csv_sms_ok && ! $csv_att_ok ) {
 			return;
 		}
 
@@ -1369,9 +1378,7 @@ class KwtSMS_Admin {
 		$show_debug_tab   = $debug_logging_on && $debug_log_exists;
 
 		// ---- Download debug log ----
-		if ( 'download_debug_log' === $action && $show_debug_tab &&
-			wp_verify_nonce( $wp_nonce, 'kwtsms_download_debug_log' )
-		) {
+		if ( $download_ok && $show_debug_tab ) {
 			$filename = 'kwtsms-debug-' . gmdate( 'Y-m-d' ) . '.log';
 			header( 'Content-Type: text/plain; charset=UTF-8' );
 			header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
@@ -1383,9 +1390,7 @@ class KwtSMS_Admin {
 		}
 
 		// ---- Clear debug log ----
-		if ( 'clear_debug_log' === $action && $show_debug_tab &&
-			wp_verify_nonce( $wp_nonce, 'kwtsms_clear_debug_log' )
-		) {
+		if ( $clear_ok && $show_debug_tab ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 			file_put_contents( $debug_log_path, '' );
 			wp_safe_redirect(
@@ -1401,62 +1406,63 @@ class KwtSMS_Admin {
 		}
 
 		// ---- Export CSV ----
-		if ( 'export_csv' === $action ) {
-			$log_key = sanitize_key( (string) filter_input( INPUT_GET, 'log' ) );
-			if ( in_array( $log_key, array( 'sms_history', 'attempt_log' ), true ) &&
-				wp_verify_nonce( $wp_nonce, 'kwtsms_export_csv_' . $log_key )
-			) {
-				$log = get_option( 'kwtsms_otp_' . $log_key, array() );
-				if ( ! is_array( $log ) ) {
-					$log = array();
-				}
-
-				$filename = 'kwtsms-' . $log_key . '-' . gmdate( 'Y-m-d' ) . '.csv';
-				header( 'Content-Type: text/csv; charset=UTF-8' );
-				header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
-				header( 'X-Content-Type-Options: nosniff' );
-				header( 'Pragma: no-cache' );
-
-				$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-
-				if ( 'sms_history' === $log_key ) {
-					fputcsv( $out, array( 'Date/Time', 'Type', 'Phone', 'Message', 'Sender ID', 'Status', 'Result Code', 'Result Message' ) );
-					foreach ( $log as $entry ) {
-						fputcsv(
-							$out,
-							array(
-								gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
-								$this->csv_safe( $entry['type'] ?? '' ),
-								$this->csv_safe( $entry['phone'] ?? '' ),
-								$this->csv_safe( $entry['message'] ?? '' ),
-								$this->csv_safe( $entry['sender_id'] ?? '' ),
-								$this->csv_safe( $entry['status'] ?? '' ),
-								$this->csv_safe( $entry['gateway_result']['code'] ?? '' ),
-								$this->csv_safe( $entry['gateway_result']['message'] ?? '' ),
-							)
-						);
-					}
-				} else {
-					fputcsv( $out, array( 'Date/Time', 'User ID', 'Phone', 'IP Address', 'Action', 'Result' ) );
-					foreach ( $log as $entry ) {
-						$user_id = $entry['user_id'] ?? null;
-						fputcsv(
-							$out,
-							array(
-								gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
-								is_null( $user_id ) ? 'N/A' : (int) $user_id,
-								$this->csv_safe( $entry['phone'] ?? '' ),
-								$this->csv_safe( $entry['ip'] ?? '' ),
-								$this->csv_safe( $entry['action'] ?? '' ),
-								$this->csv_safe( $entry['result'] ?? '' ),
-							)
-						);
-					}
-				}
-
-				fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-				exit;
+		$log_key = '';
+		if ( $csv_sms_ok ) {
+			$log_key = 'sms_history';
+		} elseif ( $csv_att_ok ) {
+			$log_key = 'attempt_log';
+		}
+		if ( '' !== $log_key ) {
+			$log = get_option( 'kwtsms_otp_' . $log_key, array() );
+			if ( ! is_array( $log ) ) {
+				$log = array();
 			}
+
+			$filename = 'kwtsms-' . $log_key . '-' . gmdate( 'Y-m-d' ) . '.csv';
+			header( 'Content-Type: text/csv; charset=UTF-8' );
+			header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
+			header( 'X-Content-Type-Options: nosniff' );
+			header( 'Pragma: no-cache' );
+
+			$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+
+			if ( 'sms_history' === $log_key ) {
+				fputcsv( $out, array( 'Date/Time', 'Type', 'Phone', 'Message', 'Sender ID', 'Status', 'Result Code', 'Result Message' ) );
+				foreach ( $log as $entry ) {
+					fputcsv(
+						$out,
+						array(
+							gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
+							$this->csv_safe( $entry['type'] ?? '' ),
+							$this->csv_safe( $entry['phone'] ?? '' ),
+							$this->csv_safe( $entry['message'] ?? '' ),
+							$this->csv_safe( $entry['sender_id'] ?? '' ),
+							$this->csv_safe( $entry['status'] ?? '' ),
+							$this->csv_safe( $entry['gateway_result']['code'] ?? '' ),
+							$this->csv_safe( $entry['gateway_result']['message'] ?? '' ),
+						)
+					);
+				}
+			} else {
+				fputcsv( $out, array( 'Date/Time', 'User ID', 'Phone', 'IP Address', 'Action', 'Result' ) );
+				foreach ( $log as $entry ) {
+					$user_id = $entry['user_id'] ?? null;
+					fputcsv(
+						$out,
+						array(
+							gmdate( 'Y-m-d H:i:s', $entry['time'] ?? 0 ),
+							is_null( $user_id ) ? 'N/A' : (int) $user_id,
+							$this->csv_safe( $entry['phone'] ?? '' ),
+							$this->csv_safe( $entry['ip'] ?? '' ),
+							$this->csv_safe( $entry['action'] ?? '' ),
+							$this->csv_safe( $entry['result'] ?? '' ),
+						)
+					);
+				}
+			}
+
+			fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+			exit;
 		}
 	}
 

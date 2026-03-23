@@ -222,7 +222,7 @@ class KwtSMS_API {
 		// ── Global SMS kill switch ───────────────────────────────────────────
 		// Reads from general settings. Falls back to gateway for backward compat
 		// with existing installs that have not re-saved General settings yet.
-		$gen = get_option( 'kwtsms_otp_general', array() );
+		$gen    = get_option( 'kwtsms_otp_general', array() );
 		$sms_on = isset( $gen['sms_enabled'] ) ? $gen['sms_enabled'] : null;
 		if ( null === $sms_on ) {
 			$gw     = get_option( 'kwtsms_otp_gateway', array() );

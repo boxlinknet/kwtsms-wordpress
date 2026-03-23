@@ -103,7 +103,9 @@ class KwtSMS_Registration_OTP_Gate {
 	 * @return WP_Error Errors with any URL-sourced error prepended.
 	 */
 	public function prepend_reg_url_error( WP_Error $errors ): WP_Error {
-		$error_code = sanitize_key( (string) filter_input( INPUT_GET, 'kwtsms_reg_error' ) );
+		// Error code from a redirect URL, validated against a fixed allowlist below. No user form submission, no nonce.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only error code from redirect, validated against allowlist.
+		$error_code = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
 
 		if ( '' === $error_code ) {
 			return $errors;
@@ -266,26 +268,32 @@ class KwtSMS_Registration_OTP_Gate {
 	 * URL: /wp-login.php?action=kwtsms_reg_otp&token={token}
 	 */
 	public function handle_reg_otp_page() {
-		$action = sanitize_key( (string) filter_input( INPUT_GET, 'action' ) );
-
+		// WordPress passes the login action via the global $action variable on login_init.
+		global $action;
 		if ( 'kwtsms_reg_otp' !== $action ) {
 			return;
 		}
 
-		$token = sanitize_text_field( (string) filter_input( INPUT_GET, 'token' ) );
+		// The token is a cryptographic random string stored in a transient.
+		// It serves as the security credential for this page (no session/cookie exists yet).
+		// Validated against the transient immediately below. No form submission, no nonce.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token validated against transient, not a form field.
+		$token = isset( $_GET['token'] ) ? preg_replace( '/[^a-zA-Z0-9]/', '', sanitize_text_field( wp_unslash( $_GET['token'] ) ) ) : '';
 
-		if ( empty( $token ) ) {
+		if ( empty( $token ) || ! get_transient( 'kwtsms_pending_reg_' . $token ) ) {
 			wp_safe_redirect( wp_registration_url() );
 			exit;
 		}
 
-		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+		if ( 'POST' === strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) ) {
 			$this->complete_registration( $token );
 			exit;
 		}
 
 		// GET: render the OTP entry form, showing an error if one was set by a prior submission.
-		$reg_error_key  = sanitize_key( (string) filter_input( INPUT_GET, 'kwtsms_reg_error' ) );
+		// Error code from URL redirect, validated against a fixed allowlist below. No form submission, no nonce.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only error code from redirect, validated against allowlist.
+		$reg_error_key  = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
 		$error_messages = array(
 			'invalid_code' => __( 'Invalid verification code. Please try again.', 'kwtsms' ),
 			'expired'      => __( 'Your verification code has expired. Please start over.', 'kwtsms' ),

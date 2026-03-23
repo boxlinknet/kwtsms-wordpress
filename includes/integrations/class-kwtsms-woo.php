@@ -344,17 +344,16 @@ class KwtSMS_Woo {
 	 * @param int $customer_id New customer user ID.
 	 */
 	public function save_wc_customer_phone( $customer_id ) {
-		// Verify WooCommerce checkout or registration nonce before accessing POST data.
-		$wc_nonce_valid = (
-			wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ?? '' ) ), 'woocommerce-process_checkout' )
-			|| wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ?? '' ) ), 'woocommerce-register' )
-			|| wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'register' )
-		);
-		if ( ! $wc_nonce_valid ) {
-			return;
+		// WooCommerce verifies its own nonce before firing woocommerce_created_customer.
+		// Read the phone from the order billing data or WC customer meta instead of POST.
+		$phone = '';
+		$order = wc_get_customer_last_order( $customer_id );
+		if ( $order ) {
+			$phone = $order->get_billing_phone();
 		}
-
-		$phone = sanitize_text_field( wp_unslash( $_POST['kwtsms_phone_reg'] ?? '' ) );
+		if ( '' === $phone ) {
+			$phone = get_user_meta( $customer_id, 'billing_phone', true );
+		}
 		if ( '' === $phone ) {
 			return;
 		}

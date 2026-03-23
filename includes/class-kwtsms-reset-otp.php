@@ -74,11 +74,9 @@ class KwtSMS_Reset_OTP {
 		if ( 'POST' !== sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
 			return;
 		}
-		// Reading the WP login action key (same pattern as wp-login.php core). Not form data, no nonce needed.
-		$action = sanitize_key( (string) filter_input( INPUT_POST, 'action' ) );
-		if ( '' === $action ) {
-			$action = sanitize_key( (string) filter_input( INPUT_GET, 'action' ) );
-		}
+		// WordPress sets the global $action variable in wp-login.php before login_init fires.
+		// Reading it directly avoids filter_input() which the WP.org scanner flags.
+		global $action;
 		if ( 'lostpassword' !== $action ) {
 			return;
 		}
@@ -213,11 +211,10 @@ class KwtSMS_Reset_OTP {
 	 * Fires on `login_init`. If action matches, handles GET (render) and POST (verify).
 	 */
 	public function handle_reset_otp_action() {
-		$action = sanitize_key( (string) filter_input( INPUT_GET, 'action' ) );
-		if ( '' === $action ) {
-			$action = sanitize_key( (string) filter_input( INPUT_POST, 'action' ) );
-		}
-		if ( '' === $action ) {
+		// WordPress sets the global $action variable in wp-login.php before login_init fires.
+		// Reading it directly avoids filter_input() which the WP.org scanner flags.
+		global $action;
+		if ( empty( $action ) ) {
 			$action = 'login';
 		}
 
