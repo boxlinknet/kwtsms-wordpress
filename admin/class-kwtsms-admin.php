@@ -1390,7 +1390,7 @@ class KwtSMS_Admin {
 			header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
 			header( 'X-Content-Type-Options: nosniff' );
 			header( 'Pragma: no-cache' );
-			readfile( $debug_log_path ); // Streams plain-text log directly for download.
+			echo esc_html( $wp_filesystem->get_contents( $debug_log_path ) );
 			exit;
 		}
 
