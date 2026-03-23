@@ -52,6 +52,11 @@ class KwtSMS_Login_OTP {
 		add_action( 'wp_login_failed', array( $this, 'redirect_to_otp' ), 10, 2 );
 		add_action( 'login_init', array( $this, 'handle_login_actions' ) );
 		add_action( 'login_form', array( $this, 'add_passwordless_link' ) );
+
+		// Register custom login actions so wp-login.php preserves the global $action.
+		// Without these, WP resets $action to 'login' for unrecognized values.
+		add_filter( 'login_form_kwtsms_otp', '__return_true' );
+		add_filter( 'login_form_kwtsms_passwordless', '__return_true' );
 	}
 
 	// =========================================================================

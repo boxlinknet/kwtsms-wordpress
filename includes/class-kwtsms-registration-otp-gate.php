@@ -84,6 +84,9 @@ class KwtSMS_Registration_OTP_Gate {
 		add_action( 'woocommerce_register_form', array( $this, 'output_woo_register_nonce' ) );
 		add_filter( 'woocommerce_registration_errors', array( $this, 'gate_woo_registration' ), 10, 3 );
 		add_action( 'login_init', array( $this, 'handle_reg_otp_page' ) );
+
+		// Register custom login action so wp-login.php preserves the global $action.
+		add_filter( 'login_form_kwtsms_reg_otp', '__return_true' );
 	}
 
 	// =========================================================================

@@ -59,6 +59,9 @@ class KwtSMS_Reset_OTP {
 		add_action( 'login_init', array( $this, 'maybe_intercept_password_reset' ), 1 );
 		add_action( 'login_form_lostpassword', array( $this, 'add_phone_field_to_lost_password' ) );
 		add_action( 'login_init', array( $this, 'handle_reset_otp_action' ) );
+
+		// Register custom login action so wp-login.php preserves the global $action.
+		add_filter( 'login_form_kwtsms_reset_otp', '__return_true' );
 	}
 
 	/**

@@ -1961,19 +1961,14 @@ class KwtSMS_API {
 
 		$log_path = $upload_dir['basedir'] . '/kwtsms-debug.log';
 
-		global $wp_filesystem;
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-		WP_Filesystem();
-
 		// Rotate when the file reaches the size limit.
-		if ( $wp_filesystem->exists( $log_path ) && filesize( $log_path ) >= self::DEBUG_LOG_MAX_BYTES ) {
-			$wp_filesystem->move( $log_path, $log_path . '.1', true );
+		if ( file_exists( $log_path ) && filesize( $log_path ) >= self::DEBUG_LOG_MAX_BYTES ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- rotating log file in uploads dir.
+			rename( $log_path, $log_path . '.1' );
 		}
 
-		$line     = '[' . gmdate( 'Y-m-d H:i:s' ) . '] [kwtsms-otp] [' . $context . '] ' . $message . PHP_EOL;
-		$existing = $wp_filesystem->exists( $log_path ) ? $wp_filesystem->get_contents( $log_path ) : '';
-		$wp_filesystem->put_contents( $log_path, $existing . $line );
+		$line = '[' . gmdate( 'Y-m-d H:i:s' ) . '] [kwtsms-otp] [' . $context . '] ' . $message . PHP_EOL;
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- appending to plugin log in uploads dir.
+		file_put_contents( $log_path, $line, FILE_APPEND | LOCK_EX );
 	}
 }
