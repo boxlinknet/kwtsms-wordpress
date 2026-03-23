@@ -52,7 +52,7 @@ class KwtSMS_Captcha {
 					'google-recaptcha',
 					'https://www.google.com/recaptcha/api.js?render=' . rawurlencode( $site_key ),
 					array(),
-					null, // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+					KWTSMS_OTP_VERSION,
 					true
 				);
 			}
@@ -63,7 +63,7 @@ class KwtSMS_Captcha {
 					'cloudflare-turnstile',
 					'https://challenges.cloudflare.com/turnstile/v0/api.js',
 					array(),
-					null, // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+					KWTSMS_OTP_VERSION,
 					true
 				);
 			}

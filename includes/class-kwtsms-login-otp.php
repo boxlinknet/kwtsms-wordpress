@@ -672,7 +672,7 @@ class KwtSMS_Login_OTP {
 	 */
 	private function render_otp_page( $error_message = '', $token = '' ) {
 		nocache_headers();
-		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), KWTSMS_OTP_VERSION );
 		wp_enqueue_style( 'kwtsms-login', KWTSMS_OTP_URL . 'assets/css/login.css', array( 'login' ), KWTSMS_OTP_VERSION );
 		if ( is_rtl() ) {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
@@ -683,7 +683,6 @@ class KwtSMS_Login_OTP {
 		$cooldown   = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
 		// redirect_to is a standard WP login query parameter. Read from GET, sanitized and
 		// validated downstream by wp_safe_redirect(). No nonce needed (same as wp-login.php core).
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- standard WP login redirect parameter, same as wp-login.php core.
 		$redirect_to     = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) : '';
 		$nonce_resend    = wp_create_nonce( 'kwtsms_otp_nonce' );
 		$login_url       = wp_login_url();
@@ -700,7 +699,7 @@ class KwtSMS_Login_OTP {
 	 */
 	private function render_passwordless_page( $error_message = '', $success_message = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- passed to included view.
 		nocache_headers();
-		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), KWTSMS_OTP_VERSION );
 		wp_enqueue_style( 'kwtsms-login', KWTSMS_OTP_URL . 'assets/css/login.css', array( 'login' ), KWTSMS_OTP_VERSION );
 		if ( is_rtl() ) {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );

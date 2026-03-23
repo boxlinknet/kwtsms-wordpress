@@ -694,9 +694,16 @@ class KwtSMS_OTP_Engine {
 			return;
 		}
 		$log_path = $upload_dir['basedir'] . '/kwtsms-debug.log';
-		$line     = '[' . date( 'Y-m-d H:i:s' ) . '] [kwtsms-otp] [' . $context . '] ' . $message . PHP_EOL; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-		file_put_contents( $log_path, $line, FILE_APPEND );
+		$line     = '[' . gmdate( 'Y-m-d H:i:s' ) . '] [kwtsms-otp] [' . $context . '] ' . $message . PHP_EOL;
+
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+
+		$existing = $wp_filesystem->exists( $log_path ) ? $wp_filesystem->get_contents( $log_path ) : '';
+		$wp_filesystem->put_contents( $log_path, $existing . $line );
 	}
 
 	// =========================================================================

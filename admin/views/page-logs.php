@@ -20,11 +20,9 @@ if ( ! current_user_can( 'manage_options' ) ) {
 
 // Tab and pagination are read-only navigation parameters on a capability-protected admin page.
 // No nonce is needed for tab switching (bookmarkable URLs, same pattern as WP core list tables).
-// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab navigation, validated against allowlist below.
 $kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'sms_history';
 $kwtsms_active_tab     = in_array( $kwtsms_active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $kwtsms_active_tab : 'sms_history';
 $kwtsms_items_per_page = 20;
-// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only pagination, same pattern as WP core list tables.
 $kwtsms_current_page = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
@@ -267,7 +265,7 @@ function kwtsms_attempt_result_label( $result ) {
 		$kwtsms_total_lines     = count( $kwtsms_lines );
 		$kwtsms_per_page_dbg    = 100;
 		$kwtsms_total_pages_dbg = max( 1, (int) ceil( $kwtsms_total_lines / $kwtsms_per_page_dbg ) );
-		$kwtsms_cur_page_dbg    = isset( $_GET['paged'] ) ? min( max( 1, absint( $_GET['paged'] ) ), $kwtsms_total_pages_dbg ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only pagination.
+		$kwtsms_cur_page_dbg    = isset( $_GET['paged'] ) ? min( max( 1, absint( $_GET['paged'] ) ), $kwtsms_total_pages_dbg ) : 1;
 		$kwtsms_offset_dbg      = ( $kwtsms_cur_page_dbg - 1 ) * $kwtsms_per_page_dbg;
 		$kwtsms_page_lines      = array_slice( $kwtsms_lines, $kwtsms_offset_dbg, $kwtsms_per_page_dbg );
 		?>

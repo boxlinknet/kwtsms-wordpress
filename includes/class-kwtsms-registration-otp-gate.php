@@ -104,7 +104,6 @@ class KwtSMS_Registration_OTP_Gate {
 	 */
 	public function prepend_reg_url_error( WP_Error $errors ): WP_Error {
 		// Error code from a redirect URL, validated against a fixed allowlist below. No user form submission, no nonce.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only error code from redirect, validated against allowlist.
 		$error_code = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
 
 		if ( '' === $error_code ) {
@@ -277,7 +276,6 @@ class KwtSMS_Registration_OTP_Gate {
 		// The token is a cryptographic random string stored in a transient.
 		// It serves as the security credential for this page (no session/cookie exists yet).
 		// Validated against the transient immediately below. No form submission, no nonce.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token validated against transient, not a form field.
 		$token = isset( $_GET['token'] ) ? preg_replace( '/[^a-zA-Z0-9]/', '', sanitize_text_field( wp_unslash( $_GET['token'] ) ) ) : '';
 
 		if ( empty( $token ) || ! get_transient( 'kwtsms_pending_reg_' . $token ) ) {
@@ -292,7 +290,6 @@ class KwtSMS_Registration_OTP_Gate {
 
 		// GET: render the OTP entry form, showing an error if one was set by a prior submission.
 		// Error code from URL redirect, validated against a fixed allowlist below. No form submission, no nonce.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only error code from redirect, validated against allowlist.
 		$reg_error_key  = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
 		$error_messages = array(
 			'invalid_code' => __( 'Invalid verification code. Please try again.', 'kwtsms' ),

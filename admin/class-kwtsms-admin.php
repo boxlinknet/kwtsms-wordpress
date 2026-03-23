@@ -1371,10 +1371,16 @@ class KwtSMS_Admin {
 			return;
 		}
 
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+
 		$kwtsms_uploads   = wp_upload_dir();
 		$debug_log_path   = ! empty( $kwtsms_uploads['basedir'] ) ? $kwtsms_uploads['basedir'] . '/kwtsms-debug.log' : '';
 		$debug_logging_on = (bool) $this->plugin->settings->get( 'general.debug_logging', 0 );
-		$debug_log_exists = $debug_log_path && file_exists( $debug_log_path );
+		$debug_log_exists = $debug_log_path && $wp_filesystem->exists( $debug_log_path );
 		$show_debug_tab   = $debug_logging_on && $debug_log_exists;
 
 		// ---- Download debug log ----
@@ -1384,15 +1390,13 @@ class KwtSMS_Admin {
 			header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
 			header( 'X-Content-Type-Options: nosniff' );
 			header( 'Pragma: no-cache' );
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
-			readfile( $debug_log_path );
+			echo $wp_filesystem->get_contents( $debug_log_path ); // Plain-text log for download.
 			exit;
 		}
 
 		// ---- Clear debug log ----
 		if ( $clear_ok && $show_debug_tab ) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-			file_put_contents( $debug_log_path, '' );
+			$wp_filesystem->put_contents( $debug_log_path, '' );
 			wp_safe_redirect(
 				add_query_arg(
 					array(
@@ -1474,19 +1478,14 @@ class KwtSMS_Admin {
 	 * Register the kwtSMS dashboard widget and place it in the right (side) column.
 	 */
 	public function register_dashboard_widget() {
-		wp_add_dashboard_widget(
+		add_meta_box(
 			'kwtsms_otp_dashboard_widget',
 			__( 'kwtSMS', 'kwtsms' ),
-			array( $this, 'render_dashboard_widget' )
+			array( $this, 'render_dashboard_widget' ),
+			'dashboard',
+			'side',
+			'core'
 		);
-
-		// Move from the default 'normal' context to the 'side' (right) column.
-		global $wp_meta_boxes;
-		if ( isset( $wp_meta_boxes['dashboard']['normal']['core']['kwtsms_otp_dashboard_widget'] ) ) {
-			$widget = $wp_meta_boxes['dashboard']['normal']['core']['kwtsms_otp_dashboard_widget'];
-			unset( $wp_meta_boxes['dashboard']['normal']['core']['kwtsms_otp_dashboard_widget'] );
-			$wp_meta_boxes['dashboard']['side']['core']['kwtsms_otp_dashboard_widget'] = $widget; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		}
 	}
 
 	/**

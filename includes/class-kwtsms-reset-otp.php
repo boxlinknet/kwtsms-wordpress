@@ -358,7 +358,7 @@ class KwtSMS_Reset_OTP {
 	 */
 	private function render_reset_otp_page( $error_message = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- used in included view.
 		nocache_headers();
-		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+		wp_enqueue_style( 'login', admin_url( 'css/login.css' ), array(), KWTSMS_OTP_VERSION );
 		wp_enqueue_style( 'kwtsms-login', KWTSMS_OTP_URL . 'assets/css/login.css', array( 'login' ), KWTSMS_OTP_VERSION );
 		if ( is_rtl() ) {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
