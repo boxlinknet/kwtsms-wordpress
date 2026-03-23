@@ -103,8 +103,11 @@ class KwtSMS_Registration_OTP_Gate {
 	 * @return WP_Error Errors with any URL-sourced error prepended.
 	 */
 	public function prepend_reg_url_error( WP_Error $errors ): WP_Error {
-		// Error code from a redirect URL, validated against a fixed allowlist below. No user form submission, no nonce.
-		$error_code = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
+		// Verify the redirect nonce before reading the error code from the URL.
+		if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_kwtsms_reg_nonce'] ?? '' ) ), 'kwtsms_reg_redirect' ) ) {
+			return $errors;
+		}
+		$error_code = sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ?? '' ) );
 
 		if ( '' === $error_code ) {
 			return $errors;
@@ -273,10 +276,12 @@ class KwtSMS_Registration_OTP_Gate {
 			return;
 		}
 
-		// The token is a cryptographic random string stored in a transient.
-		// It serves as the security credential for this page (no session/cookie exists yet).
-		// Validated against the transient immediately below. No form submission, no nonce.
-		$token = isset( $_GET['token'] ) ? preg_replace( '/[^a-zA-Z0-9]/', '', sanitize_text_field( wp_unslash( $_GET['token'] ) ) ) : '';
+		// Verify the redirect nonce, then read the token.
+		if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_kwtsms_reg_nonce'] ?? '' ) ), 'kwtsms_reg_redirect' ) ) {
+			wp_safe_redirect( wp_registration_url() );
+			exit;
+		}
+		$token = preg_replace( '/[^a-zA-Z0-9]/', '', sanitize_text_field( wp_unslash( $_GET['token'] ?? '' ) ) );
 
 		if ( empty( $token ) || ! get_transient( 'kwtsms_pending_reg_' . $token ) ) {
 			wp_safe_redirect( wp_registration_url() );
@@ -289,8 +294,8 @@ class KwtSMS_Registration_OTP_Gate {
 		}
 
 		// GET: render the OTP entry form, showing an error if one was set by a prior submission.
-		// Error code from URL redirect, validated against a fixed allowlist below. No form submission, no nonce.
-		$reg_error_key  = isset( $_GET['kwtsms_reg_error'] ) ? sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ) ) : '';
+		// Nonce already verified above at function entry.
+		$reg_error_key  = sanitize_key( wp_unslash( $_GET['kwtsms_reg_error'] ?? '' ) );
 		$error_messages = array(
 			'invalid_code' => __( 'Invalid verification code. Please try again.', 'kwtsms' ),
 			'expired'      => __( 'Your verification code has expired. Please start over.', 'kwtsms' ),
@@ -318,7 +323,10 @@ class KwtSMS_Registration_OTP_Gate {
 		if ( ! is_array( $pending ) ) {
 			// Session expired or invalid.
 			$url = add_query_arg(
-				array( 'kwtsms_reg_error' => 'expired' ),
+				array(
+					'kwtsms_reg_error'  => 'expired',
+					'_kwtsms_reg_nonce' => wp_create_nonce( 'kwtsms_reg_redirect' ),
+				),
 				wp_registration_url()
 			);
 			wp_safe_redirect( $url );
@@ -328,7 +336,10 @@ class KwtSMS_Registration_OTP_Gate {
 		// Verify nonce before accessing any POST data (fail-early).
 		if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['kwtsms_reg_nonce'] ?? '' ) ), 'kwtsms_reg_otp_submit' ) ) {
 			$url = add_query_arg(
-				array( 'kwtsms_reg_error' => 'security' ),
+				array(
+					'kwtsms_reg_error'  => 'security',
+					'_kwtsms_reg_nonce' => wp_create_nonce( 'kwtsms_reg_redirect' ),
+				),
 				wp_registration_url()
 			);
 			wp_safe_redirect( $url );
@@ -344,9 +355,10 @@ class KwtSMS_Registration_OTP_Gate {
 				// Wrong code — redirect back to OTP entry page with error.
 				$redirect = add_query_arg(
 					array(
-						'action'           => 'kwtsms_reg_otp',
-						'token'            => rawurlencode( $token ),
-						'kwtsms_reg_error' => 'invalid_code',
+						'action'            => 'kwtsms_reg_otp',
+						'token'             => rawurlencode( $token ),
+						'kwtsms_reg_error'  => 'invalid_code',
+						'_kwtsms_reg_nonce' => wp_create_nonce( 'kwtsms_reg_redirect' ),
 					),
 					wp_login_url()
 				);
@@ -357,7 +369,10 @@ class KwtSMS_Registration_OTP_Gate {
 			// Expired or max attempts — send back to registration form.
 			$error = 'expired' === $result ? 'expired' : 'max_attempts';
 			$url   = add_query_arg(
-				array( 'kwtsms_reg_error' => $error ),
+				array(
+					'kwtsms_reg_error'  => $error,
+					'_kwtsms_reg_nonce' => wp_create_nonce( 'kwtsms_reg_redirect' ),
+				),
 				wp_registration_url()
 			);
 			wp_safe_redirect( $url );
@@ -377,7 +392,10 @@ class KwtSMS_Registration_OTP_Gate {
 
 		if ( is_wp_error( $user_id ) ) {
 			$url = add_query_arg(
-				array( 'kwtsms_reg_error' => 'create_failed' ),
+				array(
+					'kwtsms_reg_error'  => 'create_failed',
+					'_kwtsms_reg_nonce' => wp_create_nonce( 'kwtsms_reg_redirect' ),
+				),
 				wp_registration_url()
 			);
 			wp_safe_redirect( $url );
@@ -499,11 +517,14 @@ class KwtSMS_Registration_OTP_Gate {
 			$ttl
 		);
 
-		// Redirect to OTP entry page.
+		// Redirect to OTP entry page with nonce.
 		$redirect = add_query_arg(
-			'token',
-			rawurlencode( $token ),
-			add_query_arg( 'action', 'kwtsms_reg_otp', wp_login_url() )
+			array(
+				'action'            => 'kwtsms_reg_otp',
+				'token'             => rawurlencode( $token ),
+				'_kwtsms_reg_nonce' => wp_create_nonce( 'kwtsms_reg_redirect' ),
+			),
+			wp_login_url()
 		);
 		wp_safe_redirect( $redirect );
 		exit;
