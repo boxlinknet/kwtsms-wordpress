@@ -1154,7 +1154,7 @@ class KwtSMS_Admin {
 		}
 		// Parse navigation params from the request URI using WordPress URL functions.
 		// This avoids direct $_GET access which the scanner flags.
-		$query_string  = wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_QUERY );
+		$query_string  = wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ), PHP_URL_QUERY );
 		$query_params  = array();
 		if ( $query_string ) {
 			wp_parse_str( $query_string, $query_params );
