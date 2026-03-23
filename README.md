@@ -10,7 +10,7 @@
 
 Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress. Built on the [kwtSMS](https://www.kwtsms.com) gateway.
 
-**Version:** 3.5.0 | **Requires:** WordPress 6.0+, PHP 7.4+
+**Version:** 3.5.1 | **Requires:** WordPress 6.0+, PHP 7.4+
 
 > Don't have a kwtSMS account? [Sign up at kwtsms.com →](https://www.kwtsms.com/signup)
 

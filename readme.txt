@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.5.0
+Stable tag: 3.5.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -233,7 +233,7 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 
 == Changelog ==
 
-= 3.5.0 =
+= 3.5.1 =
 * Security: back-in-stock subscribe nonce changed to a static action so product_id is never read before authentication.
 * Security: all nonce values now passed through sanitize_key() before wp_verify_nonce(), per WordPress security documentation.
 * Security: sanitize_url() replaced with esc_url_raw() (sanitize_url was deprecated in WP 6.1).
