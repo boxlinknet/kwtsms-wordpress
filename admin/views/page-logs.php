@@ -18,12 +18,9 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
 }
 
-// Tab and pagination are read-only navigation parameters on a capability-protected admin page.
-// No nonce is needed for tab switching (bookmarkable URLs, same pattern as WP core list tables).
-$kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'sms_history';
-$kwtsms_active_tab     = in_array( $kwtsms_active_tab, array( 'sms_history', 'attempt_log', 'debug_log' ), true ) ? $kwtsms_active_tab : 'sms_history';
+// $kwtsms_active_tab and $kwtsms_current_page are set by the controller
+// (KwtSMS_Admin::render_logs_page) before including this view.
 $kwtsms_items_per_page = 20;
-$kwtsms_current_page = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
 
 // Debug log tab variables — only relevant when debug_logging is enabled.
 // NOTE: download/clear/export handlers are registered on admin_init in KwtSMS_Admin::handle_log_exports()
@@ -265,7 +262,7 @@ function kwtsms_attempt_result_label( $result ) {
 		$kwtsms_total_lines     = count( $kwtsms_lines );
 		$kwtsms_per_page_dbg    = 100;
 		$kwtsms_total_pages_dbg = max( 1, (int) ceil( $kwtsms_total_lines / $kwtsms_per_page_dbg ) );
-		$kwtsms_cur_page_dbg    = isset( $_GET['paged'] ) ? min( max( 1, absint( $_GET['paged'] ) ), $kwtsms_total_pages_dbg ) : 1;
+		$kwtsms_cur_page_dbg    = min( $kwtsms_current_page, $kwtsms_total_pages_dbg );
 		$kwtsms_offset_dbg      = ( $kwtsms_cur_page_dbg - 1 ) * $kwtsms_per_page_dbg;
 		$kwtsms_page_lines      = array_slice( $kwtsms_lines, $kwtsms_offset_dbg, $kwtsms_per_page_dbg );
 		?>

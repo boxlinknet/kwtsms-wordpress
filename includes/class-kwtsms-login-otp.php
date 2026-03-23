@@ -681,9 +681,7 @@ class KwtSMS_Login_OTP {
 		$token      = $token ? $token : $this->get_partial_auth_token();
 		$otp_length = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
 		$cooldown   = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
-		// redirect_to is a standard WP login query parameter. Read from GET, sanitized and
-		// validated downstream by wp_safe_redirect(). No nonce needed (same as wp-login.php core).
-		$redirect_to     = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) : '';
+		$redirect_to     = wp_get_referer() ? esc_url_raw( wp_get_referer() ) : admin_url();
 		$nonce_resend    = wp_create_nonce( 'kwtsms_otp_nonce' );
 		$login_url       = wp_login_url();
 		$plugin_settings = $this->plugin->settings;

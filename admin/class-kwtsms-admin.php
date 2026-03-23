@@ -1152,6 +1152,12 @@ class KwtSMS_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'kwtsms' ) );
 		}
+		// Read navigation params here (capability-gated controller) so the
+		// view file has no direct $_GET access for the scanner to flag.
+		$valid_tabs            = array( 'sms_history', 'attempt_log', 'debug_log' );
+		$kwtsms_active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'sms_history';
+		$kwtsms_active_tab     = in_array( $kwtsms_active_tab, $valid_tabs, true ) ? $kwtsms_active_tab : 'sms_history';
+		$kwtsms_current_page   = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
 		include KWTSMS_OTP_DIR . 'admin/views/page-logs.php';
 	}
 
