@@ -4,6 +4,7 @@ tests
 docs
 docker
 vendor
+wporg-assets
 kwtsms-ext4
 composer.json
 composer.lock

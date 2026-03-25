@@ -78,3 +78,11 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
+
+      - name: Deploy to WordPress.org SVN
+        uses: 10up/action-wordpress-plugin-deploy@v2
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: kwtsms
+          ASSETS_DIR: wporg-assets
