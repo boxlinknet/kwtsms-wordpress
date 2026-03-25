@@ -138,37 +138,37 @@ Need a specific plugin supported? [Open an issue](https://github.com/boxlinknet/
 <table>
 <tr>
 <td align="center">
-<a href="assets/screenshot-1.png"><img src="assets/screenshot-1.png" width="260" alt="General Settings"></a><br>
+<a href="wporg-assets/screenshot-1.png"><img src="wporg-assets/screenshot-1.png" width="260" alt="General Settings"></a><br>
 <sub>General Settings: OTP mode, rate limits, CAPTCHA</sub>
 </td>
 <td align="center">
-<a href="assets/screenshot-2.png"><img src="assets/screenshot-2.png" width="260" alt="SMS Templates"></a><br>
+<a href="wporg-assets/screenshot-2.png"><img src="wporg-assets/screenshot-2.png" width="260" alt="SMS Templates"></a><br>
 <sub>SMS Templates: English and Arabic with character counter</sub>
 </td>
 <td align="center">
-<a href="assets/screenshot-3.png"><img src="assets/screenshot-3.png" width="260" alt="2FA OTP verification"></a><br>
+<a href="wporg-assets/screenshot-3.png"><img src="wporg-assets/screenshot-3.png" width="260" alt="2FA OTP verification"></a><br>
 <sub>2FA: OTP step after password login</sub>
 </td>
 <td align="center">
-<a href="assets/screenshot-4.png"><img src="assets/screenshot-4.png" width="260" alt="Passwordless login"></a><br>
+<a href="wporg-assets/screenshot-4.png"><img src="wporg-assets/screenshot-4.png" width="260" alt="Passwordless login"></a><br>
 <sub>Passwordless: phone + OTP, no password needed</sub>
 </td>
 </tr>
 <tr>
 <td align="center">
-<a href="assets/screenshot-5.png"><img src="assets/screenshot-5.png" width="260" alt="Password reset via OTP"></a><br>
+<a href="wporg-assets/screenshot-5.png"><img src="wporg-assets/screenshot-5.png" width="260" alt="Password reset via OTP"></a><br>
 <sub>Password reset: OTP replaces email link</sub>
 </td>
 <td align="center">
-<a href="assets/screenshot-6.png"><img src="assets/screenshot-6.png" width="260" alt="WooCommerce integration"></a><br>
+<a href="wporg-assets/screenshot-6.png"><img src="wporg-assets/screenshot-6.png" width="260" alt="WooCommerce integration"></a><br>
 <sub>WooCommerce: order status SMS and checkout OTP gate</sub>
 </td>
 <td align="center">
-<a href="assets/screenshot-7.png"><img src="assets/screenshot-7.png" width="260" alt="Integrations overview"></a><br>
+<a href="wporg-assets/screenshot-7.png"><img src="wporg-assets/screenshot-7.png" width="260" alt="Integrations overview"></a><br>
 <sub>Integrations: WooCommerce, CF7, WPForms, and more</sub>
 </td>
 <td align="center">
-<a href="assets/screenshot-8.png"><img src="assets/screenshot-8.png" width="260" alt="Contact Form 7 settings"></a><br>
+<a href="wporg-assets/screenshot-8.png"><img src="wporg-assets/screenshot-8.png" width="260" alt="Contact Form 7 settings"></a><br>
 <sub>CF7: Notification or OTP Gate mode per form</sub>
 </td>
 </tr>
