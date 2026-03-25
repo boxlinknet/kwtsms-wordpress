@@ -217,11 +217,9 @@ class KwtSMS_Reset_OTP {
 		// WordPress sets the global $action variable in wp-login.php before login_init fires.
 		// Reading it directly avoids filter_input() which the WP.org scanner flags.
 		global $action;
-		if ( empty( $action ) ) {
-			$action = 'login';
-		}
+		$kwtsms_action = ! empty( $action ) ? $action : 'login';
 
-		if ( 'kwtsms_reset_otp' !== $action ) {
+		if ( 'kwtsms_reset_otp' !== $kwtsms_action ) {
 			return;
 		}
 

@@ -224,7 +224,7 @@ class KwtSMS_User_Meta {
 		// On user-edit.php the user_id is in the URL; on profile.php it is the current user.
 		$kwtsms_notice_user_id = get_current_user_id();
 		if ( current_user_can( 'edit_users' ) ) {
-			$kwtsms_query = wp_parse_url( sanitize_url( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ), PHP_URL_QUERY );
+			$kwtsms_query  = wp_parse_url( sanitize_url( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ), PHP_URL_QUERY );
 			$kwtsms_params = array();
 			if ( $kwtsms_query ) {
 				wp_parse_str( $kwtsms_query, $kwtsms_params );

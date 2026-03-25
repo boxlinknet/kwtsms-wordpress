@@ -280,11 +280,9 @@ class KwtSMS_Login_OTP {
 		// WordPress sets the global $action variable in wp-login.php before login_init fires.
 		// Reading it directly avoids filter_input() which the WP.org scanner flags.
 		global $action;
-		if ( empty( $action ) ) {
-			$action = 'login';
-		}
+		$kwtsms_action = ! empty( $action ) ? $action : 'login';
 
-		if ( 'kwtsms_otp' === $action ) {
+		if ( 'kwtsms_otp' === $kwtsms_action ) {
 			if ( 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
 				$this->handle_otp_submission();
 			}
@@ -292,7 +290,7 @@ class KwtSMS_Login_OTP {
 			exit;
 		}
 
-		if ( 'kwtsms_passwordless' === $action ) {
+		if ( 'kwtsms_passwordless' === $kwtsms_action ) {
 			if ( 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
 				$this->handle_passwordless_submission();
 			}
@@ -687,9 +685,9 @@ class KwtSMS_Login_OTP {
 			wp_enqueue_style( 'kwtsms-login-rtl', KWTSMS_OTP_URL . 'assets/css/login-rtl.css', array( 'kwtsms-login' ), KWTSMS_OTP_VERSION );
 		}
 		wp_enqueue_script( 'kwtsms-login-js', KWTSMS_OTP_URL . 'assets/js/login.js', array(), KWTSMS_OTP_VERSION, true );
-		$token      = $token ? $token : $this->get_partial_auth_token();
-		$otp_length = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
-		$cooldown   = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
+		$token           = $token ? $token : $this->get_partial_auth_token();
+		$otp_length      = (int) $this->plugin->settings->get( 'general.otp_length', 6 );
+		$cooldown        = (int) $this->plugin->settings->get( 'general.resend_cooldown', 120 );
 		$redirect_to     = wp_get_referer() ? esc_url_raw( wp_get_referer() ) : admin_url();
 		$nonce_resend    = wp_create_nonce( 'kwtsms_otp_nonce' );
 		$login_url       = wp_login_url();

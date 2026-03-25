@@ -1154,15 +1154,15 @@ class KwtSMS_Admin {
 		}
 		// Parse navigation params from the request URI using WordPress URL functions.
 		// This avoids direct $_GET access which the scanner flags.
-		$query_string  = wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ), PHP_URL_QUERY );
-		$query_params  = array();
+		$query_string = wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ), PHP_URL_QUERY );
+		$query_params = array();
 		if ( $query_string ) {
 			wp_parse_str( $query_string, $query_params );
 		}
-		$valid_tabs            = array( 'sms_history', 'attempt_log', 'debug_log' );
-		$kwtsms_active_tab     = isset( $query_params['tab'] ) ? sanitize_key( $query_params['tab'] ) : 'sms_history';
-		$kwtsms_active_tab     = in_array( $kwtsms_active_tab, $valid_tabs, true ) ? $kwtsms_active_tab : 'sms_history';
-		$kwtsms_current_page   = isset( $query_params['paged'] ) ? max( 1, absint( $query_params['paged'] ) ) : 1;
+		$valid_tabs          = array( 'sms_history', 'attempt_log', 'debug_log' );
+		$kwtsms_active_tab   = isset( $query_params['tab'] ) ? sanitize_key( $query_params['tab'] ) : 'sms_history';
+		$kwtsms_active_tab   = in_array( $kwtsms_active_tab, $valid_tabs, true ) ? $kwtsms_active_tab : 'sms_history';
+		$kwtsms_current_page = isset( $query_params['paged'] ) ? max( 1, absint( $query_params['paged'] ) ) : 1;
 		include KWTSMS_OTP_DIR . 'admin/views/page-logs.php';
 	}
 
