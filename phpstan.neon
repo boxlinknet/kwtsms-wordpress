@@ -94,7 +94,7 @@ parameters:
         - '#^(Class|Parameter .+ has invalid type) WC_(Order|Checkout|Session|Cart|Product|Coupon)\b#'
         - '#^Call to method .+ on an unknown class WC_(Order|Checkout|Session|Cart|Product|Coupon)\b#'
         - '#^Instantiated class WC_Coupon not found\.#'
-        - '#^Function (wc_(get_order|get_product|price|add_notice|get_order_status_name|get_cart_url)|get_woocommerce_currency) not found\.#'
+        - '#^Function (wc_(get_order|get_product|get_customer_last_order|price|add_notice|get_order_status_name|get_cart_url|get_products|get_page_id)|get_woocommerce_currency) not found\.#'
 
         # ── Elementor Pro (optional dependency) ────────────────────────────────
         - '#ElementorPro#'

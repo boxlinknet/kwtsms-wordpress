@@ -20,6 +20,8 @@ if ( ! current_user_can( 'manage_options' ) ) {
 
 // $kwtsms_active_tab and $kwtsms_current_page are set by the controller
 // (KwtSMS_Admin::render_logs_page) before including this view.
+$kwtsms_active_tab     = isset( $kwtsms_active_tab ) ? $kwtsms_active_tab : 'sms_history';
+$kwtsms_current_page   = isset( $kwtsms_current_page ) ? (int) $kwtsms_current_page : 1;
 $kwtsms_items_per_page = 20;
 
 // Debug log tab variables — only relevant when debug_logging is enabled.

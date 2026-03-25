@@ -249,7 +249,7 @@ class KwtSMS_Registration_OTP_Gate {
 		}
 
 		$raw_pass = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : ( isset( $_POST['pass1'] ) ? sanitize_text_field( wp_unslash( $_POST['pass1'] ) ) : '' );
-		$password = is_string( $raw_pass ) ? $raw_pass : '';
+		$password = $raw_pass;
 
 		$result = $this->send_registration_otp( $username, $email, $password, $phone );
 		// send_registration_otp() calls wp_safe_redirect() + exit on success (returns null).
