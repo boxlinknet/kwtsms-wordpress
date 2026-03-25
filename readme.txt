@@ -4,7 +4,7 @@ Tags: sms, otp, authentication, woocommerce, login
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.5.1
+Stable tag: 3.5.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,9 +30,15 @@ Built for Arabic-speaking markets (Kuwait, Saudi Arabia, UAE, Bahrain, Qatar, Om
 
 * **7 order status notifications:** Processing, On-Hold (Shipped), Completed, Cancelled, Pending Payment, Refunded, Failed
 * **Admin order notifications:** automatically notify a configurable admin phone number on any order status change
-* **Checkout OTP Gate:** require phone verification before the customer can place an order
+* **Checkout OTP Gate:** require phone verification before the customer can place an order (all methods or COD-only)
 * **Per-status templates:** independent English + Arabic SMS template for every order status
 * **Admin SMS panel:** send a custom free-text SMS to any order's customer from the order edit screen
+* **Stock alerts:** low stock, out of stock, and backorder notifications to admin
+* **New product SMS:** notify admin when a product is first published
+* **Back-in-stock notifications:** customers subscribe on out-of-stock product pages, SMS sent automatically on restock
+* **Instant new order SMS:** notify admin the moment an order is placed, before status processing
+* **Cart abandonment recovery:** detect abandoned carts, send recovery SMS with auto-generated coupon codes, track recovery stats on the dashboard
+* **Multivendor support:** per-vendor order SMS for Dokan, WCFM, and WC Vendors
 * HPOS (High-Performance Order Storage) compatible
 
 = Contact Form Integrations =
@@ -62,57 +68,15 @@ Each integration supports two modes: **Notification** (send a confirmation SMS o
 
 This plugin connects to the following external services:
 
-**1. kwtSMS API** (required): sends SMS messages.
+**1. kwtSMS API** (required): sends all SMS messages. [kwtsms.com](https://www.kwtsms.com) | [Terms](https://www.kwtsms.com/policy.html) | [Privacy](https://www.kwtsms.com/privacy.html)
 
-* Service: [https://www.kwtsms.com](https://www.kwtsms.com)
-* API endpoint: `https://www.kwtsms.com/API/`
-* Data sent: phone number, message text, API credentials
-* When: every time an OTP or notification SMS is dispatched
-* Terms of Service: [https://www.kwtsms.com/policy.html](https://www.kwtsms.com/policy.html)
-* Privacy Policy: [https://www.kwtsms.com/privacy.html](https://www.kwtsms.com/privacy.html)
+**2. ipapi.co** (optional): detects visitor country for dial-code pre-selection. [ipapi.co](https://ipapi.co) | [Terms](https://ipapi.co/terms/) | [Privacy](https://ipapi.co/privacy/)
 
-A kwtSMS account with SMS credits is required.
+**3. IPHub** (optional): proxy/VPN detection on OTP requests. [iphub.info](https://iphub.info) | [Terms](https://iphub.info/legal) | [Privacy](https://iphub.info/legal)
 
-**2. ipapi.co** (optional): detects the visitor's country to pre-select the dial-code flag on the phone input.
+**4. Google reCAPTCHA v3** (optional): bot protection on OTP forms. [google.com/recaptcha](https://www.google.com/recaptcha/) | [Terms](https://policies.google.com/terms) | [Privacy](https://policies.google.com/privacy)
 
-* Service: [https://ipapi.co](https://ipapi.co)
-* Data sent: visitor IP address (no other data)
-* When: on the login page when Passwordless or OTP mode is active; result is cached for 24 hours per IP
-* Terms of Service: [https://ipapi.co/terms/](https://ipapi.co/terms/)
-* Privacy Policy: [https://ipapi.co/privacy/](https://ipapi.co/privacy/)
-
-If ipapi.co is unavailable, the phone input falls back to the default country configured in General Settings. No personal data is stored by the plugin as a result of this call.
-
-**3. IPHub** (optional): detects whether a visitor's IP is a known proxy or VPN.
-
-* Service: [https://iphub.info](https://iphub.info)
-* API endpoint: `https://v2.api.iphub.info/ip/{ip}`
-* Data sent: visitor IP address, API key in request header
-* When: on every OTP request when IPHub integration is enabled in General Settings, with result cached per IP (configurable TTL, default 24 hours)
-* Terms of Service: [https://iphub.info/legal](https://iphub.info/legal)
-* Privacy Policy: [https://iphub.info/legal](https://iphub.info/legal)
-
-If IPHub is unavailable or returns an error, the request is allowed through (fail-open). No personal data is stored by the plugin as a result of this call beyond the cached block level.
-
-**4. Google reCAPTCHA v3** (optional): bot protection on OTP forms. Only active if you enter a reCAPTCHA Site Key in General Settings.
-
-* Service: [https://www.google.com/recaptcha/](https://www.google.com/recaptcha/)
-* JavaScript loaded from: `https://www.google.com/recaptcha/api.js`
-* Verification endpoint: `https://www.google.com/recaptcha/api/siteverify`
-* Data sent: reCAPTCHA token (generated client-side), secret key (server-side only)
-* When: on every login, password reset, or registration page load (client JS), and on every OTP form submission (server-side verification)
-* Terms of Service: [https://policies.google.com/terms](https://policies.google.com/terms)
-* Privacy Policy: [https://policies.google.com/privacy](https://policies.google.com/privacy)
-
-**5. Cloudflare Turnstile** (optional): alternative bot protection. Only active if you enter a Turnstile Site Key in General Settings.
-
-* Service: [https://www.cloudflare.com/products/turnstile/](https://www.cloudflare.com/products/turnstile/)
-* JavaScript loaded from: `https://challenges.cloudflare.com/turnstile/v0/api.js`
-* Verification endpoint: `https://challenges.cloudflare.com/turnstile/v0/siteverify`
-* Data sent: Turnstile token (generated client-side), secret key (server-side only)
-* When: on every login, password reset, or registration page load (client JS), and on every OTP form submission (server-side verification)
-* Terms of Service: [https://www.cloudflare.com/terms/](https://www.cloudflare.com/terms/)
-* Privacy Policy: [https://www.cloudflare.com/privacypolicy/](https://www.cloudflare.com/privacypolicy/)
+**5. Cloudflare Turnstile** (optional): alternative bot protection. [cloudflare.com/turnstile](https://www.cloudflare.com/products/turnstile/) | [Terms](https://www.cloudflare.com/terms/) | [Privacy](https://www.cloudflare.com/privacypolicy/)
 
 = Admin =
 
@@ -212,9 +176,6 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 * **[kwtSMS FAQ](https://www.kwtsms.com/faq/)**: Answers to common questions about credits, sender IDs, OTP, and delivery.
 * **[kwtSMS Support](https://www.kwtsms.com/support.html)**: Open a support ticket or browse help articles.
 * **[Contact kwtSMS](https://www.kwtsms.com/#contact)**: Reach the kwtSMS team directly for Sender ID registration and account issues.
-* **[API Documentation (PDF)](https://www.kwtsms.com/doc/KwtSMS.com_API_Documentation_v41.pdf)**: kwtSMS REST API v4.1 full reference.
-* **[Best Practices](https://www.kwtsms.com/articles/sms-api-implementation-best-practices.html)**: SMS API implementation best practices.
-* **[Integration Test Checklist](https://www.kwtsms.com/articles/sms-api-integration-test-checklist.html)**: Pre-launch testing checklist.
 * **[Sender ID Help](https://www.kwtsms.com/sender-id-help.html)**: Sender ID registration and guidelines.
 * **[kwtSMS Dashboard](https://www.kwtsms.com/login/)**: Recharge credits, buy Sender IDs, view message logs, and manage coverage.
 * **[Other Integrations](https://www.kwtsms.com/integrations.html)**: Plugins and integrations for other platforms and languages.
@@ -232,6 +193,15 @@ International sending is disabled by default on kwtSMS accounts. Log in to your 
 8. SMS Logs: full send history with date, Sender ID, message preview, phone, type, status, and API response.
 
 == Changelog ==
+
+= 3.5.2 =
+* Fix: SMS sending was silently disabled after saving Gateway settings (sms_enabled overwritten to 0).
+* Fix: Remember Me checkbox now forwarded through the OTP verification flow.
+* Fix: replaced global $profileuser with prefixed alternative for WP.org compliance.
+* Fix: uninstall.php ABSPATH guard added.
+* Fix: WP.org directory assets removed from plugin zip.
+* Enhancement: WooCommerce advanced features added to readme (stock alerts, cart abandonment, multivendor, etc.).
+* Enhancement: External Services section simplified.
 
 = 3.5.1 =
 * Security: back-in-stock subscribe nonce changed to a static action so product_id is never read before authentication.

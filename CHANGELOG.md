@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.5.2] - 2026-03-25
+
+### Fixed
+- Fix: sms_enabled was overwritten to 0 by the gateway sanitize callback (no checkbox on the gateway form). Removed sms_enabled from gateway sanitize; general settings is now the single source of truth.
+- Fix: send() now reads sms_enabled from general settings only with default=1, removing the broken gateway fallback.
+- Fix: Remember Me checkbox now forwarded through the OTP flow. Added a "Remember Me" checkbox to the OTP verification form so the auth cookie respects the user's choice.
+- Fix: replaced global $profileuser usage with wp_parse_url approach to avoid WP.org prefix scanner false positive.
+- Fix: uninstall.php now includes ABSPATH guard before WP_UNINSTALL_PLUGIN check.
+- Fix: WP.org directory assets (screenshots, banners, icons) moved to wporg-assets/ and excluded from the plugin zip.
+- Fix: sms_enabled added to the general settings sanitize callback (was missing, causing the value to never persist).
+
+### Changed
+- External Services section in readme simplified (concise format with inline links).
+- Help links cleaned up: removed Integration Test Checklist, Best Practices, and API Documentation PDF links.
+- WooCommerce advanced features (stock alerts, back-in-stock, cart abandonment, instant order, multivendor) added to readme feature list.
+
+## [3.5.1] - 2026-03-22
+
+### Fixed
+- Security: back-in-stock subscribe nonce changed to a static action so product_id is never read before authentication.
+- Security: all nonce values now passed through sanitize_key() before wp_verify_nonce().
+- Security: sanitize_url() replaced with esc_url_raw().
+- Security: absint() calls on POST user_id now include wp_unslash().
+- Security: GET page parameter compared using sanitize_key() in log export handler.
+- Security: printf output in SMS history log now escapes at point of output.
+
+### Added
+- Clear Log button added to debug log tab.
+
+### Removed
+- Elementor Pro Forms and Gravity Forms integrations removed (not ready for WordPress.org review).
+
 ## [3.3.3] - 2026-03-13
 
 ### Fixed

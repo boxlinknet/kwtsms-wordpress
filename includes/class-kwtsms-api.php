@@ -220,14 +220,9 @@ class KwtSMS_API {
 		$this->write_debug_log( 'send()', "type={$type} phones=" . count( $phones ) . " sender={$sender_id}" );
 
 		// ── Global SMS kill switch ───────────────────────────────────────────
-		// Reads from general settings. Falls back to gateway for backward compat
-		// with existing installs that have not re-saved General settings yet.
+		// Reads from general settings only. Defaults to enabled (1) if not set.
 		$gen    = get_option( 'kwtsms_otp_general', array() );
-		$sms_on = isset( $gen['sms_enabled'] ) ? $gen['sms_enabled'] : null;
-		if ( null === $sms_on ) {
-			$gw     = get_option( 'kwtsms_otp_gateway', array() );
-			$sms_on = $gw['sms_enabled'] ?? 1;
-		}
+		$sms_on = $gen['sms_enabled'] ?? 1;
 		if ( empty( $sms_on ) ) {
 			$err = new WP_Error(
 				'kwtsms_sms_disabled',

@@ -149,6 +149,12 @@ if ( ! empty( $token ) ) {
 			</div>
 
 			<?php if ( ! $kwtsms_is_reset ) : ?>
+			<div class="kwtsms-remember-me">
+				<label>
+					<input type="checkbox" name="kwtsms_rememberme" value="1" />
+					<?php esc_html_e( 'Remember Me', 'kwtsms' ); ?>
+				</label>
+			</div>
 			<div class="kwtsms-trust-device">
 				<label>
 					<input type="checkbox" name="kwtsms_trust_device" value="1" />

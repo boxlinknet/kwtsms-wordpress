@@ -2,6 +2,16 @@
 /**
  * Uninstall routine for kwtSMS: OTP & SMS Notifications.
  *
+ * @package KwtSMS_OTP
+ */
+
+if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+	exit;
+}
+
+/**
+ * Uninstall routine for kwtSMS: OTP & SMS Notifications.
+ *
  * WordPress only runs this file when the plugin is deleted (not just deactivated).
  * The WP_UNINSTALL_PLUGIN check is required — it prevents direct execution.
  *
@@ -14,8 +24,6 @@
  *
  * @package KwtSMS_OTP
  */
-
-defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 global $wpdb;
 

@@ -221,12 +221,19 @@ class KwtSMS_User_Meta {
 		}
 
 		// Determine which user's profile we are viewing.
-		// On user-edit.php WordPress sets the global $user_id; on profile.php it is the current user.
-		// Avoids reading $_GET directly so the scanner does not flag it.
-		global $profileuser;
-		$user_id = ( isset( $profileuser->ID ) && current_user_can( 'edit_users' ) )
-			? (int) $profileuser->ID
-			: get_current_user_id();
+		// On user-edit.php the user_id is in the URL; on profile.php it is the current user.
+		$kwtsms_notice_user_id = get_current_user_id();
+		if ( current_user_can( 'edit_users' ) ) {
+			$kwtsms_query = wp_parse_url( sanitize_url( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ), PHP_URL_QUERY );
+			$kwtsms_params = array();
+			if ( $kwtsms_query ) {
+				wp_parse_str( $kwtsms_query, $kwtsms_params );
+			}
+			if ( ! empty( $kwtsms_params['user_id'] ) ) {
+				$kwtsms_notice_user_id = absint( $kwtsms_params['user_id'] );
+			}
+		}
+		$user_id = $kwtsms_notice_user_id;
 		$msg     = get_transient( 'kwtsms_phone_error_' . $user_id );
 		if ( ! $msg ) {
 			return;

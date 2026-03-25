@@ -10,7 +10,7 @@
 
 Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress. Built on the [kwtSMS](https://www.kwtsms.com) gateway.
 
-**Version:** 3.5.1 | **Requires:** WordPress 6.0+, PHP 7.4+
+**Version:** 3.5.2 | **Requires:** WordPress 6.0+, PHP 7.4+
 
 > Don't have a kwtSMS account? [Sign up at kwtsms.com →](https://www.kwtsms.com/signup)
 
@@ -19,6 +19,52 @@ Secure SMS-based OTP login, password reset, and WooCommerce / form notifications
 ## About kwtSMS
 
 kwtSMS is a Kuwaiti SMS gateway trusted by top businesses to deliver messages anywhere in the world, with private Sender ID, free API testing, non-expiring credits, and competitive flat-rate pricing. Secure, simple to integrate, built to last. Open a free account in under 1 minute, no paperwork or payment required. [Get started →](https://www.kwtsms.com/signup/)
+
+---
+
+## Requirements
+
+| | Version |
+|---|---|
+| WordPress | 6.0 or later |
+| PHP | 7.4 or later (8.x recommended) |
+| kwtSMS account | [Sign up free](https://www.kwtsms.com/signup) |
+| WooCommerce | Optional |
+| Contact Form 7 / WPForms / Ninja Forms | Optional |
+
+---
+
+## Installation
+
+### Option 1: WordPress Plugin Directory
+
+1. In your WordPress dashboard, go to **Plugins → Add New Plugin**.
+2. Search for **kwtSMS**.
+3. Click **Install Now** next to "kwtSMS: OTP & SMS Notifications", then click **Activate**.
+
+### Option 2: Upload via WordPress Admin
+
+1. Download the latest `kwtsms.zip` from the [Releases page](https://github.com/boxlinknet/kwtsms-wordpress/releases).
+2. In your WordPress dashboard, go to **Plugins → Add New Plugin → Upload Plugin**.
+3. Choose the downloaded `.zip` file and click **Install Now**.
+4. Click **Activate Plugin**.
+
+### Option 3: WP-CLI
+
+```bash
+wp plugin install https://github.com/boxlinknet/kwtsms-wordpress/releases/latest/download/kwtsms.zip --activate
+```
+
+### Initial Setup
+
+After activation:
+
+1. Go to **kwtSMS → Gateway** in your WordPress dashboard.
+2. Enter your **API Username** and **API Password** (from your kwtSMS account under Account → API Settings, not your login credentials).
+3. Click **Login** to verify credentials. The Sender ID dropdown will populate automatically.
+4. Select your **Sender ID** and click **Save Settings**.
+5. Go to **kwtSMS → General** to configure OTP mode (2FA, Passwordless, or both), rate limits, and CAPTCHA.
+6. Optionally enable **Test Mode** while setting up: SMS is queued but never delivered, and the OTP code is visible under **kwtSMS → Logs → Debug Log**.
 
 ---
 
@@ -130,126 +176,19 @@ Need a specific plugin supported? [Open an issue](https://github.com/boxlinknet/
 
 ---
 
-## Requirements
-
-| | Version |
-|---|---|
-| WordPress | 6.0 or later |
-| PHP | 7.4 or later (8.x recommended) |
-| kwtSMS account | [Sign up free](https://www.kwtsms.com/signup) |
-| WooCommerce | Optional |
-| Contact Form 7 / WPForms / Ninja Forms | Optional |
-
----
-
-## Installation
-
-### Option 1: WordPress Plugin Directory
-
-1. In your WordPress dashboard, go to **Plugins → Add New Plugin**.
-2. Search for **kwtSMS**.
-3. Click **Install Now** next to "kwtSMS: OTP & SMS Notifications", then click **Activate**.
-
-### Option 2: Upload via WordPress Admin (recommended until directory listing is live)
-
-1. Download the latest `wp-kwtsms.zip` from the [Releases page](https://github.com/boxlinknet/kwtsms-wordpress/releases).
-2. In your WordPress dashboard, go to **Plugins → Add New Plugin → Upload Plugin**.
-3. Choose the downloaded `.zip` file and click **Install Now**.
-4. Click **Activate Plugin**.
-
-### Option 3: WP-CLI
-
-```bash
-# Download and install from the latest GitHub release
-wp plugin install https://github.com/boxlinknet/kwtsms-wordpress/releases/latest/download/wp-kwtsms.zip --activate
-```
-
-### Option 4: Manual FTP / SFTP
-
-```bash
-# 1. Download and extract the release zip
-wget https://github.com/boxlinknet/kwtsms-wordpress/releases/latest/download/wp-kwtsms.zip
-unzip wp-kwtsms.zip
-
-# 2. Upload the extracted wp-kwtsms/ folder to your server
-scp -r wp-kwtsms/ user@yourserver.com:/var/www/html/wp-content/plugins/
-
-# 3. Activate via WP-CLI (or from the Plugins screen in wp-admin)
-wp plugin activate wp-kwtsms
-```
-
-### Option 5: Git clone (for developers)
-
-```bash
-cd /var/www/html/wp-content/plugins/
-git clone https://github.com/boxlinknet/kwtsms-wordpress.git wp-kwtsms
-wp plugin activate wp-kwtsms
-```
-
-### Initial Setup (all methods)
-
-After activation:
-
-1. Go to **kwtSMS → Gateway** in your WordPress dashboard.
-2. Enter your **API Username** and **API Password** (from your kwtSMS account under Account → API Settings, not your login credentials).
-3. Click **Login** to verify credentials. The Sender ID dropdown will populate automatically.
-4. Select your **Sender ID** and click **Save Settings**.
-5. Go to **kwtSMS → General** to configure OTP mode (2FA, Passwordless, or both), rate limits, and CAPTCHA.
-6. Optionally enable **Test Mode** while setting up: SMS is queued but never delivered, and the OTP code is visible under **kwtSMS → Logs → Debug Log**. Note: credits are still deducted for queued messages. Delete them from your kwtSMS dashboard to recover them.
-
----
-
 ## External Services
 
 This plugin connects to the following external services:
 
-**1. kwtSMS API** (required): sends all SMS messages.
-- Endpoint: `https://www.kwtsms.com/API/`
-- Data sent: phone number, message text, API credentials
-- When: every time an OTP or notification SMS is dispatched
-- [Terms of Service](https://www.kwtsms.com/policy.html) | [Privacy Policy](https://www.kwtsms.com/privacy.html)
+**1. kwtSMS API** (required): sends all SMS messages. [kwtsms.com](https://www.kwtsms.com) | [Terms](https://www.kwtsms.com/policy.html) | [Privacy](https://www.kwtsms.com/privacy.html)
 
-**2. ipapi.co** (optional): detects the visitor's country to pre-select the dial-code flag on the phone input.
-- Data sent: visitor IP address only
-- When: on the login page when Passwordless or 2FA mode is active; result cached 24 hours per IP
-- Falls back to the default country in General Settings if unavailable
-- [Terms of Service](https://ipapi.co/terms/) | [Privacy Policy](https://ipapi.co/privacy/)
+**2. ipapi.co** (optional): detects visitor country for dial-code pre-selection. [ipapi.co](https://ipapi.co) | [Terms](https://ipapi.co/terms/) | [Privacy](https://ipapi.co/privacy/)
 
-**3. Google reCAPTCHA v3** (optional): bot protection on OTP forms. Only active when a reCAPTCHA Site Key is entered in General Settings.
-- JavaScript loaded from: `https://www.google.com/recaptcha/api.js`
-- Verification endpoint: `https://www.google.com/recaptcha/api/siteverify`
-- Data sent: reCAPTCHA token (generated client-side), secret key (server-side only)
-- When: on every login, password reset, or registration page load (client JS), and on every OTP form submission (server-side verification)
-- [Terms of Service](https://policies.google.com/terms) | [Privacy Policy](https://policies.google.com/privacy)
+**3. IPHub** (optional): proxy/VPN detection on OTP requests. [iphub.info](https://iphub.info) | [Terms](https://iphub.info/legal) | [Privacy](https://iphub.info/legal)
 
-**4. Cloudflare Turnstile** (optional): alternative bot protection. Only active when a Turnstile Site Key is entered in General Settings.
-- JavaScript loaded from: `https://challenges.cloudflare.com/turnstile/v0/api.js`
-- Verification endpoint: `https://challenges.cloudflare.com/turnstile/v0/siteverify`
-- Data sent: Turnstile token (generated client-side), secret key (server-side only)
-- When: on every login, password reset, or registration page load (client JS), and on every OTP form submission (server-side verification)
-- [Terms of Service](https://www.cloudflare.com/terms/) | [Privacy Policy](https://www.cloudflare.com/privacypolicy/)
+**4. Google reCAPTCHA v3** (optional): bot protection on OTP forms. [google.com/recaptcha](https://www.google.com/recaptcha/) | [Terms](https://policies.google.com/terms) | [Privacy](https://policies.google.com/privacy)
 
-**5. IPHub** (optional): detects proxies and VPNs to block or flag suspicious OTP requests. Only active when an IPHub API key is entered and the feature is enabled in General Settings.
-- Endpoint: `https://v2.api.iphub.info/ip/{ip}`
-- Data sent: visitor IP address (in URL), API key (in request header)
-- When: on every OTP request when enabled; result cached per IP (default 24 hours)
-- [Website](https://iphub.info/) | [Privacy Policy](https://iphub.info/privacy)
-
----
-
-## Error Reference
-
-| Code | Meaning | Fix |
-|------|---------|-----|
-| ERR003 | Wrong credentials | Verify username/password at kwtsms.com |
-| ERR008 | Sender ID not allowed | Choose an approved Sender ID |
-| ERR010/011 | Insufficient credits | Top up your kwtSMS balance |
-| ERR026 | No SMS coverage | Enable coverage for this country in your kwtSMS account |
-| ERR006/025 | Invalid phone number | Ensure country code is included, digits only |
-| ERR028 | Resend too fast | Wait 15 seconds between resend requests |
-| ERR031/032 | Content rejected | Check template for spam-flagged content or bad language |
-
-Full error code reference: [kwtSMS API Documentation (PDF)](https://www.kwtsms.com/doc/KwtSMS.com_API_Documentation_v41.pdf)
+**5. Cloudflare Turnstile** (optional): alternative bot protection. [cloudflare.com/turnstile](https://www.cloudflare.com/products/turnstile/) | [Terms](https://www.cloudflare.com/terms/) | [Privacy](https://www.cloudflare.com/privacypolicy/)
 
 ---
 
@@ -302,9 +241,6 @@ Alternatively, use WP-CLI to remove the phone from your account: `wp user meta d
 - **[kwtSMS FAQ](https://www.kwtsms.com/faq/)**: Answers to common questions about credits, sender IDs, OTP, and delivery.
 - **[kwtSMS Support](https://www.kwtsms.com/support.html)**: Open a support ticket or browse help articles.
 - **[Contact kwtSMS](https://www.kwtsms.com/#contact)**: Reach the kwtSMS team directly for Sender ID registration and account issues.
-- **[API Documentation (PDF)](https://www.kwtsms.com/doc/KwtSMS.com_API_Documentation_v41.pdf)**: kwtSMS REST API v4.1 full reference.
-- **[Best Practices](https://www.kwtsms.com/articles/sms-api-implementation-best-practices.html)**: SMS API implementation best practices.
-- **[Integration Test Checklist](https://www.kwtsms.com/articles/sms-api-integration-test-checklist.html)**: Pre-launch testing checklist.
 - **[Sender ID Help](https://www.kwtsms.com/sender-id-help.html)**: Sender ID registration and guidelines.
 - **[kwtSMS Dashboard](https://www.kwtsms.com/login/)**: Recharge credits, buy Sender IDs, view message logs, and manage coverage.
 - **[Other Integrations](https://www.kwtsms.com/integrations.html)**: Plugins and integrations for other platforms and languages.

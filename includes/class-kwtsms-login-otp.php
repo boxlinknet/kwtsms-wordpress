@@ -221,9 +221,10 @@ class KwtSMS_Login_OTP {
 		set_transient(
 			'kwtsms_partial_auth_' . $token,
 			array(
-				'user_id' => $user->ID,
-				'action'  => 'login',
-				'phone'   => $phone,
+				'user_id'    => $user->ID,
+				'action'     => 'login',
+				'phone'      => $phone,
+				'rememberme' => false,
 			),
 			15 * MINUTE_IN_SECONDS
 		);
@@ -379,9 +380,10 @@ class KwtSMS_Login_OTP {
 
 		switch ( $result ) {
 			case 'valid':
+				$rememberme = ! empty( sanitize_key( wp_unslash( $_POST['kwtsms_rememberme'] ?? '' ) ) );
 				delete_transient( 'kwtsms_partial_auth_' . $token );
 				$this->clear_partial_auth_cookie();
-				$this->issue_auth_and_redirect( $user_id );
+				$this->issue_auth_and_redirect( $user_id, $rememberme );
 				break;
 
 			case 'invalid':
@@ -433,9 +435,10 @@ class KwtSMS_Login_OTP {
 	/**
 	 * Issue WordPress auth cookies and redirect after successful OTP verification.
 	 *
-	 * @param int $user_id Authenticated user ID.
+	 * @param int  $user_id    Authenticated user ID.
+	 * @param bool $rememberme Whether to issue a persistent auth cookie.
 	 */
-	private function issue_auth_and_redirect( $user_id ) {
+	private function issue_auth_and_redirect( $user_id, $rememberme = false ) {
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			wp_safe_redirect( wp_login_url() );
@@ -443,7 +446,7 @@ class KwtSMS_Login_OTP {
 		}
 
 		wp_set_current_user( $user_id );
-		wp_set_auth_cookie( $user_id, false );
+		wp_set_auth_cookie( $user_id, $rememberme );
 		do_action( 'wp_login', $user->user_login, $user ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Firing core WP hook, not defining a custom one.
 
 		// Issue a trusted device cookie if the user checked "Trust this device".
@@ -646,9 +649,10 @@ class KwtSMS_Login_OTP {
 		set_transient(
 			'kwtsms_partial_auth_' . $token,
 			array(
-				'user_id' => $user_id,
-				'action'  => 'passwordless',
-				'phone'   => $normalized,
+				'user_id'    => $user_id,
+				'action'     => 'passwordless',
+				'phone'      => $normalized,
+				'rememberme' => false,
 			),
 			15 * MINUTE_IN_SECONDS
 		);
