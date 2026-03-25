@@ -8,9 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/boxlinknet/kwtsms-wordpress)](https://github.com/boxlinknet/kwtsms-wordpress/releases)
 [![WooCommerce](https://img.shields.io/badge/WooCommerce-optional-96588a.svg?logo=woocommerce&logoColor=white)](https://woocommerce.com)
 
-Secure SMS-based OTP login, password reset, and WooCommerce / form notifications for WordPress. Built on the [kwtSMS](https://www.kwtsms.com) gateway.
-
-**Version:** 3.5.2 | **Requires:** WordPress 6.0+, PHP 7.4+
+Replace passwords with SMS codes, automate WooCommerce order updates, and verify phone numbers on any contact form. Built on the [kwtSMS](https://www.kwtsms.com) gateway.
 
 > Don't have a kwtSMS account? [Sign up at kwtsms.com →](https://www.kwtsms.com/signup)
 
